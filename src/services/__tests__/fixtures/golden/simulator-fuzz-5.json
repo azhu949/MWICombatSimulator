@@ -1,0 +1,6404 @@
+{
+  "error": null,
+  "eventCount": 152,
+  "eventTrace": [
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 0,
+      "type": "combatStart",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/stunning_blow",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 256557393.17163944,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/silencing_shot",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 684153048.4577053,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 857462247.7153901,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 1714924495.4307802,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/life_drain",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 2394535669.6019683,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 2572386743.14617,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 2594877917.6224504,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 2795220165.6429324,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 2995562413.6634145,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 3195904661.6838965,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 3396246909.7043786,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 3429848990.8615603,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 3596589157.7248607,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 3796931405.7453427,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 3997273653.765825,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 4197615901.786307,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 4287311238.5769506,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 4397958149.806789,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 4598300397.827271,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 4798642645.847754,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 4998984893.868236,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 5144773486.29234,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 5199327141.888718,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 5399669389.9092,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 5600011637.929682,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 5800353885.950164,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 6000696133.970646,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 6002235734.0077305,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 6201038381.991128,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 6401380630.01161,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 6601722878.032092,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 6802065126.052574,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 6859697981.723121,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 7002407374.073056,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 7202749622.093538,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 7403091870.11402,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 7603434118.134502,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 7717160229.438511,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 7803776366.154984,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 8004118614.175467,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 8204460862.195949,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 8404803110.216431,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 8574622477.153901,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 8605145358.236914,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 8805487606.257397,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 9005829854.27788,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 9206172102.298363,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 9406514350.318846,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 9432084724.869291,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 9606856598.339329,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 9807198846.359812,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 10000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10007541094.380295,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10207883342.400778,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 10289546972.58468,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10408225590.42126,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10608567838.441744,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10808910086.462227,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 11009252334.48271,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 11147009220.30007,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 11209594582.503193,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 11409936830.523676,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 11610279078.544159,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 11810621326.564642,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 12004471468.01546,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 12010963574.585125,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 12211305822.605608,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 12411648070.626091,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 12611990318.646574,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 12812332566.667057,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 12861933715.730848,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 13012674814.68754,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 13213017062.708023,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 13413359310.728506,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 13613701558.74899,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 13719395963.446238,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 13814043806.769472,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 14014386054.789955,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/heal",
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 14201091531.847008,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 14214728302.810438,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 14415070550.830921,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 14615412798.851404,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 14815755046.871887,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 15016097294.89237,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 15058553779.562397,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 15216439542.912853,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 15416781790.933336,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 15617124038.95382,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 15817466286.974302,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 15916016027.277786,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 16017808534.994785,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 16218150783.015268,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 16418493031.035751,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 16618835279.056234,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 16773478274.993176,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 16819177527.076717,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 17019519775.0972,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 17219862023.117683,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 17420204271.138165,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 17630940522.708565,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 18488402770.423954,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/life_drain",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 19130586892.28243,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 19330929140.30291,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 19345865018.139343,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 19531271388.32339,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 19731613636.343872,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 19931955884.364353,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 20000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 22931955884.364353,
+      "type": "enemyRespawn",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/stunning_blow",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 23188513277.53599,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/silencing_shot",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 23616108932.822056,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 23789418132.079742,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 23816451180.842537,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 24016793428.863018,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 24217135676.8835,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 24417477924.90398,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 24617820172.92446,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 24646880379.79513,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 24818162420.944942,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 25018504668.965424,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 25218846916.985905,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 25419189165.006386,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 25504342627.51052,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 25619531413.026867,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 25819873661.047348,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 26020215909.06783,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 26220558157.08831,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 26361804875.22591,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 26420900405.10879,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 26621242653.129272,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 26821584901.149754,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 27021927149.170235,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 27219267122.9413,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 27222269397.190716,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 27422611645.211197,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 27622953893.231678,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 27823296141.25216,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 28023638389.27264,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 28076729370.65669,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 28223980637.29312,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 28424322885.313602,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 28616108932.822056,
+      "type": "silenceExpiration",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 28624665133.334084,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 28825007381.354565,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 28934191618.372078,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 29025349629.375046,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 29225691877.395527,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 29426034125.416008,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 29626376373.43649,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/enemy/0",
+      "target": null,
+      "time": 29791653866.087467,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 29826718621.45697,
+      "type": "autoAttack",
+      "value": null
+    }
+  ],
+  "resultCallCount": 529,
+  "resultCalls": [
+    {
+      "args": [
+        true,
+        ""
+      ],
+      "method": "setScrollUsageContext"
+    },
+    {
+      "args": [
+        true
+      ],
+      "method": "setScrollUsageDisabled"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        true,
+        0
+      ],
+      "method": "updateTimeSpentAlive"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/items/donut"
+      ],
+      "method": "addConsumableUse"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/items/donut",
+        0
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/items/attack_coffee"
+      ],
+      "method": "addConsumableUse"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        0
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        256557393.17163944
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "parry",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        10
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "bloom",
+        0
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        256557393.17163944
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        684153048.4577053
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "/abilities/silencing_shot",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        684153048.4577053
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        11
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        2394535669.6019683
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "/abilities/life_drain",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        25
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        33
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        12
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        105
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        9
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        60
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        34
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        105
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        39
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        57
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        50
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        12
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        10
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        19
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        35
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        12
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        11
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        22
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        14
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        33
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        14
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        64
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        75
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        6
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        12
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        57
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        34
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        41
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "regen",
+        10
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "regen",
+        45
+      ],
+      "method": "addManapointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        36
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        21
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        30
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        26
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        71
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        6
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        105
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        16
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        50
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        57
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        17
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        65
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        6
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        49
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        105
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        9
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        43
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        58
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        21
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/abilities/heal",
+        35
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        11
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        14
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        78
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        7
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        22
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        16
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        60
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        70
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        6
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        104
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        17420204271.138165
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        7
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        19130586892.28243
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/abilities/life_drain",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "/abilities/life_drain",
+        212
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        70
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        10
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0"
+      ],
+      "method": "addDeath"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        false,
+        19931955884.364353
+      ],
+      "method": "updateTimeSpentAlive"
+    },
+    {
+      "args": [],
+      "method": "addEncounterEnd"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "regen",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "regen",
+        45
+      ],
+      "method": "addManapointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        true,
+        22931955884.364353
+      ],
+      "method": "updateTimeSpentAlive"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        22931955884.364353
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        23188513277.53599
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "/abilities/stunning_blow",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        23188513277.53599
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        false,
+        23616108932.822056
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "/abilities/silencing_shot",
+        50
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        76
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        33
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        78
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        76
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        3
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        34
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        45
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        70
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        6
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        12
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        52
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        70
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        32
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        11
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        9
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        21
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        29
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        2
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        57
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        8
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        49
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        53
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        4
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        4
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        11
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        58
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        5
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        13
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        2
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        55
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        5
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        15
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "lifesteal",
+        1
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        3
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "physicalThorns",
+        6
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "retaliation",
+        10
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/parity/fuzz/enemy/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "physicalThorns",
+        1
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/enemy/0",
+        "/parity/fuzz/player/0",
+        "retaliation",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0"
+      ],
+      "method": "setDropRateMultipliers"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0"
+      ],
+      "method": "setManaUsed"
+    }
+  ],
+  "simulatedTime": 30000000000,
+  "stoppedEarly": false,
+  "units": [
+    {
+      "abilities": [
+        {
+          "hrid": "/abilities/stunning_blow",
+          "lastUsed": 23188513277.53599
+        },
+        {
+          "hrid": "/abilities/silencing_shot",
+          "lastUsed": 23616108932.822056
+        },
+        {
+          "hrid": "/abilities/quick_aid",
+          "lastUsed": -9007199254740991
+        },
+        {
+          "hrid": "/abilities/life_drain",
+          "lastUsed": 19130586892.28243
+        }
+      ],
+      "abilityManaCosts": [
+        {
+          "hrid": "/abilities/stunning_blow",
+          "manaCost": 100
+        },
+        {
+          "hrid": "/abilities/silencing_shot",
+          "manaCost": 100
+        },
+        {
+          "hrid": "/abilities/life_drain",
+          "manaCost": 150
+        }
+      ],
+      "blindExpireTime": null,
+      "combatBuffKeys": [
+        "/buff_uniques/attack_coffee"
+      ],
+      "combatBuffs": {
+        "/buff_uniques/attack_coffee": {
+          "duration": 285714285714.2857,
+          "flatBoost": 1.05,
+          "ratioBoost": 0.084,
+          "startTime": 0,
+          "typeHrid": "/buff_types/attack_level",
+          "uniqueHrid": "/buff_uniques/attack_coffee"
+        }
+      },
+      "combatDetails": {
+        "abilityHaste": 0,
+        "attackLevel": 176.65800000000002,
+        "combatStats": {
+          "abilityDamage": 0,
+          "armor": 0.0875,
+          "armorDamageRatio": 0,
+          "armorPenetration": 0,
+          "attackExperience": 0,
+          "attackInterval": 200342248.02048224,
+          "attackSpeed": 0,
+          "autoAttackDamage": 0,
+          "blaze": 0,
+          "bloom": 0.26,
+          "castSpeed": 0.169329,
+          "combatDropQuantity": 0,
+          "combatDropRate": 0,
+          "combatExperience": 0,
+          "combatRareFind": 0,
+          "combatStyleHrid": "/combat_styles/smash",
+          "criticalDamage": 0.35,
+          "criticalRate": 0.09,
+          "curse": 0,
+          "damageTaken": 0,
+          "damageType": "/damage_types/physical",
+          "defenseExperience": 0,
+          "defensiveDamage": 0,
+          "drinkConcentration": 0.05,
+          "drinkSlots": 1,
+          "elementalThorns": 0.0475,
+          "fireAmplify": 0,
+          "firePenetration": 0,
+          "fireResistance": 0.0725,
+          "focusTraining": "",
+          "foodHaste": 0.06,
+          "foodSlots": 1,
+          "fury": 0,
+          "healingAmplify": 0,
+          "hpDrainRatio": 0,
+          "hpRegenPer10": 0.03,
+          "intelligenceExperience": 0,
+          "lifeSteal": 0.0925,
+          "magicAccuracy": 0,
+          "magicDamage": 0.27,
+          "magicEvasion": 0,
+          "magicExperience": 0,
+          "manaLeech": 0.005,
+          "maxHitpoints": 0,
+          "maxHitpointsRatio": 0,
+          "maxManapoints": 0,
+          "maxManapointsRatio": 0,
+          "mayhem": 0,
+          "meleeExperience": 0,
+          "mpRegenPer10": 0.03,
+          "natureAmplify": 0,
+          "naturePenetration": 0,
+          "natureResistance": 0.0825,
+          "parry": 0.2,
+          "physicalAmplify": 0,
+          "physicalThorns": 0.0475,
+          "pierce": 0,
+          "primaryTraining": "",
+          "rangedAccuracy": 0,
+          "rangedDamage": 0,
+          "rangedEvasion": 0,
+          "rangedExperience": 0,
+          "retaliation": 0.085,
+          "ripple": 0,
+          "slashAccuracy": 0,
+          "slashDamage": 0,
+          "slashEvasion": 0,
+          "smashAccuracy": 0,
+          "smashDamage": 0.1,
+          "smashEvasion": 0,
+          "stabAccuracy": 0.33,
+          "stabDamage": 0.35,
+          "stabEvasion": 0,
+          "staminaExperience": 0,
+          "taskDamage": 0,
+          "tenacity": null,
+          "threat": 300,
+          "waterAmplify": 0,
+          "waterPenetration": 0,
+          "waterResistance": 0.0575,
+          "weaken": 0
+        },
+        "currentHitpoints": 1852,
+        "currentManapoints": 1260,
+        "defenseLevel": 206,
+        "defensiveMaxDamage": 216,
+        "intelligenceLevel": 142,
+        "magicAccuracyRating": 186.65800000000002,
+        "magicEvasionRating": 216,
+        "magicLevel": 190,
+        "magicMaxDamage": 254,
+        "maxHitpoints": 1860,
+        "maxManapoints": 1520,
+        "meleeLevel": 70,
+        "rangedAccuracyRating": 186.65800000000002,
+        "rangedEvasionRating": 216,
+        "rangedLevel": 22,
+        "rangedMaxDamage": 32,
+        "slashAccuracyRating": 186.65800000000002,
+        "slashEvasionRating": 216,
+        "slashMaxDamage": 80,
+        "smashAccuracyRating": 186.65800000000002,
+        "smashEvasionRating": 216,
+        "smashMaxDamage": 88,
+        "stabAccuracyRating": 248.25514000000004,
+        "stabEvasionRating": 216,
+        "stabMaxDamage": 108,
+        "staminaLevel": 176,
+        "tenacity": 0,
+        "totalArmor": 41.2875,
+        "totalFireResistance": 41.2725,
+        "totalNatureResistance": 41.282500000000006,
+        "totalThreat": 300,
+        "totalWaterResistance": 41.2575
+      },
+      "currentHitpoints": 1852,
+      "currentManapoints": 1260,
+      "drinks": [
+        {
+          "hrid": "/items/attack_coffee",
+          "lastUsed": 0
+        },
+        null,
+        null
+      ],
+      "enrageTime": 0,
+      "experience": 0,
+      "food": [
+        {
+          "hrid": "/items/donut",
+          "lastUsed": 0
+        },
+        null,
+        null
+      ],
+      "hrid": "/parity/fuzz/player/0",
+      "isBlinded": false,
+      "isOutOfMana": false,
+      "isPlayer": true,
+      "isSilenced": false,
+      "isStunned": false,
+      "maxHitpoints": 1860,
+      "maxManapoints": 1520,
+      "silenceExpireTime": null,
+      "stunExpireTime": null,
+      "weakenExpireTime": null
+    },
+    {
+      "abilities": [
+        {
+          "hrid": "/abilities/berserk",
+          "lastUsed": -4653376337
+        },
+        {
+          "hrid": "/abilities/heal",
+          "lastUsed": 14201091531.847008
+        },
+        null,
+        null
+      ],
+      "abilityManaCosts": [],
+      "blindExpireTime": null,
+      "combatBuffKeys": [],
+      "combatBuffs": {},
+      "combatDetails": {
+        "abilityHaste": 0,
+        "attackLevel": 38,
+        "combatStats": {
+          "abilityDamage": 0,
+          "armor": 0.0825,
+          "armorDamageRatio": 0,
+          "armorPenetration": 0,
+          "attackExperience": 0,
+          "attackInterval": 857462247.7153901,
+          "attackSpeed": 0,
+          "autoAttackDamage": 0,
+          "blaze": 0,
+          "bloom": 0,
+          "castSpeed": 0.038,
+          "combatDropQuantity": 0,
+          "combatDropRate": 0,
+          "combatExperience": 0,
+          "combatRareFind": 0,
+          "combatStyleHrid": "/combat_styles/smash",
+          "criticalDamage": 0,
+          "criticalRate": 0,
+          "curse": 0,
+          "damageTaken": 0,
+          "damageType": "/damage_types/physical",
+          "defenseExperience": 0,
+          "defensiveDamage": 0,
+          "drinkConcentration": 0,
+          "drinkSlots": 1,
+          "elementalThorns": 0,
+          "fireAmplify": 0,
+          "firePenetration": 0,
+          "fireResistance": 0,
+          "focusTraining": "",
+          "foodHaste": 0,
+          "foodSlots": 1,
+          "fury": 0,
+          "healingAmplify": 0,
+          "hpDrainRatio": 0,
+          "hpRegenPer10": 0,
+          "intelligenceExperience": 0,
+          "lifeSteal": 0,
+          "magicAccuracy": 0,
+          "magicDamage": 0.19,
+          "magicEvasion": 0,
+          "magicExperience": 0,
+          "manaLeech": 0,
+          "maxHitpoints": 0,
+          "maxHitpointsRatio": 0,
+          "maxManapoints": 0,
+          "maxManapointsRatio": 0,
+          "mayhem": 0,
+          "meleeExperience": 0,
+          "mpRegenPer10": 0,
+          "natureAmplify": 0,
+          "naturePenetration": 0,
+          "natureResistance": 0,
+          "parry": 0.22,
+          "physicalAmplify": 0,
+          "physicalThorns": 0.035,
+          "pierce": 0,
+          "primaryTraining": "",
+          "rangedAccuracy": 0,
+          "rangedDamage": 0,
+          "rangedEvasion": 0,
+          "rangedExperience": 0,
+          "retaliation": 0.04,
+          "ripple": 0,
+          "slashAccuracy": 0,
+          "slashDamage": 0,
+          "slashEvasion": 0,
+          "smashAccuracy": 0,
+          "smashDamage": 0,
+          "smashEvasion": 0,
+          "stabAccuracy": 0,
+          "stabDamage": 0.28,
+          "stabEvasion": 0,
+          "staminaExperience": 0,
+          "taskDamage": 0,
+          "tenacity": 25,
+          "threat": 300,
+          "waterAmplify": 0,
+          "waterPenetration": 0,
+          "waterResistance": 0,
+          "weaken": 0
+        },
+        "currentHitpoints": 0,
+        "currentManapoints": 50,
+        "defenseLevel": 71,
+        "defensiveMaxDamage": 81,
+        "intelligenceLevel": 1,
+        "magicAccuracyRating": 48,
+        "magicEvasionRating": 81,
+        "magicLevel": 70,
+        "magicMaxDamage": 95.19999999999999,
+        "maxHitpoints": 2810,
+        "maxManapoints": 110,
+        "meleeLevel": 1,
+        "rangedAccuracyRating": 48,
+        "rangedEvasionRating": 81,
+        "rangedLevel": 1,
+        "rangedMaxDamage": 11,
+        "slashAccuracyRating": 48,
+        "slashEvasionRating": 81,
+        "slashMaxDamage": 11,
+        "smashAccuracyRating": 48,
+        "smashEvasionRating": 81,
+        "smashMaxDamage": 11,
+        "stabAccuracyRating": 48,
+        "stabEvasionRating": 81,
+        "stabMaxDamage": 14.08,
+        "staminaLevel": 271,
+        "tenacity": 0,
+        "totalArmor": 14.2825,
+        "totalFireResistance": 14.200000000000001,
+        "totalNatureResistance": 14.200000000000001,
+        "totalThreat": 300,
+        "totalWaterResistance": 14.200000000000001
+      },
+      "currentHitpoints": 0,
+      "currentManapoints": 50,
+      "drinks": [
+        null,
+        null,
+        null
+      ],
+      "enrageTime": 27741037840,
+      "experience": 0,
+      "food": [
+        null,
+        null,
+        null
+      ],
+      "hrid": "/parity/fuzz/enemy/0",
+      "isBlinded": false,
+      "isOutOfMana": false,
+      "isPlayer": false,
+      "isSilenced": false,
+      "isStunned": false,
+      "maxHitpoints": 2810,
+      "maxManapoints": 110,
+      "silenceExpireTime": null,
+      "stunExpireTime": null,
+      "weakenExpireTime": null
+    },
+    {
+      "abilities": [
+        {
+          "hrid": "/abilities/berserk",
+          "lastUsed": 21818999708.364353
+        },
+        {
+          "hrid": "/abilities/heal",
+          "lastUsed": 22606457900.364353
+        },
+        null,
+        null
+      ],
+      "abilityManaCosts": [],
+      "blindExpireTime": null,
+      "combatBuffKeys": [],
+      "combatBuffs": {},
+      "combatDetails": {
+        "abilityHaste": 0,
+        "attackLevel": 38,
+        "combatStats": {
+          "abilityDamage": 0,
+          "armor": 0.0825,
+          "armorDamageRatio": 0,
+          "armorPenetration": 0,
+          "attackExperience": 0,
+          "attackInterval": 857462247.7153901,
+          "attackSpeed": 0,
+          "autoAttackDamage": 0,
+          "blaze": 0,
+          "bloom": 0,
+          "castSpeed": 0.038,
+          "combatDropQuantity": 0,
+          "combatDropRate": 0,
+          "combatExperience": 0,
+          "combatRareFind": 0,
+          "combatStyleHrid": "/combat_styles/smash",
+          "criticalDamage": 0,
+          "criticalRate": 0,
+          "curse": 0,
+          "damageTaken": 0,
+          "damageType": "/damage_types/physical",
+          "defenseExperience": 0,
+          "defensiveDamage": 0,
+          "drinkConcentration": 0,
+          "drinkSlots": 1,
+          "elementalThorns": 0,
+          "fireAmplify": 0,
+          "firePenetration": 0,
+          "fireResistance": 0,
+          "focusTraining": "",
+          "foodHaste": 0,
+          "foodSlots": 1,
+          "fury": 0,
+          "healingAmplify": 0,
+          "hpDrainRatio": 0,
+          "hpRegenPer10": 0,
+          "intelligenceExperience": 0,
+          "lifeSteal": 0,
+          "magicAccuracy": 0,
+          "magicDamage": 0.19,
+          "magicEvasion": 0,
+          "magicExperience": 0,
+          "manaLeech": 0,
+          "maxHitpoints": 0,
+          "maxHitpointsRatio": 0,
+          "maxManapoints": 0,
+          "maxManapointsRatio": 0,
+          "mayhem": 0,
+          "meleeExperience": 0,
+          "mpRegenPer10": 0,
+          "natureAmplify": 0,
+          "naturePenetration": 0,
+          "natureResistance": 0,
+          "parry": 0.22,
+          "physicalAmplify": 0,
+          "physicalThorns": 0.035,
+          "pierce": 0,
+          "primaryTraining": "",
+          "rangedAccuracy": 0,
+          "rangedDamage": 0,
+          "rangedEvasion": 0,
+          "rangedExperience": 0,
+          "retaliation": 0.04,
+          "ripple": 0,
+          "slashAccuracy": 0,
+          "slashDamage": 0,
+          "slashEvasion": 0,
+          "smashAccuracy": 0,
+          "smashDamage": 0,
+          "smashEvasion": 0,
+          "stabAccuracy": 0,
+          "stabDamage": 0.28,
+          "stabEvasion": 0,
+          "staminaExperience": 0,
+          "taskDamage": 0,
+          "tenacity": 25,
+          "threat": 300,
+          "waterAmplify": 0,
+          "waterPenetration": 0,
+          "waterResistance": 0,
+          "weaken": 0
+        },
+        "currentHitpoints": 1689,
+        "currentManapoints": 110,
+        "defenseLevel": 71,
+        "defensiveMaxDamage": 81,
+        "intelligenceLevel": 1,
+        "magicAccuracyRating": 48,
+        "magicEvasionRating": 81,
+        "magicLevel": 70,
+        "magicMaxDamage": 95.19999999999999,
+        "maxHitpoints": 2810,
+        "maxManapoints": 110,
+        "meleeLevel": 1,
+        "rangedAccuracyRating": 48,
+        "rangedEvasionRating": 81,
+        "rangedLevel": 1,
+        "rangedMaxDamage": 11,
+        "slashAccuracyRating": 48,
+        "slashEvasionRating": 81,
+        "slashMaxDamage": 11,
+        "smashAccuracyRating": 48,
+        "smashEvasionRating": 81,
+        "smashMaxDamage": 11,
+        "stabAccuracyRating": 48,
+        "stabEvasionRating": 81,
+        "stabMaxDamage": 14.08,
+        "staminaLevel": 271,
+        "tenacity": 0,
+        "totalArmor": 14.2825,
+        "totalFireResistance": 14.200000000000001,
+        "totalNatureResistance": 14.200000000000001,
+        "totalThreat": 300,
+        "totalWaterResistance": 14.200000000000001
+      },
+      "currentHitpoints": 1689,
+      "currentManapoints": 110,
+      "drinks": [
+        null,
+        null,
+        null
+      ],
+      "enrageTime": 27741037840,
+      "experience": 0,
+      "food": [
+        null,
+        null,
+        null
+      ],
+      "hrid": "/parity/fuzz/enemy/0",
+      "isBlinded": false,
+      "isOutOfMana": false,
+      "isPlayer": false,
+      "isSilenced": false,
+      "isStunned": false,
+      "maxHitpoints": 2810,
+      "maxManapoints": 110,
+      "silenceExpireTime": 28616108932.822056,
+      "stunExpireTime": null,
+      "weakenExpireTime": null
+    }
+  ]
+}

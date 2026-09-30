@@ -1,0 +1,24 @@
+{
+  "seed": 1,
+  "deaths": 0,
+  "ranOutOfMana": true,
+  "foodUsed": {
+    "/items/gummy": 2
+  },
+  "costPerHour": 0,
+  "equivalentThresholds": [
+    {
+      "hrid": "/items/gummy",
+      "kind": "mp",
+      "max": 130,
+      "min": 123
+    }
+  ],
+  "unusedFoodThresholds": null,
+  "inactiveFoodThresholds": {
+    "hp": 8,
+    "mp": 255
+  },
+  "stoppedEarly": true,
+  "simulatedTime": 136403940886.69943
+}

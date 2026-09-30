@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import Player from '../player.js';
-import CombatSimulator from '../combatSimulator.js';
-import Zone from '../zone.js';
 import Ability from '../ability.js';
 import { REMOVE_ACTIVE_SOURCE } from '../combatUnit.js';
 import itemDetailMap from '../data/itemDetailMap.json';
@@ -42,150 +40,10 @@ describe('Buff source policy', () => {
     });
   });
 
-  async function runDeterministicSimulation(playerCount, abilityHrid = null) {
-    const players = Array.from({ length: playerCount }, (_, index) => {
-      const player = new Player();
-      player.hrid = `player${index + 1}`;
-      player.attackLevel = 31 + index;
-      player.meleeLevel = 31 + index;
-      player.defenseLevel = 31 + index;
-      player.zoneBuffs = [];
-      player.extraBuffs = [];
-      if (abilityHrid) {
-        player.abilities = [new Ability(abilityHrid), null, null, null];
-      }
-      player.updateCombatDetails();
-      return player;
-    });
-
-    const simulator = new CombatSimulator(players, new Zone('/actions/combat/sorcerers_tower', 0), null, {});
-    await simulator.simulate(60e9);
-    return {
-      attacks: simulator.simResult.attacks,
-      deaths: simulator.simResult.deaths,
-      manaUsed: simulator.simResult.manaUsed,
-      stats: players.map((player) => ({
-        attackInterval: player.combatDetails.combatStats.attackInterval,
-        smashMaxDamage: player.combatDetails.smashMaxDamage,
-        currentHitpoints: player.combatDetails.currentHitpoints,
-        currentManapoints: player.combatDetails.currentManapoints,
-      })),
-    };
-  }
-
-  // 以固定常量运行回调中的 Math.random。下方的黄金
-  // 模拟通过 Promise.all 并发运行三次模拟，
-  // 因此种子序列会在三次运行之间不可预测地交错，
-  // 导致快照不稳定。固定值使每次
-  // Math.random() 调用无论交错顺序如何都完全相同，
-  // 这正是黄金值可复现的原因。
-  async function withFixedRandom(callback) {
-    const originalRandom = Math.random;
-    Math.random = () => 0.5;
-    try {
-      return await callback();
-    } finally {
-      Math.random = originalRandom;
-    }
-  }
-
-  // 这些期望值是通过用相同的确定性输入运行未改动的 HEAD 引擎
-  // 与本实现捕获的。保留
-  // 旧引擎的值，使普通战斗不会因添加队伍光环
-  // 源仲裁而作为副作用发生漂移。
-  //
-  // 维护成本：这是一个刻意设计的黄金值测试。对普通
-  // 战斗路径（伤害公式、攻击时机、区域行为、
-  // 技能效果等）的任何改动都会合理地改变这些数字，并迫使
-  // 快照更新。发生这种情况时：
-  //   1. 确认改动是有意的，且新值正确
-  //      （用相同的固定随机数运行模拟并检查差异，
-  //      或通过 `vitest -u` 更新）。
-  //   2. 同时更新内联快照 / toEqual 期望。
-  //   3. 不要为了减少未来的更新而削弱断言（例如对一切使用 toBeCloseTo）——
-  //      紧密耦合正是重点：它保护
-  //      普通路径免受光环仲裁引起的意外漂移。
-  it('matches the legacy-engine golden results for ordinary simulations', async () => {
-    const [single, dual, dualWithSelfBuff] = await withFixedRandom(() =>
-      Promise.all([
-        runDeterministicSimulation(1),
-        runDeterministicSimulation(2),
-        runDeterministicSimulation(2, '/abilities/berserk'),
-      ]),
-    );
-
-    expect(single).toMatchInlineSnapshot(`
-              {
-                "attacks": {
-                  "/monsters/ice_sorcerer": {
-                    "player1": {
-                      "/abilities/water_strike": {
-                        "4": 1,
-                        "53": 2,
-                      },
-                    },
-                  },
-                },
-                "deaths": {
-                  "player1": 1,
-                },
-                "manaUsed": {
-                  "player1": {},
-                },
-                "stats": [
-                  {
-                    "attackInterval": 2954209748.892171,
-                    "currentHitpoints": 0,
-                    "currentManapoints": 110,
-                    "smashMaxDamage": 41,
-                  },
-                ],
-              }
-            `);
-    expect(dual).toEqual({
-      attacks: {
-        '/monsters/ice_sorcerer': {
-          player2: {
-            '/abilities/water_strike': { 4: 1, 53: 2 },
-          },
-          player1: {
-            '/abilities/water_strike': { 4: 1, 53: 2 },
-          },
-        },
-        player1: {
-          '/monsters/ice_sorcerer': {
-            autoAttack: { miss: 1 },
-          },
-        },
-      },
-      deaths: { player1: 1, player2: 1 },
-      manaUsed: { player1: {}, player2: {} },
-      stats: [
-        {
-          attackInterval: 2954209748.892171,
-          smashMaxDamage: 41,
-          currentHitpoints: 0,
-          currentManapoints: 110,
-        },
-        {
-          attackInterval: 2952755905.511811,
-          smashMaxDamage: 42,
-          currentHitpoints: 0,
-          currentManapoints: 110,
-        },
-      ],
-    });
-    expect(dualWithSelfBuff.manaUsed).toEqual({
-      player1: { '/abilities/berserk': 65 },
-      player2: { '/abilities/berserk': 65 },
-    });
-    expect(dualWithSelfBuff.stats).toEqual(
-      dual.stats.map((stats) => ({
-        ...stats,
-        currentManapoints: 45,
-      })),
-    );
-  });
+  // 切片 21B：'matches the legacy-engine golden results' 用例已删除——JS 引擎
+  // （CombatSimulator）不复存在，普通战斗的输出漂移防线由 wasm golden 快照
+  // （wasmEngineProductionParity.test.js）+ cargo 单测承载；B 层增益源仲裁语义
+  // 由下方 CombatUnit 级用例继续锁定。
 
   it('preserves last-write-wins for non-aura buffs', () => {
     const unit = new Player();
@@ -276,7 +134,7 @@ describe('Buff source policy', () => {
   // 运行时公式分别按 `curse * stacks`、
   // `-weaken * stacks` 和 `fury * stacks` 应用这些装备属性。这些是
   // 仲裁测试的官方代表性输入，而非通用的
-  // 硬编码 Buff 数值。公式请参阅 combatSimulator.js。
+  // 硬编码 Buff 数值。公式请参阅 combatActions.js（21A 自 combatSimulator 逐字搬移）。
   it('keeps curse, weaken, and fury on the legacy last-write path', () => {
     const ordinaryBuffs = [
       {

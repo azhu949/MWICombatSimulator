@@ -14,14 +14,12 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import Player from '../../combatsimulator/player.js';
 import Zone from '../../combatsimulator/zone.js';
 import Labyrinth from '../../combatsimulator/labyrinth.js';
 import { buildSimulationExtraBuffs } from '../../shared/simulationExtraBuffs.js';
 import { importSoloConfig } from '../importExportMapper.js';
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from '../playerMapper.js';
-import { createSeededRandom } from '../seededRandom.js';
 import { buildSimulationExtra, buildSingleSimulationPayload } from '../simulationDomain.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
 import { buildProductionRequest, runWasmProductionSimulation } from '../wasmProductionBridge.js';
@@ -107,25 +105,10 @@ function buildLivePieces(payload) {
 }
 
 async function runJsRound(payload, { minimal, enableHpMpVisualization, scrolls = false }) {
-  const setupStartedAt = performance.now();
-  const { zone, labyrinth, players } = buildLivePieces(payload);
-  const setupMs = performance.now() - setupStartedAt;
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(payload.seed >>> 0);
-  try {
-    const simulator = new CombatSimulator(players, zone, labyrinth, {
-      minimalResult: minimal,
-      logCombatEvents: false,
-      enableHpMpVisualization,
-      combatScrollsEnabled: scrolls,
-      isGuildTrial: false,
-    });
-    const engineStartedAt = performance.now();
-    const result = await simulator.simulate(payload.simulationTimeLimit);
-    return { result, setupMs, engineMs: performance.now() - engineStartedAt };
-  } finally {
-    Math.random = originalRandom;
-  }
+  // 切片 21B：JS 引擎已删除——"JS 侧"计时口径改为**重复跑 wasm 轮**的对照臂
+  // （同一载荷、同一种子）：报告中的 "JS" 列是 wasm 第二臂读数，保留报告形状
+  // 以便与历史基准数据对照；两侧一致性断言恒真（同引擎确定性）。
+  return runWasmRound(await loadBenchEngine(), payload, { minimal, enableHpMpVisualization, scrolls });
 }
 
 function runWasmRound(engine, payload, { minimal, enableHpMpVisualization, scrolls = false }) {
@@ -227,11 +210,11 @@ async function runBenchmark(engine, payload, benchOptions, label) {
     [
       '',
       `=== wasm engine production benchmark · ${label} (${HOURS}h simulated, ${ROUNDS} rounds, seed ${SEED}) ===`,
-      `JS   total ${formatMs(jsMedian)}  = 装配 ${formatMs(median(jsSetupTimes))} + 引擎 ${formatMs(median(jsEngineTimes))}`,
-      `WASM total ${formatMs(wasmMedian)}  = 装配/快照 ${formatMs(median(wasmSetupTimes))} + 引擎 ${formatMs(median(wasmEngineTimes))}`,
-      `speedup (JS/WASM) = ${(jsMedian / wasmMedian).toFixed(3)}x   请求 JSON ${requestBytes} bytes`,
-      `JS deaths ${JSON.stringify(jsResult.deaths)}`,
-      `WASM deaths ${JSON.stringify(wasmResult.deaths)}`,
+      `wasm-A total ${formatMs(jsMedian)}  = 装配 ${formatMs(median(jsSetupTimes))} + 引擎 ${formatMs(median(jsEngineTimes))}`,
+      `wasm-B total ${formatMs(wasmMedian)}  = 装配/快照 ${formatMs(median(wasmSetupTimes))} + 引擎 ${formatMs(median(wasmEngineTimes))}`,
+      `A/B drift (A/B) = ${(jsMedian / wasmMedian).toFixed(3)}x   请求 JSON ${requestBytes} bytes`,
+      `wasm-A deaths ${JSON.stringify(jsResult.deaths)}`,
+      `wasm-B deaths ${JSON.stringify(wasmResult.deaths)}`,
       '',
     ].join('\n'),
   );

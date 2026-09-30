@@ -7,11 +7,7 @@ import {
 import { createFoodOptimizerSearch } from '../../foodOptimizerSearch.js';
 import { createFoodOptimizerEvaluator, evaluateFoodOptimizerCandidate } from '../../foodOptimizerSimulation.js';
 import { materializeFoodOptimizerOutcome } from '../../foodOptimizerPruning.js';
-import {
-  createFoodOptimizerFixture,
-  physicalFoodOptimizerResult,
-  referenceFoodOptimizerRound,
-} from './foodOptimizerTestSupport.js';
+import { createFoodOptimizerFixture, physicalFoodOptimizerResult } from './foodOptimizerTestSupport.js';
 
 export const pruningScenarios = [
   { name: 'zone', target: 'zone', foodSlots: 2 },
@@ -56,23 +52,14 @@ export function pruningScenariosFor(names) {
 
 export async function runPruningScenario(scenario) {
   const { request, items, foodSlots } = createFoodOptimizerFixture(scenario);
-  const baseline = await evaluateFoodOptimizerCandidate(
-    request,
-    null,
-    undefined,
-    undefined,
-    referenceFoodOptimizerRound,
-  );
+  // 切片 21B：JS 引擎 oracle 已删除。参照臂改走生产 evaluator 默认 wasm 轮（与
+  // 搜索臂同引擎同种子，确定性保证逐候选一致；引擎语义漂移防线在 fixtures/golden
+  // 快照 + cargo test）。不再传 simulateRound 覆盖参数。
+  const baseline = await evaluateFoodOptimizerCandidate(request, null);
   const expected = new Map();
   const ranked = [];
   for (const candidate of generateFoodOptimizerCandidates(items, foodSlots)) {
-    const result = await evaluateFoodOptimizerCandidate(
-      request,
-      candidate,
-      baseline.deaths,
-      undefined,
-      referenceFoodOptimizerRound,
-    );
+    const result = await evaluateFoodOptimizerCandidate(request, candidate, baseline.deaths);
     expected.set(candidate.signature, physicalFoodOptimizerResult(result));
     if (result.feasible) ranked.push({ ...candidate, ...result });
   }
@@ -98,8 +85,8 @@ export async function runPruningScenario(scenario) {
       return evaluate(message.candidate, message.deathBudget, progress, message.reusableSamples);
     },
   };
-  // Browser workers have isolated RNGs. One in-process client keeps this oracle
-  // comparison isolated too; separate pool tests exercise concurrent dispatch.
+  // 单客户端保持 oracle 对照串行（覆盖率记账免于并发竞态）；并发分发由 pool
+  // 相关测试覆盖。
   const report = await createFoodOptimizerSearch({
     request,
     items,

@@ -19,7 +19,7 @@ describe('food optimizer worker cost control', () => {
     createEvaluator.mockReturnValue(evaluate);
     const worker = { postMessage: vi.fn() };
     vi.stubGlobal('self', worker);
-    await import('../../foodOptimizerWorker.js');
+    await import('../../worker.js');
     const request = { searchMode: 'top10' };
     await worker.onmessage({ data: { type: 'init', request, sharedRounds: true } });
     const candidate = { signature: 'food@mp:50' };
@@ -42,7 +42,7 @@ describe('food optimizer worker cost control', () => {
     vi.stubGlobal('self', worker);
     // 重新加载 worker 入口模块，使其 onmessage 处理器绑定到这个桩。
     vi.resetModules();
-    await import('../../foodOptimizerWorker.js');
+    await import('../../worker.js');
     await worker.onmessage({ data: { type: 'init', request: {}, sharedRounds: true } });
     const first = worker.onmessage({ data: { candidate: 1, deathBudget: 0 } });
     // 第二条消息在第一次评估仍挂起时到达。

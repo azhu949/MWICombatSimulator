@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import SimResult from '../../combatsimulator/simResult.js';
 import { buildNoRngDropCountMap, buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from '../profitEstimator.js';
 
 const MONSTER_HRID = '/monsters/abyssal_imp';
 const COIN_HRID = '/items/coin';
+
+// 切片 21B：JS SimResult 类已随 A 层删除。桶的合并/归一/兼容重载语义由 Rust
+// sim_result.rs 的单测承载，wasm 序列化形状由 golden 快照锁定；本文件只保留
+// profitEstimator 对 dropContextBuckets 消费口径的断言（手写桶对象）。
 
 function priceTable() {
   return {
@@ -19,118 +22,6 @@ function priceTable() {
 }
 
 describe('timed-scroll result contexts', () => {
-  it('merges exact drop signatures and keeps scroll usage out of consumables', () => {
-    const result = new SimResult({ hrid: '/zones/test', difficultyTier: 0 }, null, 1);
-
-    result.setScrollConfiguration('player1', '/items/seal_of_damage', { quantity: 2 });
-    result.recordScrollOpen('player1', '/items/seal_of_damage', {
-      configuredQuantity: 2,
-      activeDurationNs: 1_800_000_000_000,
-    });
-    result.recordScrollOpen('player1', '/items/seal_of_damage', {
-      activeDurationNs: 1_800_000_000_000,
-      exhausted: true,
-    });
-    result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      dropRateMultiplier: 1,
-      rareFindMultiplier: 1,
-      combatDropQuantity: 0,
-      debuffOnLevelGap: 0,
-    });
-    result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      dropRateMultiplier: 1,
-      rareFindMultiplier: 1,
-      combatDropQuantity: 0,
-      debuffOnLevelGap: 0,
-    });
-    result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      dropRateMultiplier: 2,
-      rareFindMultiplier: 1,
-      combatDropQuantity: 0,
-      debuffOnLevelGap: 0,
-    });
-    result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      dropRateMultiplier: 1,
-      rareFindMultiplier: 1,
-      combatDropQuantity: 0,
-      debuffOnLevelGap: 0,
-    });
-
-    expect(result.scrollUsage.byPlayer.player1['/items/seal_of_damage']).toMatchObject({
-      configuredQuantity: 2,
-      openedCount: 2,
-      activeDurationNs: 3_600_000_000_000,
-      exhausted: true,
-    });
-    expect(result.consumablesUsed).toEqual({});
-    expect(result.dropContextBuckets.player1[MONSTER_HRID]).toEqual([
-      {
-        killCount: 3,
-        dropRateMultiplier: 1,
-        rareFindMultiplier: 1,
-        combatDropQuantity: 0,
-        debuffOnLevelGap: 0,
-      },
-      {
-        killCount: 1,
-        dropRateMultiplier: 2,
-        rareFindMultiplier: 1,
-        combatDropQuantity: 0,
-        debuffOnLevelGap: 0,
-      },
-    ]);
-  });
-
-  it('reads the level-gap debuff from flat and nested combatStats contexts', () => {
-    const result = new SimResult({ hrid: '/zones/test', difficultyTier: 0 }, null, 1);
-
-    const flatBucket = result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      debuffOnLevelGap: -0.1,
-    });
-    const nestedBucket = result.recordMonsterDeathFromContext('player1', MONSTER_HRID, {
-      combatStats: {
-        debuffOnLevelGap: -0.25,
-      },
-    });
-
-    expect(flatBucket).toMatchObject({
-      killCount: 1,
-      debuffOnLevelGap: -0.1,
-    });
-    expect(nestedBucket).toMatchObject({
-      killCount: 1,
-      debuffOnLevelGap: -0.25,
-    });
-  });
-
-  it('records unit deaths explicitly while preserving the legacy overload', () => {
-    const result = new SimResult({ hrid: '/zones/test', difficultyTier: 0 }, null, 1);
-    const player = {
-      hrid: 'player1',
-      debuffOnLevelGap: -0.1,
-      combatDetails: {
-        combatStats: {
-          combatDropRate: 0.25,
-          combatRareFind: 0.5,
-          combatDropQuantity: 2,
-        },
-      },
-    };
-    const monster = { hrid: MONSTER_HRID };
-
-    const explicitBucket = result.recordMonsterDeathFromUnit(player, monster, 2);
-    const compatibilityBucket = result.recordMonsterDeath(player, monster, 1);
-
-    expect(compatibilityBucket).toBe(explicitBucket);
-    expect(explicitBucket).toMatchObject({
-      killCount: 3,
-      dropRateMultiplier: 1.25,
-      rareFindMultiplier: 1.5,
-      combatDropQuantity: 2,
-      debuffOnLevelGap: -0.1,
-    });
-  });
-
   it('uses each drop bucket for no-RNG estimates instead of the final snapshot', () => {
     const simResult = {
       isDungeon: false,
@@ -289,26 +180,30 @@ describe('timed-scroll result contexts', () => {
   });
 
   it('uses the recorded per-monster difficultyTier for tier-gated drops instead of the zone snapshot', () => {
-    const result = new SimResult({ hrid: '/zones/test', difficultyTier: 0 }, null, 1);
-    const player = { hrid: 'player1' };
     // 苍蝇（/monsters/fly）蓝钥匙碎片：-0.00003 + 0.00006×档 > 0 自有效档 1 起。
     // 区域档快照为 0 时按旧口径判定永不可掉；怪物有效难度 2（引擎口径
     // spawn 偏移 + 区域档）时开门，掉落/h 估算必须采用桶内记录的难度。
-    const monster = { hrid: '/monsters/fly', difficultyTier: 2 };
-
-    result.recordMonsterDeathFromUnit(player, monster, 1);
-
-    expect(result.dropContextBuckets.player1['/monsters/fly']).toEqual([
-      {
-        killCount: 1,
-        difficultyTier: 2,
-        dropRateMultiplier: 1,
-        rareFindMultiplier: 1,
-        combatDropQuantity: 0,
-        debuffOnLevelGap: 0,
+    const simResult = {
+      isDungeon: false,
+      numberOfPlayers: 1,
+      difficultyTier: 0,
+      dropContextBuckets: {
+        player1: {
+          '/monsters/fly': [
+            {
+              killCount: 1,
+              difficultyTier: 2,
+              dropRateMultiplier: 1,
+              rareFindMultiplier: 1,
+              combatDropQuantity: 0,
+              debuffOnLevelGap: 0,
+            },
+          ],
+        },
       },
-    ]);
-    const dropCountMap = buildNoRngDropCountMap(result, 'player1');
+    };
+
+    const dropCountMap = buildNoRngDropCountMap(simResult, 'player1');
     expect(dropCountMap.get('/items/blue_key_fragment')).toBeGreaterThan(0);
   });
 

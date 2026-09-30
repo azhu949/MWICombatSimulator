@@ -7,11 +7,7 @@ import {
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
 import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
 import { createFoodOptimizerEvaluator, evaluateFoodOptimizerCandidate } from '../foodOptimizerSimulation.js';
-import {
-  createFoodOptimizerFixture,
-  physicalFoodOptimizerResult,
-  referenceFoodOptimizerRound,
-} from './support/foodOptimizerTestSupport.js';
+import { createFoodOptimizerFixture, physicalFoodOptimizerResult } from './support/foodOptimizerTestSupport.js';
 
 const TIME_LIMIT = 600e9;
 const food = (hrid = '/items/gummy', threshold = 50, restore = 40) => ({
@@ -188,13 +184,9 @@ describe('food optimizer shared round execution', () => {
     const before = structuredClone(shared);
     const receiver = createFoodOptimizerEvaluator(structuredClone(request), { sharedRounds: true, items });
     const result = await receiver(target, Infinity, undefined, shared);
-    const reference = await evaluateFoodOptimizerCandidate(
-      request,
-      target,
-      Infinity,
-      undefined,
-      referenceFoodOptimizerRound,
-    );
+    // 切片 21B：JS 引擎已删除——参照改为一个全新 evaluator（独立缓存）真跑同一候选，
+    // wasm 确定性下复用轮次与重算轮次的物理结果必须逐字段一致。
+    const reference = await evaluateFoodOptimizerCandidate(request, target, Infinity);
 
     expect(result).toMatchObject({ feasible: true, simulatedRounds: 0, reusedRounds: 2 });
     expect(physicalFoodOptimizerResult(result)).toEqual(physicalFoodOptimizerResult(reference));
@@ -377,7 +369,7 @@ describe('food optimizer shared round execution', () => {
     const context = { postMessage: vi.fn() };
     vi.stubGlobal('self', context);
     try {
-      await import('../../foodOptimizerWorker.js');
+      await import('../../worker.js');
       const send = async (data) => {
         context.postMessage.mockClear();
         await context.onmessage({ data });

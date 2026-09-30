@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import achievementDetailMap from '../../combatsimulator/data/achievementDetailMap.json';
 import achievementTierDetailMap from '../../combatsimulator/data/achievementTierDetailMap.json';
-import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import Player from '../../combatsimulator/player.js';
 import Zone from '../../combatsimulator/zone.js';
 import { importSoloConfig } from '../importExportMapper.js';
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from '../playerMapper.js';
 import modernPlayerJunglePlanetFixture from './fixtures/modernPlayerJunglePlanetFixture.json';
 
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const ONE_HOUR = 60 * 60 * 1e9;
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
 const FIXTURE_DIFFICULTY_TIER = 1;
@@ -31,25 +33,6 @@ function createSimulationSettings() {
     comDrop: 1,
     enableHpMpVisualization: false,
   };
-}
-
-function createSeededRandom(seed = 1) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
-}
-
-async function withSeededRandom(seed, callback) {
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(seed);
-
-  try {
-    return await callback();
-  } finally {
-    Math.random = originalRandom;
-  }
 }
 
 function createCompletedAchievementMapForFirstTier() {
@@ -100,14 +83,33 @@ function capturePermanentBuffCombatStats(player) {
 }
 
 async function runDeterministicSimulation(player, seed) {
+  // 切片 21B：JS 引擎已删除——roundtrip 一致性改在 wasm 引擎上对账（同一种子
+  // 下两次运行的 simResult 必须逐字段一致，且 DTO roundtrip 不改变结果）。
+  const { existsSync, readFileSync } = await import('node:fs');
+  const { setWasmProductionEngineForTests, tryRunWasmProductionRound } = await import('../wasmProductionSimulation.js');
+  const { loadWasmEngine } = await import('../wasmEngineLoader.js');
+  const gluePath = resolve(root, 'engine', 'pkg', 'mwi_combat_engine.js');
+  const wasmPath = resolve(root, 'engine', 'pkg', 'mwi_combat_engine_bg.wasm');
+  if (!existsSync(gluePath)) throw new Error('engine/pkg not built — run npm run build:wasm');
+  const { pathToFileURL } = await import('node:url');
+  setWasmProductionEngineForTests(
+    await loadWasmEngine({ glueUrl: pathToFileURL(gluePath).href, moduleOrPath: readFileSync(wasmPath) }),
+  );
+
   const zone = new Zone(FIXTURE_ZONE_HRID, FIXTURE_DIFFICULTY_TIER);
   player.zoneBuffs = zone?.buffs || [];
   player.extraBuffs = [];
 
-  return withSeededRandom(seed, async () => {
-    const simulator = new CombatSimulator([player], zone, null, { enableHpMpVisualization: false });
-    return simulator.simulate(FIXTURE_SIMULATION_HOURS * ONE_HOUR);
+  const output = await tryRunWasmProductionRound({
+    useWasmEngine: true,
+    players: [player],
+    zone,
+    seed,
+    simulationTimeLimit: FIXTURE_SIMULATION_HOURS * ONE_HOUR,
+    options: { minimalResult: false, logCombatEvents: false, enableHpMpVisualization: false },
   });
+  if (!output) throw new Error('wasm round failed');
+  return output.simResult;
 }
 
 function totalExperience(simResult, playerHrid = 'player1') {

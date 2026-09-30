@@ -1,6 +1,6 @@
 import Ability from '../combatsimulator/ability.js';
 import CombatUtilities from '../combatsimulator/combatUtilities.js';
-import CombatSimulator from '../combatsimulator/combatSimulator.js';
+import CombatPreviewContext from '../combatsimulator/combatPreviewContext.js';
 import Consumable from '../combatsimulator/consumable.js';
 import Equipment from '../combatsimulator/equipment.js';
 import GuildBuff from '../combatsimulator/guildBuff.js';
@@ -1048,7 +1048,9 @@ function createCombatPreviewSimulationState(
   });
   const simulationPlayers = [player, ...teammatePlayers];
 
-  const simulator = new CombatSimulator(simulationPlayers, null, null, { enableHpMpVisualization: false });
+  // 切片 21A：轻量预览上下文（共享 CombatActionsCore 动作语义，无事件循环/记账），
+  // 替代旧 `new CombatSimulator(...)`（从不 simulate，只借单步动作方法）。
+  const simulator = new CombatPreviewContext(simulationPlayers);
   simulator.enemies = resolvedPreviewEnvironment.enemies;
   simulator.simulationTime = 0;
   simulator.enemies.forEach((enemy) => {
@@ -1463,7 +1465,8 @@ function buildDrinkPreviewCard(playerConfig, slotIndex, previewExtra = null, pre
     return card;
   }
 
-  const simulator = new CombatSimulator([previewPlayer], null, null, { enableHpMpVisualization: false });
+  // 切片 21A：轻量预览上下文（同上）。饮品卡预览只借 tryUseConsumable 与冷却事件时间戳。
+  const simulator = new CombatPreviewContext([previewPlayer]);
   simulator.simulationTime = 0;
 
   const consumed = simulator.tryUseConsumable(previewPlayer, previewDrink);
@@ -2406,7 +2409,8 @@ function buildPartyAuraPreviewResult(
   });
   const teammateSourceKeys = new Set(teamPlayers.filter((player) => player !== hero).map((player) => player.hrid));
 
-  const simulator = new CombatSimulator(teamPlayers, null, null, { enableHpMpVisualization: false });
+  // 切片 21A：轻量预览上下文（同上）。队伍光环回放共享同一动作语义。
+  const simulator = new CombatPreviewContext(teamPlayers);
   simulator.enemies = resolvedPreviewEnvironment.enemies;
   simulator.simulationTime = 0;
 

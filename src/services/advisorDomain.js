@@ -316,8 +316,6 @@ export function createAdvisorSimulationPayload(candidate, players, simulationTim
     labyrinth: null,
     simulationTimeLimit,
     extra,
-    // 切片 18：默认点亮 wasm 引擎（worker.js 读该标志，不可用时静默回退 JS）。
-    useWasmEngine: true,
   };
 
   const simulationContext =

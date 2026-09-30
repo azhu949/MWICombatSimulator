@@ -312,8 +312,6 @@ async function runAdvisorQuickPhase(context) {
         })),
         simulationTimeLimit: context.simulationTimeLimit,
         extra: context.extra,
-        // 切片 18：批量扫描默认走 wasm（multiWorker 透传给每个子 worker）。
-        useWasmEngine: true,
       }),
       'quick scan',
       quickRoundIndex,

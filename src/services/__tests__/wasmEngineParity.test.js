@@ -1,13 +1,13 @@
-// 切片 2 parity：Rust 事件队列 / mulberry32 与 JS 实现的**精确对账**（无统计容差）。
+// 切片 2 parity → 切片 21B（定案 D2）：mulberry32 / hashSeed / deriveSeedSet 仍是
+// 双实现精确对账（JS `seededRandom.js` 保留——worker 种子派生在生产使用）；
+// 事件队列操作脚本（含 tie 顺序、身份移除、按类型/单位清除）改为与 golden 快照
+// 对账（JS EventQueue 已随 A 层删除，堆序语义由 Rust 单测与 golden 承载）。
+//
+// 注意：该测试同时锁定 wasm 引擎的队列行为。升级 wasm-bindgen / Rust 编译器导致
+// 事件顺序变化时本测试会失败——这是刻意的：引擎对同时间事件顺序敏感，升级必须
+// 伴随回归评估（node scripts/generate-wasm-golden.mjs 再生成 + review）。
 //
 // 前置：npm run build:wasm 产出 engine/pkg；未构建时整组跳过（CI 无 Rust 环境也保持绿色）。
-// 覆盖：
-// - mulberry32 随机流逐位一致（JS createSeededRandom ↔ Rust Mulberry32）；
-// - hashSeed / deriveSeedSet 数值一致；
-// - 事件队列在相同操作脚本下（含 tie 顺序、身份移除、按类型/单位清除）轨迹逐项一致。
-//
-// 注意：该测试同时锁定 heap-js 的行为。若未来升级 heap-js 导致事件顺序变化，
-// 本测试会失败——这是刻意的：引擎对同时间事件顺序敏感，升级必须伴随回归评估。
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -15,12 +15,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { createSeededRandom, deriveSeedSet, hashSeed } from '../seededRandom.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
-import {
-  buildFuzzEventQueueOps,
-  buildTargetedEventQueueOps,
-  driveJsEventQueue,
-  findTraceDivergence,
-} from './support/wasmEngineParitySupport.js';
+import { buildFuzzEventQueueOps, buildTargetedEventQueueOps } from './support/wasmEngineParitySupport.js';
+import { expectMatchesGolden } from './support/goldenSnapshot.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const pkgDir = resolve(root, 'engine', 'pkg');
@@ -73,21 +69,19 @@ describe.runIf(wasmPackageBuilt)('wasm engine slice-2 parity (JS vs Rust)', () =
     }
   });
 
-  it('replays the targeted event-queue script identically', async () => {
+  it('replays the targeted event-queue script against the golden trace', async () => {
     const engine = await getEngine();
     const ops = buildTargetedEventQueueOps();
-    const jsTrace = driveJsEventQueue(ops);
     const rustTrace = JSON.parse(engine.run_event_queue_operations(JSON.stringify(ops)));
-    expect(findTraceDivergence(jsTrace, rustTrace), 'targeted script traces must match exactly').toBeNull();
+    expectMatchesGolden('eventqueue-targeted', rustTrace);
   });
 
-  it('replays fuzz event-queue scripts identically (2000 ops x 2 seeds)', async () => {
+  it('replays fuzz event-queue scripts against the golden traces (2000 ops x 2 seeds)', async () => {
     const engine = await getEngine();
     for (const seed of [1, 7]) {
       const ops = buildFuzzEventQueueOps(seed, 2000);
-      const jsTrace = driveJsEventQueue(ops);
       const rustTrace = JSON.parse(engine.run_event_queue_operations(JSON.stringify(ops)));
-      expect(findTraceDivergence(jsTrace, rustTrace), `fuzz seed ${seed} traces must match exactly`).toBeNull();
+      expectMatchesGolden(`eventqueue-fuzz-${seed}`, rustTrace);
     }
   });
 });
