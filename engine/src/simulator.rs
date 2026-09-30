@@ -58,6 +58,9 @@ const FURY_EXPIRE_TIME: f64 = 15_000_000_000.0;
 const WEAKEN_EXPIRE_TIME: f64 = 15_000_000_000.0;
 const MAX_FURY_STACK: f64 = 5.0;
 const MAX_ENRAGE_STACK: f64 = 10.0;
+/// 切片 26：迷宫槽位池的 tier 标签（键 `"<hrid>|lab"`）——迷宫怪恒 tier 0，
+/// 与普通区域的 `"<hrid>|0"` 键隔离，避免同 hrid 跨模式误复用。
+const POOL_LABYRINTH_TIER_LABEL: &str = "lab";
 
 /// JS `Math.min`（NaN 传播）。
 fn js_math_min(first: f64, second: f64) -> f64 {
@@ -535,11 +538,19 @@ pub struct UnitSpec {
 pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     let _prof = crate::prof::start("unit.build_from_spec");
     let mut unit = CombatUnit { is_player: spec.is_player, ..Default::default() };
+    apply_unit_spec(&mut unit, spec)?;
+    Ok(unit)
+}
+
+/// `build_unit_from_spec` 的公共主体：把 spec 写入一个处于 **default 形态** 的单位
+/// （`is_player` 由调用方预设）。切片 26 的 `restore_for_respawn` 走同一路径——
+/// 「复用槽位」与「新建单位」因此逐字段一致（等价性由双跑测试锁定）。
+fn apply_unit_spec(unit: &mut CombatUnit, spec: &UnitSpec) -> Result<(), UnitError> {
     unit.hrid = intern_hrid(&spec.hrid);
 
     let _prof_spec_apply = crate::prof::start("unit.spec_apply");
     if let Some(levels) = &spec.levels {
-        levels.apply(&mut unit);
+        levels.apply(unit);
     }
 
     for (name, value) in &spec.combat_stats {
@@ -609,7 +620,29 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
 
     drop(_prof_spec_loadout);
 
-    Ok(unit)
+    Ok(())
+}
+
+impl CombatUnit {
+    /// 切片 26：重生槽位复用——把本槽位**原地**重建为 spec 对应的新单位。
+    ///
+    /// 步骤与 `build_unit_from_spec` 完全同序：先恢复 default 形态
+    /// （`reset_to_default_in_place`，保留 Vec 容量），再走 `apply_unit_spec`，
+    /// 最后写入实例难度档与重生池键（等价 `instantiate_templates` 对新建单位的收尾）。
+    pub fn restore_for_respawn(
+        &mut self,
+        spec: &UnitSpec,
+        respawn_pool_key: String,
+        difficulty_tier: f64,
+    ) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("unit.restore_for_respawn");
+        self.reset_to_default_in_place();
+        self.is_player = spec.is_player;
+        apply_unit_spec(self, spec)?;
+        self.difficulty_tier = Some(difficulty_tier);
+        self.respawn_pool_key = Some(respawn_pool_key);
+        Ok(())
+    }
 }
 
 /// 怪物模板（切片 5 生产模式）：按 `(hrid, difficultyTier)` 预生成，遭遇战开始时按需实例化。
@@ -1038,10 +1071,13 @@ pub struct CombatSimulator {
     next_scroll_renewal_time: f64,
     player_count: usize,
     // 切片 14 full-result 经验簿记（JS pendingExperienceGains / enemyDeathSnapshots /
-    // experienceAwardedEnemies 的按 UnitId 版本；WeakSet/WeakMap 语义 = id 存活期内去重）。
+    // experienceAwardedEnemies）；切片 26 起改为**按槽位下标**索引（下标 = UnitId），
+    // 槽位释放入池时清空对应项——复用后新兵不会误读旧快照/旧颁奖状态
+    //（JS 侧 WeakMap/WeakSet 的键是每次实例化的全新对象身份，槽位复用必须显式清账）。
+    // `pending_experience_gains` 键恒为玩家（玩家槽位不回收），保持线性查找。
     pending_experience_gains: Vec<(UnitId, Vec<(String, f64)>)>,
-    enemy_death_snapshots: Vec<(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)>,
-    experience_awarded: Vec<UnitId>,
+    enemy_death_snapshots: Vec<Option<(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)>>,
+    experience_awarded: Vec<bool>,
     is_guild_trial: bool,
     /// 切片 12：提前停止谓词参数（`None` = 无提前停止）。
     early_stop: Option<EarlyStopSpec>,
@@ -1055,6 +1091,19 @@ pub struct CombatSimulator {
     cost_bound_spec: Option<CostBoundSpec>,
     cost_bound_state: Option<CostBoundState>,
     cost_bound_unit: Option<UnitId>,
+    // ------------------------------------------------------------------
+    // 切片 26：重生路径死槽复用
+    // ------------------------------------------------------------------
+    /// 池化槽位：`"<hrid>|<tier 键>"`（迷宫为 `"<hrid>|lab"`）→ 已死敌人的竞技场下标栈。
+    /// 遭遇战结束时按死亡单位的 `respawn_pool_key` 收池；重生时同键命中则**原地重写**
+    /// 该槽位（`CombatUnit::restore_for_respawn`）。玩家与探针合成单位不入池。
+    pool_by_key: OrderedMap<String, Vec<UnitId>>,
+    /// 复用命中 / 新建计数（测试断言池生效用；不进任何输出）。
+    pool_reuse_hits: u64,
+    pool_build_misses: u64,
+    /// 关闭后完全退化为旧行为（不进池 / 不复用）——等价性双跑测试与问题定位用；
+    /// 生产路径构造后恒为 `true`（无外部写入口）。
+    respawn_reuse_enabled: bool,
 }
 
 /// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
@@ -1063,6 +1112,16 @@ fn first_alive_in(arena: &UnitArena, ids: Option<&[UnitId]>) -> Option<UnitId> {
     ids.iter()
         .copied()
         .find(|id| arena.get(*id).combat_details.current_hitpoints > 0.0)
+}
+
+/// 切片 26：`UnitArena::release`（swap_remove）后的槽位映射——末位单位 `moved` 被换入
+/// 被移除的下标 `removed`，**其余下标一律不变**（swap 语义，不做 `-1` 平移）。
+fn remap_slot_after_release(id: UnitId, removed: UnitId, moved: UnitId) -> UnitId {
+    if id == moved {
+        removed
+    } else {
+        id
+    }
 }
 
 /// 切片 19：JS `wipeLogs` 环形缓冲（`new Array(200)` + index/count）。
@@ -1184,6 +1243,10 @@ impl CombatSimulator {
             },
             cost_bound_state: None,
             cost_bound_unit: None,
+            pool_by_key: OrderedMap::new(),
+            pool_reuse_hits: 0,
+            pool_build_misses: 0,
+            respawn_reuse_enabled: true,
         }
     }
 
@@ -1271,6 +1334,13 @@ impl CombatSimulator {
         self.queue.clear_events_for_unit(id as u64);
     }
 
+    /// 切片 26：尽力清掉引用该槽位的队列事件（`clear_matching` 单趟 retain，**不会 panic**）。
+    /// 返回是否有事件被清除——槽位入池/移除前的防御性清场（死亡点已清，此处兜底）。
+    fn try_clear_events_for_unit(&mut self, id: UnitId) -> bool {
+        self.queue
+            .clear_matching(|event| event.source() == Some(id as u64) || event.target() == Some(id as u64))
+    }
+
     fn record_unit_death(&mut self, unit: UnitId) {
         let hrid = self.unit_hrid(unit);
         self.tally.add_death(hrid);
@@ -1293,9 +1363,7 @@ impl CombatSimulator {
     /// 按 enrage 比率算总经验、按存活玩家平分并逐个 `calculateExperienceGain`；
     /// 同一敌人只快照一次（JS WeakMap 语义 → 按 UnitId 去重）。
     fn capture_enemy_death_snapshot(&mut self, enemy: UnitId, death_time: f64) {
-        if self.enemy_death_snapshots.iter().any(|(id, _, _)| *id == enemy)
-            || self.experience_awarded.contains(&enemy)
-        {
+        if self.enemy_death_snapshot_of(enemy).is_some() || self.is_experience_awarded(enemy) {
             return;
         }
         let experience_rate = self.calculate_enemy_experience_rate_at(enemy, death_time);
@@ -1309,7 +1377,7 @@ impl CombatSimulator {
                 }
             }
         }
-        self.enemy_death_snapshots.push((enemy, death_time, gains_by_player));
+        self.set_enemy_death_snapshot(enemy, (enemy, death_time, gains_by_player));
     }
 
     /// JS `SimResult.calculateExperienceGain(unit, experience)` 的参数投影：
@@ -1393,21 +1461,57 @@ impl CombatSimulator {
         self.arena.get(monster).difficulty_tier
     }
 
+    /// 切片 26：槽位记账访问器（下标 = UnitId；越界 = 无条目）。槽位复用前必须
+    /// 由 `clear_slot_bookkeeping` 清空，否则新兵会误命中原槽位的旧快照/旧颁奖状态。
+    fn enemy_death_snapshot_of(&self, enemy: UnitId) -> Option<&(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)> {
+        self.enemy_death_snapshots.get(enemy).and_then(|entry| entry.as_ref())
+    }
+
+    fn is_experience_awarded(&self, enemy: UnitId) -> bool {
+        self.experience_awarded.get(enemy).copied().unwrap_or(false)
+    }
+
+    fn set_enemy_death_snapshot(&mut self, enemy: UnitId, snapshot: (UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)) {
+        if self.enemy_death_snapshots.len() <= enemy {
+            self.enemy_death_snapshots.resize_with(enemy + 1, || None);
+        }
+        self.enemy_death_snapshots[enemy] = Some(snapshot);
+    }
+
+    fn set_experience_awarded(&mut self, enemy: UnitId) {
+        if self.experience_awarded.len() <= enemy {
+            self.experience_awarded.resize(enemy + 1, false);
+        }
+        self.experience_awarded[enemy] = true;
+    }
+
+    /// 槽位入池前的记账清空：清掉该下标的死亡快照与颁奖标记。
+    fn clear_slot_bookkeeping(&mut self, slot: UnitId) {
+        if let Some(entry) = self.enemy_death_snapshots.get_mut(slot) {
+            *entry = None;
+        }
+        if let Some(entry) = self.experience_awarded.get_mut(slot) {
+            *entry = false;
+        }
+    }
+
     /// JS `finalizeEnemyExperience(enemy)`（checkEncounterEnd 兜底）：
     /// 无快照则现快照（用当前时间），再把快照收益并入 pending。
     fn finalize_enemy_experience(&mut self, enemy: UnitId) {
-        if self.experience_awarded.contains(&enemy) {
+        if self.is_experience_awarded(enemy) {
             return;
         }
-        if !self.enemy_death_snapshots.iter().any(|(id, _, _)| *id == enemy) {
+        if self.enemy_death_snapshot_of(enemy).is_none() {
             self.capture_enemy_death_snapshot(enemy, self.simulation_time);
         }
-        let Some(index) = self.enemy_death_snapshots.iter().position(|(id, _, _)| *id == enemy) else {
+        let Some(gains_by_player) = self
+            .enemy_death_snapshot_of(enemy)
+            .map(|(_, _, gains)| gains.clone())
+        else {
             return;
         };
-        let (_, _, gains_by_player) = self.enemy_death_snapshots[index].clone();
         self.append_pending_experience_gains(gains_by_player);
-        self.experience_awarded.push(enemy);
+        self.set_experience_awarded(enemy);
     }
 
     /// JS `appendPendingExperienceGains(gains)`：按玩家把 `[(技能, 值)]` 累加进 pending 表。
@@ -2365,7 +2469,7 @@ impl CombatSimulator {
                     self.temp_dungeon_count = current_dungeon_count;
                     self.restore_players_to_full();
                 }
-                let enemies = self.instantiate_templates(&entries)?;
+                let enemies = self.instantiate_templates(&entries, None)?;
                 self.enemies = Some(enemies);
             } else {
                 // 生产路径：真实 Zone 生成遭遇战（每次迭代恰好一次抽样，与 JS 逐位一致）。
@@ -2373,7 +2477,7 @@ impl CombatSimulator {
                     let zone = self.zone.as_mut().expect("zone checked above");
                     zone.get_random_encounter(&mut self.rng)?
                 };
-                let enemies = self.instantiate_templates(&entries)?;
+                let enemies = self.instantiate_templates(&entries, None)?;
                 self.enemies = Some(enemies);
             }
         } else if self.zone_present && !self.zone_is_dungeon {
@@ -2389,7 +2493,7 @@ impl CombatSimulator {
                 .labyrinth_name
                 .clone()
                 .expect("labyrinth mode requires labyrinthName (monster hrid)");
-            let enemies = self.instantiate_templates(&[(hrid, 0.0)])?;
+            let enemies = self.instantiate_templates(&[(hrid, 0.0)], Some(POOL_LABYRINTH_TIER_LABEL))?;
             self.enemies = Some(enemies);
             self.labyrinth_encounter_start_time = self.simulation_time;
         }
@@ -2509,11 +2613,16 @@ impl CombatSimulator {
         Ok(ids)
     }
 
-    /// 生产路径：按 `(hrid, difficultyTier)` 查模板并实例化新单位（等价 JS 每次 `new Monster(...)`）。
+    /// 生产路径：按 `(hrid, difficultyTier)` 查模板并实例化单位（等价 JS 每次 `new Monster(...)`）。
     ///
-    /// 竞技场只增不减：旧敌人保留在 `units` 里（JS 侧由 GC 回收），
-    /// 长时间模拟会累积单位快照，属已知取舍。
-    fn instantiate_templates(&mut self, entries: &[(String, f64)]) -> Result<Vec<UnitId>, UnitError> {
+    /// 切片 26：优先复用重生池中**同键**的死槽位（原地重建，见 `restore_for_respawn`）；
+    /// 池中无同键槽位（或复用被禁用、形态不符被丢弃）时才新建。
+    /// `tier_label_override`：迷宫传 `Some(POOL_LABYRINTH_TIER_LABEL)`（键与普通区域隔离）。
+    fn instantiate_templates(
+        &mut self,
+        entries: &[(String, f64)],
+        tier_label_override: Option<&str>,
+    ) -> Result<Vec<UnitId>, UnitError> {
         let _prof = crate::prof::start("encounter.instantiate");
         let mut ids = Vec::with_capacity(entries.len());
         for (hrid, tier) in entries {
@@ -2524,14 +2633,162 @@ impl CombatSimulator {
                 .ok_or_else(|| {
                     UnitError::error(format!("missing encounter template for {hrid} (difficultyTier {tier})"))
                 })?;
-            // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
-            // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。
-            let mut unit = build_unit_from_spec(&self.encounter_templates[index].spec)?;
-            // 掉落上下文桶按怪物实例的难度档记账（JS `new Monster(hrid, finalTier)`）。
-            unit.difficulty_tier = Some(*tier);
-            ids.push(self.arena.push(unit));
+            let pool_key = match tier_label_override {
+                Some(label) => format!("{hrid}|{label}"),
+                None => format!("{hrid}|{}", crate::zone::js_number_key(*tier)),
+            };
+            ids.push(self.instantiate_one(index, *tier, pool_key)?);
         }
         Ok(ids)
+    }
+
+    /// 单个模板实例化：池中同键死槽命中且形态相符 → 原地恢复复用；否则新建（并计数）。
+    fn instantiate_one(&mut self, template_index: usize, tier: f64, pool_key: String) -> Result<UnitId, UnitError> {
+        if let Some(slot) = self.take_pooled_slot(&pool_key) {
+            let shape_matches =
+                self.arena.get(slot).is_player == self.encounter_templates[template_index].spec.is_player;
+            if shape_matches {
+                // 原地恢复：字段全量重写，结果与 `build_unit_from_spec` 逐字段一致
+                //（等价性由 `respawn_reuse_matches_non_reuse_round_trip` 锁定）。
+                self.arena
+                    .get_mut(slot)
+                    .restore_for_respawn(&self.encounter_templates[template_index].spec, pool_key, tier)?;
+                self.pool_reuse_hits += 1;
+                return Ok(slot);
+            }
+            // 形态不符（防御：同键模板与历史槽位通常同类，正常不可达）——丢弃槽位后新建。
+            self.remove_slot_or_degrade(slot);
+        }
+        self.pool_build_misses += 1;
+        // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
+        // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。
+        let mut unit = build_unit_from_spec(&self.encounter_templates[template_index].spec)?;
+        // 掉落上下文桶按怪物实例的难度档记账（JS `new Monster(hrid, finalTier)`）。
+        unit.difficulty_tier = Some(tier);
+        unit.respawn_pool_key = Some(pool_key);
+        Ok(self.arena.push(unit))
+    }
+
+    /// 从池中弹出一个同键槽位（桶空后删键，保持池表紧凑；复用被禁用时恒 `None`）。
+    fn take_pooled_slot(&mut self, pool_key: &str) -> Option<UnitId> {
+        if !self.respawn_reuse_enabled {
+            return None;
+        }
+        let slot = self.pool_by_key.get_mut_str(pool_key)?.pop()?;
+        if self.pool_by_key.get_str(pool_key).is_some_and(|bucket| bucket.is_empty()) {
+            self.pool_by_key.delete_str(pool_key);
+        }
+        Some(slot)
+    }
+
+    /// 切片 26：遭遇战结束丢弃敌人列表时，把「已死 + 有池键」的槽位收回重生池。
+    ///
+    /// 前提链（复用安全性）：槽位在死亡点已被 `clear_events_for_unit` 清场、快照/颁奖
+    /// 记账已被 `finalize` / `commit` 消费；此处再清一次记账（槽位下标化后 O(1)）并
+    /// 防御性清残留事件。**活怪不入池**（团灭/迷宫超时被丢弃者事件未清，复用会误伤新单位）。
+    fn release_dead_enemy_slots(&mut self, enemies: &[UnitId]) {
+        if !self.respawn_reuse_enabled {
+            return;
+        }
+        for &enemy in enemies {
+            let dead_and_poolable = {
+                let unit = self.arena.get(enemy);
+                unit.combat_details.current_hitpoints <= 0.0 && unit.respawn_pool_key.is_some()
+            };
+            if !dead_and_poolable {
+                continue;
+            }
+            let pool_key = self.arena.get(enemy).respawn_pool_key.clone().expect("checked above");
+            self.try_clear_events_for_unit(enemy);
+            self.clear_slot_bookkeeping(enemy);
+            if self.pool_by_key.get_str(&pool_key).is_none() {
+                self.pool_by_key.set(pool_key.clone(), Vec::new());
+            }
+            self.pool_by_key.get_mut_str(&pool_key).expect("池键刚补齐").push(enemy);
+        }
+    }
+
+    /// 切片 26：从竞技场移除一个槽位（池中槽位形态不符时的丢弃路径）。
+    ///
+    /// 返回 `false` = **降级**（槽位保留在竞技场、不再入池）：调用方照常新建单位即可，
+    /// 输出不受影响——这是任一前置条件不满足时的保底，**不得 panic 中断模拟**。
+    /// 前置条件：槽位非玩家、不在当前敌人列表；被换入的末位单位非玩家，且没有任何
+    /// 队列事件引用它（`UnitId` 是纯下标，槽位收缩后旧下标会指向错误单位甚至越界）。
+    fn remove_slot_or_degrade(&mut self, slot: UnitId) -> bool {
+        let len = self.arena.len();
+        if slot >= len || self.arena.get(slot).is_player {
+            return false;
+        }
+        if self.enemies.as_ref().is_some_and(|enemies| enemies.contains(&slot)) {
+            return false;
+        }
+        let moved = len - 1;
+        if moved != slot {
+            if self.arena.get(moved).is_player {
+                return false;
+            }
+            let moved_is_referenced = self
+                .queue
+                .get_matching(|event| event.source() == Some(moved as u64) || event.target() == Some(moved as u64))
+                .is_some();
+            if moved_is_referenced {
+                return false;
+            }
+        }
+        // ① 清掉仍引用该槽位的队列事件（`clear_matching` 单趟 retain，不 panic）。
+        self.try_clear_events_for_unit(slot);
+        // ② 移除：末位单位换入该下标（竞技场收缩 1）。
+        self.arena.release(slot);
+        // ③ 重映射：所有持有 UnitId 的表把 `moved` → `slot`（其余下标不变）。
+        self.remap_unit_ids_after_release(slot, moved);
+        true
+    }
+
+    /// `remove_slot_or_degrade` 第 ③ 步：把竞技场内外的 `UnitId` 引用与按槽位索引的
+    /// 记账表同步到 swap_remove 之后的布局（**新增 UnitId 持有者时必须同步维护本函数**）。
+    fn remap_unit_ids_after_release(&mut self, removed: UnitId, moved: UnitId) {
+        if removed == moved {
+            return;
+        }
+        let map = |id: UnitId| remap_slot_after_release(id, removed, moved);
+        for id in self.players.iter_mut() {
+            *id = map(*id);
+        }
+        if let Some(enemies) = self.enemies.as_mut() {
+            for id in enemies.iter_mut() {
+                *id = map(*id);
+            }
+        }
+        self.observer_unit = self.observer_unit.map(map);
+        self.cost_bound_unit = self.cost_bound_unit.map(map);
+        for (player, _) in self.pending_experience_gains.iter_mut() {
+            *player = map(*player);
+        }
+        for entry in self.enemy_death_snapshots.iter_mut().filter_map(|entry| entry.as_mut()) {
+            entry.0 = map(entry.0);
+            for (player, _) in entry.2.iter_mut() {
+                *player = map(*player);
+            }
+        }
+        for state in self.scroll_runtime.iter_mut() {
+            state.player_id = map(state.player_id);
+        }
+        for bucket in self.pool_by_key.values_mut() {
+            for id in bucket.iter_mut() {
+                *id = map(*id);
+            }
+        }
+        // 按槽位索引的记账表随单位一起换位：被移除槽位的条目随槽位销毁（入池前已清空），
+        // 末位条目（属于被换入的单位）搬到 `removed`，原末位下标复位。
+        if self.enemy_death_snapshots.len() > moved {
+            let moved_entry = self.enemy_death_snapshots[moved].take();
+            self.enemy_death_snapshots[removed] = moved_entry;
+        }
+        if self.experience_awarded.len() > moved {
+            let moved_awarded = self.experience_awarded[moved];
+            self.experience_awarded[removed] = moved_awarded;
+            self.experience_awarded[moved] = false;
+        }
     }
 
     fn start_attacks(&mut self) -> Result<(), UnitError> {
@@ -2976,7 +3233,7 @@ impl CombatSimulator {
             if let Some(enemies) = self.enemies.clone() {
                 for enemy in enemies {
                     if self.arena.get(enemy).combat_details.current_hitpoints <= 0.0
-                        && !self.experience_awarded.contains(&enemy)
+                        && !self.is_experience_awarded(enemy)
                     {
                         self.finalize_enemy_experience(enemy);
                     }
@@ -3000,6 +3257,8 @@ impl CombatSimulator {
                 // 切片 14：只有在遭遇战中所有怪物都已死亡后才提交击杀快照
                 // （JS `commitPendingExperience()`；之后的副本团灭不得保留它们）。
                 self.commit_pending_experience();
+                // 切片 26：清场后把已死敌人的槽位收回重生池（本遭遇战不再引用它们）。
+                self.release_dead_enemy_slots(&enemies);
                 self.enemies = None;
                 // 切片 15：副本清波按波次名结算存活时间；整个副本打完
                 //（`encountersKilled > maxWaves`）时记一次副本耗时。
@@ -3069,6 +3328,10 @@ impl CombatSimulator {
                 self.queue.clear_events_of_type(Hrid::EVENT_SILENCE_EXPIRATION);
                 self.queue.clear_events_of_type(Hrid::EVENT_AWAIT_COOLDOWN);
                 self.pending_experience_gains.clear();
+                if let Some(enemies) = self.enemies.clone() {
+                    // 切片 26：只收回已死敌人的槽位（活怪事件未清、复用会误伤下波单位）。
+                    self.release_dead_enemy_slots(&enemies);
+                }
                 self.enemies = None;
                 let time = self.simulation_time + RESTART_INTERVAL;
                 let id = self.take_event_id();
@@ -4439,6 +4702,11 @@ impl CombatSimulator {
         };
         let mut unit = build_unit_from_spec(&spec)?;
         unit.difficulty_tier = self.arena.get(source).difficulty_tier;
+        // 切片 26：升变产物同样入池——键 = 升变 hrid + 继承的难度档（命中模板时原地重建，
+        // 与它来自哪条路径无关）；难度档缺失（探针合成来源）时保持 None、不入池。
+        unit.respawn_pool_key = unit
+            .difficulty_tier
+            .map(|tier| format!("{hrid}|{}", crate::zone::js_number_key(tier)));
         Ok(self.arena.push(unit))
     }
 
@@ -5706,5 +5974,176 @@ mod tests {
         assert_eq!(entry["openedCount"].as_f64(), Some(0.0));
         assert_eq!(entry["activeDurationNs"].as_f64(), Some(0.0));
         assert_eq!(entry["exhausted"], serde_json::json!(false));
+    }
+
+    // ------------------------------------------------------------------
+    // 切片 26：重生路径死槽位复用
+    // ------------------------------------------------------------------
+
+    /// `Vec::swap_remove` 重映射的纯函数契约：只有末位换入者被改写下标（无 -1 平移）。
+    #[test]
+    fn remap_slot_after_release_only_moves_the_swapped_unit() {
+        assert_eq!(remap_slot_after_release(7, 2, 7), 2, "末位换入者映射到被移除下标");
+        assert_eq!(remap_slot_after_release(5, 2, 7), 5, "中间下标一律不变");
+        assert_eq!(remap_slot_after_release(2, 2, 7), 2);
+        assert_eq!(remap_slot_after_release(7, 7, 7), 7, "移除末位时恒等");
+    }
+
+    /// 移除槽位：末位单位换入 + 全部 UnitId 持有者重映射 + 引用被移除槽位的事件被清、
+    /// 引用玩家的事件保留（清场路径不 panic）。
+    #[test]
+    fn remove_slot_or_degrade_remaps_swapped_unit_and_all_tables() {
+        let (options, player) = full_result_production_options();
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        // 槽位布局：0=玩家、1=无关单位、2=待移除、3=末位（被换入 2）。
+        simulator.arena.push(CombatUnit { hrid: intern_hrid("/monsters/other"), ..Default::default() });
+        let removed = simulator.arena.push(CombatUnit { hrid: intern_hrid("/monsters/removed"), ..Default::default() });
+        let moved = simulator.arena.push(CombatUnit { hrid: intern_hrid("/monsters/moved"), ..Default::default() });
+        simulator.enemies = Some(vec![moved]);
+        simulator.observer_unit = Some(moved);
+        simulator.cost_bound_unit = Some(moved);
+        simulator.pool_by_key.set("k".to_string(), vec![moved]);
+        simulator.pending_experience_gains.push((moved, Vec::new()));
+        simulator.enemy_death_snapshots = vec![None, None, None, Some((moved, 1.0, Vec::new()))];
+        simulator.experience_awarded = vec![false, false, false, true];
+        simulator.scroll_runtime.push(ScrollState {
+            player_id: moved,
+            player_hrid: intern_hrid("player1"),
+            item_hrid: intern_hrid("/items/test_scroll"),
+            configured_quantity: None,
+            remaining: None,
+            started: false,
+            active: false,
+            active_start_time: 0.0,
+            active_until: 0.0,
+            accumulated_duration_ns: 0.0,
+            token: 0.0,
+            buff_unique_hrid: Hrid::EMPTY,
+            definition_index: 0,
+        });
+        // 引用被移除槽位的事件（应被清掉）+ 引用玩家的事件（应保留）。
+        simulator.queue.add_event(SimEvent::AutoAttack { time: 1.0, id: 1, source: removed });
+        simulator.queue.add_event(SimEvent::AwaitCooldown { time: 2.0, id: 2, source: removed });
+        simulator.queue.add_event(SimEvent::AutoAttack { time: 3.0, id: 3, source: 0 });
+
+        assert!(simulator.remove_slot_or_degrade(removed), "前置条件满足时必须移除成功");
+        assert_eq!(simulator.arena.len(), 3);
+        assert_eq!(
+            simulator.arena.get(removed).hrid,
+            intern_hrid("/monsters/moved"),
+            "末位单位换入被移除下标"
+        );
+        assert_eq!(simulator.enemies, Some(vec![removed]), "敌人列表重映射 moved → removed");
+        assert_eq!(simulator.observer_unit, Some(removed));
+        assert_eq!(simulator.cost_bound_unit, Some(removed));
+        assert_eq!(simulator.pool_by_key.get_str("k"), Some(&vec![removed]), "池内下标同步重映射");
+        assert_eq!(simulator.pending_experience_gains, vec![(removed, Vec::new())]);
+        assert_eq!(
+            simulator.enemy_death_snapshots[removed].as_ref().map(|entry| entry.0),
+            Some(removed),
+            "死亡快照随槽位换位且内部下标重映射"
+        );
+        assert!(simulator.is_experience_awarded(removed), "颁奖标记随槽位换位");
+        assert!(!simulator.experience_awarded[3], "原末位下标复位");
+        assert_eq!(simulator.scroll_runtime[0].player_id, removed);
+        assert_eq!(simulator.queue.len(), 1, "只清掉引用被移除槽位的事件");
+        assert_eq!(
+            simulator.queue.peek_next_event().map(|event| event.id()),
+            Some(3),
+            "引用玩家的事件必须保留"
+        );
+    }
+
+    /// 降级路径：前置条件不满足时不得移除（返回 false、状态不变、事件不清）。
+    #[test]
+    fn remove_slot_or_degrade_keeps_state_when_preconditions_fail() {
+        let (options, player) = full_result_production_options();
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+
+        // ① 玩家槽位不可移除。
+        assert!(!simulator.remove_slot_or_degrade(0));
+        assert_eq!(simulator.arena.len(), 1);
+
+        // ② 末位是玩家（合成场景）时，移除更早的敌人槽位必须降级。
+        simulator.arena.push(CombatUnit { hrid: intern_hrid("/monsters/a"), ..Default::default() });
+        simulator.arena.push(CombatUnit { hrid: intern_hrid("/players/second"), is_player: true, ..Default::default() });
+        assert!(!simulator.remove_slot_or_degrade(1));
+        assert_eq!(simulator.arena.len(), 3, "降级时竞技场不变");
+
+        // ③ 槽位仍在敌人列表时降级。
+        let mut listed = CombatSimulator::new(full_result_production_options().0);
+        listed.add_player(&player).expect("player builds");
+        let enemy = listed.arena.push(CombatUnit { hrid: intern_hrid("/monsters/listed"), ..Default::default() });
+        listed.arena.push(CombatUnit { hrid: intern_hrid("/monsters/tail"), ..Default::default() });
+        listed.enemies = Some(vec![enemy]);
+        assert!(!listed.remove_slot_or_degrade(enemy));
+        assert_eq!(listed.arena.len(), 3);
+
+        // ④ 末位单位被队列事件引用时降级（槽位收缩会让事件下标悬空）。
+        let mut referenced = CombatSimulator::new(full_result_production_options().0);
+        referenced.add_player(&player).expect("player builds");
+        referenced.arena.push(CombatUnit { hrid: intern_hrid("/monsters/removed"), ..Default::default() });
+        let tail = referenced.arena.push(CombatUnit { hrid: intern_hrid("/monsters/referenced"), ..Default::default() });
+        referenced.queue.add_event(SimEvent::AutoAttack { time: 1.0, id: 1, source: tail });
+        assert!(!referenced.remove_slot_or_degrade(1));
+        assert_eq!(referenced.arena.len(), 3, "降级时竞技场不变");
+        assert_eq!(referenced.queue.len(), 1, "降级不得清掉事件");
+    }
+
+    /// 等价性双跑：同一重生密集型场景在「复用开 / 关」下的输出必须逐字段一致
+    /// （事件数、事件轨迹、调用流水、simResult 全量 JSON）。
+    #[test]
+    fn respawn_reuse_matches_non_reuse_round_trip() {
+        let (mut options, player) = full_result_production_options();
+        // 拉长到 60 秒 + 打开事件轨迹：足够多次遭遇战/重生，轨迹逐条对账。
+        options.simulation_time_limit = 60.0 * ONE_SECOND;
+        options.trace_limit = 400;
+
+        let mut reused = CombatSimulator::new(options.clone());
+        reused.add_player(&player).expect("player builds");
+        reused.simulate().expect("simulate succeeds");
+
+        let mut fresh = CombatSimulator::new(options.clone());
+        fresh.respawn_reuse_enabled = false;
+        fresh.add_player(&player).expect("player builds");
+        fresh.simulate().expect("simulate succeeds");
+
+        // 60 秒 / 3 秒重生间隔 ≈ 20 次遭遇战：除首怪外全部命中池中槽位（实测 hits=19、misses=1）。
+        assert!(reused.pool_reuse_hits >= 10, "场景必须真的发生重生槽位复用");
+        assert_eq!(fresh.pool_reuse_hits, 0, "对照组不得复用");
+        assert!(reused.pool_build_misses > 0, "首怪必须走新建路径");
+        assert_eq!(reused.event_count, fresh.event_count, "事件数必须一致");
+        assert_eq!(reused.trace.len(), fresh.trace.len());
+        assert_eq!(reused.trace, fresh.trace, "事件轨迹必须逐条一致");
+        assert_eq!(reused.tally.calls, fresh.tally.calls);
+        assert_eq!(
+            reused.tally.real.as_ref().map(|real| real.to_value()),
+            fresh.tally.real.as_ref().map(|real| real.to_value()),
+            "simResult 必须逐字段一致"
+        );
+    }
+
+    /// 池命中随轮次增加：第二轮起步即命中池中槽位，竞技场规模不随重生累积。
+    #[test]
+    fn respawn_pool_reuses_slots_across_rounds() {
+        let (mut options, player) = full_result_production_options();
+        options.simulation_time_limit = 60.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+
+        simulator.simulate().expect("round one");
+        let first_round_hits = simulator.pool_reuse_hits;
+        assert!(first_round_hits > 0, "首轮内就必须发生槽位复用");
+
+        simulator.simulate().expect("round two");
+        assert!(simulator.pool_reuse_hits > first_round_hits, "第二轮继续命中池中槽位");
+        assert!(
+            simulator.pool_build_misses <= 5,
+            "只有最初若干次刷怪走新建（m={}）",
+            simulator.pool_build_misses
+        );
+        assert!(simulator.arena.len() <= 6, "竞技场不得随重生累积（len={}）", simulator.arena.len());
     }
 }

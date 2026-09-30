@@ -71,6 +71,11 @@ impl<K: PartialEq, V> OrderedMap<K, V> {
     pub fn values(&self) -> impl Iterator<Item = &V> {
         self.entries.iter().map(|(_, value)| value)
     }
+
+    /// 可变值遍历（键序不变；切片 26 的池索引重映射用）。
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
+        self.entries.iter_mut().map(|(_, value)| value)
+    }
 }
 
 impl<V> OrderedMap<String, V> {
