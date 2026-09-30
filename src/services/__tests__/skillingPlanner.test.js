@@ -242,7 +242,7 @@ describe('skillingPlanner', () => {
         }),
         '/items/taxed',
       ).liquidationPrice,
-    ).toBe(95);
+    ).toBe(96);
   });
 
   it('resolves the per-item market fee rate by default (18% for Bag of 10 Cowbells)', () => {
@@ -255,7 +255,7 @@ describe('skillingPlanner', () => {
       liquidationSource: 'market_bid',
     });
     expect(resolveSkillingPrice(prices, '/items/plain')).toMatchObject({
-      liquidationPrice: 95,
+      liquidationPrice: 96,
       liquidationSource: 'market_bid',
     });
     // 显式的 feeRate 覆盖按物品的解析。
@@ -1145,7 +1145,7 @@ describe('skillingPlanner', () => {
       expect.objectContaining({ id: 'plain', enhancementLevel: 0, count: 1 }),
     ]);
     expect(result.segments[0].inputItems).toEqual([
-      expect.objectContaining({ itemHrid: materialHrid, enhancementLevel: 0, opportunityCost: 95 }),
+      expect.objectContaining({ itemHrid: materialHrid, enhancementLevel: 0, opportunityCost: 96 }),
     ]);
   });
 
@@ -3771,14 +3771,14 @@ describe('skillingPlanner', () => {
       },
     });
 
-    expect(candidate.inputItems[0].opportunityCost).toBe(950);
+    expect(candidate.inputItems[0].opportunityCost).toBe(960);
     expect(candidate.inputItems[0].enhancementLevel).toBe(12);
     expect(candidate.outputItems[0]).toMatchObject({
       itemHrid: '/items/refined_cape',
       enhancementLevel: 12,
-      liquidationValue: 1900,
+      liquidationValue: 1920,
     });
-    expect(candidate.netCost).toBe(-950);
+    expect(candidate.netCost).toBe(-960);
     expect(candidate.consumedEquipment).toEqual([
       expect.objectContaining({ id: 'cape', enhancementLevel: 12, count: 1 }),
     ]);

@@ -747,7 +747,7 @@ describe('simulatorStorage', () => {
     expect(persistedCache.basePriceTable['/items/large_treasure_chest'].bid).toBe(legacyChestValue);
 
     // 显式关（nonTradableValuation=false）→ 宝箱按新模型净额重算（'market' 默认档
-    // 关档合成值 100,560，牛铃 18% 修订 §8.3），不再等于缓存里的旧烘焙值 102,300。
+    // 关档合成值 100,908，牛铃 18% 修订 §8.3），不再等于缓存里的旧烘焙值 102,300。
     const storageOff = createStaleCacheStorage();
     storageOff.data.set(
       PRICE_SETTINGS_STORAGE_KEY,
@@ -759,9 +759,9 @@ describe('simulatorStorage', () => {
     expect(stateOff.taxMode).toBe('market');
     expect(stateOff.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 0 });
     expect(stateOff.basePriceTable['/items/large_treasure_chest']).toEqual({
-      ask: 100560,
-      bid: 100560,
-      vendor: 100560,
+      ask: 100908,
+      bid: 100908,
+      vendor: 100908,
     });
 
     // taxMode 线程化（牛铃 18% 修订 §3.5-7）：显式 'none' → 宝箱合成回到税前锚点

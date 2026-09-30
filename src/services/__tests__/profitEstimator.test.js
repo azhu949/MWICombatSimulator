@@ -391,7 +391,7 @@ describe('profitEstimator', () => {
       '/items/quick_aid': { ask: -1, bid: -1, vendor: 500 },
       '/items/firestorm': { ask: -1, bid: -1, vendor: 900 },
       // 市场来源掉落（bid=100）；宝箱行按面值 1000 参与收入（卖出免税：费率表 0，
-      // 牛铃 18% 修订 §1.2b——旧模型此处会被计 5% 税）。
+      // 牛铃 18% 修订 §1.2b——旧模型此处会被按默认税率计税）。
       '/items/fireball': { ask: 120, bid: 100, vendor: 1 },
       '/items/large_treasure_chest': { ask: -1, bid: 1000, vendor: 1 },
     };
@@ -409,8 +409,8 @@ describe('profitEstimator', () => {
     expect(unitPriceByTaxMode('market', '/items/abyssal_essence')).toBe(200);
     expect(unitPriceByTaxMode('none', '/items/abyssal_essence')).toBe(200);
 
-    // 市场来源掉落（fireball bid=100）：market 计税 95 / none 税前 100。
-    expect(unitPriceByTaxMode('market', '/items/fireball')).toBe(95);
+    // 市场来源掉落（fireball bid=100）：market 计税 96 / none 税前 100。
+    expect(unitPriceByTaxMode('market', '/items/fireball')).toBe(96);
     expect(unitPriceByTaxMode('none', '/items/fireball')).toBe(100);
 
     // coin（bid=100）：两档统一免税（决策③：费率表 0）——牛铃 18% 修订 §4。
@@ -432,7 +432,7 @@ describe('profitEstimator', () => {
     expect(rngUnitPrice('none', '/items/abyssal_essence')).toBe(200);
 
     // 成本侧（D2 定案锚点）：两档下 expenses 逐位不变——消耗品 coin 按 ask 全价
-    // 100 入账（若成本侧被错误计税会变成 95）。
+    // 100 入账（若成本侧被错误计税会变成 96）。
     for (const taxMode of ['market', 'none']) {
       const breakdown = breakdownByTaxMode(taxMode);
       expect(breakdown.expenses).toBe(300);
@@ -459,12 +459,12 @@ describe('profitEstimator', () => {
     };
 
     // 税后单价：宝箱税已逐内容内嵌合成（牛铃净额 86,920 × 1.35 = 117,342）、卖出
-    // 按费率表 0 免税不再二次征税（牛铃 18% 修订 §1.2/§8.2）——开档 217,902、
-    // 关档 100,560，增量精确 117,342（fixture 整数报价下无取整漂移）。
+    // 按费率表 0 免税不再二次征税（牛铃 18% 修订 §1.2/§8.2）——开档 218,250、
+    // 关档 100,908，增量精确 117,342（fixture 整数报价下无取整漂移）。
     const unitOn = resolveMarketSalePrice(priceTableOn, chestHrid, 'bid');
     const unitOff = resolveMarketSalePrice(priceTableOff, chestHrid, 'bid');
-    expect(unitOn).toBe(217902);
-    expect(unitOff).toBe(100560);
+    expect(unitOn).toBe(218250);
+    expect(unitOff).toBe(100908);
     expect(unitOn).toBeGreaterThan(unitOff);
     expect(unitOn - unitOff).toBeCloseTo(86920 * 1.35, 4);
 

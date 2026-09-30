@@ -130,7 +130,7 @@
 - 类型:object(8 个字段)
 - 字段:`maxQuantity`、`maxPrice`、`maxNotional`、`discoveryWidthStart`、`discoveryWidthStep`、`discoveryWidthDecay`、`recalibrationIntervalMinutes`、`bandMaxMovePerPassFactor`
 - 说明:市场引擎限制参数(交易数量/价格上限、价格发现带宽、重校准周期)。
-- **分析结论(2026-08-17):无用,不接入。** 全部字段在 `src/` 无引用。模拟器只通过 `https://www.milkywayidle.com/game_data/marketplace.json` 拉取价格快照并评估收益,不实现市场引擎本身;手续费按物品 HRID 硬编码(`getMarketSaleFeeRate`,如牛铃 18%、其他 5%),与市场限制参数无关。
+- **分析结论(2026-08-17):无用,不接入。** 全部字段在 `src/` 无引用。模拟器只通过 `https://www.milkywayidle.com/game_data/marketplace.json` 拉取价格快照并评估收益,不实现市场引擎本身;手续费按物品 HRID 硬编码(`getMarketSaleFeeRate`,如牛铃 18%、其他 4%(2026-09-28 游戏更新后;原 5%)),与市场限制参数无关。
 
 ### 7. `randomTaskTypeDetailMap`
 
@@ -575,7 +575,7 @@
 - **修订(2026-09-02)**:上一行「`guildCreditConversions` 未消费」已失效:本变更 `assetScoreService.js` 为神龛等不可交易资产的「获取成本」兜底直读原始表的 `guildCreditConversions`(全表遍历 L1087-1089、guild_token 专项 L1139-1140;生成索引已精简该字段);另 `isTradable` 新增其交易门控读取(L564)、`abilityBookInfoByAbilityHrid` 消费方新增 `assetScoreService`(技能书分项,L1365/L1429)。其余字段结论不变。
 - **修订(2026-09-14)**:`createItemIndex` 为 `equipmentBySlot.charm` 条目投影 `isCombatInert`(产出语义:引擎在战斗里读不到贡献,当前数据即生活技能护符);装备下拉据此过滤该标记条目,口径落在 store 选项出品层(`shared/gameDataIndex.js` 的 `resolveEquipmentComboboxItems`;`simulatorStore.options.equipmentBySlot` 默认已剔除,`getEquipmentComboboxOptions(slot, selectedItemHrid)` 补回当前已装备的被过滤项),UI 只做 label 映射——与饮品 `combatUsable`(store 层 `getConsumableOptions`)同层,全仓仅此一份过滤实现。**判定依据(2026-09-14 复核修正)= 引擎口径**:`equipmentDetail.combatStats` 为空(equipment.js `getCombatStat` 对缺失属性一律返回 0、`getFocusTraining` 直读 `combatStats.focusTraining`;当前 102 条护符中 60 条为空、42 条有战斗属性;缺失/非对象同支处理(fail-safe 投影为 true、不作为战斗向选项出品)并由哨兵告警);原先的 `levelRequirements[0].skillHrid` + `skillDetailMap.isSkilling` 代理变量降级为数据形态哨兵(背离即构建 `console.warn`,并由 `shared/__tests__/gameDataIndex.charmOptions.test.js` 硬断言、`combatsimulator/__tests__/charmCombatNeutrality.test.js` 锁定引擎前提)。**命名修正(2026-09-14 复核,G1)**:该字段曾名 `isSkillingCharm`——身份命名在「combatStats 缺数据 ⇒ fail-safe 投影为 true」分支上不成立(缺数据的未来战斗护符同样被投影为 true,有被下游误读为生活护符的风险),故改为产出语义命名 `isCombatInert`,哨兵文案同步声明「这不是生活护符判定」;兜底分支取值由 `scripts/__tests__/build-game-data-index.test.js` 以合成输入锁定(构建脚本导出纯函数 `resolveIsCombatInert`,并加入口守卫使测试 import 不触发写盘)。**引用语义(2026-09-14 复核,G2)**:`resolveEquipmentComboboxItems` 在「一条都没被 `isCombatInert` 剔除」时返回入参本身(= 共享索引 `equipmentOptionsBySlot[slot]` 同一数组,不再逐槽位复制),仅在发生剔除或补回「已装备的被过滤项」时才新建数组;调用方**只读、不得原地修改(排序/增删)**——该约束由纯函数层 `toBe` 与 store 层 `toRaw`(穿透 Pinia 代理,否则 toBe 假阴性)的 `toBe` 双双锚定,回退生产代码即红(2 例)。UI 实测不变:头部下拉 28 项、护符下拉 43 项(无 + 42 战斗护符)、搜 Lv100 得 7 项宗师系列。
 - 修复优先级:低
-- **复核记录(2026-08-17):无需修复,补充说明。** 消费链路确认无误(itemDetailMap 957 条 + build 投影全链路)。补充原文未提及的市场硬编码:`marketPriceService.js` 的 `getMarketSaleFeeRate`(bag_of_10_cowbells 18%、其他 5%,第 15-21 行)与 `TREASURE_CHEST_HRIDS`(宝箱 hrid 列表,第 46 行,用于 `computeChestExpectedValue` 市场估值)。这些是**费率/估值链路**硬编码,不在 `itemDetailMap` 数据中(官方数据无费率字段),属合理自建;`BAG_OF_10_COWBELLS_HRID` 常量与官方 `itemDetailMap` 中 `/items/bag_of_10_cowbells`(isUncollectable=true,唯一 1 条)对应。不构成数据漂移风险。
+- **复核记录(2026-08-17):无需修复,补充说明。** 消费链路确认无误(itemDetailMap 957 条 + build 投影全链路)。补充原文未提及的市场硬编码:`marketPriceService.js` 的 `getMarketSaleFeeRate`(bag_of_10_cowbells 18%、其他 4%(2026-09-28 游戏更新后;原 5%),第 15-21 行)与 `TREASURE_CHEST_HRIDS`(宝箱 hrid 列表,第 46 行,用于 `computeChestExpectedValue` 市场估值)。这些是**费率/估值链路**硬编码,不在 `itemDetailMap` 数据中(官方数据无费率字段),属合理自建;`BAG_OF_10_COWBELLS_HRID` 常量与官方 `itemDetailMap` 中 `/items/bag_of_10_cowbells`(isUncollectable=true,唯一 1 条)对应。不构成数据漂移风险。
 
 ### 48. `itemLocationDetailMap`
 

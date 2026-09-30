@@ -469,22 +469,22 @@ describe('enhancementSimulator', () => {
       expectedContainers: 25,
       expectedAttempts: 25,
       grossCostPerAttempt: 5_260_000,
-      otherLootValuePerContainer: 3_793_968,
-      netCostPerAttempt: 1_466_032,
+      otherLootValuePerContainer: 3_833_904,
+      netCostPerAttempt: 1_426_096,
       actionHrid: '/actions/combat/test_dungeon',
       containerHrid: '/items/test_chest',
     });
-    expect(estimate.price).toBeCloseTo(36_650_800, 6);
+    expect(estimate.price).toBeCloseTo(35_652_400, 6);
     expect(estimate.otherLootDetails).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           itemHrid: '/items/other_loot',
-          unitPrice: 3_714_168,
+          unitPrice: 3_753_264,
           priceSource: 'bid',
         }),
         expect.objectContaining({
           itemHrid: '/items/test_chest_key',
-          expectedValue: 79_800,
+          expectedValue: 80_640,
         }),
       ]),
     );

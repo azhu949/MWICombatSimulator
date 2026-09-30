@@ -6,7 +6,10 @@ export const PRICE_MODE_BID = 'bid';
 export const PRICE_MODE_VENDOR = 'vendor';
 export const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
 export const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
-export const MARKET_SALE_FEE_RATE = 0.05;
+// 2026-09-28 游戏更新：标准市场税率 5% → 4%（挂单价格增量档位与强化物品 ×5 档位属
+// 客户端挂单 UI 逻辑，模拟器读市场价格快照，无需复刻）。特殊费率表（牛铃 18%、
+// coin/宝箱 0）不受本次更新影响。
+export const MARKET_SALE_FEE_RATE = 0.04;
 
 // 装备价格来源归一化常量。原定义于 queueScoring.js，此处下沉以供 queueScoring 与
 // queueUpgradeCost 共享，避免两模块互相 import 形成循环依赖。
@@ -14,13 +17,14 @@ export const OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE = 'official_hourly_average';
 export const MANUAL_EQUIPMENT_PRICE_SOURCE = 'manual';
 export const MANUAL_PRICE_WARNING_CODE = 'manual_price';
 
-// 官方游戏指南：成功交易按卖方净收益的 5% 征税（袋装 10 牛铃为 18%）。
+// 官方游戏指南：成功交易按卖方净收益的税率征税（标准税率 2026-09-28 游戏更新后
+// 为 4%；袋装 10 牛铃为 18%）。
 // 市场 API 不暴露单物品费率，因此特殊费率在此按 hrid 维护。
 // 若 API 将来暴露单物品税率字段，应改回数据驱动查询，而不使用此映射。
 // 2026-09-04 牛铃 18% 修订（.snow/research/cowbell-18pct-tax-model-design.md）：
 // 单颗牛铃与铃袋按 18%、coin 与 3 种宝箱按 0 计入费率表——coin 免税与牛铃按铃袋
 // 口径 18% 是用户产品决策；宝箱 0 = 宝箱合成价已逐内容内嵌税费、卖出不再二次
-// 征税（防 18%+5% 复合）。
+// 征税（防 18%+4% 复合）。
 export const BAG_OF_10_COWBELLS_HRID = '/items/bag_of_10_cowbells';
 
 // 不可交易物特殊估值（报告 §5.1/§6-5 漏算定案，设计 §1-§3）：牛铃与 7 件战斗
@@ -79,7 +83,7 @@ const TREASURE_CHEST_HRIDS = [
 //   单颗牛铃而非铃袋，铃袋键够不到箱内牛铃，故必须新增牛铃键（修订 §2.2 验证②）；
 // - coin 0：金币免税（决策③）——resolve 层与宝箱合成层共用同一费率，两档统一；
 // - 3 宝箱 0：宝箱合成价逐内容净额计价、税已内嵌，卖出按费率 0 不再二次征税
-//   （防 18%+5% 复合，修订 §1.2b/§1.3-2）。
+//   （防 18%+4% 复合，修订 §1.2b/§1.3-2）。
 const SPECIAL_MARKET_FEE_RATE_BY_HRID = Object.freeze({
   [BAG_OF_10_COWBELLS_HRID]: 0.18,
   [COWBELL_HRID]: 0.18,
@@ -91,7 +95,7 @@ export function getMarketSaleFeeRate(itemHrid) {
   return SPECIAL_MARKET_FEE_RATE_BY_HRID[String(itemHrid || '')] ?? MARKET_SALE_FEE_RATE;
 }
 
-// 启动守卫：官方 hrid 若被重命名或移除，将静默回退到默认 5% 费率。
+// 启动守卫：官方 hrid 若被重命名或移除，将静默回退到默认 4% 费率。
 // 返回未知特殊 hrid 的列表。
 export function validateSpecialMarketFeeRateHrids(index = itemDetailIndex) {
   const missing = Object.keys(SPECIAL_MARKET_FEE_RATE_BY_HRID).filter((hrid) => !index?.[hrid]);
@@ -268,7 +272,7 @@ export function resolveMarketSalePrice(priceTable, itemHrid, mode = PRICE_MODE_B
 // 宝箱期望值 = Σ 内容项净额 × dropRate × 期望数（牛铃 18% 修订 §1.2a/§2 B 案：
 // .snow/research/cowbell-18pct-tax-model-design.md）。'none' 档税前聚合
 //（毛利口径，= pre-feature 合成公式）；'market' 档对每个内容项按其 hrid
-// 费率折净额（扁平因子、不区分来源：牛铃/铃袋 ×0.82、coin/宝箱 ×1、其余 ×0.95）
+// 费率折净额（扁平因子、不区分来源：牛铃/铃袋 ×0.82、coin/宝箱 ×1、其余 ×0.96）
 // ——「牛铃在宝箱内也按 18%」（决策④）的唯一落点就在此处：宝箱合成价是宝箱
 // 收入的唯一载体，卖出一层无从区分内容。逐内容单位净额复用 applyMarketSaleFee
 //（round 整数化，与游戏内单件卖出结算同构，勿改⑧ MARKET_SALE_FEE_ROUNDING_MODE）。

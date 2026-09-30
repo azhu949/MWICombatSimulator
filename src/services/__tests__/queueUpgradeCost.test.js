@@ -1559,7 +1559,7 @@ describe('queueUpgradeCost', () => {
     // 顶替的 +10 无市场价：基准件出售价值为 0（总成本列显示"—"，买入价回落现金口径）。
     expect(plan.baselinePieceSaleValue).toBe(0);
 
-    // +10 有 bid 时：基准件出售价值 = bid 扣 5% 手续费（1000 → 950），仍不计入现金成本。
+    // +10 有 bid 时：基准件出售价值 = bid 扣 4% 手续费（round(1000 × 0.96) = 960），仍不计入现金成本。
     const pricedPlan = computeMirrorPlan({
       itemHrid,
       targetLevel: 11,
@@ -1577,7 +1577,7 @@ describe('queueUpgradeCost', () => {
     expect(pricedPlan.method).toBe('mirror');
     expect(pricedPlan.cost).toBe(3050);
     expect(pricedPlan.usedBaselineLevels).toEqual([10]);
-    expect(pricedPlan.baselinePieceSaleValue).toBe(950);
+    expect(pricedPlan.baselinePieceSaleValue).toBe(960);
 
     // 缺 +9 价格时列为唯一缺价输入，补上即可解锁。
     const waiting = computeMirrorPlan({
@@ -1621,7 +1621,7 @@ describe('queueUpgradeCost', () => {
     expect(plan.inputs).toEqual([]);
     expect(plan.missing).toEqual([]);
     expect(plan.usedBaselineLevels).toEqual([1]);
-    // 基准件出售价值 = +1 bid 40 扣 5% 手续费 = 38，供总成本口径与转行出售抵扣（两侧同源）。
+    // 基准件出售价值 = +1 bid 40 扣 4% 手续费（round(40 × 0.96) = 38），供总成本口径与转行出售抵扣（两侧同源）。
     expect(plan.baselinePieceSaleValue).toBe(38);
   });
 
@@ -1895,8 +1895,8 @@ describe('queueUpgradeCost', () => {
     expect(itemHrid).toBeTruthy();
 
     // 基准 +10 → 目标 +11：现金成本 = +9(3000) + 镜子(50) = 3050；+10 由基准顶替。
-    // 确认时 +10 bid=1000 → 基准件出售价值快照 = 950（扣 5% 手续费）。
-    // 入队后行情漂移：+10 实时 bid 变为 500（实时抵扣应为 475）——抵扣必须仍用快照 950。
+    // 确认时 +10 bid=1000 → 基准件出售价值快照 = 960（扣 4% 手续费）。
+    // 入队后行情漂移：+10 实时 bid 变为 500（实时抵扣应为 480）——抵扣必须仍用快照 960。
     const pricingState = buildPricingState({
       enhancementQuotesByItem: {
         [itemHrid]: {
@@ -1912,24 +1912,24 @@ describe('queueUpgradeCost', () => {
         itemHrid,
         enhancementLevel: 11,
         method: QUEUE_PRICE_METHOD_MIRROR,
-        // 总成本口径：现金 3050 + 基准件出售价值 950。
-        price: 4000,
+        // 总成本口径：现金 3050 + 基准件出售价值 960。
+        price: 4010,
         source: 'mirror',
         mirrorPrice: 50,
         mirrorCount: 1,
         inputs: [{ itemHrid, level: 9, count: 1, price: 3000, source: 'ask' }],
-        baselinePieceSaleValue: 950,
+        baselinePieceSaleValue: 960,
         usedBaselineLevels: [10],
       },
     ]);
 
     const pricing = resolveEquipmentTransitionPricing(itemHrid, 10, itemHrid, 11, pricingState, confirmedMap);
     expect(pricing).toMatchObject({
-      cost: 3050, // 总成本 4000 − 快照抵扣 950 = 现金合成成本（精确，无双重抵扣）
-      targetAsk: 4000, // 多轮"目标装备买入价" = 总成本（含基准件）
+      cost: 3050, // 总成本 4010 − 快照抵扣 960 = 现金合成成本（精确，无双重抵扣）
+      targetAsk: 4010, // 多轮"目标装备买入价" = 总成本（含基准件）
       targetAskAvailable: true,
       targetPriceSource: 'mirror',
-      baselineSaleValue: 950, // 确认时快照，而非实时 bid 500 → 475
+      baselineSaleValue: 960, // 确认时快照，而非实时 bid 500 → 480
       baselineSaleSource: 'mirror_baseline_piece',
     });
 
@@ -2096,7 +2096,7 @@ describe('resolveEquipmentTransitionPricing 出售抵扣 saleSide 口径', () =>
       },
     );
     expect(pricing).toMatchObject({
-      baselineSaleValue: 855, // 900 × (1 − 5% 市场税)
+      baselineSaleValue: 864, // 900 × (1 − 4% 市场税)
       baselineSaleSource: 'bid',
       baselineSaleZero: false,
     });
@@ -2115,7 +2115,7 @@ describe('resolveEquipmentTransitionPricing 出售抵扣 saleSide 口径', () =>
       },
     );
     expect(pricing).toMatchObject({
-      baselineSaleValue: 1900, // 2000 × 0.95
+      baselineSaleValue: 1920, // 2000 × 0.96
       baselineSaleSource: 'ask',
       baselineSaleZero: false,
     });
@@ -2134,7 +2134,7 @@ describe('resolveEquipmentTransitionPricing 出售抵扣 saleSide 口径', () =>
       },
     );
     expect(pricing).toMatchObject({
-      baselineSaleValue: 1900,
+      baselineSaleValue: 1920,
       baselineSaleSource: 'ask',
       baselineSaleZero: false,
     });

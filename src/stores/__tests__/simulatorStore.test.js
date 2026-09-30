@@ -4938,16 +4938,16 @@ describe('simulatorStore', () => {
 
     let draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft('weapon');
     expect(draft).toMatchObject({
-      cost: 620,
+      cost: 616,
       targetAsk: 1000,
-      baselineSaleValue: 380,
+      baselineSaleValue: 384,
       baselineSaleSource: 'bid',
       baselineSaleZero: false,
     });
 
     simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]['1'] = { ask: 500, bid: -1 };
     draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft('weapon');
-    expect(draft).toMatchObject({ cost: 525, baselineSaleValue: 475, baselineSaleSource: 'ask' });
+    expect(draft).toMatchObject({ cost: 520, baselineSaleValue: 480, baselineSaleSource: 'ask' });
 
     simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]['1'] = { ask: -1, bid: -1 };
     draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft('weapon');
@@ -4979,13 +4979,13 @@ describe('simulatorStore', () => {
     };
     simulator.updateActiveQueueSettings({ baselineSaleSide: 'ask' });
 
-    // ask（左1 最低卖单，重置成本口径）抵扣：500 × (1 - 5% 市场税) = 475。
+    // ask（左1 最低卖单，重置成本口径）抵扣：500 × (1 - 4% 市场税) = 480。
     // 回归保护：saleSide 若被误传到 inspectEquipmentTransitionCost 的第 5 参
-    // （confirmedEquipmentPrices），会被静默丢弃并回退默认 bid（抵扣 380 / 成本 620）。
+    // （confirmedEquipmentPrices），会被静默丢弃并回退默认 bid（抵扣 384 / 成本 616）。
     let draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft('weapon');
     expect(draft).toMatchObject({
-      cost: 525,
-      baselineSaleValue: 475,
+      cost: 520,
+      baselineSaleValue: 480,
       baselineSaleSource: 'ask',
       baselineSaleZero: false,
     });
@@ -5729,9 +5729,9 @@ describe('simulatorStore', () => {
     await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
     const insights = simulator.activeQueueState.ranking[0].costInsights;
 
-    expect(insights.equipmentSaleValue).toBe(95);
+    expect(insights.equipmentSaleValue).toBe(96);
     expect(insights.equipmentBuyPrice).toBe(500);
-    expect(insights.equipmentNetCost).toBe(405);
+    expect(insights.equipmentNetCost).toBe(404);
     expect(insights.totalUpgradeCost).toBeGreaterThan(insights.equipmentNetCost);
   });
 
@@ -6022,14 +6022,14 @@ describe('simulatorStore', () => {
     ];
 
     await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
-    expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(405);
+    expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(404);
     expect(simulator.activeQueueState.items[0].costWarnings).toEqual(
       expect.arrayContaining([expect.objectContaining({ code: 'historical_ask', price: 500 })]),
     );
 
     setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 700);
     await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
-    expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(605);
+    expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(604);
     expect(simulator.activeQueueState.items[0].costWarnings).toEqual([]);
     expect(simulator.activeQueueState.items[0].confirmedEquipmentPrices).toEqual([
       expect.objectContaining({ source: 'historical_ask', price: 500 }),
@@ -6852,7 +6852,7 @@ describe('simulatorStore', () => {
     // 白名单外值归一回 'market'（同样触发重建）：宝箱合成回到净额口径 217,902。
     expect(simulator.setTaxMode('BOGUS')).toBe(true);
     expect(simulator.pricing.taxMode).toBe('market');
-    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(217902);
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(218250);
 
     // G1 store 层守卫扩展（S-1 对齐 2026-09-04；G-1 收口 2026-09-05 扩至 override
     // 三写点 + vendor 行情重置）：手动模拟运行中拦截全部 8 个定价写点 action

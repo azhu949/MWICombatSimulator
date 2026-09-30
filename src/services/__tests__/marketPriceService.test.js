@@ -141,26 +141,26 @@ describe('market sale fee rates', () => {
     expect(getMarketSaleFeeRate(BAG_OF_10_COWBELLS_HRID)).toBe(0.18);
     // 决策①：单颗牛铃按铃袋 18% 口径（宝箱内容物是单颗牛铃而非铃袋，铃袋键够不到）。
     expect(getMarketSaleFeeRate(COWBELL_HRID)).toBe(0.18);
-    // 决策③：金币免税；宝箱 0 = 合成价税内嵌、卖出不再二次征税（防 18%+5% 复合）。
+    // 决策③：金币免税；宝箱 0 = 合成价税内嵌、卖出不再二次征税（防 18%+4% 复合）。
     expect(getMarketSaleFeeRate('/items/coin')).toBe(0);
     expect(getMarketSaleFeeRate('/items/small_treasure_chest')).toBe(0);
     expect(getMarketSaleFeeRate('/items/medium_treasure_chest')).toBe(0);
     expect(getMarketSaleFeeRate('/items/large_treasure_chest')).toBe(0);
-    // 普通物品与缺键输入维持默认 5%。
-    expect(getMarketSaleFeeRate('/items/plain')).toBe(0.05);
-    expect(getMarketSaleFeeRate('/items/unknown_item')).toBe(0.05);
-    expect(getMarketSaleFeeRate('')).toBe(0.05);
-    expect(getMarketSaleFeeRate(null)).toBe(0.05);
+    // 普通物品与缺键输入维持默认 4%。
+    expect(getMarketSaleFeeRate('/items/plain')).toBe(0.04);
+    expect(getMarketSaleFeeRate('/items/unknown_item')).toBe(0.04);
+    expect(getMarketSaleFeeRate('')).toBe(0.04);
+    expect(getMarketSaleFeeRate(null)).toBe(0.04);
     // 净额因子：牛铃 ×0.82、宝箱免税保面值。
     expect(applyMarketSaleFee(100, COWBELL_HRID)).toBeCloseTo(82, 10);
     expect(applyMarketSaleFee(1000, '/items/large_treasure_chest')).toBe(1000);
   });
 
-  it('applies the default 5% fee when no special item is involved', () => {
-    expect(applyMarketSaleFee(100)).toBeCloseTo(95, 10);
-    // coin 免税（决策③，牛铃 18% 修订 §4）：费率表 0 → 净额 = 面值，不再走默认 5%。
+  it('applies the default 4% fee when no special item is involved', () => {
+    expect(applyMarketSaleFee(100)).toBeCloseTo(96, 10);
+    // coin 免税（决策③，牛铃 18% 修订 §4）：费率表 0 → 净额 = 面值，不再走默认 4%。
     expect(applyMarketSaleFee(100, '/items/coin')).toBeCloseTo(100, 10);
-    expect(applyMarketSaleFee(100, '/items/unknown_item')).toBeCloseTo(95, 10);
+    expect(applyMarketSaleFee(100, '/items/unknown_item')).toBeCloseTo(96, 10);
   });
 
   it('applies the 18% fee to Bag of 10 Cowbells sales', () => {
@@ -175,7 +175,7 @@ describe('market sale fee rates', () => {
       '/items/plain': { ask: 120, bid: 100, vendor: 0 },
     };
     expect(resolveMarketSalePrice(priceTable, '/items/bag_of_10_cowbells', 'bid')).toBeCloseTo(82, 10);
-    expect(resolveMarketSalePrice(priceTable, '/items/plain', 'bid')).toBeCloseTo(95, 10);
+    expect(resolveMarketSalePrice(priceTable, '/items/plain', 'bid')).toBeCloseTo(96, 10);
 
     // 商店销售保持免税，即使是特殊费率的物品。
     const vendorTable = {
@@ -237,10 +237,10 @@ describe('market sale fee rates', () => {
     };
 
     // bid 模式：bid 缺失 -> 回退到 ask 仍是市场销售，需征税。
-    expect(resolveMarketSalePrice(table, '/items/ask_only', 'bid')).toBeCloseTo(200 * 0.95, 10);
+    expect(resolveMarketSalePrice(table, '/items/ask_only', 'bid')).toBeCloseTo(200 * 0.96, 10);
 
     // ask 模式：ask 优先。
-    expect(resolveMarketSalePrice(table, '/items/ask_only', 'ask')).toBeCloseTo(200 * 0.95, 10);
+    expect(resolveMarketSalePrice(table, '/items/ask_only', 'ask')).toBeCloseTo(200 * 0.96, 10);
 
     // 无市场报价 -> 回退到商店价格保持免税。
     expect(resolveMarketSalePrice(table, '/items/vendor_only', 'bid')).toBe(40);
@@ -259,11 +259,11 @@ describe('market sale fee rates', () => {
     expect(applyMarketSaleFeeByRate(0, 0.05)).toBe(0);
     expect(applyMarketSaleFeeByRate(-50, 0.05)).toBe(0);
 
-    expect(applyMarketSaleFee(97)).toBe(92);
+    expect(applyMarketSaleFee(97)).toBe(93);
     expect(applyMarketSaleFee(100, BAG_OF_10_COWBELLS_HRID)).toBe(82);
     expect(
       resolveMarketSalePrice({ '/items/fractional': { ask: -1, bid: 97, vendor: 0 } }, '/items/fractional', 'bid'),
-    ).toBe(92);
+    ).toBe(93);
   });
 
   it('defends against malformed entries and out-of-range fee rates', () => {
@@ -280,9 +280,10 @@ describe('market sale fee rates', () => {
 });
 
 // ===== 不可交易物估值注入与计税模式（设计 §6 测试矩阵 T1-T9 + 牛铃 18% 修订 §9 T16-T20/T22）=====
-// fixture：铃袋/镜固定报价。宝箱合成基线（牛铃 18% 修订 §8.3）：默认档（'market'，
-// 逐内容净额合成）关档小/中/大 = 19230/45525/100560、开档 = 42,263.8/106369/217902；
-// 'none' 档（税前 = pre-feature 公式）关档 = 19650/46500/102300、开档 = 47740/120700/245400。
+// fixture：铃袋/镜固定报价。宝箱合成基线（牛铃 18% 修订 §8.3；2026-09-28 税率 5%→4%
+// 后重算）：默认档（'market'，逐内容净额合成）关档小/中/大 = 19314/45720/100908、
+// 开档 = 42,347.8/106564/218250；'none' 档（税前 = pre-feature 公式）关档 =
+// 19650/46500/102300、开档 = 47740/120700/245400。
 const BAG_MARKET_DATA = {
   [BAG_OF_10_COWBELLS_HRID]: { 0: { a: 1090000, b: 1060000 } },
 };
@@ -433,9 +434,9 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
     expect(defaults['/items/coin']).toEqual({ ask: 1, bid: 1, vendor: 1 });
     expect(defaults[COWBELL_HRID]).toEqual({ ask: -1, bid: -1, vendor: 0 });
     expect(defaults['/items/chimerical_quiver']).toEqual({ ask: -1, bid: -1, vendor: 100000 });
-    expect(defaults['/items/small_treasure_chest']).toEqual({ ask: 19230, bid: 19230, vendor: 19230 });
-    expect(defaults['/items/medium_treasure_chest']).toEqual({ ask: 45525, bid: 45525, vendor: 45525 });
-    expect(defaults['/items/large_treasure_chest']).toEqual({ ask: 100560, bid: 100560, vendor: 100560 });
+    expect(defaults['/items/small_treasure_chest']).toEqual({ ask: 19314, bid: 19314, vendor: 19314 });
+    expect(defaults['/items/medium_treasure_chest']).toEqual({ ask: 45720, bid: 45720, vendor: 45720 });
+    expect(defaults['/items/large_treasure_chest']).toEqual({ ask: 100908, bid: 100908, vendor: 100908 });
 
     // 不传 options（既有调用形态）与显式 { nonTradableValuation: false } 全表逐位一致。
     expect(createDefaultPriceTable({ nonTradableValuation: false })).toEqual(defaults);
@@ -514,11 +515,11 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
       }
     }
 
-    // 既有断言矩阵锚点（与上方 describe 中的 18%/5%/兜底用例同口径；表内无宝箱
+    // 既有断言矩阵锚点（与上方 describe 中的 18%/4%/兜底用例同口径；表内无宝箱
     // 条目、coin {1,1,1} 两模型同值 1）零变化——宝箱/coin 的新 'market' 行为由
     // T16/T17/T22 锚定（牛铃 18% 修订 §9-T7 收窄）。
     expect(resolveMarketSalePrice(table, BAG_OF_10_COWBELLS_HRID, 'bid')).toBe(82);
-    expect(resolveMarketSalePrice(table, '/items/plain', 'bid')).toBe(95);
+    expect(resolveMarketSalePrice(table, '/items/plain', 'bid')).toBe(96);
     expect(resolveMarketSalePrice(table, '/items/vendor_only', 'bid')).toBe(40);
     expect(resolveMarketSalePrice(table, '/items/missing', 'bid')).toBe(0);
     expect(resolveMarketSalePrice(table, '/items/coin', 'bid')).toBe(1);
@@ -546,8 +547,8 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
     expect(resolveMarketSalePrice(table, '/items/coin', 'vendor', TAX_MODE_MARKET)).toBe(1);
 
     // ask/bid 市场来源照常计税。
-    expect(resolveMarketSalePrice(table, '/items/plain', 'bid', TAX_MODE_MARKET)).toBe(95);
-    expect(resolveMarketSalePrice(table, '/items/plain', 'ask', TAX_MODE_MARKET)).toBe(190);
+    expect(resolveMarketSalePrice(table, '/items/plain', 'bid', TAX_MODE_MARKET)).toBe(96);
+    expect(resolveMarketSalePrice(table, '/items/plain', 'ask', TAX_MODE_MARKET)).toBe(192);
   });
 
   it('T9 taxMode none 全免税与 normalizeTaxMode 白名单', () => {
@@ -580,36 +581,36 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
 
   it('T17 宝箱卖出免二次征税（防复合回归，牛铃 18% 修订 §1.2b）', () => {
     // 手写宝箱条目（模拟 override 面值）：市场来源卖出按费率表 0 免税 = 面值，
-    // 防回退到旧「宝箱整体 5%」模型的 950（防 18%+5% 复合的回归锚点）。
+    // 防回退到「宝箱整体按默认税率征税」的复合模型（防 18%+4% 复合的回归锚点）。
     const table = { '/items/large_treasure_chest': { ask: 1000, bid: 1000, vendor: 1 } };
     expect(resolveMarketSalePrice(table, '/items/large_treasure_chest', 'bid', TAX_MODE_MARKET)).toBe(1000);
     expect(resolveMarketSalePrice(table, '/items/large_treasure_chest', 'bid', TAX_MODE_NONE)).toBe(1000);
 
     // 合成 fixture 宝箱（开关开，'market' 档）卖出 = round(净额合成和)：小箱合成层
-    // 精确 42,263.8 → 卖出取整 42,264；中/大箱 106,369/217,902（修订 §8.3 卖出列）。
+    // 精确 42,347.8 → 卖出取整 42,348；中/大箱 106,564/218,250（修订 §8.3 卖出列）。
     const onTable = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, { nonTradableValuation: true });
-    expect(resolveMarketSalePrice(onTable, '/items/small_treasure_chest', 'bid')).toBe(42264);
-    expect(resolveMarketSalePrice(onTable, '/items/medium_treasure_chest', 'bid')).toBe(106369);
-    expect(resolveMarketSalePrice(onTable, '/items/large_treasure_chest', 'bid')).toBe(217902);
+    expect(resolveMarketSalePrice(onTable, '/items/small_treasure_chest', 'bid')).toBe(42348);
+    expect(resolveMarketSalePrice(onTable, '/items/medium_treasure_chest', 'bid')).toBe(106564);
+    expect(resolveMarketSalePrice(onTable, '/items/large_treasure_chest', 'bid')).toBe(218250);
   });
 
   it('T18 宝箱合成逐内容净额矩阵：开/关档合成层精确值与箱内 coin 免税锚点（修订 §8）', () => {
     const onTable = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, { nonTradableValuation: true });
     const offTable = hydratePriceTableWithMarketData(BAG_MARKET_DATA);
 
-    // 开档（含牛铃净额 86,920）合成层精确值：小箱 42,263.8、中/大箱 106,369/217,902。
-    expect(onTable['/items/small_treasure_chest'].bid).toBeCloseTo(42263.8, 6);
-    expect(onTable['/items/medium_treasure_chest'].bid).toBeCloseTo(106369, 6);
-    expect(onTable['/items/large_treasure_chest'].bid).toBeCloseTo(217902, 6);
+    // 开档（含牛铃净额 86,920）合成层精确值：小箱 42,347.8、中/大箱 106,564/218,250。
+    expect(onTable['/items/small_treasure_chest'].bid).toBeCloseTo(42347.8, 6);
+    expect(onTable['/items/medium_treasure_chest'].bid).toBeCloseTo(106564, 6);
+    expect(onTable['/items/large_treasure_chest'].bid).toBeCloseTo(218250, 6);
 
-    // 关档（牛铃 vendor=0）合成层：19230/45525/100560（修订 §8.3 合成层精确值）。
-    expect(offTable['/items/small_treasure_chest'].bid).toBeCloseTo(19230, 6);
-    expect(offTable['/items/medium_treasure_chest'].bid).toBeCloseTo(45525, 6);
-    expect(offTable['/items/large_treasure_chest'].bid).toBeCloseTo(100560, 6);
+    // 关档（牛铃 vendor=0）合成层：19314/45720/100908（修订 §8.3 合成层精确值）。
+    expect(offTable['/items/small_treasure_chest'].bid).toBeCloseTo(19314, 6);
+    expect(offTable['/items/medium_treasure_chest'].bid).toBeCloseTo(45720, 6);
+    expect(offTable['/items/large_treasure_chest'].bid).toBeCloseTo(100908, 6);
 
     // 逐内容分解锚点（大箱，修订 §8.4）：箱内 coin 按面值 1 免税全额计入
-    //（期望金币数 67,500 = 45,000 + 22,500）；宝石单位净额 = round(vendor × 0.95)
-    //（pearl 3,800 等 6 项，净额和 33,060）；牛铃单位净额 = 86,920 → 净贡献 117,342。
+    //（期望金币数 67,500 = 45,000 + 22,500）；宝石单位净额 = round(vendor × 0.96)
+    //（pearl 3,800 等 6 项，净额和 33,408）；牛铃单位净额 = 86,920 → 净贡献 117,342。
     const largeDrops = openableLootDropMap['/items/large_treasure_chest'];
     let coinContribution = 0;
     let gemNetContribution = 0;
@@ -628,7 +629,7 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
     }
     expect(coinContribution).toBeCloseTo(67500, 6);
     expect(cowbellNetContribution).toBeCloseTo(117342, 6);
-    expect(gemNetContribution).toBeCloseTo(33060, 6);
+    expect(gemNetContribution).toBeCloseTo(33408, 6);
     expect(coinContribution + gemNetContribution).toBeCloseTo(offTable['/items/large_treasure_chest'].bid, 6);
     expect(coinContribution + gemNetContribution + cowbellNetContribution).toBeCloseTo(
       onTable['/items/large_treasure_chest'].bid,
@@ -661,7 +662,7 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
       nonTradableValuation: true,
       taxMode: TAX_MODE_NONE,
     });
-    expect(fetchedDefault.priceTable['/items/large_treasure_chest'].bid).toBeCloseTo(217902, 6);
+    expect(fetchedDefault.priceTable['/items/large_treasure_chest'].bid).toBeCloseTo(218250, 6);
     expect(fetchedNone.priceTable['/items/large_treasure_chest'].bid).toBeCloseTo(245400, 6);
     expect(fetchedDefault.priceTable).toEqual(
       hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, { nonTradableValuation: true }),
@@ -673,8 +674,8 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
       }),
     );
 
-    // createDefaultPriceTable 同构：缺省净额（关档 100,560）、显式 'none' 税前（102,300）。
-    expect(createDefaultPriceTable()['/items/large_treasure_chest'].bid).toBeCloseTo(100560, 6);
+    // createDefaultPriceTable 同构：缺省净额（关档 100,908）、显式 'none' 税前（102,300）。
+    expect(createDefaultPriceTable()['/items/large_treasure_chest'].bid).toBeCloseTo(100908, 6);
     expect(createDefaultPriceTable({ taxMode: TAX_MODE_NONE })['/items/large_treasure_chest'].bid).toBeCloseTo(
       102300,
       6,

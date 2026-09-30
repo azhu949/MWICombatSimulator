@@ -1,4 +1,30 @@
 {
+  "2026年10月1日（v3.0.0）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.0）",
+      "en": "October 1, 2026 (v3.0.0)"
+    },
+    "improvements": {
+      "zh": [
+        "战斗模拟引擎全面重铸并默认启用 Rust/WebAssembly 引擎：单轮模拟最高提速约 10 倍，长时模拟（24 小时）提速约 8 倍，模拟结果与原引擎保持一致。",
+        "食物优化器、技能触发器优化器等大批量任务在高配电脑上默认启用更多并行线程（8 → 12），整体完成时间进一步缩短约四分之一。",
+        "优化器内部评测路径重构（等效区间证书、跨线程轮次复用、按需并行扩容），大规模候选场景下绝大多数方案无需逐一模拟即可排除。"
+      ],
+      "en": [
+        "The combat simulation engine is rebuilt in Rust/WebAssembly and enabled by default: single runs are up to ~10x faster and 24-hour runs ~8x faster, with results identical to the previous engine.",
+        "Batch tools such as the Food Optimizer and Trigger Optimizer now use more parallel workers by default on capable machines (8 → 12), cutting total run time by roughly another quarter.",
+        "The optimizer's internal evaluation path was reworked (equivalence-range certificates, cross-worker round reuse, adaptive worker scaling), so the vast majority of candidate plans are eliminated without simulating each one."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "适配游戏 2026 年 9 月 28 日更新：标准市场税率由 5% 调整为 4%，装备出售抵扣、清算估价、宝箱估值等所有市场卖出估算同步按新税率计算。"
+      ],
+      "en": [
+        "Adapted to the September 28, 2026 game update: the standard market tax is now 4% (previously 5%), so sale deductions, liquidation estimates, and treasure chest valuations all use the new rate."
+      ]
+    }
+  },
   "2026年9月27日（v2.6.0）": {
     "label": {
       "zh": "2026年9月27日（v2.6.0）",
