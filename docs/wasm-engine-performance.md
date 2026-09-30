@@ -2079,10 +2079,116 @@ Some(unit)` 判定提升到循环外（槽位循环内不改写该字段：`shou
   相等，克隆键与现算键逐字符一致（269 → 64 ns/次）。
 - **单趟 retain 合并**：同一次遭遇重置里的多次全队列清场可合并（类型判定无副作用、
   保留序不变），是零风险形态。
-- 切片 31 候选：`triggers.check` 的 consumable `should_trigger` 快速路径（单 trigger +
-  `missing_hp/mp` + `gte` 已直算，可再短路 `category_hrid` 判定）、`event.enemyRespawn`
-  大簇（`apply_spec` 的 levels 应用 / `combat_stats` 字符串分派、`reset_default` 清理
-  列表）、`event.checkBuffExpiration` / `remove_expired_buff_by_unique_hrid`
-  （`expired_keys` 每次分配）、`add_buff` 注册表 11 次小表扫描、
-  `attack.schedule.ability_loop` 字段缓存、`clear_buffs` 整表 clone；队列扫描位图需先
-  证明扫描段实体 >100 ns/次（本负载未达标）。
+- 切片 32 候选：`ability.try_use` 的 take/restore 状态搬运（prof 2580 ns/次 × 24620，
+  子段 effects 1352 + post 932）、`event.abilityCastEnd` 事件簇（2851 ns/次，最大单段）、
+  `event.autoAttack`（1223 ns/次 × 9900）、`event.enemyRespawn` 残余（`zone_encounter` /
+  `reset_loop`）、`triggers.check`（171 ns/次 × 57290）、队列系列（`add_event` 54 ns ×
+  70930 / `clear_matching` / `get_next_event`）。【切片 31 的逐项裁决与落地见 §31】
+
+## 31. 切片 31：重生链规格计划快照 + 注册表/过期清理深挖（2026-09-30）
+
+切片 30 后按 §30.4 候选逐一摸底（原生 prof 10 轮，1h full-result；基线
+`tmp/prof-s31-baseline.txt` 108.98 ms），六候选全部裁定：五组落地、一组否决：
+
+| 候选                                                                                | 摸底读数                     | 裁决                                                      |
+| ----------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
+| `event.enemyRespawn` 大簇（`apply_spec` / `reset_default`）                         | 8665 ns/次 × 2420 轮         | **落地①②**（计划快照 + 复用）                             |
+| `checkBuffExpiration` / `remove_expired_buff_by_unique_hrid` 的 `expired_keys` 分配 | 698 / 875 ns/次              | **落地③**（单趟化 + 键收集）                              |
+| `add_buff` 注册表 11 次小表扫描                                                     | 455 ns/次 × 5800             | **落地④**（单次查找 + 策略注入）                          |
+| `clear_buffs` 整表 clone                                                            | 233 ns/次 × 7170             | **落地⑤**（`clone_from_map`）                             |
+| consumable `should_trigger` 的 `category_hrid` 短路                                 | 求值段非显热段（探针）       | 落地⑥（双零短路；微收益）                                 |
+| `attack.schedule.ability_loop` 字段缓存                                             | 185 ns/次；should ~4 次/迭代 | **否决**（非热点；真瓶颈在 `ability.try_use`，留切片 32） |
+
+### 31.1 实现
+
+- **① 规格计划预编译 + `stats_snapshot`**（`simulator.rs`）：新增 `CompiledSpecPlan`
+  （hrid / two_hand_hrid / `stats_snapshot: Option<CombatStats>` / `numeric_ops` /
+  `string_ops`），构造期按 `template.spec` 逐个编译。字段**全部可解析**时，快照 = 在
+  `CombatStats::default()` 上逐项应用的结果（字段写入与顺序无关），应用期
+  `unit.combat_details.combat_stats = snapshot.clone()`（~600B memcpy）；含未知字段时
+  快照为 `None`，走 op 重放——**「先写错误点前字段再报错」的原文语义逐字保留**
+  （错误路径测试只断言错误文本）。`CombatStats` 侧新增 `numeric_field_setter` /
+  `string_field_setter`（宏生成；`tenacity` / `abilityHaste` 仍在 simulator 侧单独解析）。
+- **② 重生复用路径**（`unit.rs` + `simulator.rs`）：`reset_to_default_impl(clear_loadout_slots)`
+  拆出 `reset_to_default_keep_loadout()`（重生专用：abilities / food / drinks 槽位内容
+  保留、由 apply 覆盖；OrderedMap 一律 `clear()`）；`restore_for_respawn` 改走预编译
+  计划（`instantiate_one` 复用与新建两条路径都传 `&plan`）。`apply_unit_spec_with_plan`：
+  `house_rooms` / `guild_buffs` / `achievements` / `zone_buffs` / `extra_buffs` /
+  `combat_scrolls` 改 `clone_from`，loadout 用 `resize(len.max(4|3), None)` + 同形态
+  `clone_from_reuse` + skip 段清空（与 Default(4/3/3) 按需扩展逐位一致）。
+- **③ 过期清理单趟化**（`unit.rs`）：`remove_expired_buff_by_unique_hrid` 的
+  `buff_sources.contains_key` 门改 `get_mut` 单趟（保留原始借用顺序），过期源 `retain`
+  零分配删除；`remove_expired_buffs` legacy 分支由「克隆全部 Buff 值」改为只收集命中的
+  键（谓词不变：不在 `buff_sources` 且已过期）。
+- **④ `add_buff` 注册表收敛**：`buff_sources.get_or_insert_with` +
+  `buff_source_policies.get_mut`（一次查找）；`reconcile_buff_source_live` 增 `policy`
+  参数由调用方注入（省一次策略表查找）；策略不符仍**先返回错误再写源表**（原语义）。
+- **⑤ `clear_buffs`**：`combat_buffs.clone_from_map(&permanent_buffs)`（复用容量）、三张
+  附表 `clear()`。`ordered_map.rs` 新增 `clear` / `retain` / `get_or_insert_with` /
+  `clone_from_map` 四个原语（`retain` / `clone_from_map` 不改变键序）。
+- **⑥ `should_trigger` 双零短路**（`consumable.rs`）：`food_haste == 0.0 &&
+drink_concentration == 0.0` 时跳过 `with_hrid` 类别解析（haste=0 下该判定恒不改变
+  结论）。`Ability` / `Consumable` 各增 `clone_from_reuse`（解构绑定 → 新增字段编译期
+  报错；`ability_effects` 同长逐项复用内层 `buffs`）。
+- **探针**：`attack.schedule` 循环内新增 `ability_should` / `ability_cast` 两枚（feature
+  门控）。**注意**：它们真实计时，prof 下把 `ability_loop` 段读数抬高 ~275 ns/次
+  （≈6 ms/10 轮），与历史 prof 段对比时需先扣除；生产构建零开销。
+
+### 31.2 验收（全绿，零漂移）
+
+| 环节                            | 结果                                    |
+| ------------------------------- | --------------------------------------- |
+| `cargo test`（debug + release） | **146** 全绿（无新增/改动测试）         |
+| golden 快照（四套件）           | **29/29 通过、零漂移**、无需重锚        |
+| vitest 全量 + prettier          | 184 文件 / 2570 passed + 5 skipped 全绿 |
+| `build` / `verify-pages-build`  | 通过                                    |
+| 产物体积                        | 821202 B → **833013 B**（+1.4%）        |
+
+### 31.3 性能
+
+**原生 prof（1h 口径，10 轮；`tmp/prof-s31-baseline.txt` → `tmp/prof-s31-after3.txt`）**：
+`restore_for_respawn` 1258 → **687 ns/次**（-45%）、`respawn.apply_spec` 985 → **499**
+（-49%）、`respawn.reset_default` 153 → **64**（-58%）、`spec_apply` 352 → **44**（快照
+生效，-88%）、`spec_loadout` 274 → **137**、`remove_expired_buffs` 875 → **451**、
+`checkBuffExpiration` 698 → **631**、`add_buff` 455 → 428、`clear_buffs` 233 → 236（噪声）；
+`encounter.instantiate` 4513 → **2831（-37%）**。`simulate(total)` 108.98 → 119.36 ms 的
+表观抬升 ≈ 探针计时开销（~20 万次开关 × ~~30 ns）+ 机器波动（同二进制重复跑 108~~120 ms），
+非逻辑回退——裁决以 WASM A/B 为准。
+
+**WASM 端到端**（full-result seed 101，夹具 jungle_planet；同进程交错法 + 自对照 +
+交换臂；每轮交替先后；1h 120 轮 + 24h 40 轮；原始输出 `tmp/slice31-ab/ab-runs.txt`）：
+
+| 臂对   | 口径 | A=切片30          | B=切片31          | B/A         | wins B（B 更快）        |
+| ------ | ---- | ----------------- | ----------------- | ----------- | ----------------------- |
+| 正向   | 1h   | 11.937 ms         | 10.384 ms         | **0.8700×** | 94/120                  |
+| 正向   | 24h  | 266.141 ms        | 219.920 ms        | **0.8263×** | 38/40                   |
+| 交换臂 | 1h   | 10.565 ms（s31）  | 12.485 ms（s30）  | 1.1818×     | 25/120（s31 快 95/120） |
+| 交换臂 | 24h  | 190.341 ms（s31） | 230.696 ms（s30） | 1.2120×     | 3/40（s31 快 37/40）    |
+| 自对照 | 1h   | —                 | —                 | 0.9610×     | 噪声 -3.9%              |
+| 自对照 | 24h  | —                 | —                 | 1.0245×     | 噪声 +2.5%              |
+
+**裁决口径：full-result 1h ≈ -13% ~ -18%（正向 -13.0%）、24h ≈ -17% ~ -21%（正向
+-17.4%）**——正反臂同向互证（s30 为 B 臂时恒慢 18~21%），自对照 ≤ ±4% 噪声带；两臂
+输出逐字节一致（1h 24178B / 24h 135387B）。本次是「重生路径固定开销 + 计划快照」的
+调用次数线性效应，24h 因重生次数更多幅度更大，符合预期。
+
+### 31.4 结论
+
+- **「预编译计划 + 快照」是把构造期知识搬到应用期的干净形态**：spec 在模板构造后恒定，
+  全字段可解析时应用退化为一次 ~600B memcpy（`spec_apply` 352 → 44 ns/次），未知字段
+  走 op 重放完整保留错误路径语义（写入顺序与错误点不动）——比「逐字段 setter 分派」
+  更快也更稳（字段新增走编译期报错）。
+- **重生复用从「槽位复用」（切 26）深入到「字段复用」**：loadout 覆盖改同形态
+  `clone_from_reuse`（不重建 Vec 元素）、default 恢复走保留 loadout 专用入口——
+  `instantiate` 段是 WASM 端到端收益的主来源（-37% prof / 1h 总收益超半）。
+- **注册表 / 过期清理的「多趟小表扫描」是 unit.rs 的通用形态**：`get_or_insert_with` +
+  策略注入（`add_buff`）、`get_mut` 单趟 + `retain`（过期源删除）、键收集替代全量克隆
+  （legacy 过期）——均为零语义漂移的「趟数 / 容量」收敛。
+- **prof 段读数与 WASM 端到端收益不同量级属预期**：native 与 wasm32 的分配 / 内存
+  边界成本结构不同（本轮 end-to-end -13~-18% 远高于 native prof 各段合计），
+  与切片 23 起的经验一致——**裁决必须回到 A/B 交错法**。
+- 切片 32 候选：`ability.try_use` 的 take/restore 状态搬运（prof 2580 ns/次 × 24620）、
+  `event.abilityCastEnd` 事件簇（2851 ns/次，最大单段）、`event.autoAttack`（1223 ns/次
+  × 9900）、`event.enemyRespawn` 残余（`zone_encounter` / `reset_loop`）、`triggers.check`
+  （171 ns/次 × 57290）与队列系列（`add_event` 54 ns × 70930 / `clear_matching` /
+  `get_next_event`）。

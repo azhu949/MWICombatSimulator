@@ -67,6 +67,53 @@ impl AbilityEffect {
     pub fn damage_type(&self) -> Option<Hrid> {
         self.damage_type
     }
+
+    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用内层 `buffs` 已分配缓冲。
+    /// 字段以解构模式绑定，新增字段时编译期强制同步。
+    pub fn clone_from_reuse(&mut self, source: &Self) {
+        let AbilityEffect {
+            target_type,
+            effect_type,
+            combat_style_hrid,
+            damage_type,
+            damage_flat,
+            damage_ratio,
+            bonus_accuracy_ratio,
+            armor_damage_ratio,
+            damage_over_time_ratio,
+            damage_over_time_duration,
+            hp_drain_ratio,
+            pierce_chance,
+            blind_chance,
+            blind_duration,
+            silence_chance,
+            silence_duration,
+            stun_chance,
+            stun_duration,
+            spend_hp_ratio,
+            buffs,
+        } = source;
+        self.target_type = *target_type;
+        self.effect_type = *effect_type;
+        self.combat_style_hrid = *combat_style_hrid;
+        self.damage_type = *damage_type;
+        self.damage_flat = *damage_flat;
+        self.damage_ratio = *damage_ratio;
+        self.bonus_accuracy_ratio = *bonus_accuracy_ratio;
+        self.armor_damage_ratio = *armor_damage_ratio;
+        self.damage_over_time_ratio = *damage_over_time_ratio;
+        self.damage_over_time_duration = *damage_over_time_duration;
+        self.hp_drain_ratio = *hp_drain_ratio;
+        self.pierce_chance = *pierce_chance;
+        self.blind_chance = *blind_chance;
+        self.blind_duration = *blind_duration;
+        self.silence_chance = *silence_chance;
+        self.silence_duration = *silence_duration;
+        self.stun_chance = *stun_chance;
+        self.stun_duration = *stun_duration;
+        self.spend_hp_ratio = *spend_hp_ratio;
+        self.buffs.clone_from(buffs);
+    }
 }
 
 /// 技能（JS `Ability` 的运行时状态 + 已解析定义）。
@@ -144,5 +191,37 @@ impl Ability {
         }
 
         Ok(should_trigger)
+    }
+
+    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用 `ability_effects` /
+    /// `triggers` 已分配缓冲；效果条目逐项走 `AbilityEffect::clone_from_reuse`。
+    /// 字段以解构模式绑定，新增字段时编译期强制同步。
+    pub fn clone_from_reuse(&mut self, source: &Self) {
+        let Ability {
+            hrid,
+            level,
+            mana_cost,
+            cooldown_duration,
+            cast_duration,
+            is_special_ability,
+            ability_effects,
+            triggers,
+            last_used,
+        } = source;
+        self.hrid = *hrid;
+        self.level = *level;
+        self.mana_cost = *mana_cost;
+        self.cooldown_duration = *cooldown_duration;
+        self.cast_duration = *cast_duration;
+        self.is_special_ability = *is_special_ability;
+        self.last_used = *last_used;
+        if self.ability_effects.len() == ability_effects.len() {
+            for (destination, source_effect) in self.ability_effects.iter_mut().zip(ability_effects.iter()) {
+                destination.clone_from_reuse(source_effect);
+            }
+        } else {
+            self.ability_effects.clone_from(ability_effects);
+        }
+        self.triggers.clone_from(triggers);
     }
 }

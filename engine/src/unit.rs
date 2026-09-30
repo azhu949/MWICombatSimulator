@@ -274,6 +274,15 @@ macro_rules! combat_stats_numeric_fields {
                     _ => false,
                 }
             }
+
+            /// 切片 31：字段名 → 数值 setter（构造期一次解析；与 `set_numeric_field` 同集合；
+            /// `tenacity` / `abilityHaste` 的 Option 语义由调用方 `resolve_numeric_setter` 处理）。
+            pub fn numeric_field_setter(name: &str) -> Option<fn(&mut CombatStats, f64)> {
+                match name {
+                    $( $name => Some(|stats: &mut CombatStats, value: f64| stats.$field = value), )*
+                    _ => None,
+                }
+            }
         }
     };
 }
@@ -365,6 +374,14 @@ macro_rules! combat_stats_string_fields {
                 match name {
                     $( $name => { self.$field = intern_hrid(value); true } )*
                     _ => false,
+                }
+            }
+
+            /// 切片 31：字段名 → 字符串 setter（构造期一次解析；与 `set_string_field` 同集合）。
+            pub fn string_field_setter(name: &str) -> Option<fn(&mut CombatStats, Hrid)> {
+                match name {
+                    $( $name => Some(|stats: &mut CombatStats, value: Hrid| stats.$field = value), )*
+                    _ => None,
                 }
             }
         }
@@ -970,6 +987,26 @@ impl CombatUnit {
     /// 字段清单与 `Default for CombatUnit` 一一对应——**新增字段时必须同步维护两处**
     /// （`build_unit_from_spec` 的写入字段与 default 形态共同构成复用的覆盖面）。
     pub fn reset_to_default_in_place(&mut self) {
+        self.reset_to_default_impl(true);
+    }
+
+    /// 切片 31：重生复用专用变体——**保留 loadout 槽位内容**（abilities / food / drinks）。
+    ///
+    /// `restore_for_respawn` 紧随其后调用 `apply_unit_spec`：槽位由 `clone_from_reuse`
+    /// 同形态覆盖（复用内层 Vec 分配），超出 spec 长度的槽位由 apply 清空并归位长度；
+    /// 最终字段值与 `reset_to_default_in_place` + 全新克隆逐位一致（等价性由
+    /// `respawn_reuse_matches_non_reuse_round_trip` 锁定）。
+    pub fn reset_to_default_keep_loadout(&mut self) {
+        self.reset_to_default_impl(false);
+    }
+
+    /// `reset_to_default_in_place` 的公共主体。
+    ///
+    /// `clear_loadout_slots = true` 时把 abilities / food / drinks 恢复为默认槽位形态
+    /// （长度 4/3/3 且全空）；`false` 时跳过这三组槽位的清理，留给调用方覆盖写入。
+    /// 字段清单与 `Default for CombatUnit` 一一对应——**新增字段时必须同步维护两处**
+    /// （`build_unit_from_spec` 的写入字段与 default 形态共同构成复用的覆盖面）。
+    fn reset_to_default_impl(&mut self, clear_loadout_slots: bool) {
         self.is_player = false;
         self.is_stunned = false;
         self.stun_expire_time = None;
@@ -999,31 +1036,34 @@ impl CombatUnit {
         self.combat_details = CombatDetails::default();
         self.base_combat_stats = None;
         self.class_base_combat_stats = None;
-        self.combat_buffs = OrderedMap::new();
-        self.permanent_buffs = OrderedMap::new();
-        self.buff_sources = OrderedMap::new();
-        self.active_buff_source_keys = OrderedMap::new();
-        self.buff_source_policies = OrderedMap::new();
+        // 切片 31：OrderedMap 一律 clear()——保留已分配的桶缓冲，避免每次重生重新分配。
+        self.combat_buffs.clear();
+        self.permanent_buffs.clear();
+        self.buff_sources.clear();
+        self.active_buff_source_keys.clear();
+        self.buff_source_policies.clear();
         self.buff_source_sequence = 0;
         self.two_hand_hrid = None;
         self.hrid = Hrid::EMPTY;
         self.is_weakened = false;
         self.weaken_percentage = 0.0;
         self.weaken_expire_time = None;
-        // Vec 容量保留：先按默认槽位数截断/补齐，再逐槽清空（旧值随之释放）。
-        self.abilities.resize(4, None);
-        for slot in self.abilities.iter_mut() {
-            *slot = None;
+        if clear_loadout_slots {
+            // Vec 容量保留：先按默认槽位数截断/补齐，再逐槽清空（旧值随之释放）。
+            self.abilities.resize(4, None);
+            for slot in self.abilities.iter_mut() {
+                *slot = None;
+            }
+            self.food.resize(3, None);
+            for slot in self.food.iter_mut() {
+                *slot = None;
+            }
+            self.drinks.resize(3, None);
+            for slot in self.drinks.iter_mut() {
+                *slot = None;
+            }
         }
-        self.food.resize(3, None);
-        for slot in self.food.iter_mut() {
-            *slot = None;
-        }
-        self.drinks.resize(3, None);
-        for slot in self.drinks.iter_mut() {
-            *slot = None;
-        }
-        self.ability_mana_costs = OrderedMap::new();
+        self.ability_mana_costs.clear();
         self.respawn_pool_key = None;
     }
 
@@ -1338,26 +1378,26 @@ impl CombatUnit {
         }
 
         // JS 语义：源注册表先建（即便随后策略冲突抛错也会留下空表）。
-        if !self.buff_sources.contains_key(&unique_hrid) {
-            self.buff_sources.set(unique_hrid, OrderedMap::new());
-        }
-        if let Some(existing_policy) = self.buff_source_policies.get(&unique_hrid).copied() {
-            if existing_policy != normalized_policy {
-                return Err(UnitError::error(format!(
-                    "CombatUnit buff source policy mismatch for {unique_hrid}: {} vs {}",
-                    policy_name(existing_policy),
-                    policy_name(normalized_policy)
-                )));
+        // 切片 31：注册表扫描合并——源表 contains+set 与策略表 get+set 各压成一次查找。
+        let sources = self.buff_sources.get_or_insert_with(&unique_hrid, OrderedMap::new);
+        match self.buff_source_policies.get_mut(&unique_hrid) {
+            Some(existing_policy) => {
+                if *existing_policy != normalized_policy {
+                    return Err(UnitError::error(format!(
+                        "CombatUnit buff source policy mismatch for {unique_hrid}: {} vs {}",
+                        policy_name(*existing_policy),
+                        policy_name(normalized_policy)
+                    )));
+                }
+                *existing_policy = normalized_policy;
             }
+            None => self.buff_source_policies.set(unique_hrid, normalized_policy),
         }
-        self.buff_source_policies.set(unique_hrid, normalized_policy);
         self.buff_source_sequence += 1;
         let sequence = self.buff_source_sequence;
-        if let Some(sources) = self.buff_sources.get_mut(&unique_hrid) {
-            sources.set(source_key, BuffSourceEntry { buff: registered_buff, expires_at, sequence });
-        }
+        sources.set(source_key, BuffSourceEntry { buff: registered_buff, expires_at, sequence });
 
-        self.reconcile_buff_source_live(unique_hrid, true, Some(source_key))?;
+        self.reconcile_buff_source_live(unique_hrid, normalized_policy, true, Some(source_key))?;
         Ok(())
     }
 
@@ -1397,14 +1437,15 @@ impl CombatUnit {
     ///
     /// 调用方（addBuff / removeBuff / 过期清理）在调用前已完成对 `self.buff_sources` 的
     /// 全部改动，原实现传入的 `sources` 快照与实时表逐字段相同；此处直接借用实时表，
-    /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。可观察行为不变。
+    /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。切片 31：策略值由
+    /// 调用方注入（调用方在改源注册表时已读取该值），再省一次策略表查找。可观察行为不变。
     fn reconcile_buff_source_live(
         &mut self,
         unique_hrid: Hrid,
+        policy: BuffSourcePolicy,
         update_details: bool,
         preferred_source_key: Option<Hrid>,
     ) -> Result<bool, UnitError> {
-        let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
         let next_active_source = match self.buff_sources.get(&unique_hrid) {
             Some(sources) if !sources.is_empty() => pick_active_buff_source(sources, policy, preferred_source_key)?,
             _ => None,
@@ -1500,7 +1541,7 @@ impl CombatUnit {
                 self.buff_source_policies.delete(&unique_hrid);
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
             } else if source_was_active || self.active_buff_source_keys.get(&unique_hrid).is_none() {
-                self.reconcile_buff_source_live(unique_hrid, true, None)?;
+                self.reconcile_buff_source_live(unique_hrid, policy, true, None)?;
             }
             return Ok(());
         }
@@ -1576,38 +1617,35 @@ impl CombatUnit {
         }
 
         let mut details_dirty = false;
-        if self.buff_sources.contains_key(&unique_hrid) {
-            let active_source_key = self.active_buff_source_keys.get(&unique_hrid).copied();
-            let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
-            let mut active_source_expired = false;
-            {
-                let sources = self
-                    .buff_sources
-                    .get_mut(&unique_hrid)
-                    .expect("buff sources entry exists for known uniqueHrid");
-                // 在扫描快照时删除，避免修改影响迭代语义。
-                let mut expired_keys: Vec<Hrid> = Vec::new();
-                for (source_key, entry) in sources.iter() {
+        // 切片 31：过期源单趟 retain 删除（零分配）——原实现先收集 `expired_keys`
+        // 再逐个 delete；本变体把 contains/get/get_mut 的多趟小表扫描压成一趟，
+        // `remaining` / `active_key_missing` 直接取自同一可变借用。
+        let active_source_key = self.active_buff_source_keys.get(&unique_hrid).copied();
+        let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+        let expired_state = match self.buff_sources.get_mut(&unique_hrid) {
+            Some(sources) => {
+                let mut active_source_expired = false;
+                sources.retain(|source_key, entry| {
                     if entry.expires_at <= current_time {
                         if active_source_key == Some(*source_key) {
                             active_source_expired = true;
                         }
-                        expired_keys.push(*source_key);
+                        false
+                    } else {
+                        true
                     }
-                }
-                for source_key in &expired_keys {
-                    sources.delete(source_key);
-                }
+                });
+                let remaining = sources.len();
+                let active_key_missing = match active_source_key {
+                    Some(active) => !sources.contains_key(&active),
+                    None => true,
+                };
+                Some((active_source_expired, remaining, active_key_missing))
             }
+            None => None,
+        };
 
-            let remaining = self.buff_sources.get(&unique_hrid).map_or(0, |sources| sources.len());
-            let active_key_missing = match active_source_key {
-                Some(active) => {
-                    !self.buff_sources.get(&unique_hrid).is_some_and(|sources| sources.contains_key(&active))
-                }
-                None => true,
-            };
-
+        if let Some((active_source_expired, remaining, active_key_missing)) = expired_state {
             if policy == BuffSourcePolicy::Replace && active_source_expired {
                 self.buff_sources.delete(&unique_hrid);
                 self.buff_source_policies.delete(&unique_hrid);
@@ -1619,7 +1657,7 @@ impl CombatUnit {
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if active_source_expired || active_key_missing {
-                details_dirty = self.reconcile_buff_source_live(unique_hrid, false, None)? || details_dirty;
+                details_dirty = self.reconcile_buff_source_live(unique_hrid, policy, false, None)? || details_dirty;
             }
         } else {
             // 与源注册机制引入前由旧调用方恢复的运行时增益保持兼容。
@@ -1652,18 +1690,20 @@ impl CombatUnit {
         }
 
         // 与未在 buffSources 中表示、由旧调用方恢复的运行时增益保持兼容。
-        let combat_buff_entries: Vec<(Hrid, Buff)> =
-            self.combat_buffs.iter().map(|(key, buff)| (*key, buff.clone())).collect();
-        for (unique_hrid, buff) in combat_buff_entries {
-            if self.buff_sources.contains_key(&unique_hrid) {
-                continue;
-            }
-            if is_timed_buff_expired(&buff, current_time) {
-                self.combat_buffs.delete(&unique_hrid);
-                self.active_buff_source_keys.delete(&unique_hrid);
-                self.buff_source_policies.delete(&unique_hrid);
-                details_dirty = true;
-            }
+        // 切片 31：只收集命中的键（原实现克隆全部 Buff 值）；判定谓词与逐项路径一致。
+        let expired_legacy_keys: Vec<Hrid> = self
+            .combat_buffs
+            .iter()
+            .filter(|(unique_hrid, buff)| {
+                !self.buff_sources.contains_key(unique_hrid) && is_timed_buff_expired(buff, current_time)
+            })
+            .map(|(unique_hrid, _)| *unique_hrid)
+            .collect();
+        for unique_hrid in expired_legacy_keys {
+            self.combat_buffs.delete(&unique_hrid);
+            self.active_buff_source_keys.delete(&unique_hrid);
+            self.buff_source_policies.delete(&unique_hrid);
+            details_dirty = true;
         }
 
         if details_dirty && update_details {
@@ -1677,10 +1717,11 @@ impl CombatUnit {
     pub fn clear_buffs(&mut self) {
         let _prof = crate::prof::start("unit.clear_buffs");
         // JS 对「非玩家 + 空 permanentBuffs」用全新 {}（与 structuredClone 内容一致），此处统一克隆。
-        self.combat_buffs = self.permanent_buffs.clone();
-        self.buff_sources = OrderedMap::new();
-        self.active_buff_source_keys = OrderedMap::new();
-        self.buff_source_policies = OrderedMap::new();
+        // 切片 31：clone_from 复用自身已分配缓冲；三张附属表改 clear() 保留容量。
+        self.combat_buffs.clone_from_map(&self.permanent_buffs);
+        self.buff_sources.clear();
+        self.active_buff_source_keys.clear();
+        self.buff_source_policies.clear();
         self.buff_source_sequence = 0;
         self.update_combat_details();
     }
