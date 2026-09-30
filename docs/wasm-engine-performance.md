@@ -1408,3 +1408,46 @@ wasm-only 后无 JS 路径可跑）；连带孤儿 `wasmOptimizerBenchmarkBridge
 - 复验：全量 vitest **184 文件 / 2570 passed + 5 skipped**、prettier 全绿（engine/README.md 格式化后）。
 - 基准冒烟（`WASM_BENCH=1`，全量测试不覆盖该套件）：改臂后首次真实运行 **5/5 绿**，wasm-A/wasm-B 双臂 deaths 逐字段一致（顺带验证引擎确定性）；`run-wasm-benchmark.mjs` 头注释更新为双臂口径。
 - golden 确定性往返：`node scripts/generate-wasm-golden.mjs` 再生成全部 29 件 → SHA256 **零变化**（快照设施自洽：同一输入两次生成字节稳定，再生成入口可用）；§12.4 的 `benchmark:wasm-optimizer` 历史数字段加删除注记。
+
+## 22. 切片 22：worker 交付体积治理——入口合并消除重复 bundle（2026-09-30）
+
+切片 21 后构建产物里真正的大头不是主 chunk（index 554KB gzip + gameData 142KB +
+playerMapper 208KB gzip，首屏已按需懒加载），而是 **4 个 worker bundle**：
+foodOptimizerWorker 3680KB、worker 3671KB、enhancementWorker 984KB、skillingWorker
+971KB——每个都是一次独立的完整打包。
+
+### 22.1 死路：worker.format='es'（实证否决）
+
+Vite 5 的 worker 是**每个入口一次独立的 Rollup 构建**：`worker.format: 'es'` 只改
+输出语法（IIFE→ESM），不会把 worker 并进主构建 chunk 图；`manualChunks` 对 worker
+构建无效；`worker.rollupOptions` 的 manualChunks 也只在自己那次构建内拆分（树摇
+差异导致 gameData 纯数据 chunk 的内容/哈希与主构建不同，无法借哈希碰撞去重）。
+upstream 未支持跨构建共享（issue #2862/#7015）。实测加配置后 4 个 worker bundle
+字节数零变化。配置与配套断言已回退，结论留档 memory pitfall。
+
+### 22.2 生路：合并 worker 入口（单 bundle 双协议）
+
+`worker.js` 与 `foodOptimizerWorker.js` 的 bundle 内容近乎全同（各 ~3.67MB =
+战斗 B 层 + gameData + wasm 桥），是唯一可靠的去重机会：
+
+- 食物优化器协议（`init` / 裸候选消息，含 `type:'evaluate'` 变体）整体并入
+  `worker.js`，消息分发按形状路由（candidate/init/evaluate → 优化器；
+  start_simulation → 模拟协议），`src/foodOptimizerWorker.js` 删除。
+- `FoodOptimizerWorkerClient` 改为引用同一个 `worker.js` URL。
+- 协议处理逻辑逐字保留（含「重叠消息大声失败」守卫），两个直接 import worker
+  入口的测试同步改指 worker.js。
+
+### 22.3 效果与验收
+
+| bundle                     | 前     | 后                                |
+| -------------------------- | ------ | --------------------------------- |
+| foodOptimizerWorker        | 3680KB | **（消失）**                      |
+| worker                     | 3671KB | 3789KB（+118KB = 优化器协调逻辑） |
+| 浏览器总下载（双功能用户） | 7351KB | **3789KB（-48%）**                |
+
+- 单功能用户不受影响（仍只下载自己用到的入口；首页模拟用户 bundle 略增 118KB，
+  换取优化器功能零额外下载）。
+- 验收：全量 vitest **184 文件 / 2570+5 skipped**、prettier、`build` →
+  `verify-pages-build` 全绿。
+- 未做（收益递减，留档）：enhancementWorker/skillingWorker（各 ~1MB，共享部分
+  较少）合并、主 chunk 内 gameData/playerMapper 的进一步拆分。

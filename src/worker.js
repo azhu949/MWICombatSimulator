@@ -3,6 +3,7 @@ import Zone from './combatsimulator/zone';
 import Labyrinth from './combatsimulator/labyrinth';
 import { buildSimulationExtraBuffs } from './shared/simulationExtraBuffs.js';
 import { getWasmProductionDiagnostics, tryRunWasmProductionRound } from './services/wasmProductionSimulation.js';
+import { createFoodOptimizerEvaluator } from './services/foodOptimizerSimulation.js';
 
 // 确定性播种（公共随机数 / Common Random Numbers）
 // -------------------------------------------------
@@ -20,7 +21,52 @@ function pickWasmSeed(seed) {
   return (Math.random() * 0x100000000) >>> 0;
 }
 
-onmessage = async function (event) {
+// ── 食物优化器协议（切片 22：自 src/foodOptimizerWorker.js 并入，原文件已删除）──
+// Vite 5 的 worker 是每入口一次独立 Rollup 构建（manualChunks 不生效、跨构建不共享
+// chunk，见 memory pitfall），两个入口意味着两份 ~3.67MB bundle（战斗 B 层 + gameData
+// + wasm 桥各打包一次）。并入后单 worker 入口双协议：浏览器只下载/缓存一个 worker
+// 文件，首页模拟、批量扫描与食物优化器共享同一 URL。
+// 协议形状与原 foodOptimizerWorker 逐字一致：init / 裸候选消息（无 type，或
+// type:'evaluate'）；协调器在调用挂起期间不发新消息，同一时刻至多一条在处理——
+// 重叠消息会破坏评估器状态，必须大声失败。
+let foodOptimizerEvaluate;
+let foodOptimizerEvaluating = false;
+async function handleFoodOptimizerMessage(data) {
+  try {
+    if (foodOptimizerEvaluating) throw new Error('Overlapping message while a food optimizer evaluation is in flight.');
+    if (data.type === 'init') {
+      foodOptimizerEvaluate = createFoodOptimizerEvaluator(data.request, {
+        collectThresholds: data.collectThresholds !== false,
+        sharedRounds: data.sharedRounds === true,
+        items: data.items,
+      });
+      self.postMessage({ type: 'result' });
+      return;
+    }
+    foodOptimizerEvaluating = true;
+    try {
+      const result = await foodOptimizerEvaluate(
+        data.candidate,
+        data.deathBudget,
+        (progress) => self.postMessage({ type: 'progress', ...progress }),
+        data.reusableSamples,
+        data.costCutoff,
+      );
+      self.postMessage({ type: 'result', result });
+    } finally {
+      foodOptimizerEvaluating = false;
+    }
+  } catch (error) {
+    self.postMessage({ type: 'error', error: error?.message || String(error) });
+  }
+}
+
+self.onmessage = async function (event) {
+  const data = event.data ?? {};
+  if (data.type === 'init' || data.type === 'evaluate' || data.candidate !== undefined) {
+    await handleFoodOptimizerMessage(data);
+    return;
+  }
   switch (event.data.type) {
     case 'start_simulation': {
       let extra = event.data.extra || {};

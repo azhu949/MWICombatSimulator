@@ -369,7 +369,7 @@ describe('food optimizer shared round execution', () => {
     const context = { postMessage: vi.fn() };
     vi.stubGlobal('self', context);
     try {
-      await import('../../foodOptimizerWorker.js');
+      await import('../../worker.js');
       const send = async (data) => {
         context.postMessage.mockClear();
         await context.onmessage({ data });
