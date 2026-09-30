@@ -636,9 +636,15 @@ impl CombatUnit {
         difficulty_tier: f64,
     ) -> Result<(), UnitError> {
         let _prof = crate::prof::start("unit.restore_for_respawn");
-        self.reset_to_default_in_place();
+        {
+            let _prof_reset = crate::prof::start("respawn.reset_default");
+            self.reset_to_default_in_place();
+        }
         self.is_player = spec.is_player;
-        apply_unit_spec(self, spec)?;
+        {
+            let _prof_apply = crate::prof::start("respawn.apply_spec");
+            apply_unit_spec(self, spec)?;
+        }
         self.difficulty_tier = Some(difficulty_tier);
         self.respawn_pool_key = Some(respawn_pool_key);
         Ok(())
@@ -1052,6 +1058,9 @@ pub struct CombatSimulator {
     minimal_result: bool,
     zone: Option<crate::zone::Zone>,
     encounter_templates: Vec<TemplateSpec>,
+    /// 切片 30：`encounter_templates` 的池键预计算（下标对齐：`"<hrid>|<JS 数字键>"`）。
+    /// 模板表构造后不再变更，故在 `new` 里一次性算出；刷怪路径只做 `String` 克隆。
+    template_pool_keys: Vec<String>,
     labyrinth_name: Option<String>,
     labyrinth_room_level: f64,
     /// 切片 16：JS `labyrinth.updateEnconterStartTime(simulationTime)`——迷宫每轮遭遇的
@@ -1200,6 +1209,21 @@ impl CombatSimulator {
                 options.zone_is_dungeon,
             )
         });
+        // 切片 30：模板池键预计算——产物与 `instantiate_templates` 原先的即时
+        // `format!("{hrid}|{}", js_number_key(*tier))` 逐字符一致（`js_number_key` 语义未变；
+        // 查表命中即 entry 的 (hrid, tier) 与模板逐位相等）。迷宫分支仍走现算键
+        // （`tier_label_override`，每次遭遇一条，非热路径）。
+        let template_pool_keys: Vec<String> = options
+            .encounter_templates
+            .iter()
+            .map(|template| {
+                format!(
+                    "{}|{}",
+                    template.hrid,
+                    crate::zone::js_number_key(template.difficulty_tier)
+                )
+            })
+            .collect();
         Self {
             arena: UnitArena::new(),
             players: Vec::new(),
@@ -1229,6 +1253,7 @@ impl CombatSimulator {
             minimal_result: options.minimal_result,
             zone,
             encounter_templates: options.encounter_templates,
+            template_pool_keys,
             labyrinth_name: options.labyrinth_name,
             labyrinth_room_level: options.labyrinth_room_level,
             labyrinth_encounter_start_time: 0.0,
@@ -2478,6 +2503,7 @@ impl CombatSimulator {
                 // `encountersKilled - 1`（固定波次先自增再返回、随机波次先选取再自增，
                 // 两条路径在返回前都已自增，故与 JS 命名一致）。
                 let (entries, wave_name, current_dungeon_count) = {
+                    let _prof_zone = crate::prof::start("respawn.zone_encounter");
                     let zone = self.zone.as_mut().expect("zone checked above");
                     let entries = zone.get_next_wave(&mut self.rng)?;
                     let wave_name = format!("#{}", crate::zone::js_number_key(zone.encounters_killed() - 1.0));
@@ -2494,6 +2520,7 @@ impl CombatSimulator {
             } else {
                 // 生产路径：真实 Zone 生成遭遇战（每次迭代恰好一次抽样，与 JS 逐位一致）。
                 let entries = {
+                    let _prof_zone = crate::prof::start("respawn.zone_encounter");
                     let zone = self.zone.as_mut().expect("zone checked above");
                     zone.get_random_encounter(&mut self.rng)?
                 };
@@ -2519,6 +2546,7 @@ impl CombatSimulator {
         }
 
         // 切片 28：免克隆——按下标遍历（循环体只读 enemies，写 arena/tally）。
+        let prof_reset_loop = crate::prof::start("respawn.reset_loop");
         let enemies_len = self.enemies.as_ref().map_or(0, |enemies| enemies.len());
         for index in 0..enemies_len {
             let Some(enemy) = self.enemies.as_ref().and_then(|enemies| enemies.get(index)).copied() else {
@@ -2529,8 +2557,14 @@ impl CombatSimulator {
             self.arena.get_mut(enemy).reset(time, &mut self.rng);
             with_hrid(hrid, |name| self.tally.update_time_spent_alive(name, true, time));
         }
+        drop(prof_reset_loop);
 
-        self.queue.clear_events_of_type(Hrid::EVENT_ENRAGE_TICK);
+        let prof_enrage = crate::prof::start("respawn.enrage_block");
+        // 切片 30：原先连续两次 `clearEventsOfType`（ENRAGE_TICK、ABILITY_CAST_END）各做一趟
+        // 全队列 retain，合并为单趟；清除集合与保留元素相对序不变（EnrageTick 仍在清场之后
+        // 入队，其类型只可能被第一次清场匹配，而清场先于入队，故与逐次清场等价）。
+        self.queue
+            .clear_events_of_types(&[Hrid::EVENT_ENRAGE_TICK, Hrid::EVENT_ABILITY_CAST_END]);
         let enrage_time = self.simulation_time + ENRAGE_TICK_INTERVAL;
         let id = self.take_event_id();
         self.queue.add_event(SimEvent::EnrageTick {
@@ -2539,8 +2573,7 @@ impl CombatSimulator {
             encounter_time: ENRAGE_TICK_INTERVAL,
         });
         self.enrage_begin_time = self.simulation_time;
-
-        self.queue.clear_events_of_type(Hrid::EVENT_ABILITY_CAST_END);
+        drop(prof_enrage);
 
         // 提前检查 trigger 让吃喝先跑。
         self.check_triggers()?;
@@ -2649,6 +2682,7 @@ impl CombatSimulator {
         let _prof = crate::prof::start("encounter.instantiate");
         let mut ids = Vec::with_capacity(entries.len());
         for (hrid, tier) in entries {
+            let prof_lookup = crate::prof::start("instantiate.lookup");
             let index = self
                 .encounter_templates
                 .iter()
@@ -2658,8 +2692,10 @@ impl CombatSimulator {
                 })?;
             let pool_key = match tier_label_override {
                 Some(label) => format!("{hrid}|{label}"),
-                None => format!("{hrid}|{}", crate::zone::js_number_key(*tier)),
+                // 切片 30：命中下标即 (hrid, tier) 与模板逐位相等，直接用构造期预计算的键。
+                None => self.template_pool_keys[index].clone(),
             };
+            drop(prof_lookup);
             ids.push(self.instantiate_one(index, *tier, pool_key)?);
         }
         Ok(ids)
@@ -2838,7 +2874,11 @@ impl CombatSimulator {
 
     fn add_next_attack_event(&mut self, source: UnitId) -> Result<(), UnitError> {
         let _prof = crate::prof::start("attack.schedule");
-        if self.queue.contains_event_of_types_and_source(&ATTACK_EVENT_TYPES, source as u64) {
+        let already_pending = {
+            let _prof_scan = crate::prof::start("attack.schedule.scan");
+            self.queue.contains_event_of_types_and_source(&ATTACK_EVENT_TYPES, source as u64)
+        };
+        if already_pending {
             return Ok(());
         }
 
@@ -2855,6 +2895,7 @@ impl CombatSimulator {
         let mut used_ability = false;
         let mut skip_next_ability = false;
         let abilities_len = self.arena.get(source).abilities.len();
+        let prof_abilities = crate::prof::start("attack.schedule.ability_loop");
 
         for slot in 0..abilities_len {
             if used_ability || skip_next_ability {
@@ -2894,6 +2935,7 @@ impl CombatSimulator {
                 used_ability = true;
             }
         }
+        drop(prof_abilities);
 
         if used_ability {
             self.arena.get_mut(source).is_out_of_mana = false;
@@ -3582,6 +3624,7 @@ impl CombatSimulator {
         buff: &crate::buff::Buff,
         source_key: Hrid,
     ) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("buff.schedule_expiration");
         let unique_hrid = buff.unique_hrid;
         let key = source_key;
         self.queue.clear_matching(|event| {
@@ -3755,16 +3798,38 @@ impl CombatSimulator {
         };
 
         let food_len = self.arena.get(unit).food.len();
+        // 切片 30：观察器只在食物优化器轮次安装（生产路径恒无）。`observer_unit` 在槽位循环
+        // 内不会被改写（try_use_consumable / should_trigger 都不改它），提到循环外判定一次。
+        let observer_active = self.observer_unit == Some(unit);
         for slot in 0..food_len {
             // 免克隆求值：`consumable_slot_ref` 与 `should_trigger` 都是共享借用，原实现的
             // `.cloned()` 只是绕开借用检查，却让热路径每次触发检查都深拷贝一份 Consumable。
-            //
+            let slot_consumable = consumable_slot_ref(self.arena.get(unit), true, slot);
+            if !observer_active {
+                // 无观察器（生产路径）：probe 恒 None，与原实现 take 出 None 的分支逐位等价；
+                // 免去每槽位两次 ~48B 观察状态的 take/放回搬移（切片 30）。
+                let should = match slot_consumable {
+                    Some(consumable) => consumable.should_trigger(
+                        &self.arena,
+                        unit,
+                        target,
+                        if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
+                        if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
+                        self.simulation_time,
+                        None,
+                    )?,
+                    None => continue,
+                };
+                if should && self.try_use_consumable(unit, true, slot)? {
+                    triggered_something = true;
+                }
+                continue;
+            }
             // 切片 13：开启阈值观察时把观察句柄一并传入——`should_trigger` 在快速路径真正
             // 调用 compare_value 的那一刻同步记录 (value, active)（等价 JS 包装 compareValue；
             // 门控早退则不记录，与 JS 观察点一致）。观察状态临时 take 出来构造句柄以绕开
             // 与 `&self.arena` 的借用冲突，**任何路径**（含空槽位 continue）都先放回——
             // 后续 `try_use_consumable` 需要 &mut self。
-            let slot_consumable = consumable_slot_ref(self.arena.get(unit), true, slot);
             let mut taken = self.observer_state.take();
             let probe = match self.observer_food_slot_index(unit, slot) {
                 Some(slot_index) => taken.as_mut().map(|state| ThresholdObserve { state, slot_index }),
@@ -4196,6 +4261,7 @@ impl CombatSimulator {
         source: UnitId,
         ability: &Ability,
     ) -> Result<Hrid, UnitError> {
+        let _prof = crate::prof::start("buff.add_ability_buff");
         let policy = get_ability_buff_source_policy(ability.hrid, buff.unique_hrid);
         let source_key = if policy == BuffSourcePolicy::Strongest {
             let hrid = self.unit_hrid(source);
