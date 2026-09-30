@@ -54,7 +54,11 @@ impl Consumable {
 
         // JS `if (this.catagoryHrid.includes('food'))`：食物取 foodHaste，其余取 drinkConcentration。
         let combat_stats = &unit.combat_details.combat_stats;
-        let consumable_haste = if with_hrid(self.category_hrid, |category| category.contains("food")) {
+        // 切片 31：两项缩放系数都为 0 时类别解析可整体跳过（无论类别如何 haste 恒为 0，
+        // 后续 `haste > 0.0` 判定与表达式均不依赖具体类别值）。
+        let consumable_haste = if combat_stats.food_haste == 0.0 && combat_stats.drink_concentration == 0.0 {
+            0.0
+        } else if with_hrid(self.category_hrid, |category| category.contains("food")) {
             combat_stats.food_haste
         } else {
             combat_stats.drink_concentration
@@ -105,6 +109,31 @@ impl Consumable {
         }
 
         Ok(should_trigger)
+    }
+
+    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用 `buffs` / `triggers` 已分配缓冲。
+    /// 字段以解构模式绑定，新增字段时编译期强制同步。
+    pub fn clone_from_reuse(&mut self, source: &Self) {
+        let Consumable {
+            hrid,
+            cooldown_duration,
+            hitpoint_restore,
+            manapoint_restore,
+            recovery_duration,
+            category_hrid,
+            buffs,
+            triggers,
+            last_used,
+        } = source;
+        self.hrid = *hrid;
+        self.cooldown_duration = *cooldown_duration;
+        self.hitpoint_restore = *hitpoint_restore;
+        self.manapoint_restore = *manapoint_restore;
+        self.recovery_duration = *recovery_duration;
+        self.category_hrid = *category_hrid;
+        self.last_used = *last_used;
+        self.buffs.clone_from(buffs);
+        self.triggers.clone_from(triggers);
     }
 }
 

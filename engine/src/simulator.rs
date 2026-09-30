@@ -34,7 +34,9 @@ use crate::sim_events::SimEvent;
 use crate::sim_result::js_number_value;
 use crate::sim_unit::{UnitArena, UnitId};
 use crate::scroll::{CombatScrollDefinition, ScrollState};
-use crate::unit::{policy_name, BuffList, BuffSourceSelector, CombatScrollConfig, CombatUnit, RawBuffInput, UnitError};
+use crate::unit::{
+    policy_name, BuffList, BuffSourceSelector, CombatScrollConfig, CombatStats, CombatUnit, RawBuffInput, UnitError,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::VecDeque;
@@ -534,40 +536,164 @@ pub struct UnitSpec {
     pub class_owned_stats: bool,
 }
 
+/// 切片 31：模板 spec 应用计划的单条指令。
+///
+/// 构造期（`CombatSimulator::new`）完成字段名解析 / 字符串值驻留；应用期只做一次
+/// 函数指针调用（免去每次刷怪重复的 `match name.as_str()` 字符串分派与 `intern_hrid`）。
+enum CompiledStatOp {
+    /// 数值字段写入（`tenacity` / `abilityHaste` 的 Option 语义由对应 setter 保持）。
+    Numeric(fn(&mut CombatStats, f64), f64),
+    /// 字符串字段写入（值已驻留为句柄）。
+    String(fn(&mut CombatStats, Hrid), Hrid),
+    /// 构造期发现的未知字段：应用时返回与逐项解析路径逐字一致的错误（保持报错时序）。
+    Error(String),
+}
+
+/// 切片 31：单个模板的预编译应用计划（`encounter_templates` 下标对齐）。
+struct CompiledSpecPlan {
+    hrid: Hrid,
+    two_hand_hrid: Option<Hrid>,
+    /// 数值 + 字符串字段全部应用后的 `CombatStats` 快照（从 `CombatStats::default()`
+    /// 起步逐项应用；应用期整块赋值 ~600B memcpy 替代 78 次函数指针写入）。
+    /// `None` = 编译期发现未知字段——应用期走 `numeric_ops` / `string_ops` 逐步重放，
+    /// 保持「先写错误点之前的字段、再返回错误」的原文语义。
+    stats_snapshot: Option<CombatStats>,
+    numeric_ops: Vec<CompiledStatOp>,
+    string_ops: Vec<CompiledStatOp>,
+}
+
+/// 解析数值字段名（与 `apply_unit_spec` 的 match 分支集合及优先级一致）。
+fn resolve_numeric_setter(name: &str) -> Option<fn(&mut CombatStats, f64)> {
+    match name {
+        "tenacity" => Some(|stats, value| stats.tenacity = Some(value)),
+        "abilityHaste" => Some(|stats, value| stats.ability_haste = Some(value)),
+        _ => CombatStats::numeric_field_setter(name),
+    }
+}
+
+/// 构造期编译一个模板的应用计划（含未知字段的报错文本快照）。
+fn compile_spec_plan(spec: &UnitSpec) -> CompiledSpecPlan {
+    let numeric_ops: Vec<CompiledStatOp> = spec
+        .combat_stats
+        .iter()
+        .map(|(name, value)| match resolve_numeric_setter(name) {
+            Some(setter) => CompiledStatOp::Numeric(setter, *value),
+            None => CompiledStatOp::Error(format!("unknown combat stat field: {name}")),
+        })
+        .collect();
+    let string_ops: Vec<CompiledStatOp> = spec
+        .combat_stats_strings
+        .iter()
+        .map(|(name, value)| match CombatStats::string_field_setter(name) {
+            Some(setter) => CompiledStatOp::String(setter, intern_hrid(value)),
+            None => CompiledStatOp::Error(format!("unknown combat stat string field: {name}")),
+        })
+        .collect();
+    let has_error = numeric_ops.iter().chain(string_ops.iter()).any(|op| matches!(op, CompiledStatOp::Error(_)));
+    let stats_snapshot = if has_error {
+        None
+    } else {
+        // 快照 = 逐项应用在 default 上的结果（纯字段写入，与顺序无关；单位在应用点
+        // 恒为 default 形态 ⇒ 整块赋值与逐项写入逐位一致）。
+        let mut stats = CombatStats::default();
+        for op in numeric_ops.iter().chain(string_ops.iter()) {
+            match op {
+                CompiledStatOp::Numeric(setter, value) => setter(&mut stats, *value),
+                CompiledStatOp::String(setter, value) => setter(&mut stats, *value),
+                CompiledStatOp::Error(_) => unreachable!("checked has_error above"),
+            }
+        }
+        Some(stats)
+    };
+    CompiledSpecPlan {
+        hrid: intern_hrid(&spec.hrid),
+        two_hand_hrid: spec.two_hand_hrid.as_deref().map(intern_hrid),
+        stats_snapshot,
+        numeric_ops,
+        string_ops,
+    }
+}
+
+/// 按序应用预编译指令（首个未知字段指令返回错误——与原逐项循环的报错位置一致）。
+fn apply_compiled_stat_ops(stats: &mut CombatStats, ops: &[CompiledStatOp]) -> Result<(), UnitError> {
+    for op in ops {
+        match op {
+            CompiledStatOp::Numeric(setter, value) => setter(stats, *value),
+            CompiledStatOp::String(setter, value) => setter(stats, *value),
+            CompiledStatOp::Error(message) => return Err(UnitError::error(message.clone())),
+        }
+    }
+    Ok(())
+}
+
 /// 由场景定义构建单位（JS 侧同序：等级 → 面板 → 基准捕获 → 结算 → 技能/消耗品）。
 pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
+    build_unit_from_spec_with_plan(spec, None)
+}
+
+/// 切片 31：模板计划版 `build_unit_from_spec`（免逐项字符串解析；语义逐位一致）。
+fn build_unit_from_spec_with_plan(
+    spec: &UnitSpec,
+    plan: Option<&CompiledSpecPlan>,
+) -> Result<CombatUnit, UnitError> {
     let _prof = crate::prof::start("unit.build_from_spec");
     let mut unit = CombatUnit { is_player: spec.is_player, ..Default::default() };
-    apply_unit_spec(&mut unit, spec)?;
+    apply_unit_spec_with_plan(&mut unit, spec, plan)?;
     Ok(unit)
 }
 
 /// `build_unit_from_spec` 的公共主体：把 spec 写入一个处于 **default 形态** 的单位
 /// （`is_player` 由调用方预设）。切片 26 的 `restore_for_respawn` 走同一路径——
 /// 「复用槽位」与「新建单位」因此逐字段一致（等价性由双跑测试锁定）。
-fn apply_unit_spec(unit: &mut CombatUnit, spec: &UnitSpec) -> Result<(), UnitError> {
-    unit.hrid = intern_hrid(&spec.hrid);
+///
+/// 切片 31：`plan` 为构造期预编译的模板计划（`None` = 逐项字符串解析路径，供
+/// 玩家 / 探针 / 非模板调用方使用）；loadout 槽位按目标长度归位并同形态覆盖
+/// （复用路径经 `clone_from_reuse` 保留内层 Vec 缓冲）。
+fn apply_unit_spec_with_plan(
+    unit: &mut CombatUnit,
+    spec: &UnitSpec,
+    plan: Option<&CompiledSpecPlan>,
+) -> Result<(), UnitError> {
+    unit.hrid = match plan {
+        Some(plan) => plan.hrid,
+        None => intern_hrid(&spec.hrid),
+    };
 
     let _prof_spec_apply = crate::prof::start("unit.spec_apply");
     if let Some(levels) = &spec.levels {
         levels.apply(unit);
     }
 
-    for (name, value) in &spec.combat_stats {
-        match name.as_str() {
-            "tenacity" => unit.combat_details.combat_stats.tenacity = Some(*value),
-            "abilityHaste" => unit.combat_details.combat_stats.ability_haste = Some(*value),
-            other => {
-                if !unit.combat_details.combat_stats.set_numeric_field(other, *value) {
-                    return Err(UnitError::error(format!("unknown combat stat field: {other}")));
+    match plan {
+        Some(plan) => {
+            // 切片 31：正常路径整块赋值快照（~600B memcpy）；错误路径逐步重放，
+            // 保持「先写错误点之前的字段、再返回错误」的原文语义。
+            match &plan.stats_snapshot {
+                Some(snapshot) => unit.combat_details.combat_stats = snapshot.clone(),
+                None => {
+                    apply_compiled_stat_ops(&mut unit.combat_details.combat_stats, &plan.numeric_ops)?;
+                    apply_compiled_stat_ops(&mut unit.combat_details.combat_stats, &plan.string_ops)?;
                 }
             }
         }
-    }
+        None => {
+            for (name, value) in &spec.combat_stats {
+                match name.as_str() {
+                    "tenacity" => unit.combat_details.combat_stats.tenacity = Some(*value),
+                    "abilityHaste" => unit.combat_details.combat_stats.ability_haste = Some(*value),
+                    other => {
+                        if !unit.combat_details.combat_stats.set_numeric_field(other, *value) {
+                            return Err(UnitError::error(format!("unknown combat stat field: {other}")));
+                        }
+                    }
+                }
+            }
 
-    for (name, value) in &spec.combat_stats_strings {
-        if !unit.combat_details.combat_stats.set_string_field(name, value) {
-            return Err(UnitError::error(format!("unknown combat stat string field: {name}")));
+            for (name, value) in &spec.combat_stats_strings {
+                if !unit.combat_details.combat_stats.set_string_field(name, value) {
+                    return Err(UnitError::error(format!("unknown combat stat string field: {name}")));
+                }
+            }
         }
     }
 
@@ -576,13 +702,17 @@ fn apply_unit_spec(unit: &mut CombatUnit, spec: &UnitSpec) -> Result<(), UnitErr
     unit.enrage_time = spec.enrage_time;
     unit.experience = spec.experience;
     unit.debuff_on_level_gap = spec.debuff_on_level_gap;
-    unit.two_hand_hrid = spec.two_hand_hrid.as_deref().map(intern_hrid);
-    unit.house_rooms = spec.house_rooms.clone();
-    unit.guild_buffs = spec.guild_buffs.clone();
-    unit.achievements = spec.achievements.clone();
-    unit.zone_buffs = spec.zone_buffs.clone();
-    unit.extra_buffs = spec.extra_buffs.clone();
-    unit.combat_scrolls = spec.combat_scrolls.clone();
+    unit.two_hand_hrid = match plan {
+        Some(plan) => plan.two_hand_hrid,
+        None => spec.two_hand_hrid.as_deref().map(intern_hrid),
+    };
+    // 切片 31：clone_from 复用已分配缓冲（复用路径经 keep-loadout 重置保留了这些 Vec）。
+    unit.house_rooms.clone_from(&spec.house_rooms);
+    unit.guild_buffs.clone_from(&spec.guild_buffs);
+    unit.achievements.clone_from(&spec.achievements);
+    unit.zone_buffs.clone_from(&spec.zone_buffs);
+    unit.extra_buffs.clone_from(&spec.extra_buffs);
+    unit.combat_scrolls.clone_from(&spec.combat_scrolls);
     // 构造期永久增益：JS 侧 `permanentBuffs` 已按 typeHrid 合并，这里直接按序播种。
     for buff in &spec.permanent_buffs {
         unit.permanent_buffs.set(buff.type_hrid, buff.clone());
@@ -597,25 +727,40 @@ fn apply_unit_spec(unit: &mut CombatUnit, spec: &UnitSpec) -> Result<(), UnitErr
     unit.update_combat_details();
 
     let _prof_spec_loadout = crate::prof::start("unit.spec_loadout");
+    // 切片 31：槽位长度归位到 max(默认槽位数, spec 槽位数)——与 `build_unit_from_spec`
+    // 的「Default 形态（4/3/3）+ 按需扩展」逐位一致；同形态槽位经 `clone_from_reuse`
+    // 覆盖复用内层缓冲，超出 spec 的槽位清空。
+    unit.abilities.resize(spec.abilities.len().max(4), None);
     for (index, ability) in spec.abilities.iter().enumerate() {
-        if index >= unit.abilities.len() {
-            // JS `player.abilities = dto.abilities.map(...)`：槽位数 = DTO 长度（可超过默认 4 槽），
-            // 模拟器按数组长度遍历，因此这里按需扩展而不是截断。
-            unit.abilities.push(None);
+        match (&mut unit.abilities[index], ability) {
+            (Some(existing), Some(source)) => existing.clone_from_reuse(source),
+            (slot, ability) => *slot = ability.clone(),
         }
-        unit.abilities[index] = ability.clone();
     }
+    for slot in unit.abilities.iter_mut().skip(spec.abilities.len()) {
+        *slot = None;
+    }
+
+    unit.food.resize(spec.food.len().max(3), None);
     for (index, item) in spec.food.iter().enumerate() {
-        if index >= unit.food.len() {
-            unit.food.push(None);
+        match (&mut unit.food[index], item) {
+            (Some(existing), Some(source)) => existing.clone_from_reuse(source),
+            (slot, item) => *slot = item.clone(),
         }
-        unit.food[index] = item.clone();
     }
+    for slot in unit.food.iter_mut().skip(spec.food.len()) {
+        *slot = None;
+    }
+
+    unit.drinks.resize(spec.drinks.len().max(3), None);
     for (index, item) in spec.drinks.iter().enumerate() {
-        if index >= unit.drinks.len() {
-            unit.drinks.push(None);
+        match (&mut unit.drinks[index], item) {
+            (Some(existing), Some(source)) => existing.clone_from_reuse(source),
+            (slot, item) => *slot = item.clone(),
         }
-        unit.drinks[index] = item.clone();
+    }
+    for slot in unit.drinks.iter_mut().skip(spec.drinks.len()) {
+        *slot = None;
     }
 
     drop(_prof_spec_loadout);
@@ -627,23 +772,25 @@ impl CombatUnit {
     /// 切片 26：重生槽位复用——把本槽位**原地**重建为 spec 对应的新单位。
     ///
     /// 步骤与 `build_unit_from_spec` 完全同序：先恢复 default 形态
-    /// （`reset_to_default_in_place`，保留 Vec 容量），再走 `apply_unit_spec`，
-    /// 最后写入实例难度档与重生池键（等价 `instantiate_templates` 对新建单位的收尾）。
-    pub fn restore_for_respawn(
+    /// （`reset_to_default_keep_loadout`，保留 Vec 容量与 loadout 槽位内容），再走
+    /// `apply_unit_spec_with_plan`（切片 31：预编译计划 + 同形态覆盖），最后写入实例
+    /// 难度档与重生池键（等价 `instantiate_templates` 对新建单位的收尾）。
+    fn restore_for_respawn(
         &mut self,
         spec: &UnitSpec,
+        plan: &CompiledSpecPlan,
         respawn_pool_key: String,
         difficulty_tier: f64,
     ) -> Result<(), UnitError> {
         let _prof = crate::prof::start("unit.restore_for_respawn");
         {
             let _prof_reset = crate::prof::start("respawn.reset_default");
-            self.reset_to_default_in_place();
+            self.reset_to_default_keep_loadout();
         }
         self.is_player = spec.is_player;
         {
             let _prof_apply = crate::prof::start("respawn.apply_spec");
-            apply_unit_spec(self, spec)?;
+            apply_unit_spec_with_plan(self, spec, Some(plan))?;
         }
         self.difficulty_tier = Some(difficulty_tier);
         self.respawn_pool_key = Some(respawn_pool_key);
@@ -1061,6 +1208,9 @@ pub struct CombatSimulator {
     /// 切片 30：`encounter_templates` 的池键预计算（下标对齐：`"<hrid>|<JS 数字键>"`）。
     /// 模板表构造后不再变更，故在 `new` 里一次性算出；刷怪路径只做 `String` 克隆。
     template_pool_keys: Vec<String>,
+    /// 切片 31：`encounter_templates` 的应用计划预编译（下标对齐；字段名 → setter、
+    /// 字符串值 → 驻留句柄）。模板表构造后不再变更，故在 `new` 里一次性算出。
+    template_spec_plans: Vec<CompiledSpecPlan>,
     labyrinth_name: Option<String>,
     labyrinth_room_level: f64,
     /// 切片 16：JS `labyrinth.updateEnconterStartTime(simulationTime)`——迷宫每轮遭遇的
@@ -1224,6 +1374,13 @@ impl CombatSimulator {
                 )
             })
             .collect();
+        // 切片 31：模板 spec 应用计划预编译——把 `combatStats` 字段名解析为 setter、
+        // `combatStatsStrings` 的值驻留为句柄；刷怪路径免去逐项字符串分派与驻留。
+        let template_spec_plans: Vec<CompiledSpecPlan> = options
+            .encounter_templates
+            .iter()
+            .map(|template| compile_spec_plan(&template.spec))
+            .collect();
         Self {
             arena: UnitArena::new(),
             players: Vec::new(),
@@ -1254,6 +1411,7 @@ impl CombatSimulator {
             zone,
             encounter_templates: options.encounter_templates,
             template_pool_keys,
+            template_spec_plans,
             labyrinth_name: options.labyrinth_name,
             labyrinth_room_level: options.labyrinth_room_level,
             labyrinth_encounter_start_time: 0.0,
@@ -2709,9 +2867,12 @@ impl CombatSimulator {
             if shape_matches {
                 // 原地恢复：字段全量重写，结果与 `build_unit_from_spec` 逐字段一致
                 //（等价性由 `respawn_reuse_matches_non_reuse_round_trip` 锁定）。
-                self.arena
-                    .get_mut(slot)
-                    .restore_for_respawn(&self.encounter_templates[template_index].spec, pool_key, tier)?;
+                self.arena.get_mut(slot).restore_for_respawn(
+                    &self.encounter_templates[template_index].spec,
+                    &self.template_spec_plans[template_index],
+                    pool_key,
+                    tier,
+                )?;
                 self.pool_reuse_hits += 1;
                 return Ok(slot);
             }
@@ -2720,8 +2881,11 @@ impl CombatSimulator {
         }
         self.pool_build_misses += 1;
         // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
-        // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。
-        let mut unit = build_unit_from_spec(&self.encounter_templates[template_index].spec)?;
+        // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。切片 31：走预编译计划。
+        let mut unit = build_unit_from_spec_with_plan(
+            &self.encounter_templates[template_index].spec,
+            Some(&self.template_spec_plans[template_index]),
+        )?;
         // 掉落上下文桶按怪物实例的难度档记账（JS `new Monster(hrid, finalTier)`）。
         unit.difficulty_tier = Some(tier);
         unit.respawn_pool_key = Some(pool_key);
@@ -2901,6 +3065,7 @@ impl CombatSimulator {
             if used_ability || skip_next_ability {
                 break;
             }
+            let prof_ability_should = crate::prof::start("attack.schedule.ability_should");
             // 免克隆：只取后续真正需要的字段（should / manaCost / castDuration），
             // 原实现会为每次「可施放」判定深拷贝一份 Ability。
             let (should, mana_cost, cast_duration) = {
@@ -2918,10 +3083,12 @@ impl CombatSimulator {
                 )?;
                 (should, ability.mana_cost, ability.cast_duration)
             };
+            drop(prof_ability_should);
             if !should {
                 continue;
             }
 
+            let prof_ability_cast = crate::prof::start("attack.schedule.ability_cast");
             if !self.can_use_ability(source, mana_cost, true) {
                 skip_next_ability = true;
             }
@@ -2934,6 +3101,7 @@ impl CombatSimulator {
                 self.queue.add_event(SimEvent::AbilityCastEnd { time, id, source, ability_slot: slot });
                 used_ability = true;
             }
+            drop(prof_ability_cast);
         }
         drop(prof_abilities);
 
@@ -3895,14 +4063,17 @@ impl CombatSimulator {
             }
         }
 
-        let is_drink = with_hrid(consumable.category_hrid, |category| category.contains("drink"));
         let (drink_concentration, food_haste) = {
             let stats = &self.arena.get(source).combat_details.combat_stats;
             (stats.drink_concentration, stats.food_haste)
         };
+        // 切片 31：仅当饮料浓度 > 0 时才解析类别（下方两处消费点均以 `drinkConcentration > 0`
+        // 为前置；为 0 时 is_drink 恒假，解析结果不可观察）。
+        let is_drink =
+            drink_concentration > 0.0 && with_hrid(consumable.category_hrid, |category| category.contains("drink"));
 
         let mut consume_cooldown = consumable.cooldown_duration;
-        if drink_concentration > 0.0 && is_drink {
+        if is_drink {
             consume_cooldown = consume_cooldown / (1.0 + drink_concentration);
         } else if food_haste > 0.0 && with_hrid(consumable.category_hrid, |category| category.contains("food")) {
             consume_cooldown = consume_cooldown / (1.0 + food_haste);
@@ -3943,7 +4114,7 @@ impl CombatSimulator {
 
         for buff in &consumable.buffs {
             let mut current_buff = buff.clone();
-            if drink_concentration > 0.0 && is_drink {
+            if is_drink {
                 current_buff.ratio_boost *= 1.0 + drink_concentration;
                 current_buff.flat_boost *= 1.0 + drink_concentration;
                 current_buff.duration = Some(current_buff.duration.unwrap_or(f64::NAN) / (1.0 + drink_concentration));

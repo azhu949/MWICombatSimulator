@@ -76,6 +76,35 @@ impl<K: PartialEq, V> OrderedMap<K, V> {
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
         self.entries.iter_mut().map(|(_, value)| value)
     }
+
+    /// 清空全部条目（保留已分配的缓冲；切片 31：重置/复用路径免去重新分配）。
+    pub fn clear(&mut self) {
+        self.entries.clear();
+    }
+
+    /// 单趟原地删除不满足谓词的条目（键序不变、零分配；切片 31：过期源扫描）。
+    pub fn retain(&mut self, mut keep: impl FnMut(&K, &V) -> bool) {
+        self.entries.retain(|(key, value)| keep(key, value));
+    }
+}
+
+impl<K: PartialEq + Clone, V> OrderedMap<K, V> {
+    /// 缺失时用 `create` 建值后返回可变引用（单趟查找；切片 31：add_buff 注册表扫描合并）。
+    pub fn get_or_insert_with<F: FnOnce() -> V>(&mut self, key: &K, create: F) -> &mut V {
+        if let Some(index) = self.entries.iter().position(|(candidate, _)| candidate == key) {
+            return &mut self.entries[index].1;
+        }
+        self.entries.push((key.clone(), create()));
+        let last = self.entries.len() - 1;
+        &mut self.entries[last].1
+    }
+}
+
+impl<K: PartialEq + Clone, V: Clone> OrderedMap<K, V> {
+    /// 整表克隆写入自身，复用已分配的缓冲（切片 31：combatBuffs 复位 clone）。
+    pub fn clone_from_map(&mut self, other: &Self) {
+        self.entries.clone_from(&other.entries);
+    }
 }
 
 impl<K: PartialEq + Clone, V: Default> OrderedMap<K, V> {
