@@ -114,6 +114,15 @@ impl<E: QueueItem> EventQueue<E> {
         self.clear_matching(|event| event.event_type() == event_type);
     }
 
+    /// 切片 30：连续多次 `clearEventsOfType` 的单趟合并（任一类型命中即清）。清除集合与
+    /// 保留元素的相对 (time, seq) 序与逐次调用完全一致（类型相等判定无副作用，短路顺序无关）。
+    pub fn clear_events_of_types(&mut self, types: &[Hrid]) {
+        self.clear_matching(|event| {
+            let event_type = event.event_type();
+            types.iter().any(|candidate| event_type == *candidate)
+        });
+    }
+
     /// JS `clearMatching`：单趟 `retain` 移除全部匹配项，剩余元素保持 (time, seq) 序。
     /// 返回是否有事件被清除。（旧堆复刻为快照 + 逐身份移除；对纯谓词 matcher 结果等价，
     /// matcher 的求值顺序由堆数组序改为 (time, seq) 序。）

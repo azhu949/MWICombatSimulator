@@ -1984,3 +1984,105 @@ prof 计时器自耗 ~28 ns/次），对候选清单逐一裁决：
   旁路（源事件位图）、`ability.effect.buff` / `add_buff` 深层（clone 链）、
   `restore_for_respawn` 的 spec 应用链、`triggers.check` 求值短路化（需 parity 放宽
   决策）。
+
+## 30. 切片 30：观察器脚手架短路 + 模板池键预计算 + enrage 清场合并（2026-09-30）
+
+切片 29 后加 11 处细粒度探针（原生 prof 10 轮，1h full-result，独占时间 = 段耗时扣除
+已嵌套子段与 prof 计时器自耗 ~28 ns/次），逐一裁决候选：
+
+| 候选                                        | 摸底读数                               | 裁决                         |
+| ------------------------------------------- | -------------------------------------- | ---------------------------- |
+| `triggers.check` 观察器脚手架（food 槽）    | 57,290 次 × 202 ns（无观察器仍搬状态） | **落地①**（快/慢路径拆分）   |
+| `instantiate.lookup`（`format!` + 数字键）  | 7,160 次 × 269 ns                      | **落地②**（构造期预计算）    |
+| enrage 双清（两次全队列 retain）            | 2,430 次 × 400 ns                      | **落地③**（合并单趟）        |
+| `attack.schedule.scan`（源事件位图）        | 真身 ~15 ns/次、0.66 ms/10 轮          | **否决**（实体太小，勿重试） |
+| `buff.add_ability_buff` / `add_buff` 注册表 | 557 ns/次但拆分后小、11 次小表扫描     | 延后（低收益）               |
+| `respawn.apply_spec` 链                     | 切片 29 已部分优化                     | 延后                         |
+| `unit.clear_buffs` 整表 clone               | 未专项摸底                             | 留后续切片                   |
+
+### 30.1 实现
+
+- **① 观察器脚手架短路**（`simulator.rs` `check_triggers_for_unit`）：food 槽循环拆成
+  「无观察器快速路径」（`probe` 恒 `None`，不再每槽位 `take` / 放回 ~48B 的
+  `ObserverState`）与「观察器慢路径」（原 take → 构造 `ThresholdObserve` →
+  `should_trigger` → **放回先行于 `?`** 的错误路径语义逐字保留）；`observer_unit ==
+Some(unit)` 判定提升到循环外（槽位循环内不改写该字段：`should_trigger` /
+  `try_use_consumable` 都不动它）。生产路径（观察器恒不安装）省去每单位每轮
+  ~3 槽 × 2 次的状态搬移。**语义面未动**：探针记录点、NaN/空槽语义、RNG 与事件流不变。
+- **② 模板池键预计算**（`simulator.rs`）：新增 `template_pool_keys: Vec<String>`
+  （下标与 `encounter_templates` 对齐），构造期一次性算
+  `format!("{hrid}|{}", js_number_key(tier))`；`instantiate_templates` 普通区域分支改为
+  **克隆预计算键**（`position` 命中即 entry 的 `(hrid, tier)` 与模板逐位相等；±0 由
+  JS 数字键恒等归一），迷宫 `tier_label_override` 分支仍走现算键。**不动 `TemplateSpec`
+  结构**（避免破坏 7 处测试构造点与 serde 面）；`js_number_key` 语义未动（红线）。
+- **③ enrage 双清合并**（`event_queue.rs` + `simulator.rs`）：新增
+  `EventQueue::clear_events_of_types(&[Hrid])`（单趟 `retain`，任一类型命中即清）；
+  `start_new_encounter` 的 ENRAGE_TICK / ABILITY_CAST_END 两次全队列清场合并为一次，
+  清除集合与保留元素相对 (time, seq) 序不变（EnrageTick 仍在清场之后入队）。
+- **探针保留**：本切片新增的 11 处探针（`attack.schedule.scan` /
+  `attack.schedule.ability_loop` / `respawn.zone_encounter` ×2 / `respawn.reset_loop` /
+  `respawn.enrage_block` / `respawn.reset_default` / `respawn.apply_spec` /
+  `instantiate.lookup` / `buff.add_ability_buff` / `buff.schedule_expiration` /
+  `unit.reset_cooldowns`）全部 `feature = "prof"` 门控、默认关闭零开销；风格统一为
+  `let prof_x = crate::prof::start(...);` + `drop(prof_x);`（`instantiate.lookup` 现只覆盖
+  模板查表，键计算已移出热路径）。
+
+### 30.2 验收（全绿，零漂移）
+
+| 环节                            | 结果                                    |
+| ------------------------------- | --------------------------------------- |
+| `cargo test`（debug + release） | **146** 全绿（无新增/改动测试）         |
+| golden 快照（四套件）           | **29/29 通过、零漂移**、无需重锚        |
+| vitest 全量 + prettier          | 184 文件 / 2570 passed + 5 skipped 全绿 |
+| `build` / `verify-pages-build`  | 通过                                    |
+| 产物体积                        | 819528 B → **821202 B**（+0.2%）        |
+
+### 30.3 性能
+
+**原生 prof（1h 口径，10 轮；`tmp/prof-s30-probe.txt` → `tmp/prof-s30-after.txt`）**：
+`triggers.check` 202 → **170 ns/次**（11.55 → 9.73 ms）、`instantiate.lookup` 269 →
+**64 ns/次**（1.93 → 0.46 ms）、`respawn.enrage_block` 400 → **249 ns/次**（0.97 →
+0.61 ms）；`simulate(total)` 118.45 → **114.45 ms**（-3.4%）。
+
+**WASM 端到端**（full-result seed 101，夹具 jungle_planet；同进程交错法 + 自对照 +
+交换臂；每轮交替先后，全 3 批 + 5 预热；原始输出 `tmp/slice30-ab/ab-runs.txt`）：
+
+| 批次 | 口径 | A=切片29   | B=切片30   | B/A         | wins B（B 更快） |
+| ---- | ---- | ---------- | ---------- | ----------- | ---------------- |
+| 1    | 1h   | 20.345 ms  | 19.977 ms  | 0.9819×     | 63/120           |
+| 1    | 24h  | 251.353 ms | 240.466 ms | **0.9567×** | 13/20            |
+| 2    | 1h   | 21.378 ms  | 20.709 ms  | **0.9687×** | 72/120           |
+| 2    | 24h  | 256.951 ms | 254.323 ms | 0.9898×     | 28/40            |
+| 3    | 1h   | 14.017 ms  | 12.958 ms  | **0.9244×** | 81/120           |
+| 3    | 24h  | 274.197 ms | 262.255 ms | **0.9564×** | 22/40            |
+
+| 对照      | 口径 | A=切片30                       | B=切片29                       | B/A                         | B（切片29）胜率        |
+| --------- | ---- | ------------------------------ | ------------------------------ | --------------------------- | ---------------------- |
+| 交换臂 ×3 | 1h   | 19.627 / 11.452 / 11.131 ms    | 20.831 / 12.030 / 11.578 ms    | 1.0614× / 1.0505× / 1.0401× | 37/120、44/120、46/120 |
+| 交换臂 ×3 | 24h  | 235.639 / 436.883 / 303.938 ms | 247.706 / 451.434 / 320.312 ms | 1.0512× / 1.0333× / 1.0539× | 4/20、12/40、16/40     |
+| 自对照 ×3 | 1h   | —                              | —                              | 1.0057× / 1.0016× / 0.9751× | 噪声（±0.2%~2.5%）     |
+| 自对照 ×3 | 24h  | —                              | —                              | 1.0020× / 1.0317× / 0.9852× | 噪声（最差批 ±3.2%）   |
+
+**裁决口径：full-result ≈ -4%**（1h 六臂对中位 **-4.5%**、24h 六臂对中位 **-4.3%**；
+**12/12 臂对方向一致**——切片 30 恒快）。本机本轮绝对耗时跨批波动近 2×（1h 11–21 ms、
+24h 235–451 ms），自对照噪声随之升高，故按「方向 + 中位」裁决、幅度给 ±2% 区间；
+本次是调用次数线性效应（每次触发检查 / 刷怪 / 遭遇重置省固定开销），两口径同向同幅
+符合预期。
+
+### 30.4 结论
+
+- **脚手架类开销与算法开销同样值得计量**：观察器 `take`/放回看着只是两次字段搬移，
+  但在「每单位每轮每槽」的调用频率下值 ~1.8 ms/10 轮。拆分形态（慢路径逐字保留 +
+  快路径直呼 `should_trigger(probe: None)`）同时保住了错误路径语义（放回先于 `?`）。
+- **构造期预计算 + 克隆 替代 热路径 `format!`**：`js_number_key` 的 JS 语义是红线，
+  但它的**调用时机**可动——键在模板构造后恒定，查表命中已证明 `(hrid, tier)` 逐位
+  相等，克隆键与现算键逐字符一致（269 → 64 ns/次）。
+- **单趟 retain 合并**：同一次遭遇重置里的多次全队列清场可合并（类型判定无副作用、
+  保留序不变），是零风险形态。
+- 切片 31 候选：`triggers.check` 的 consumable `should_trigger` 快速路径（单 trigger +
+  `missing_hp/mp` + `gte` 已直算，可再短路 `category_hrid` 判定）、`event.enemyRespawn`
+  大簇（`apply_spec` 的 levels 应用 / `combat_stats` 字符串分派、`reset_default` 清理
+  列表）、`event.checkBuffExpiration` / `remove_expired_buff_by_unique_hrid`
+  （`expired_keys` 每次分配）、`add_buff` 注册表 11 次小表扫描、
+  `attack.schedule.ability_loop` 字段缓存、`clear_buffs` 整表 clone；队列扫描位图需先
+  证明扫描段实体 >100 ns/次（本负载未达标）。

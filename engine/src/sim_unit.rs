@@ -135,6 +135,7 @@ impl CombatUnit {
     /// 等价 JS `resetCooldowns(currentTime = 0)`：食品/饮料/技能冷却复位。
     /// 敌人的技能冷却带随机抖动，按 JS 顺序为每个非空技能各消费一次 `Math.random()`。
     pub fn reset_cooldowns(&mut self, current_time: f64, rng: &mut Mulberry32) {
+        let _prof = crate::prof::start("unit.reset_cooldowns");
         for consumable in self.food.iter_mut().flatten() {
             consumable.last_used = NUMBER_MIN_SAFE_INTEGER;
         }
