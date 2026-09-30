@@ -540,13 +540,29 @@ enum Slot<'a> {
     Sum(&'a mut BuffBoost),
 }
 
+thread_local! {
+    /// 切片 29：结算暂存——跨 `update_combat_details` 调用复用 12 个逐项槽的 Vec 容量，
+    /// 消除每次结算的整表构建分配/释放。**非语义状态**：每次使用前全量清零（`rebuild`
+    /// 首步），读数恒来自当次构建；重入（`try_borrow_mut` 失败）时退回独立构建，
+    /// 两条路径的输出逐位恒等，仅放弃容量复用。
+    static SETTLEMENT_BOOSTS_SCRATCH: std::cell::RefCell<SettlementBoosts> =
+        std::cell::RefCell::new(SettlementBoosts::default());
+}
+
 impl SettlementBoosts {
     /// 单遍构建：遍历顺序 = `combat_buffs` 键序（浮点累加序的前提）。
     pub fn build(buffs: &OrderedMap<Hrid, Buff>) -> Self {
-        let _prof = crate::prof::start("unit.index_buffs");
         let mut boosts = Self::default();
+        boosts.rebuild(buffs);
+        boosts
+    }
+
+    /// 切片 29：原地重建（保留全部 Vec 容量）。输出与 `build` 逐位恒等。
+    pub fn rebuild(&mut self, buffs: &OrderedMap<Hrid, Buff>) {
+        let _prof = crate::prof::start("unit.index_buffs");
+        self.clear_for_reuse();
         for buff in buffs.values() {
-            match boosts.slot_mut(buff.type_hrid) {
+            match self.slot_mut(buff.type_hrid) {
                 Some(Slot::Items(list)) => {
                     list.push(BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost });
                 }
@@ -557,7 +573,51 @@ impl SettlementBoosts {
                 None => {}
             }
         }
-        boosts
+    }
+
+    /// 切片 29：归零到可复用状态——逐项槽 `clear`（保容量）、汇总槽重置为 `BuffBoost::ZERO`
+    ///（与 `Self::default()` 的逐字段起点一致；容器容量不影响任何输出）。
+    fn clear_for_reuse(&mut self) {
+        self.stamina_level.clear();
+        self.intelligence_level.clear();
+        self.attack_level.clear();
+        self.melee_level.clear();
+        self.defense_level.clear();
+        self.ranged_level.clear();
+        self.magic_level.clear();
+        self.evasion.clear();
+        self.armor.clear();
+        self.water_resistance.clear();
+        self.nature_resistance.clear();
+        self.fire_resistance.clear();
+        self.max_hitpoints = BuffBoost::ZERO;
+        self.max_manapoints = BuffBoost::ZERO;
+        self.fury_accuracy = BuffBoost::ZERO;
+        self.fury_damage = BuffBoost::ZERO;
+        self.accuracy = BuffBoost::ZERO;
+        self.damage = BuffBoost::ZERO;
+        self.damage_taken = BuffBoost::ZERO;
+        self.physical_amplify = BuffBoost::ZERO;
+        self.water_amplify = BuffBoost::ZERO;
+        self.nature_amplify = BuffBoost::ZERO;
+        self.fire_amplify = BuffBoost::ZERO;
+        self.healing_amplify = BuffBoost::ZERO;
+        self.attack_speed = BuffBoost::ZERO;
+        self.hp_regen = BuffBoost::ZERO;
+        self.mp_regen = BuffBoost::ZERO;
+        self.life_steal = BuffBoost::ZERO;
+        self.physical_thorns = BuffBoost::ZERO;
+        self.elemental_thorns = BuffBoost::ZERO;
+        self.wisdom = BuffBoost::ZERO;
+        self.critical_rate = BuffBoost::ZERO;
+        self.critical_damage = BuffBoost::ZERO;
+        self.cast_speed = BuffBoost::ZERO;
+        self.combat_drop_rate = BuffBoost::ZERO;
+        self.rare_find = BuffBoost::ZERO;
+        self.combat_drop_quantity = BuffBoost::ZERO;
+        self.threat = BuffBoost::ZERO;
+        self.retaliation = BuffBoost::ZERO;
+        self.tenacity = BuffBoost::ZERO;
     }
 
     /// 结算体消费的 40 个 `type_hrid` → 槽位；其余类型返回 `None`（跳过）。
@@ -989,8 +1049,21 @@ impl CombatUnit {
     /// 等价 JS `updateCombatDetails`：构建增益汇总 → 结算。
     pub fn update_combat_details(&mut self) {
         let _prof = crate::prof::start("unit.update_details");
-        let boosts = SettlementBoosts::build(&self.combat_buffs);
-        self.update_combat_details_with_boosts(&boosts);
+        // 切片 29：优先复用线程内暂存（见 SETTLEMENT_BOOSTS_SCRATCH 注释）；不可用
+        //（极端重入 / 线程销毁中）时退回独立构建——两条路径的输出逐位恒等。
+        let handled = SETTLEMENT_BOOSTS_SCRATCH.try_with(|cell| {
+            if let Ok(mut boosts) = cell.try_borrow_mut() {
+                boosts.rebuild(&self.combat_buffs);
+                self.update_combat_details_with_boosts(&boosts);
+                true
+            } else {
+                false
+            }
+        });
+        if !matches!(handled, Ok(true)) {
+            let boosts = SettlementBoosts::build(&self.combat_buffs);
+            self.update_combat_details_with_boosts(&boosts);
+        }
     }
 
     /// 结算主体（等价 JS `updateCombatDetailsFromBuffs`，忽略 FRESH_COMBAT_STATS 微优化）。
@@ -2022,6 +2095,36 @@ mod tests {
         assert_eq!(boosts.damage.flat_boost, 3.0);
         assert_eq!(boosts.armor.len(), 1);
         assert_eq!(boosts.armor[0].flat_boost, 0.5);
+    }
+
+    #[test]
+    fn settlement_boosts_rebuild_clears_previous_contents() {
+        // 切片 29：原地重建必须丢弃上一轮的全部槽位内容（暂存复用的脏读回归锚点）。
+        let mut first = CombatUnit::default();
+        first.add_buff(&raw("/u/a", "/buff_types/damage", 0.5, 5.0, 1000.0), 0.0, None, None).expect("registers");
+        let mut second = CombatUnit::default();
+        second.add_buff(&raw("/u/b", "/buff_types/armor", 0.25, 0.5, 1000.0), 0.0, None, None).expect("registers");
+        let mut boosts = SettlementBoosts::default();
+        boosts.rebuild(&first.combat_buffs);
+        boosts.rebuild(&second.combat_buffs);
+        assert_eq!(boosts.damage, BuffBoost::ZERO);
+        assert_eq!(boosts.armor.len(), 1);
+        assert_eq!(boosts.armor[0].ratio_boost, 0.25);
+        assert_eq!(boosts.armor[0].flat_boost, 0.5);
+    }
+
+    #[test]
+    fn update_combat_details_is_stable_across_repeated_calls() {
+        // 切片 29：连续两次结算（第二次走暂存复用路径）结果逐位一致。
+        // 注：`combat_stats.tenacity` 可能为 `Some(NaN)`（parity 契约），NaN != NaN 使
+        // 整体 PartialEq 恒假，故用 Debug 表示逐位核对。
+        let mut unit = CombatUnit::default();
+        unit.add_buff(&raw("/u/a", "/buff_types/damage", 0.1, 1.0, 1000.0), 0.0, None, None).expect("registers");
+        unit.add_buff(&raw("/u/b", "/buff_types/armor", 0.2, 2.0, 1000.0), 0.0, None, None).expect("registers");
+        unit.update_combat_details();
+        let first = format!("{:?}", unit.combat_details.combat_stats);
+        unit.update_combat_details();
+        assert_eq!(first, format!("{:?}", unit.combat_details.combat_stats));
     }
 
     #[test]

@@ -1104,6 +1104,8 @@ pub struct CombatSimulator {
     /// 关闭后完全退化为旧行为（不进池 / 不复用）——等价性双跑测试与问题定位用；
     /// 生产路径构造后恒为 `true`（无外部写入口）。
     respawn_reuse_enabled: bool,
+    /// 切片 29：热路径暂存（容量复用；见 `SimScratch`——非语义状态，不进任何输出）。
+    scratch: SimScratch,
 }
 
 /// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
@@ -1151,6 +1153,23 @@ impl WipeLogBuffer {
     fn take(&mut self) -> Vec<Value> {
         self.buffer.drain(..).collect()
     }
+}
+
+/// 切片 29：模拟器热路径暂存表——各热函数以 `std::mem::take → clear → 重填 → 使用 →
+/// restore` 模式复用 Vec 容量，消除每次调用的小表分配/释放。**非语义状态**：
+/// 使用方恒先 `clear` 再填充，绝不在重填前读取旧内容；`take` 期间发生重入时，内层
+/// 拿到空表独立分配（仅放弃复用），外层的表在函数返回前原样放回。错误路径的提前
+/// 返回仅丢失容量（下次调用重新分配），不影响任何输出。
+#[derive(Default)]
+struct SimScratch {
+    /// `process_auto_attack_event` / `process_ability_damage_effect` 的存活目标表。
+    alive: Vec<UnitId>,
+    /// `process_ability_damage_effect` 非玩家路径的 avoid 收缩候选表。
+    candidates: Vec<UnitId>,
+    /// `pick_threat_target` 的威胁区间表。
+    threat_ranges: Vec<(UnitId, f64, f64)>,
+    /// `start_attacks` 的单位表。
+    start_units: Vec<UnitId>,
 }
 
 fn consumable_slot_ref(unit: &CombatUnit, is_food: bool, slot: usize) -> Option<&Consumable> {
@@ -1247,6 +1266,7 @@ impl CombatSimulator {
             pool_reuse_hits: 0,
             pool_build_misses: 0,
             respawn_reuse_enabled: true,
+            scratch: SimScratch::default(),
         }
     }
 
@@ -2795,16 +2815,20 @@ impl CombatSimulator {
     }
 
     fn start_attacks(&mut self) -> Result<(), UnitError> {
-        let mut units = self.players.clone();
+        // 切片 29：单位表复用暂存（take → 清空 → 重填 → 末尾 restore）。
+        let mut units = std::mem::take(&mut self.scratch.start_units);
+        units.clear();
+        units.extend_from_slice(&self.players);
         if let Some(enemies) = &self.enemies {
             units.extend(enemies.iter().copied());
         }
-        for unit in units {
+        for unit in units.iter().copied() {
             if self.arena.get(unit).combat_details.current_hitpoints <= 0.0 {
                 continue;
             }
             self.add_next_attack_event(unit)?;
         }
+        self.scratch.start_units = units;
         Ok(())
     }
 
@@ -2915,18 +2939,22 @@ impl CombatSimulator {
 
     fn pick_threat_target(&mut self, alive_targets: &[UnitId]) -> Result<UnitId, UnitError> {
         let mut cumulative_threat = 0.0;
-        let mut ranges: Vec<(UnitId, f64, f64)> = Vec::with_capacity(alive_targets.len());
+        // 切片 29：区间表复用暂存（take → 清空 → 重填 → restore）。
+        let mut ranges = std::mem::take(&mut self.scratch.threat_ranges);
+        ranges.clear();
+        ranges.reserve(alive_targets.len());
         for id in alive_targets {
             let player_threat = self.arena.get(*id).combat_details.combat_stats.threat;
             cumulative_threat += player_threat;
             ranges.push((*id, cumulative_threat - player_threat, cumulative_threat));
         }
         let random_value_hit = self.rng.next_f64() * cumulative_threat;
-        ranges
+        let found = ranges
             .iter()
             .find(|(_, range_start, range_end)| random_value_hit >= *range_start && random_value_hit < *range_end)
-            .map(|(id, _, _)| *id)
-            .ok_or_else(|| UnitError::type_error("Cannot read properties of undefined (reading 'player')"))
+            .map(|(id, _, _)| *id);
+        self.scratch.threat_ranges = ranges;
+        found.ok_or_else(|| UnitError::type_error("Cannot read properties of undefined (reading 'player')"))
     }
 
     // -----------------------------------------------------------------------
@@ -2938,22 +2966,29 @@ impl CombatSimulator {
         // 切片 28：免克隆——原先克隆整个对侧列表再过滤出存活表（每次调用两次分配），
         // 现在按下标直读源列表一次成形。`check_parry` 的候选过滤（存活 ∧ parry>0）对
         // 「全集」与「存活子集」结果恒等（已死者不可能成为候选），故直接传存活表。
-        let alive_targets: Vec<UnitId> = if is_player {
+        // 切片 29：存活表改为复用模拟器暂存（take → 清空 → 重填；循环后 restore），
+        // 消除每次调用的分配/释放；提前返回仅丢失容量、不影响输出。
+        let mut alive_targets = std::mem::take(&mut self.scratch.alive);
+        alive_targets.clear();
+        if is_player {
             let Some(enemies) = self.enemies.as_deref() else {
+                self.scratch.alive = alive_targets;
                 return Ok(());
             };
-            enemies
-                .iter()
-                .copied()
-                .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-                .collect()
+            alive_targets.extend(
+                enemies
+                    .iter()
+                    .copied()
+                    .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0),
+            );
         } else {
-            self.players
-                .iter()
-                .copied()
-                .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-                .collect()
-        };
+            alive_targets.extend(
+                self.players
+                    .iter()
+                    .copied()
+                    .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0),
+            );
+        }
 
         for index in 0..alive_targets.len() {
             let mut target = alive_targets[index];
@@ -3101,6 +3136,8 @@ impl CombatSimulator {
                 break;
             }
         }
+
+        self.scratch.alive = alive_targets;
 
         if !self.check_encounter_end()? {
             self.add_next_attack_event(event_source)?;
@@ -4204,26 +4241,33 @@ impl CombatSimulator {
         // 恒等）；③ 逐轮候选重过滤（存活 ∧ 未被 avoid——死单位只减不增、avoid 单调增长，
         // 故其当前态与「存活表重过滤」恒等）。现在直接构造存活表，候选表由 retain 原地
         // 维护（省掉整表克隆与逐轮重分配）。
-        let alive_targets: Vec<UnitId> = match effect.target_type {
+        // 切片 29：存活表 / 候选表改为复用模拟器暂存（take → 清空 → 重填；末尾 restore）。
+        let mut alive_targets = std::mem::take(&mut self.scratch.alive);
+        alive_targets.clear();
+        match effect.target_type {
             Hrid::TARGET_ENEMY | Hrid::TARGET_ALL_ENEMIES => {
                 if is_player {
                     let Some(enemies) = self.enemies.as_deref() else {
+                        self.scratch.alive = alive_targets;
                         return Ok(());
                     };
-                    enemies
-                        .iter()
-                        .copied()
-                        .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-                        .collect()
+                    alive_targets.extend(
+                        enemies
+                            .iter()
+                            .copied()
+                            .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0),
+                    );
                 } else {
-                    self.players
-                        .iter()
-                        .copied()
-                        .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-                        .collect()
+                    alive_targets.extend(
+                        self.players
+                            .iter()
+                            .copied()
+                            .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0),
+                    );
                 }
             }
             _ => {
+                self.scratch.alive = alive_targets;
                 return Err(UnitError::error(format!(
                     "Unsupported target type for damage ability effect: {}",
                     ability.hrid
@@ -4233,8 +4277,13 @@ impl CombatSimulator {
 
         let mut avoid_target: Vec<Hrid> = Vec::new();
         let mut is_skip_parry = false;
-        // 候选表（等价原 `targets` 的逐轮重过滤结果）：初始 = 存活表，随后单调收缩。
-        let mut candidates: Vec<UnitId> = alive_targets.clone();
+        // 切片 29：候选表仅在非玩家路径参与判定（玩家路径 avoid 集恒空、候选集 ≡ 存活集，
+        // 见循环内的等价替换），复用暂存槽位；非玩家路径初始 = 存活表，随后单调收缩。
+        let mut candidates = std::mem::take(&mut self.scratch.candidates);
+        candidates.clear();
+        if !is_player {
+            candidates.extend_from_slice(&alive_targets);
+        }
 
         drop(prof_setup);
 
@@ -4317,19 +4366,31 @@ impl CombatSimulator {
                     }
                 }
             } else {
-                // 候选表原地收缩（单调），等价原实现对全集的逐轮重过滤。
-                candidates.retain(|id| {
-                    let unit = self.arena.get(*id);
-                    !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
-                });
+                // 切片 29：玩家源免候选表——`avoid_target` 只由下方非玩家分支写入（玩家恒空），
+                // 且目标只死不回生，故「候选表逐轮收缩后为空」⇔「存活表已无存活目标」。
+                // 直接判存活表，省去候选表分配与逐轮 retain；非玩家路径保持原语义（原地收缩）。
+                if is_player {
+                    let any_alive = alive_targets
+                        .iter()
+                        .any(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0);
+                    if !any_alive {
+                        break;
+                    }
+                } else {
+                    // 候选表原地收缩（单调），等价原实现对全集的逐轮重过滤。
+                    candidates.retain(|id| {
+                        let unit = self.arena.get(*id);
+                        !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
+                    });
 
-                if !is_player && !candidates.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
-                    target = self.pick_threat_target(&candidates)?;
-                    let hrid = self.unit_hrid(target);
-                    avoid_target.push(hrid);
-                }
-                if candidates.is_empty() {
-                    break;
+                    if !candidates.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
+                        target = self.pick_threat_target(&candidates)?;
+                        let hrid = self.unit_hrid(target);
+                        avoid_target.push(hrid);
+                    }
+                    if candidates.is_empty() {
+                        break;
+                    }
                 }
 
                 let prof_attack = crate::prof::start("ability.damage.attack");
@@ -4575,6 +4636,9 @@ impl CombatSimulator {
                 break;
             }
         }
+
+        self.scratch.alive = alive_targets;
+        self.scratch.candidates = candidates;
 
         Ok(())
     }

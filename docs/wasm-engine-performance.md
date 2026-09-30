@@ -1902,3 +1902,85 @@ FxIndexMap。
 - 切片 29+ 候选：`try_use.effects` 内层与 `attack.schedule` 的队列扫描、`update_details` /
   `index_buffs`（SettlementBoosts 构建的栈初始化与分配）、`prod.output` 序列化、热点循环
   `unit_hrid` 缓存、`OrderedMap` → FxIndexMap。
+
+## 29. 切片 29：结算暂存复用 + 效果内环去分配（第三批）（2026-09-30）
+
+切片 28 后重新摸底（原生 prof 10 轮，1h full-result，独占时间 = 段耗时扣除已嵌套子段与
+prof 计时器自耗 ~28 ns/次），对候选清单逐一裁决：
+
+| 候选                           | 摸底读数                              | 裁决                                          |
+| ------------------------------ | ------------------------------------- | --------------------------------------------- |
+| `update_details`/`index_buffs` | index 4.70 ms + update 未归因 ~3.4 ms | **落地**（SettlementBoosts 构建的分配）       |
+| `try_use.effects` 内层         | 未归因仅 ~2 ms（真身在 damage 子段）  | **落地**（damage 循环的表分配，清单外重归因） |
+| `attack.schedule` 扫描         | 独占 ~2.5 ms（主体是 triggers.check） | 留切片 30（队列本负载深度浅，扫描非瓶颈）     |
+| `prod.output` 序列化           | 0.28 ms / 10 轮（0.24%）              | **否决**（死项）                              |
+| `unit_hrid` 缓存               | 159260 次 × 28 ns ≈ 计时器自耗        | **否决**（伪热点；真实体 = 单次下标读）       |
+| `OrderedMap` → FxIndexMap      | 热点侧表 n ≤ 8、主表已哈希旁路        | **否决**（切片 23 已实证，不重试）            |
+
+### 29.1 实现
+
+- **结算暂存复用**（`unit.rs`）：`SettlementBoosts` 新增 `rebuild`（原地重建）与
+  `clear_for_reuse`（12 个逐项槽 `clear` 保容量 + 28 个汇总槽归零为 `BuffBoost::ZERO`，
+  与 `Self::default()` 逐字段起点一致）；`update_combat_details` 优先走
+  `thread_local` 暂存（`try_with` + `try_borrow_mut`，重入或线程销毁期退回独立构建，
+  两条路径输出逐位恒等）。原生 prof：`index_buffs` 4.70 → **1.21 ms**（-74%）、
+  `update_details` 9.56 → 5.13 ms。
+- **效果内环暂存**（`simulator.rs` 新增 `SimScratch`：`alive` / `candidates` /
+  `threat_ranges` / `start_units` 四槽，take → 清空 → 重填 → restore）：
+  - `process_auto_attack_event` / `process_ability_damage_effect` 存活表、
+    `pick_threat_target` 区间表、`start_attacks` 单位表全部换装；三处错误早退路径
+    （无敌人侧 / 不支持目标类型 / `?` 传播）显式归还容量。
+  - damage 玩家路径**免候选表**：`avoid_target` 仅由非玩家分支写入（玩家恒空）且目标
+    只死不回生，故「候选表收缩后为空」⇔「存活表无存活者」——直接 `any` 判定，省去
+    分配与逐轮 `retain`；非玩家路径保持原语义（原地收缩 + threat 选择）。
+- **锚定测试 ×2**：`rebuild` 必须清空上一轮全部槽位（脏读回归锚点）；连续两次结算
+  （第二次走暂存路径）结果逐位一致——用 `Debug` 表示比对，规避 `tenacity: Some(NaN)`
+  这类 parity 契约字段使整体 `PartialEq` 恒假的问题。
+
+### 29.2 验收（全绿，零漂移）
+
+| 环节                           | 结果                                    |
+| ------------------------------ | --------------------------------------- |
+| `cargo test`                   | 144 → **146**（+2 锚定）全绿            |
+| golden 快照（四套件）          | **29/29 通过、零漂移**、无需重锚        |
+| vitest 全量 + prettier         | 184 文件 / 2570 passed + 5 skipped 全绿 |
+| `build` / `verify-pages-build` | 通过                                    |
+| 产物体积                       | 818414 B → **819528 B**                 |
+
+### 29.3 性能
+
+**WASM 端到端**（full-result seed 101；同进程交错法 + 自对照 + 交换臂，1h 120 轮 /
+24h 20 轮 + 确认跑 40 轮，每轮交替先后）：
+
+| 口径                   | A=切片28   | B=切片29   | B/A             | wins B                  |
+| ---------------------- | ---------- | ---------- | --------------- | ----------------------- |
+| 1h                     | 13.070 ms  | 12.511 ms  | **0.9572×**     | 88/120                  |
+| 1h 确认跑              | 12.322 ms  | 11.819 ms  | **0.9592×**     | 73/120                  |
+| 24h                    | 287.581 ms | 264.738 ms | **0.9206×**     | 14/20                   |
+| 24h 确认跑（40 轮）    | 265.679 ms | 253.097 ms | **0.9526×**     | **32/40**               |
+| 1h 交换臂（B=切片28）  | 11.342 ms  | 11.955 ms  | 1.0540×         | 28/120（s29 快 92/120） |
+| 24h 交换臂（B=切片28） | 257.616 ms | 270.522 ms | 1.0501×         | 10/40（s29 快 30/40）   |
+| 自对照                 | —          | —          | 1.0015×–1.0187× | 20/40、56/120（噪声）   |
+
+**裁决口径：full-result -4% ~ -5%（1h/24h 一致）**；24h 合并 46/60 胜、交换臂反向
+互证（s28 为 B 臂时恒慢 ~5%），自对照 ≤ ±2% 噪声带。本次是调用次数线性效应
+（每次结算/施法省固定分配），不随时长放大——两口径同向同幅符合预期。
+
+**原生 prof（1h 口径，10 轮）**：`index_buffs` 185 → **48 ns/次**、`update_details`
+376 → 202 ns/次、`damage.setup` 66 → 34 ns/次；`simulate(total)` 108.5 → 106.1 ms
+（原生侧部分收益被 prof 计时器稀释，WASM A/B 为准）。
+
+### 29.4 结论
+
+- **候选清单必须摸底裁决，不能按清单执行**：五候选两死（`prod.output` 0.24%、
+  `unit_hrid` 伪热点）一延后（队列扫描），实际落地的 damage 循环分配来自清单外
+  的独占时间重归因。
+- **prof 计时器自耗 ~28 ns/次是读表底线**：任何 >10 万次的小函数段读数都要先扣
+  计时器成本再归因（`unit_hrid` 4.43 ms 全部是计时器开销，真实体 ≈ 单次下标读）。
+- `thread_local` 暂存 + take/restore 在 wasm32（单线程）与原生多线程（按线程独立
+  暂存）下语义一致；重入与线程销毁期都有零成本退路，是「纯分配优化不改语义」的
+  安全形态。
+- 切片 30 候选：`attack.schedule` 的 `contains_event_of_types_and_source` 队列扫描
+  旁路（源事件位图）、`ability.effect.buff` / `add_buff` 深层（clone 链）、
+  `restore_for_respawn` 的 spec 应用链、`triggers.check` 求值短路化（需 parity 放宽
+  决策）。
