@@ -16,6 +16,7 @@
 //!
 //! 契约细节：`time` 保证非 NaN（引擎产生的时间均为有限值）；NaN 输入行为未定义。
 
+use crate::hrid::Hrid;
 use std::collections::VecDeque;
 
 /// 队列项契约：事件队列只依赖这些字段（对应 JS 事件对象中被队列逻辑用到的部分）。
@@ -24,10 +25,10 @@ pub trait QueueItem {
     fn time(&self) -> f64;
     /// 稳定身份（JS 侧为对象引用；Rust 侧用数值 id 承担 remove-by-identity 语义）。
     fn id(&self) -> u64;
-    fn event_type(&self) -> &str;
+    fn event_type(&self) -> Hrid;
     fn source(&self) -> Option<u64>;
     fn target(&self) -> Option<u64>;
-    fn hrid(&self) -> Option<&str>;
+    fn hrid(&self) -> Option<Hrid>;
 }
 
 /// 队列条目：事件 + 入队序号（全序键的第二部分，`add_event` 时单调分配）。
@@ -109,7 +110,7 @@ impl<E: QueueItem> EventQueue<E> {
     }
 
     /// JS `clearEventsOfType`。与 `clear_events_for_unit` 同理：JS 包装方法不返回结果。
-    pub fn clear_events_of_type(&mut self, event_type: &str) {
+    pub fn clear_events_of_type(&mut self, event_type: Hrid) {
         self.clear_matching(|event| event.event_type() == event_type);
     }
 
@@ -139,12 +140,12 @@ impl<E: QueueItem> EventQueue<E> {
     }
 
     /// JS `containsEventOfType`。
-    pub fn contains_event_of_type(&self, event_type: &str) -> bool {
+    pub fn contains_event_of_type(&self, event_type: Hrid) -> bool {
         self.items.iter().any(|entry| entry.event.event_type() == event_type)
     }
 
     /// JS `containsEventOfTypeAndHrid`。
-    pub fn contains_event_of_type_and_hrid(&self, event_type: &str, hrid: &str) -> bool {
+    pub fn contains_event_of_type_and_hrid(&self, event_type: Hrid, hrid: Hrid) -> bool {
         self.items
             .iter()
             .any(|entry| entry.event.event_type() == event_type && entry.event.hrid() == Some(hrid))
@@ -152,7 +153,7 @@ impl<E: QueueItem> EventQueue<E> {
 
     /// JS `containsEventOfTypesAndSource`：类型命中任一 type 后即检查 source，未命中类型
     /// 则看下一个事件（原实现用 break 短路类型链，等价于「任一类型命中 且 source 命中」）。
-    pub fn contains_event_of_types_and_source(&self, types: &[&str], source: u64) -> bool {
+    pub fn contains_event_of_types_and_source(&self, types: &[Hrid], source: u64) -> bool {
         self.items.iter().any(|entry| {
             types.iter().any(|candidate| entry.event.event_type() == *candidate)
                 && entry.event.source() == Some(source)
@@ -190,15 +191,16 @@ impl<E: QueueItem> EventQueue<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hrid::intern_hrid;
 
     #[derive(Clone, Debug, PartialEq)]
     struct TestEvent {
         id: u64,
-        event_type: String,
+        event_type: Hrid,
         time: f64,
         source: Option<u64>,
         target: Option<u64>,
-        hrid: Option<String>,
+        hrid: Option<Hrid>,
     }
 
     impl QueueItem for TestEvent {
@@ -208,8 +210,8 @@ mod tests {
         fn id(&self) -> u64 {
             self.id
         }
-        fn event_type(&self) -> &str {
-            &self.event_type
+        fn event_type(&self) -> Hrid {
+            self.event_type
         }
         fn source(&self) -> Option<u64> {
             self.source
@@ -217,15 +219,15 @@ mod tests {
         fn target(&self) -> Option<u64> {
             self.target
         }
-        fn hrid(&self) -> Option<&str> {
-            self.hrid.as_deref()
+        fn hrid(&self) -> Option<Hrid> {
+            self.hrid
         }
     }
 
     fn event(id: u64, time: f64) -> TestEvent {
         TestEvent {
             id,
-            event_type: format!("type{id}"),
+            event_type: intern_hrid(&format!("type{id}")),
             time,
             source: None,
             target: None,
@@ -315,17 +317,17 @@ mod tests {
         ] {
             queue.add_event(TestEvent {
                 id,
-                event_type: event_type.to_string(),
+                event_type: intern_hrid(event_type),
                 time,
                 source: None,
                 target: None,
                 hrid: None,
             });
         }
-        queue.clear_events_of_type("a");
+        queue.clear_events_of_type(intern_hrid("a"));
         assert_eq!(pop_all(&mut queue), vec![2, 4]);
         // 再次调用是幂等的空操作（JS 包装方法无返回值，无法断言 cleared 标志）
-        queue.clear_events_of_type("a");
+        queue.clear_events_of_type(intern_hrid("a"));
     }
 
     #[test]
@@ -335,8 +337,8 @@ mod tests {
         for (id, time) in [(1u64, 300.0), (2, 100.0), (3, 200.0), (4, 100.0)] {
             queue.add_event(event(id, time));
         }
-        assert!(queue.clear_matching(|entry| entry.event_type() == "type1"));
-        assert!(!queue.clear_matching(|entry| entry.event_type() == "type1"));
+        assert!(queue.clear_matching(|entry| entry.event_type() == intern_hrid("type1")));
+        assert!(!queue.clear_matching(|entry| entry.event_type() == intern_hrid("type1")));
         assert_eq!(pop_all(&mut queue), vec![2, 4, 3]);
     }
 
@@ -356,7 +358,7 @@ mod tests {
         let mut queue = EventQueue::new();
         queue.add_event(TestEvent {
             id: 1,
-            event_type: "autoAttack".to_string(),
+            event_type: intern_hrid("autoAttack"),
             time: 100.0,
             source: Some(10),
             target: None,
@@ -364,21 +366,27 @@ mod tests {
         });
         queue.add_event(TestEvent {
             id: 2,
-            event_type: "regenTick".to_string(),
+            event_type: intern_hrid("regenTick"),
             time: 200.0,
             source: None,
             target: None,
-            hrid: Some("h1".to_string()),
+            hrid: Some(intern_hrid("h1")),
         });
 
-        assert!(queue.contains_event_of_type("autoAttack"));
-        assert!(!queue.contains_event_of_type("missing"));
-        assert!(queue.contains_event_of_type_and_hrid("regenTick", "h1"));
-        assert!(!queue.contains_event_of_type_and_hrid("regenTick", "h2"));
-        assert!(queue.contains_event_of_types_and_source(&["autoAttack", "x"], 10));
+        assert!(queue.contains_event_of_type(intern_hrid("autoAttack")));
+        assert!(!queue.contains_event_of_type(intern_hrid("missing")));
+        assert!(queue.contains_event_of_type_and_hrid(intern_hrid("regenTick"), intern_hrid("h1")));
+        assert!(!queue.contains_event_of_type_and_hrid(intern_hrid("regenTick"), intern_hrid("h2")));
+        assert!(queue.contains_event_of_types_and_source(&[Hrid::EVENT_AUTO_ATTACK, intern_hrid("x")], 10));
         // 类型命中但 source 不符：不得回落到后面的类型继续匹配。
-        assert!(!queue.contains_event_of_types_and_source(&["autoAttack", "regenTick"], 99));
-        assert_eq!(queue.get_matching(|e| e.event_type() == "regenTick").map(|e| e.id), Some(2));
+        assert!(!queue.contains_event_of_types_and_source(
+            &[Hrid::EVENT_AUTO_ATTACK, Hrid::EVENT_REGEN_TICK],
+            99
+        ));
+        assert_eq!(
+            queue.get_matching(|e| e.event_type() == Hrid::EVENT_REGEN_TICK).map(|e| e.id),
+            Some(2)
+        );
 
         queue.clear_events_for_unit(10);
         assert_eq!(queue.len(), 1);

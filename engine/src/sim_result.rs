@@ -39,6 +39,7 @@
 //!   Rust 侧 `calculate_experience_gain` 返回 `None`，`add_experience_gain` 只累加 7 个标准技能键
 //!   （等价 JS `hasOwnProperty(experienceGained, type)` 对未知技能的丢弃）。
 
+use crate::hrid::{hrid_to_string, intern_hrid, with_hrid, Hrid};
 use crate::ordered_map::OrderedMap;
 use crate::simulator::AttackOutcome;
 use crate::unit::UnitError;
@@ -54,17 +55,21 @@ const JS_EXPONENTIAL_UPPER: f64 = 1e21;
 /// JS `Number.prototype.toString` 的指数写法下界：`|v| < 1e-6` 起用指数。
 const JS_EXPONENTIAL_LOWER: f64 = 1e-6;
 
-/// 攻击表：源 hrid → 目标 hrid → 能力 → 命中键（数字串 / `"miss"`）→ 次数。
-type AttackTable = OrderedMap<String, OrderedMap<String, OrderedMap<String, OrderedMap<String, f64>>>>;
-/// 两层记账表（血/蓝获得、消耗、消耗品），键序按插入序。
-type TwoLevelTable = OrderedMap<String, OrderedMap<String, f64>>;
+/// 攻击表：源 hrid → 目标 hrid → 能力 hrid → 命中键（数字串 / `"miss"`，保持 String）→ 次数。
+type AttackTable = OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<String, f64>>>>;
+/// 两层记账表（血/蓝获得、消耗、消耗品、空蓝计时、蓝耗），键为 hrid 句柄，键序按插入序。
+type TwoLevelTable = OrderedMap<Hrid, OrderedMap<Hrid, f64>>;
+/// 经验增益表：玩家 hrid → 技能名（`"stamina"` 等普通字符串，非 hrid）→ 累计增益。
+type ExperienceTable = OrderedMap<Hrid, OrderedMap<String, f64>>;
 
 /// `map[key] ??= V::default()`（JS 对象/Map 的「缺失即插入默认值」语义）。
-fn ensure_child<'a, V: Default>(map: &'a mut OrderedMap<String, V>, key: &str) -> &'a mut V {
-    if !map.contains_key_str(key) {
-        map.set(key.to_string(), V::default());
+///
+/// 切片 25：泛化到 `Hrid`（Copy）与 `String`（仅在插入缺失键时克隆）两种键。
+fn ensure_child<'a, K: PartialEq + Clone, V: Default>(map: &'a mut OrderedMap<K, V>, key: &K) -> &'a mut V {
+    if !map.contains_key(key) {
+        map.set(key.clone(), V::default());
     }
-    map.get_mut(&key.to_string()).expect("刚刚插入的键必然存在")
+    map.get_mut(key).expect("刚刚插入的键必然存在")
 }
 
 /// JS `Math.max(0, value)`（NaN 传播：`Math.max(0, NaN)` 为 NaN）。
@@ -123,9 +128,19 @@ pub fn js_number_value(value: f64) -> Value {
     Number::from_f64(value).map(Value::Number).unwrap_or(Value::Null)
 }
 
-/// 技能 hrid → 技能名（JS `hrid.split('/')[2]`，形如 `/skills/attack` → `attack`）。
-fn skill_name_of_hrid(hrid: &str) -> Option<&str> {
+/// 技能 hrid 字符串 → 技能名（JS `hrid.split('/')[2]`，形如 `/skills/attack` → `attack`）。
+fn skill_name_of_str(hrid: &str) -> Option<&str> {
     hrid.split('/').nth(2).filter(|name| !name.is_empty())
+}
+
+/// 技能 hrid 句柄 → 技能名（限 7 技能表内；表外技能返回 `None`）。
+///
+/// 全部调用点的结果都会立刻经 `skill_index` 落回 7 技能表，故「限定表内」与 JS 的
+/// 「返回任意技能名再按表查找」等价。
+fn skill_name_of_hrid(hrid: Hrid) -> Option<&'static str> {
+    with_hrid(hrid, |name| {
+        skill_name_of_str(name).and_then(|skill| EXPERIENCE_SKILLS.iter().copied().find(|known| *known == skill))
+    })
 }
 
 /// 技能名在 7 技能表中的下标（未知技能在 JS 里会写到模板外的键，由累加端丢弃）。
@@ -137,15 +152,15 @@ fn skill_index(name: &str) -> Option<usize> {
 #[derive(Clone, Debug)]
 pub struct ExperienceGainParams {
     /// 玩家 hrid（用于写 `experienceGained[hrid]`）。
-    pub hrid: String,
+    pub hrid: Hrid,
     /// 该次击杀分给该玩家的经验基数。
     pub experience: f64,
     /// `combatStats.primaryTraining`（形如 `/skills/attack`）。
-    pub primary_training: Option<String>,
+    pub primary_training: Option<Hrid>,
     /// `combatStats.focusTraining`。
-    pub focus_training: Option<String>,
+    pub focus_training: Option<Hrid>,
     /// `combatStats.combatStyleHrid`。
-    pub combat_style_hrid: Option<String>,
+    pub combat_style_hrid: Option<Hrid>,
     /// `combatStats.combatExperience`。
     pub combat_experience: f64,
     /// `[(技能名, combatStats.<技能>Experience)]`，顺序固定
@@ -179,7 +194,7 @@ struct ScrollUsage {
     allowed: bool,
     ignored_reason: String,
     disabled: bool,
-    by_player: OrderedMap<String, OrderedMap<String, ScrollEntry>>,
+    by_player: OrderedMap<Hrid, OrderedMap<Hrid, ScrollEntry>>,
 }
 
 /// 存活时间条目（JS `timeSpentAlive[i]`）。
@@ -226,7 +241,7 @@ struct PlayerTimeSeries {
 #[derive(Clone, Debug, Default)]
 struct TimeSeriesData {
     timestamps: Vec<f64>,
-    players: OrderedMap<String, PlayerTimeSeries>,
+    players: OrderedMap<Hrid, PlayerTimeSeries>,
 }
 
 /// SimResult 聚合状态（字段私有，仅通过下方方法与 `to_value` 交互）。
@@ -235,10 +250,10 @@ pub struct SimResultState {
     /// minimal 变体（`{ minimal: true }` 分支）。
     minimal: bool,
 
-    deaths: OrderedMap<String, f64>,
+    deaths: OrderedMap<Hrid, f64>,
     consumables_used: TwoLevelTable,
-    player_ran_out_of_mana: OrderedMap<String, bool>,
-    player_ran_out_of_mana_time: OrderedMap<String, ManaOutEntry>,
+    player_ran_out_of_mana: OrderedMap<Hrid, bool>,
+    player_ran_out_of_mana_time: OrderedMap<Hrid, ManaOutEntry>,
     scroll_usage: ScrollUsage,
     time_spent_alive: Vec<TimeSpentAliveEntry>,
     boss_spawns: Vec<String>,
@@ -258,16 +273,16 @@ pub struct SimResultState {
     last_encounter_finish_time: f64,
 
     // 仅普通分支存在的字段（minimal 分支不写、不序列化）。
-    experience_gained: TwoLevelTable,
+    experience_gained: ExperienceTable,
     encounters: f64,
     attacks: AttackTable,
     hitpoints_gained: TwoLevelTable,
     manapoints_gained: TwoLevelTable,
-    debuff_on_level_gap: OrderedMap<String, f64>,
-    drop_context_buckets: OrderedMap<String, OrderedMap<String, Vec<DropBucket>>>,
-    drop_rate_multiplier: OrderedMap<String, f64>,
-    rare_find_multiplier: OrderedMap<String, f64>,
-    combat_drop_quantity: OrderedMap<String, f64>,
+    debuff_on_level_gap: OrderedMap<Hrid, f64>,
+    drop_context_buckets: OrderedMap<Hrid, OrderedMap<Hrid, Vec<DropBucket>>>,
+    drop_rate_multiplier: OrderedMap<Hrid, f64>,
+    rare_find_multiplier: OrderedMap<Hrid, f64>,
+    combat_drop_quantity: OrderedMap<Hrid, f64>,
     mana_used: TwoLevelTable,
     hitpoints_spent: TwoLevelTable,
     wipe_events: Vec<WipeEvent>,
@@ -295,8 +310,9 @@ impl SimResultState {
         let is_labyrinth = labyrinth_name.is_some();
         let mut player_ran_out_of_mana = OrderedMap::new();
         // JS 构造函数里写死的 5 个键（true 会落到真实 hrid 上，见 add_ran_out_of_mana_count）。
+        // 切片 25：`player1..player5` 是这里独有的键，动态注册即可（不进 well-known 常量表）。
         for index in 1..=5 {
-            player_ran_out_of_mana.set(format!("player{index}"), false);
+            player_ran_out_of_mana.set(intern_hrid(&format!("player{index}")), false);
         }
         Self {
             minimal,
@@ -352,27 +368,27 @@ impl SimResultState {
     }
 
     /// JS `addDeath(unit)`（minimal 分支未重写，照常记账）。
-    pub fn add_death(&mut self, hrid: &str) {
+    pub fn add_death(&mut self, hrid: Hrid) {
         let _prof = crate::prof::start("result.add_death");
-        *ensure_child(&mut self.deaths, hrid) += 1.0;
+        *ensure_child(&mut self.deaths, &hrid) += 1.0;
     }
 
     /// 切片 12：提前停止谓词的只读视图（JS `deaths[hrid] || 0` 的归一语义）。
-    pub fn deaths_value(&self, hrid: &str) -> f64 {
-        self.deaths.get_str(hrid).copied().unwrap_or(0.0)
+    pub fn deaths_value(&self, hrid: Hrid) -> f64 {
+        self.deaths.get(&hrid).copied().unwrap_or(0.0)
     }
 
     /// 切片 12：`playerRanOutOfMana[hrid] === true`（缺键为 false）。
-    pub fn player_ran_out_of_mana_value(&self, hrid: &str) -> bool {
-        self.player_ran_out_of_mana.get_str(hrid).copied().unwrap_or(false)
+    pub fn player_ran_out_of_mana_value(&self, hrid: Hrid) -> bool {
+        self.player_ran_out_of_mana.get(&hrid).copied().unwrap_or(false)
     }
 
     /// 切片 20：成本上界观察器的只读视图（JS `consumablesUsed[unitHrid]?.[itemHrid] || 0`）。
     /// minimal 分支同样记账（`addConsumableUse` 未被覆写），优化器轮次可直接消费。
-    pub fn consumables_used_value(&self, unit_hrid: &str, item_hrid: &str) -> f64 {
+    pub fn consumables_used_value(&self, unit_hrid: Hrid, item_hrid: Hrid) -> f64 {
         self.consumables_used
-            .get_str(unit_hrid)
-            .and_then(|items| items.get_str(item_hrid))
+            .get(&unit_hrid)
+            .and_then(|items| items.get(&item_hrid))
             .copied()
             .unwrap_or(0.0)
     }
@@ -448,7 +464,7 @@ impl SimResultState {
 
     /// JS `addAttack(source, target, ability, hit)`：`hit` 作为对象键被字符串化
     /// （数字走 `js_number_key`，未命中为字面量 `"miss"`）。
-    pub fn add_attack(&mut self, source_hrid: &str, target_hrid: &str, ability: &str, outcome: &AttackOutcome) {
+    pub fn add_attack(&mut self, source_hrid: Hrid, target_hrid: Hrid, ability: Hrid, outcome: &AttackOutcome) {
         if self.minimal {
             return;
         }
@@ -456,47 +472,47 @@ impl SimResultState {
             AttackOutcome::Miss => "miss".to_string(),
             AttackOutcome::Damage(damage) => js_number_key(*damage),
         };
-        let targets = ensure_child(&mut self.attacks, source_hrid);
-        let abilities = ensure_child(targets, target_hrid);
-        let hits = ensure_child(abilities, ability);
+        let targets = ensure_child(&mut self.attacks, &source_hrid);
+        let abilities = ensure_child(targets, &target_hrid);
+        let hits = ensure_child(abilities, &ability);
         *ensure_child(hits, &hit_key) += 1.0;
     }
 
     /// JS `addConsumableUse(unit, consumable)`（minimal 分支仍记账）。
-    pub fn add_consumable_use(&mut self, unit_hrid: &str, consumable_hrid: &str) {
+    pub fn add_consumable_use(&mut self, unit_hrid: Hrid, consumable_hrid: Hrid) {
         let _prof = crate::prof::start("result.add_consumable_use");
-        let consumables = ensure_child(&mut self.consumables_used, unit_hrid);
-        *ensure_child(consumables, consumable_hrid) += 1.0;
+        let consumables = ensure_child(&mut self.consumables_used, &unit_hrid);
+        *ensure_child(consumables, &consumable_hrid) += 1.0;
     }
 
     /// JS `addHitpointsGained(unit, source, amount)`。
-    pub fn add_hitpoints_gained(&mut self, unit_hrid: &str, source: &str, amount: f64) {
+    pub fn add_hitpoints_gained(&mut self, unit_hrid: Hrid, source: Hrid, amount: f64) {
         if self.minimal {
             return;
         }
-        *ensure_child(ensure_child(&mut self.hitpoints_gained, unit_hrid), source) += amount;
+        *ensure_child(ensure_child(&mut self.hitpoints_gained, &unit_hrid), &source) += amount;
     }
 
     /// JS `addManapointsGained(unit, source, amount)`。
-    pub fn add_manapoints_gained(&mut self, unit_hrid: &str, source: &str, amount: f64) {
+    pub fn add_manapoints_gained(&mut self, unit_hrid: Hrid, source: Hrid, amount: f64) {
         if self.minimal {
             return;
         }
-        *ensure_child(ensure_child(&mut self.manapoints_gained, unit_hrid), source) += amount;
+        *ensure_child(ensure_child(&mut self.manapoints_gained, &unit_hrid), &source) += amount;
     }
 
     /// JS `addHitpointsSpent(unit, source, amount)`。
-    pub fn add_hitpoints_spent(&mut self, unit_hrid: &str, source: &str, amount: f64) {
+    pub fn add_hitpoints_spent(&mut self, unit_hrid: Hrid, source: Hrid, amount: f64) {
         if self.minimal {
             return;
         }
-        *ensure_child(ensure_child(&mut self.hitpoints_spent, unit_hrid), source) += amount;
+        *ensure_child(ensure_child(&mut self.hitpoints_spent, &unit_hrid), &source) += amount;
     }
 
     /// JS `setDropRateMultipliers(unit)`：四个表都按 hrid 直接**覆盖**写数字。
     pub fn set_drop_rate_multipliers(
         &mut self,
-        hrid: &str,
+        hrid: Hrid,
         combat_drop_rate: f64,
         combat_rare_find: f64,
         combat_drop_quantity: f64,
@@ -507,33 +523,33 @@ impl SimResultState {
         }
         // JS 里「`if (!this.dropRateMultiplier[hrid]) this.dropRateMultiplier[hrid] = {}` 之后又被
         // `1 + stat` 覆盖」是死代码：结果等价于直接写数字。
-        *ensure_child(&mut self.drop_rate_multiplier, hrid) = 1.0 + combat_drop_rate;
-        *ensure_child(&mut self.rare_find_multiplier, hrid) = 1.0 + combat_rare_find;
-        *ensure_child(&mut self.combat_drop_quantity, hrid) = combat_drop_quantity;
-        *ensure_child(&mut self.debuff_on_level_gap, hrid) = debuff_on_level_gap;
+        *ensure_child(&mut self.drop_rate_multiplier, &hrid) = 1.0 + combat_drop_rate;
+        *ensure_child(&mut self.rare_find_multiplier, &hrid) = 1.0 + combat_rare_find;
+        *ensure_child(&mut self.combat_drop_quantity, &hrid) = combat_drop_quantity;
+        *ensure_child(&mut self.debuff_on_level_gap, &hrid) = debuff_on_level_gap;
     }
 
     /// JS `setManaUsed(unit)`：整个能力消耗表**替换**重建（重复调用会丢掉旧键）。
-    pub fn set_mana_used(&mut self, hrid: &str, entries: &[(String, f64)]) {
+    pub fn set_mana_used(&mut self, hrid: Hrid, entries: &[(Hrid, f64)]) {
         if self.minimal {
             return;
         }
         let mut table = OrderedMap::new();
         for (ability_hrid, mana_cost) in entries {
-            table.set(ability_hrid.clone(), *mana_cost);
+            table.set(*ability_hrid, *mana_cost);
         }
-        self.mana_used.set(hrid.to_string(), table);
+        self.mana_used.set(hrid, table);
     }
 
     /// JS `addRanOutOfManaCount(unit, isOutOfMana, time)`（minimal 分支仍记账）。
-    pub fn add_ran_out_of_mana_count(&mut self, hrid: &str, is_out_of_mana: bool, time: f64) {
+    pub fn add_ran_out_of_mana_count(&mut self, hrid: Hrid, is_out_of_mana: bool, time: f64) {
         let _prof = crate::prof::start("result.add_ran_out_of_mana");
         if is_out_of_mana {
             // JS `this.playerRanOutOfMana[unit.hrid] = true`：真实 hrid 是**新增**键。
-            self.player_ran_out_of_mana.set(hrid.to_string(), true);
+            self.player_ran_out_of_mana.set(hrid, true);
         }
 
-        let entry = ensure_child(&mut self.player_ran_out_of_mana_time, hrid);
+        let entry = ensure_child(&mut self.player_ran_out_of_mana_time, &hrid);
         if is_out_of_mana {
             if !entry.is_out_of_mana {
                 entry.is_out_of_mana = true;
@@ -553,13 +569,14 @@ impl SimResultState {
         if self.minimal {
             return None;
         }
-        let primary_skill = params.primary_training.as_deref().and_then(skill_name_of_hrid)?;
-        let style_hrid = params.combat_style_hrid.as_deref()?;
-        let style_skills = self
-            .combat_style_skill_exp_map
-            .iter()
-            .find(|(hrid, _)| hrid == style_hrid)
-            .map(|(_, skills)| skills)?;
+        let primary_skill = params.primary_training.and_then(skill_name_of_hrid)?;
+        let style_hrid = params.combat_style_hrid?;
+        let style_skills = with_hrid(style_hrid, |style_name| {
+            self.combat_style_skill_exp_map
+                .iter()
+                .find(|(hrid, _)| hrid == style_name)
+                .map(|(_, skills)| skills)
+        })?;
 
         // JS `experienceGainedRate` 的 7 个零值键 + 主训练 0.3。
         let mut rates = [0.0_f64; EXPERIENCE_SKILLS.len()];
@@ -567,9 +584,9 @@ impl SimResultState {
             rates[index] = 0.3;
         }
 
-        let focus_skill = params.focus_training.as_deref().and_then(skill_name_of_hrid);
-        let focus_in_style = match params.focus_training.as_deref() {
-            Some(focus_training) => style_skills.iter().any(|hrid| hrid == focus_training),
+        let focus_skill = params.focus_training.and_then(skill_name_of_hrid);
+        let focus_in_style = match params.focus_training {
+            Some(focus_training) => with_hrid(focus_training, |style_name| style_skills.iter().any(|hrid| hrid == style_name)),
             None => false,
         };
         if focus_in_style {
@@ -580,7 +597,7 @@ impl SimResultState {
             // JS 按 `Object.keys(skillExpMap)` 平均分摊 0.7（除数是全部风格技能数，不是标准 7 技能数）。
             let share = 0.7 / style_skills.len() as f64;
             for skill_hrid in style_skills {
-                if let Some(index) = skill_name_of_hrid(skill_hrid).and_then(skill_index) {
+                if let Some(index) = skill_name_of_str(skill_hrid).and_then(skill_index) {
                     rates[index] += share;
                 }
             }
@@ -609,12 +626,12 @@ impl SimResultState {
             return;
         }
         let gains = self.calculate_experience_gain(params);
-        if !self.experience_gained.contains_key_str(&params.hrid) {
+        if !self.experience_gained.contains_key(&params.hrid) {
             let mut entry = OrderedMap::new();
             for skill in EXPERIENCE_SKILLS {
                 entry.set(skill.to_string(), 0.0);
             }
-            self.experience_gained.set(params.hrid.clone(), entry);
+            self.experience_gained.set(params.hrid, entry);
         }
         let Some(gains) = gains else {
             return;
@@ -632,12 +649,12 @@ impl SimResultState {
     /// pending 收益按玩家提交时逐技能累加（键必须已存在于该玩家的 7 技能模板，
     /// 与 JS `hasOwnProperty` 语义一致；模板外的键静默丢弃）。玩家首次出现时
     /// 先建零值模板（等价 `ensureExperienceGainEntry`）。
-    pub fn add_experience_gain_value(&mut self, hrid: &str, skill: &str, value: f64) {
+    pub fn add_experience_gain_value(&mut self, hrid: Hrid, skill: &str, value: f64) {
         if self.minimal {
             return;
         }
         self.ensure_experience_gain_entry(hrid);
-        let entry = self.experience_gained.get_mut_str(hrid).expect("上面已确保存在");
+        let entry = self.experience_gained.get_mut(&hrid).expect("上面已确保存在");
         if let Some(target) = entry.get_mut_str(skill) {
             *target += value;
         }
@@ -646,19 +663,19 @@ impl SimResultState {
     /// 切片 14：JS `ensureExperienceGainEntry(unit)`——按需建 7 技能零值模板。
     /// `CombatSimulator.commitPendingExperience` 对每个挂起玩家先调用一次，
     /// 因此「本轮增益为空对象」的玩家同样会得到零值条目（JS 语义）。
-    pub fn ensure_experience_gain_entry(&mut self, hrid: &str) {
-        if self.minimal || self.experience_gained.contains_key_str(hrid) {
+    pub fn ensure_experience_gain_entry(&mut self, hrid: Hrid) {
+        if self.minimal || self.experience_gained.contains_key(&hrid) {
             return;
         }
         let mut entry = OrderedMap::new();
         for skill in EXPERIENCE_SKILLS {
             entry.set(skill.to_string(), 0.0);
         }
-        self.experience_gained.set_str(hrid, entry);
+        self.experience_gained.set(hrid, entry);
     }
 
     /// JS `addTimeSeriesSnapshot(time, players)`：按 `players` 顺序 push（同一玩家重复出现会 push 两次）。
-    pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(String, f64, f64, f64, f64)]) {
+    pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(Hrid, f64, f64, f64, f64)]) {
         if self.minimal {
             return;
         }
@@ -693,7 +710,7 @@ impl SimResultState {
     ///
     /// 只接受「有限安全整数且 > 0」作为已配置数量；其它数字（0/负数/小数）按 JS 语义整调用返回，
     /// 既不注册也不改写。`None` 对应 JS 的 `null`（无限库存）。
-    pub fn set_scroll_configuration(&mut self, player_hrid: &str, item_hrid: &str, configured_quantity: Option<f64>) {
+    pub fn set_scroll_configuration(&mut self, player_hrid: Hrid, item_hrid: Hrid, configured_quantity: Option<f64>) {
         if let Some(quantity) = configured_quantity {
             if !js_is_safe_integer(quantity) || quantity <= 0.0 {
                 return;
@@ -711,8 +728,8 @@ impl SimResultState {
     /// JS `recordScrollOpen(playerHrid, itemHrid, metadata, activeDurationNs, exhausted)`。
     pub fn record_scroll_open(
         &mut self,
-        player_hrid: &str,
-        item_hrid: &str,
+        player_hrid: Hrid,
+        item_hrid: Hrid,
         opened_count: f64,
         active_duration_ns: f64,
         exhausted: Option<bool>,
@@ -740,7 +757,7 @@ impl SimResultState {
     }
 
     /// JS `recordScrollWindow(playerHrid, itemHrid, activeDurationNs)`。
-    pub fn record_scroll_window(&mut self, player_hrid: &str, item_hrid: &str, active_duration_ns: f64) {
+    pub fn record_scroll_window(&mut self, player_hrid: Hrid, item_hrid: Hrid, active_duration_ns: f64) {
         let Some(entry) = ensure_scroll_entry(&mut self.scroll_usage, player_hrid, item_hrid) else {
             return;
         };
@@ -753,14 +770,14 @@ impl SimResultState {
     /// 已存在（`?.` 链，缺失不创建）；键不做 trim（JS 用未归一的 state 键直读，正常路径两者相同）。
     pub fn finalize_scroll_exhausted(
         &mut self,
-        player_hrid: &str,
-        item_hrid: &str,
+        player_hrid: Hrid,
+        item_hrid: Hrid,
         configured_quantity: Option<f64>,
     ) {
-        let Some(by_item) = self.scroll_usage.by_player.get_mut_str(player_hrid) else {
+        let Some(by_item) = self.scroll_usage.by_player.get_mut(&player_hrid) else {
             return;
         };
-        let Some(entry) = by_item.get_mut_str(item_hrid) else {
+        let Some(entry) = by_item.get_mut(&item_hrid) else {
             return;
         };
         entry.exhausted = configured_quantity.is_some_and(|quantity| entry.opened_count >= quantity);
@@ -772,8 +789,8 @@ impl SimResultState {
     /// （非有限倍率回落到 1 / 0）。JS 从不抛错，故始终返回 `Ok`。
     pub fn record_monster_death_from_context(
         &mut self,
-        player_hrid: &str,
-        monster_hrid: &str,
+        player_hrid: Hrid,
+        monster_hrid: Hrid,
         kill_count: f64,
         monster_difficulty_tier: Option<f64>,
         drop_rate_multiplier: f64,
@@ -784,9 +801,10 @@ impl SimResultState {
         if self.minimal {
             return Ok(());
         }
-        let player_key = player_hrid.trim();
-        let monster_key = monster_hrid.trim();
-        if player_key.is_empty() || monster_key.is_empty() {
+        // JS 先 trim 再判空（空白串视为缺失）；键本身用未归一的句柄（真实 hrid 无空白）。
+        let player_empty = with_hrid(player_hrid, |key| key.trim().is_empty());
+        let monster_empty = with_hrid(monster_hrid, |key| key.trim().is_empty());
+        if player_empty || monster_empty {
             return Ok(());
         }
 
@@ -803,8 +821,8 @@ impl SimResultState {
             return Ok(());
         }
 
-        let monsters = ensure_child(&mut self.drop_context_buckets, player_key);
-        let buckets = ensure_child(monsters, monster_key);
+        let monsters = ensure_child(&mut self.drop_context_buckets, &player_hrid);
+        let buckets = ensure_child(monsters, &monster_hrid);
         let matches_context = |bucket: &DropBucket| -> bool {
             bucket.drop_rate_multiplier == drop_rate
                 && bucket.rare_find_multiplier == rare_find
@@ -919,7 +937,7 @@ impl SimResultState {
     pub fn to_value(&self) -> Value {
         let mut result = serde_json::Map::new();
         if self.minimal {
-            result.insert("deaths".to_string(), number_map_to_value(&self.deaths));
+            result.insert("deaths".to_string(), hrid_map_to_value(&self.deaths));
             result.insert("consumablesUsed".to_string(), two_level_to_value(&self.consumables_used));
             result.insert("playerRanOutOfMana".to_string(), bool_map_to_value(&self.player_ran_out_of_mana));
             result.insert("playerRanOutOfManaTime".to_string(), mana_out_map_to_value(&self.player_ran_out_of_mana_time));
@@ -932,19 +950,19 @@ impl SimResultState {
             return Value::Object(result);
         }
 
-        result.insert("deaths".to_string(), number_map_to_value(&self.deaths));
-        result.insert("experienceGained".to_string(), two_level_to_value(&self.experience_gained));
+        result.insert("deaths".to_string(), hrid_map_to_value(&self.deaths));
+        result.insert("experienceGained".to_string(), experience_to_value(&self.experience_gained));
         result.insert("encounters".to_string(), js_number_value(self.encounters));
         result.insert("attacks".to_string(), attacks_to_value(&self.attacks));
         result.insert("consumablesUsed".to_string(), two_level_to_value(&self.consumables_used));
         result.insert("hitpointsGained".to_string(), two_level_to_value(&self.hitpoints_gained));
         result.insert("manapointsGained".to_string(), two_level_to_value(&self.manapoints_gained));
-        result.insert("debuffOnLevelGap".to_string(), number_map_to_value(&self.debuff_on_level_gap));
+        result.insert("debuffOnLevelGap".to_string(), hrid_map_to_value(&self.debuff_on_level_gap));
         result.insert("scrollUsage".to_string(), scroll_usage_to_value(&self.scroll_usage));
         result.insert("dropContextBuckets".to_string(), drop_buckets_to_value(&self.drop_context_buckets));
-        result.insert("dropRateMultiplier".to_string(), number_map_to_value(&self.drop_rate_multiplier));
-        result.insert("rareFindMultiplier".to_string(), number_map_to_value(&self.rare_find_multiplier));
-        result.insert("combatDropQuantity".to_string(), number_map_to_value(&self.combat_drop_quantity));
+        result.insert("dropRateMultiplier".to_string(), hrid_map_to_value(&self.drop_rate_multiplier));
+        result.insert("rareFindMultiplier".to_string(), hrid_map_to_value(&self.rare_find_multiplier));
+        result.insert("combatDropQuantity".to_string(), hrid_map_to_value(&self.combat_drop_quantity));
         result.insert("playerRanOutOfMana".to_string(), bool_map_to_value(&self.player_ran_out_of_mana));
         result.insert("playerRanOutOfManaTime".to_string(), mana_out_map_to_value(&self.player_ran_out_of_mana_time));
         result.insert("manaUsed".to_string(), two_level_to_value(&self.mana_used));
@@ -1011,36 +1029,43 @@ fn skill_experience_value(params: &ExperienceGainParams, skill: &str) -> f64 {
 }
 
 /// JS `ensureScrollUsageEntry`：玩家/物品键去空白后为空则不注册（返回 `None`）。
-fn ensure_scroll_entry<'a>(
-    usage: &'a mut ScrollUsage,
-    player_hrid: &str,
-    item_hrid: &str,
-) -> Option<&'a mut ScrollEntry> {
-    let player_key = player_hrid.trim();
-    let item_key = item_hrid.trim();
-    if player_key.is_empty() || item_key.is_empty() {
+fn ensure_scroll_entry<'a>(usage: &'a mut ScrollUsage, player_hrid: Hrid, item_hrid: Hrid) -> Option<&'a mut ScrollEntry> {
+    // JS 先 trim 再判空（空白串视为缺失）；键本身用未归一的句柄（真实 hrid 无空白）。
+    let player_empty = with_hrid(player_hrid, |key| key.trim().is_empty());
+    let item_empty = with_hrid(item_hrid, |key| key.trim().is_empty());
+    if player_empty || item_empty {
         return None;
     }
-    Some(ensure_child(ensure_child(&mut usage.by_player, player_key), item_key))
+    Some(ensure_child(ensure_child(&mut usage.by_player, &player_hrid), &item_hrid))
 }
 
-/// `OrderedMap<String, f64>` → JS 数字对象。
+/// `OrderedMap<String, f64>` → JS 数字对象（攻击表的命中键仍是普通字符串）。
 fn number_map_to_value(map: &OrderedMap<String, f64>) -> Value {
     Value::Object(map.iter().map(|(key, value)| (key.clone(), js_number_value(*value))).collect())
 }
 
-/// `OrderedMap<String, bool>` → JS 布尔对象。
-fn bool_map_to_value(map: &OrderedMap<String, bool>) -> Value {
-    Value::Object(map.iter().map(|(key, value)| (key.clone(), json!(*value))).collect())
+/// `OrderedMap<Hrid, f64>` → JS 数字对象（句柄经注册表映射回原字符串）。
+fn hrid_map_to_value(map: &OrderedMap<Hrid, f64>) -> Value {
+    Value::Object(map.iter().map(|(key, value)| (hrid_to_string(*key), js_number_value(*value))).collect())
 }
 
-/// 两层记账表 → JS 嵌套数字对象。
+/// `OrderedMap<Hrid, bool>` → JS 布尔对象。
+fn bool_map_to_value(map: &OrderedMap<Hrid, bool>) -> Value {
+    Value::Object(map.iter().map(|(key, value)| (hrid_to_string(*key), json!(*value))).collect())
+}
+
+/// 两层记账表（hrid/hrid）→ JS 嵌套数字对象。
 fn two_level_to_value(map: &TwoLevelTable) -> Value {
-    Value::Object(map.iter().map(|(key, inner)| (key.clone(), number_map_to_value(inner))).collect())
+    Value::Object(map.iter().map(|(key, inner)| (hrid_to_string(*key), hrid_map_to_value(inner))).collect())
+}
+
+/// 经验增益表（玩家 hrid → 技能名）→ JS 嵌套数字对象。
+fn experience_to_value(map: &ExperienceTable) -> Value {
+    Value::Object(map.iter().map(|(key, inner)| (hrid_to_string(*key), number_map_to_value(inner))).collect())
 }
 
 /// 空蓝计时表 → JS 对象。
-fn mana_out_map_to_value(map: &OrderedMap<String, ManaOutEntry>) -> Value {
+fn mana_out_map_to_value(map: &OrderedMap<Hrid, ManaOutEntry>) -> Value {
     Value::Object(
         map.iter()
             .map(|(key, entry)| {
@@ -1048,7 +1073,7 @@ fn mana_out_map_to_value(map: &OrderedMap<String, ManaOutEntry>) -> Value {
                 value.insert("isOutOfMana".to_string(), json!(entry.is_out_of_mana));
                 value.insert("startTimeForOutOfMana".to_string(), js_number_value(entry.start_time_for_out_of_mana));
                 value.insert("totalTimeForOutOfMana".to_string(), js_number_value(entry.total_time_for_out_of_mana));
-                (key.clone(), Value::Object(value))
+                (hrid_to_string(*key), Value::Object(value))
             })
             .collect(),
     )
@@ -1074,10 +1099,10 @@ fn scroll_usage_to_value(usage: &ScrollUsage) -> Value {
                     value.insert("openedCount".to_string(), js_number_value(entry.opened_count));
                     value.insert("activeDurationNs".to_string(), js_number_value(entry.active_duration_ns));
                     value.insert("exhausted".to_string(), json!(entry.exhausted));
-                    (item_key.clone(), Value::Object(value))
+                    (hrid_to_string(*item_key), Value::Object(value))
                 })
                 .collect();
-            (player_key.clone(), Value::Object(items))
+            (hrid_to_string(*player_key), Value::Object(items))
         })
         .collect();
     let mut value = serde_json::Map::new();
@@ -1107,7 +1132,7 @@ fn time_spent_alive_to_value(entries: &[TimeSpentAliveEntry]) -> Value {
 }
 
 /// 掉落上下文桶表 → JS 对象。
-fn drop_buckets_to_value(map: &OrderedMap<String, OrderedMap<String, Vec<DropBucket>>>) -> Value {
+fn drop_buckets_to_value(map: &OrderedMap<Hrid, OrderedMap<Hrid, Vec<DropBucket>>>) -> Value {
     let by_player = map
         .iter()
         .map(|(player_key, by_monster)| {
@@ -1143,16 +1168,16 @@ fn drop_buckets_to_value(map: &OrderedMap<String, OrderedMap<String, Vec<DropBuc
                             })
                             .collect(),
                     );
-                    (monster_key.clone(), value)
+                    (hrid_to_string(*monster_key), value)
                 })
                 .collect();
-            (player_key.clone(), Value::Object(monsters))
+            (hrid_to_string(*player_key), Value::Object(monsters))
         })
         .collect();
     Value::Object(by_player)
 }
 
-/// 攻击表 → JS 四层嵌套对象。
+/// 攻击表 → JS 四层嵌套对象（前三层是 hrid 键，命中层仍是字符串）。
 fn attacks_to_value(map: &AttackTable) -> Value {
     let by_source = map
         .iter()
@@ -1162,12 +1187,12 @@ fn attacks_to_value(map: &AttackTable) -> Value {
                 .map(|(target_key, by_ability)| {
                     let abilities = by_ability
                         .iter()
-                        .map(|(ability_key, by_hit)| (ability_key.clone(), number_map_to_value(by_hit)))
+                        .map(|(ability_key, by_hit)| (hrid_to_string(*ability_key), number_map_to_value(by_hit)))
                         .collect();
-                    (target_key.clone(), Value::Object(abilities))
+                    (hrid_to_string(*target_key), Value::Object(abilities))
                 })
                 .collect();
-            (source_key.clone(), Value::Object(targets))
+            (hrid_to_string(*source_key), Value::Object(targets))
         })
         .collect();
     Value::Object(by_source)
@@ -1201,7 +1226,7 @@ fn time_series_to_value(data: &TimeSeriesData) -> Value {
             value.insert("mp".to_string(), Value::Array(series.mp.iter().map(|v| js_number_value(*v)).collect()));
             value.insert("maxHp".to_string(), Value::Array(series.max_hp.iter().map(|v| js_number_value(*v)).collect()));
             value.insert("maxMp".to_string(), Value::Array(series.max_mp.iter().map(|v| js_number_value(*v)).collect()));
-            (player_key.clone(), Value::Object(value))
+            (hrid_to_string(*player_key), Value::Object(value))
         })
         .collect();
     let mut value = serde_json::Map::new();
@@ -1268,11 +1293,11 @@ mod tests {
     /// JS 侧 P1：primary `/skills/attack`、focus `/skills/melee`（在 smash 表内）、非零经验加成。
     fn p1_params(experience: f64) -> ExperienceGainParams {
         ExperienceGainParams {
-            hrid: "/players/p1".to_string(),
+            hrid: intern_hrid("/players/p1"),
             experience,
-            primary_training: Some("/skills/attack".to_string()),
-            focus_training: Some("/skills/melee".to_string()),
-            combat_style_hrid: Some("/combat_styles/smash".to_string()),
+            primary_training: Some(intern_hrid("/skills/attack")),
+            focus_training: Some(intern_hrid("/skills/melee")),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/smash")),
             combat_experience: 0.25,
             skill_experience: skill_experience(0.5, 0.0, 3.0, 1.5, 0.125, 0.0, 0.0),
             debuff_on_level_gap: 0.0,
@@ -1282,11 +1307,11 @@ mod tests {
     /// JS 侧 P2：primary `/skills/stamina`、无 focus → 走平均分摊分支。
     fn p2_params(experience: f64) -> ExperienceGainParams {
         ExperienceGainParams {
-            hrid: "/players/p2".to_string(),
+            hrid: intern_hrid("/players/p2"),
             experience,
-            primary_training: Some("/skills/stamina".to_string()),
+            primary_training: Some(intern_hrid("/skills/stamina")),
             focus_training: None,
-            combat_style_hrid: Some("/combat_styles/smash".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/smash")),
             combat_experience: 0.0,
             skill_experience: skill_experience(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
             debuff_on_level_gap: 0.0,
@@ -1296,11 +1321,11 @@ mod tests {
     /// JS 侧 P3：focus `/skills/magic` 不在 smash 表内 → `skillExpMap[focusTraining]` 为假，走分摊分支。
     fn p3_params(experience: f64) -> ExperienceGainParams {
         ExperienceGainParams {
-            hrid: "/players/p3".to_string(),
+            hrid: intern_hrid("/players/p3"),
             experience,
-            primary_training: Some("/skills/attack".to_string()),
-            focus_training: Some("/skills/magic".to_string()),
-            combat_style_hrid: Some("/combat_styles/smash".to_string()),
+            primary_training: Some(intern_hrid("/skills/attack")),
+            focus_training: Some(intern_hrid("/skills/magic")),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/smash")),
             combat_experience: 0.0,
             skill_experience: skill_experience(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
             debuff_on_level_gap: 0.0,
@@ -1860,19 +1885,19 @@ mod tests {
     #[test]
     fn attack_table_nested_keys_match_js() {
         let mut state = SimResultState::new(false, None, None, None, None, 2, Vec::new());
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(12.0));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(12.0));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(0.5));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(0.1 + 0.2));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(1.0 / 3.0));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(0.0));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Miss);
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Miss);
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(-3.5));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(1e21));
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(1e-7));
-        state.add_attack("/players/p1", "/monsters/m2", "damageOverTime", &AttackOutcome::Damage(2.5));
-        state.add_attack("/players/p2", "/monsters/m1", "stab", &AttackOutcome::Damage(100.0));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(12.0));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(12.0));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(0.5));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(0.1 + 0.2));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(1.0 / 3.0));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(0.0));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Miss);
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Miss);
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(-3.5));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(1e21));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(1e-7));
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m2"), intern_hrid("damageOverTime"), &AttackOutcome::Damage(2.5));
+        state.add_attack(intern_hrid("/players/p2"), intern_hrid("/monsters/m1"), intern_hrid("stab"), &AttackOutcome::Damage(100.0));
         assert_eq!(state.to_value()["attacks"], expected_json(ATTACKS));
     }
 
@@ -1887,24 +1912,24 @@ mod tests {
             2,
             Vec::new(),
         );
-        state.add_death("/players/p1");
-        state.add_death("/players/p1");
-        state.add_death("/monsters/m1");
-        state.add_consumable_use("/players/p1", "/items/health_potion");
-        state.add_consumable_use("/players/p1", "/items/health_potion");
-        state.add_consumable_use("/players/p1", "/items/mana_potion");
-        state.add_consumable_use("/monsters/m1", "/items/health_potion");
-        state.add_hitpoints_gained("/players/p1", "regen", 5.0);
-        state.add_hitpoints_gained("/players/p1", "regen", 2.5);
-        state.add_hitpoints_gained("/players/p1", "lifeSteal", 1.0);
-        state.add_manapoints_gained("/players/p1", "manaPotion", 10.0);
-        state.add_manapoints_gained("/players/p1", "regen", 1.25);
-        state.add_hitpoints_spent("/players/p1", "sacrifice", 3.25);
+        state.add_death(intern_hrid("/players/p1"));
+        state.add_death(intern_hrid("/players/p1"));
+        state.add_death(intern_hrid("/monsters/m1"));
+        state.add_consumable_use(intern_hrid("/players/p1"), intern_hrid("/items/health_potion"));
+        state.add_consumable_use(intern_hrid("/players/p1"), intern_hrid("/items/health_potion"));
+        state.add_consumable_use(intern_hrid("/players/p1"), intern_hrid("/items/mana_potion"));
+        state.add_consumable_use(intern_hrid("/monsters/m1"), intern_hrid("/items/health_potion"));
+        state.add_hitpoints_gained(intern_hrid("/players/p1"), intern_hrid("regen"), 5.0);
+        state.add_hitpoints_gained(intern_hrid("/players/p1"), intern_hrid("regen"), 2.5);
+        state.add_hitpoints_gained(intern_hrid("/players/p1"), intern_hrid("lifeSteal"), 1.0);
+        state.add_manapoints_gained(intern_hrid("/players/p1"), intern_hrid("manaPotion"), 10.0);
+        state.add_manapoints_gained(intern_hrid("/players/p1"), intern_hrid("regen"), 1.25);
+        state.add_hitpoints_spent(intern_hrid("/players/p1"), intern_hrid("sacrifice"), 3.25);
         state.add_encounter_end();
         state.add_encounter_end();
         let players = [
-            ("/players/p1".to_string(), 100.0, 50.0, 200.0, 120.0),
-            ("/players/p2".to_string(), 100.0, 50.0, 200.0, 120.0),
+            (intern_hrid("/players/p1"), 100.0, 50.0, 200.0, 120.0),
+            (intern_hrid("/players/p2"), 100.0, 50.0, 200.0, 120.0),
         ];
         state.add_time_series_snapshot(1e9, &players);
         state.add_time_series_snapshot(2e9, &players);
@@ -1943,7 +1968,7 @@ mod tests {
         missing_primary.primary_training = None;
         assert_eq!(state.calculate_experience_gain(&missing_primary), None);
         let mut unknown_style = p1_params(100.0);
-        unknown_style.combat_style_hrid = Some("/combat_styles/unknown".to_string());
+        unknown_style.combat_style_hrid = Some(intern_hrid("/combat_styles/unknown"));
         assert_eq!(state.calculate_experience_gain(&unknown_style), None);
         // minimal 分支既不计算也不记账（整份结果与未调用时相同）。
         let mut minimal = SimResultState::new(true, None, None, None, None, 2, smash_style_map());
@@ -1967,40 +1992,40 @@ mod tests {
         // P1：入参是调用方按 JS `readMultiplier` 口径算好的倍率
         // （1 + combatDropRate 0.5 = 1.5、1 + combatRareFind 0.25 = 1.25、combatDropQuantity 2、
         //   debuffOnLevelGap 0.1）。
-        let player = ("/players/p1", 1.5, 1.25, 2.0, 0.1);
+        let player = (intern_hrid("/players/p1"), 1.5, 1.25, 2.0, 0.1);
         state
-            .record_monster_death_from_context(player.0, "/monsters/boss", 1.0, Some(3.0), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/boss"), 1.0, Some(3.0), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // 同签名 → 合并到最近的桶。
         state
-            .record_monster_death_from_context(player.0, "/monsters/boss", 2.0, Some(3.0), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/boss"), 2.0, Some(3.0), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // 小数难度档 → floor 后取 3。
         state
-            .record_monster_death_from_context(player.0, "/monsters/spawn", 1.0, Some(3.7), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/spawn"), 1.0, Some(3.7), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // 未提供难度档 → 桶里没有 difficultyTier 键。
         state
-            .record_monster_death_from_context(player.0, "/monsters/rat", 1.0, None, player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/rat"), 1.0, None, player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // 新的掉落倍率签名（combatDropRate 改为 1.5 → 倍率 2.5）→ 新桶。
         state
-            .record_monster_death_from_context(player.0, "/monsters/boss", 1.0, Some(3.0), 2.5, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/boss"), 1.0, Some(3.0), 2.5, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // 回到旧签名 → `find` 回退合并到最早的同签桶（killCount 3 + 4 = 7）。
         state
-            .record_monster_death_from_context(player.0, "/monsters/boss", 4.0, Some(3.0), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/boss"), 4.0, Some(3.0), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // killCount <= 0 / 玩家键为空 → 静默忽略。
         state
-            .record_monster_death_from_context(player.0, "/monsters/boss", 0.0, Some(3.0), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(player.0, intern_hrid("/monsters/boss"), 0.0, Some(3.0), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         state
-            .record_monster_death_from_context("", "/monsters/boss", 1.0, Some(3.0), player.1, player.2, player.3, player.4)
+            .record_monster_death_from_context(Hrid::EMPTY, intern_hrid("/monsters/boss"), 1.0, Some(3.0), player.1, player.2, player.3, player.4)
             .expect("JS 在此从不抛错");
         // P2：倍率 1 + 0 = 1 / 1 + 0 = 1，combatDropQuantity 1、debuffOnLevelGap 0。
         state
-            .record_monster_death_from_context("/players/p2", "/monsters/boss", 3.0, Some(3.0), 1.0, 1.0, 1.0, 0.0)
+            .record_monster_death_from_context(intern_hrid("/players/p2"), intern_hrid("/monsters/boss"), 3.0, Some(3.0), 1.0, 1.0, 1.0, 0.0)
             .expect("JS 在此从不抛错");
         assert_eq!(state.to_value()["dropContextBuckets"], expected_json(DROPS));
     }
@@ -2008,16 +2033,16 @@ mod tests {
     #[test]
     fn mana_out_timer_matches_js() {
         let mut state = SimResultState::new(false, None, None, None, None, 2, Vec::new());
-        state.add_ran_out_of_mana_count("/players/p1", true, 10e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), true, 10e9);
         // 已在空蓝态 → 不重置起点。
-        state.add_ran_out_of_mana_count("/players/p1", true, 15e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), true, 15e9);
         // 恢复 → 累计 20e9 - 10e9。
-        state.add_ran_out_of_mana_count("/players/p1", false, 20e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), false, 20e9);
         // 非空蓝态 → 不累计。
-        state.add_ran_out_of_mana_count("/players/p1", false, 25e9);
-        state.add_ran_out_of_mana_count("/players/p1", true, 30e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), false, 25e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), true, 30e9);
         // 从未空蓝的玩家只建默认条目。
-        state.add_ran_out_of_mana_count("/players/p2", false, 40e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p2"), false, 40e9);
         assert_eq!(state.to_value(), expected_json(MANA_OUT));
     }
 
@@ -2026,37 +2051,37 @@ mod tests {
         let mut state = SimResultState::new(false, None, None, None, None, 1, Vec::new());
         state.set_scroll_usage_context(false, "guild_trial");
         state.set_scroll_usage_disabled(true);
-        state.set_scroll_configuration("/players/p1", "/items/scroll_a", Some(5.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), Some(5.0));
         // null（Rust None）＝ 无限库存。
-        state.set_scroll_configuration("/players/p1", "/items/scroll_b", None);
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_b"), None);
         // 0 / 1.5 / -2 都不是「有限安全正整数」→ 整调用返回，不注册。
-        state.set_scroll_configuration("/players/p1", "/items/scroll_bad", Some(0.0));
-        state.set_scroll_configuration("/players/p1", "/items/scroll_frac", Some(1.5));
-        state.set_scroll_configuration("/players/p1", "/items/scroll_neg", Some(-2.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_bad"), Some(0.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_frac"), Some(1.5));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_neg"), Some(-2.0));
         // 玩家键 / 物品键去空白后为空 → 不注册。
-        state.set_scroll_configuration("   ", "/items/scroll_c", Some(3.0));
-        state.set_scroll_configuration("/players/p1", "  ", Some(3.0));
-        state.set_scroll_configuration("/players/p1", "/items/scroll_d", Some(4.0));
-        state.set_scroll_configuration("/players/p1", "/items/scroll_e", Some(6.0));
+        state.set_scroll_configuration(intern_hrid("   "), intern_hrid("/items/scroll_c"), Some(3.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("  "), Some(3.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_d"), Some(4.0));
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_e"), Some(6.0));
         // JS 传 `{}`（configuredQuantity undefined）→ 注册且保持 null。
-        state.set_scroll_configuration("/players/p1", "/items/scroll_f", None);
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_f"), None);
 
-        state.record_scroll_open("/players/p1", "/items/scroll_a", 1.0, f64::NAN, Some(false));
-        state.record_scroll_open("/players/p1", "/items/scroll_a", 1.0, f64::NAN, Some(false));
-        state.record_scroll_window("/players/p1", "/items/scroll_a", 30e9);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 1.0, f64::NAN, Some(false));
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 1.0, f64::NAN, Some(false));
+        state.record_scroll_window(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 30e9);
         // 非正时长不入账。
-        state.record_scroll_window("/players/p1", "/items/scroll_a", 0.0);
+        state.record_scroll_window(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 0.0);
         // 没配置过的物品也会建条目。
-        state.record_scroll_window("/players/p1", "/items/scroll_never", 5e9);
-        state.record_scroll_open("/players/p1", "/items/scroll_b", 1.0, f64::NAN, Some(false));
+        state.record_scroll_window(intern_hrid("/players/p1"), intern_hrid("/items/scroll_never"), 5e9);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_b"), 1.0, f64::NAN, Some(false));
         // openedCount 非有限 → 记 1；exhausted 未提供且 configuredQuantity 为 null → 保持 false。
-        state.record_scroll_open("/players/p1", "/items/scroll_b", f64::NAN, f64::NAN, None);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_b"), f64::NAN, f64::NAN, None);
         // openedCount 2.7 → floor 记 2；时长走 metadata 口径。
-        state.record_scroll_open("/players/p1", "/items/scroll_b", 2.7, 7e9, None);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_b"), 2.7, 7e9, None);
         // exhausted 未提供且已配置数量 → 5 >= 4 推断为 true。
-        state.record_scroll_open("/players/p1", "/items/scroll_d", 5.0, f64::NAN, None);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_d"), 5.0, f64::NAN, None);
         // 物品键为空 → 不注册。
-        state.record_scroll_open("/players/p1", "   ", 1.0, f64::NAN, None);
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("   "), 1.0, f64::NAN, None);
         assert_eq!(state.to_value()["scrollUsage"], expected_json(SCROLLS));
     }
 
@@ -2110,12 +2135,15 @@ mod tests {
         state.set_last_encounter_finish_time(200.0);
         state.push_boss_spawn("#1,/monsters/a".to_string());
         state.push_boss_spawn("/monsters/b".to_string());
-        state.set_drop_rate_multipliers("/players/p1", 0.0, 0.0, 0.0, 0.0);
-        state.set_drop_rate_multipliers("/players/p2", 0.0, 0.0, 0.0, 0.0);
+        state.set_drop_rate_multipliers(intern_hrid("/players/p1"), 0.0, 0.0, 0.0, 0.0);
+        state.set_drop_rate_multipliers(intern_hrid("/players/p2"), 0.0, 0.0, 0.0, 0.0);
         // 第二次 setManaUsed 是整体替换（JS 先置 {} 再逐项写入）。
-        state.set_mana_used("/players/p2", &[("/abilities/a".to_string(), 5.0), ("/abilities/b".to_string(), 12.5)]);
-        state.set_mana_used("/players/p2", &[("/abilities/c".to_string(), 1.0)]);
-        state.set_mana_used("/players/p1", &[]);
+        state.set_mana_used(
+            intern_hrid("/players/p2"),
+            &[(intern_hrid("/abilities/a"), 5.0), (intern_hrid("/abilities/b"), 12.5)],
+        );
+        state.set_mana_used(intern_hrid("/players/p2"), &[(intern_hrid("/abilities/c"), 1.0)]);
+        state.set_mana_used(intern_hrid("/players/p1"), &[]);
         assert_eq!(state.to_value(), expected_json(SUMMARY));
 
         // 普通分支下 minDungenonTime 初值 0 时才会被 updateDungenonFinish 写入。
@@ -2133,18 +2161,18 @@ mod tests {
         state.update_time_spent_alive("#1", true, 1e9).expect("minimal 空操作不报错");
         state.update_dungenon_finish("#1", 2e9);
         state.add_encounter_end();
-        state.add_attack("/players/p1", "/monsters/m1", "autoAttack", &AttackOutcome::Damage(5.0));
-        state.add_hitpoints_gained("/players/p1", "regen", 5.0);
-        state.add_manapoints_gained("/players/p1", "regen", 5.0);
-        state.add_hitpoints_spent("/players/p1", "sacrifice", 5.0);
+        state.add_attack(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), intern_hrid("autoAttack"), &AttackOutcome::Damage(5.0));
+        state.add_hitpoints_gained(intern_hrid("/players/p1"), intern_hrid("regen"), 5.0);
+        state.add_manapoints_gained(intern_hrid("/players/p1"), intern_hrid("regen"), 5.0);
+        state.add_hitpoints_spent(intern_hrid("/players/p1"), intern_hrid("sacrifice"), 5.0);
         state.add_experience_gain(&p1_params(100.0));
         assert_eq!(state.calculate_experience_gain(&p1_params(100.0)), None);
         state
-            .record_monster_death_from_context("/players/p1", "/monsters/m1", 1.0, None, 1.0, 1.0, 1.0, 0.0)
+            .record_monster_death_from_context(intern_hrid("/players/p1"), intern_hrid("/monsters/m1"), 1.0, None, 1.0, 1.0, 1.0, 0.0)
             .expect("minimal 下 recordMonsterDeathFromContext 是空操作");
-        state.set_drop_rate_multipliers("/players/p1", 0.0, 0.0, 0.0, 0.0);
-        state.set_mana_used("/players/p1", &[("/abilities/a".to_string(), 1.0)]);
-        state.add_time_series_snapshot(1e9, &[("/players/p1".to_string(), 1.0, 2.0, 3.0, 4.0)]);
+        state.set_drop_rate_multipliers(intern_hrid("/players/p1"), 0.0, 0.0, 0.0, 0.0);
+        state.set_mana_used(intern_hrid("/players/p1"), &[(intern_hrid("/abilities/a"), 1.0)]);
+        state.add_time_series_snapshot(1e9, &[(intern_hrid("/players/p1"), 1.0, 2.0, 3.0, 4.0)]);
         assert_eq!(state.to_value(), before);
         assert_eq!(state.to_value(), expected_json(MINIMAL_NOOPS_AFTER));
     }
@@ -2152,17 +2180,17 @@ mod tests {
     #[test]
     fn minimal_still_writes_deaths_mana_and_scrolls() {
         let mut state = SimResultState::new(true, None, None, None, None, 2, Vec::new());
-        state.add_death("/players/p1");
-        state.add_death("/players/p1");
-        state.add_consumable_use("/players/p1", "/items/potion");
-        state.add_ran_out_of_mana_count("/players/p1", true, 1e9);
-        state.add_ran_out_of_mana_count("/players/p1", false, 3e9);
+        state.add_death(intern_hrid("/players/p1"));
+        state.add_death(intern_hrid("/players/p1"));
+        state.add_consumable_use(intern_hrid("/players/p1"), intern_hrid("/items/potion"));
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), true, 1e9);
+        state.add_ran_out_of_mana_count(intern_hrid("/players/p1"), false, 3e9);
         // 空原因串 → JS `ignoredReason || 'scrolls_not_allowed'` 落默认值。
         state.set_scroll_usage_context(false, "");
         state.set_scroll_usage_disabled(true);
-        state.set_scroll_configuration("/players/p1", "/items/scroll_a", Some(2.0));
-        state.record_scroll_open("/players/p1", "/items/scroll_a", 1.0, f64::NAN, Some(false));
-        state.record_scroll_window("/players/p1", "/items/scroll_a", 10e9);
+        state.set_scroll_configuration(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), Some(2.0));
+        state.record_scroll_open(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 1.0, f64::NAN, Some(false));
+        state.record_scroll_window(intern_hrid("/players/p1"), intern_hrid("/items/scroll_a"), 10e9);
         state.set_simulated_time(123.0);
         state.set_stopped_early(true);
         state.set_is_dungeon(true);

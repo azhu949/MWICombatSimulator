@@ -24,6 +24,7 @@ use crate::buff::{
     PartyAuraError, PartyAuraErrorKind,
 };
 use crate::consumable::Consumable;
+use crate::hrid::{hrid_is_empty, intern_hrid, with_hrid, Hrid};
 use crate::ordered_map::OrderedMap;
 use serde::{Deserialize, Serialize};
 
@@ -83,8 +84,8 @@ impl std::fmt::Display for UnitError {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CombatStats {
-    pub combat_style_hrid: String,
-    pub damage_type: String,
+    pub combat_style_hrid: Hrid,
+    pub damage_type: Hrid,
     pub attack_interval: f64,
     pub auto_attack_damage: f64,
     pub ability_damage: f64,
@@ -151,8 +152,8 @@ pub struct CombatStats {
     pub attack_speed: f64,
     pub armor_damage_ratio: f64,
     pub hp_drain_ratio: f64,
-    pub primary_training: String,
-    pub focus_training: String,
+    pub primary_training: Hrid,
+    pub focus_training: Hrid,
     pub stamina_experience: f64,
     pub intelligence_experience: f64,
     pub attack_experience: f64,
@@ -177,8 +178,8 @@ pub struct CombatStats {
 impl Default for CombatStats {
     fn default() -> Self {
         Self {
-            combat_style_hrid: "/combat_styles/smash".to_string(),
-            damage_type: "/damage_types/physical".to_string(),
+            combat_style_hrid: Hrid::COMBAT_STYLE_SMASH,
+            damage_type: Hrid::DAMAGE_TYPE_PHYSICAL,
             attack_interval: 3000000000.0,
             auto_attack_damage: 0.0,
             ability_damage: 0.0,
@@ -245,8 +246,8 @@ impl Default for CombatStats {
             attack_speed: 0.0,
             armor_damage_ratio: 0.0,
             hp_drain_ratio: 0.0,
-            primary_training: String::new(),
-            focus_training: String::new(),
+            primary_training: Hrid::EMPTY,
+            focus_training: Hrid::EMPTY,
             stamina_experience: 0.0,
             intelligence_experience: 0.0,
             attack_experience: 0.0,
@@ -362,7 +363,7 @@ macro_rules! combat_stats_string_fields {
             /// 按 JS 字段名写入字符串字段（生产桥 / 探针装配用）。返回是否命中。
             pub fn set_string_field(&mut self, name: &str, value: &str) -> bool {
                 match name {
-                    $( $name => { self.$field = value.to_string(); true } )*
+                    $( $name => { self.$field = intern_hrid(value); true } )*
                     _ => false,
                 }
             }
@@ -541,11 +542,11 @@ enum Slot<'a> {
 
 impl SettlementBoosts {
     /// 单遍构建：遍历顺序 = `combat_buffs` 键序（浮点累加序的前提）。
-    pub fn build(buffs: &OrderedMap<String, Buff>) -> Self {
+    pub fn build(buffs: &OrderedMap<Hrid, Buff>) -> Self {
         let _prof = crate::prof::start("unit.index_buffs");
         let mut boosts = Self::default();
         for buff in buffs.values() {
-            match boosts.slot_mut(&buff.type_hrid) {
+            match boosts.slot_mut(buff.type_hrid) {
                 Some(Slot::Items(list)) => {
                     list.push(BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost });
                 }
@@ -562,48 +563,48 @@ impl SettlementBoosts {
     /// 结算体消费的 40 个 `type_hrid` → 槽位；其余类型返回 `None`（跳过）。
     /// 匹配集即 `update_combat_details_with_boosts` 的全部消费键，二者成对维护。
     #[inline]
-    fn slot_mut(&mut self, type_hrid: &str) -> Option<Slot<'_>> {
+    fn slot_mut(&mut self, type_hrid: Hrid) -> Option<Slot<'_>> {
         Some(match type_hrid {
-            "/buff_types/stamina_level" => Slot::Items(&mut self.stamina_level),
-            "/buff_types/intelligence_level" => Slot::Items(&mut self.intelligence_level),
-            "/buff_types/attack_level" => Slot::Items(&mut self.attack_level),
-            "/buff_types/melee_level" => Slot::Items(&mut self.melee_level),
-            "/buff_types/defense_level" => Slot::Items(&mut self.defense_level),
-            "/buff_types/ranged_level" => Slot::Items(&mut self.ranged_level),
-            "/buff_types/magic_level" => Slot::Items(&mut self.magic_level),
-            "/buff_types/evasion" => Slot::Items(&mut self.evasion),
-            "/buff_types/armor" => Slot::Items(&mut self.armor),
-            "/buff_types/water_resistance" => Slot::Items(&mut self.water_resistance),
-            "/buff_types/nature_resistance" => Slot::Items(&mut self.nature_resistance),
-            "/buff_types/fire_resistance" => Slot::Items(&mut self.fire_resistance),
-            "/buff_types/max_hitpoints" => Slot::Sum(&mut self.max_hitpoints),
-            "/buff_types/max_manapoints" => Slot::Sum(&mut self.max_manapoints),
-            "/buff_types/fury_accuracy" => Slot::Sum(&mut self.fury_accuracy),
-            "/buff_types/fury_damage" => Slot::Sum(&mut self.fury_damage),
-            "/buff_types/accuracy" => Slot::Sum(&mut self.accuracy),
-            "/buff_types/damage" => Slot::Sum(&mut self.damage),
-            "/buff_types/damage_taken" => Slot::Sum(&mut self.damage_taken),
-            "/buff_types/physical_amplify" => Slot::Sum(&mut self.physical_amplify),
-            "/buff_types/water_amplify" => Slot::Sum(&mut self.water_amplify),
-            "/buff_types/nature_amplify" => Slot::Sum(&mut self.nature_amplify),
-            "/buff_types/fire_amplify" => Slot::Sum(&mut self.fire_amplify),
-            "/buff_types/healing_amplify" => Slot::Sum(&mut self.healing_amplify),
-            "/buff_types/attack_speed" => Slot::Sum(&mut self.attack_speed),
-            "/buff_types/hp_regen" => Slot::Sum(&mut self.hp_regen),
-            "/buff_types/mp_regen" => Slot::Sum(&mut self.mp_regen),
-            "/buff_types/life_steal" => Slot::Sum(&mut self.life_steal),
-            "/buff_types/physical_thorns" => Slot::Sum(&mut self.physical_thorns),
-            "/buff_types/elemental_thorns" => Slot::Sum(&mut self.elemental_thorns),
-            "/buff_types/wisdom" => Slot::Sum(&mut self.wisdom),
-            "/buff_types/critical_rate" => Slot::Sum(&mut self.critical_rate),
-            "/buff_types/critical_damage" => Slot::Sum(&mut self.critical_damage),
-            "/buff_types/cast_speed" => Slot::Sum(&mut self.cast_speed),
-            "/buff_types/combat_drop_rate" => Slot::Sum(&mut self.combat_drop_rate),
-            "/buff_types/rare_find" => Slot::Sum(&mut self.rare_find),
-            "/buff_types/combat_drop_quantity" => Slot::Sum(&mut self.combat_drop_quantity),
-            "/buff_types/threat" => Slot::Sum(&mut self.threat),
-            "/buff_types/retaliation" => Slot::Sum(&mut self.retaliation),
-            "/buff_types/tenacity" => Slot::Sum(&mut self.tenacity),
+            Hrid::BUFF_TYPE_STAMINA_LEVEL => Slot::Items(&mut self.stamina_level),
+            Hrid::BUFF_TYPE_INTELLIGENCE_LEVEL => Slot::Items(&mut self.intelligence_level),
+            Hrid::BUFF_TYPE_ATTACK_LEVEL => Slot::Items(&mut self.attack_level),
+            Hrid::BUFF_TYPE_MELEE_LEVEL => Slot::Items(&mut self.melee_level),
+            Hrid::BUFF_TYPE_DEFENSE_LEVEL => Slot::Items(&mut self.defense_level),
+            Hrid::BUFF_TYPE_RANGED_LEVEL => Slot::Items(&mut self.ranged_level),
+            Hrid::BUFF_TYPE_MAGIC_LEVEL => Slot::Items(&mut self.magic_level),
+            Hrid::BUFF_TYPE_EVASION => Slot::Items(&mut self.evasion),
+            Hrid::BUFF_TYPE_ARMOR => Slot::Items(&mut self.armor),
+            Hrid::BUFF_TYPE_WATER_RESISTANCE => Slot::Items(&mut self.water_resistance),
+            Hrid::BUFF_TYPE_NATURE_RESISTANCE => Slot::Items(&mut self.nature_resistance),
+            Hrid::BUFF_TYPE_FIRE_RESISTANCE => Slot::Items(&mut self.fire_resistance),
+            Hrid::BUFF_TYPE_MAX_HITPOINTS => Slot::Sum(&mut self.max_hitpoints),
+            Hrid::BUFF_TYPE_MAX_MANAPOINTS => Slot::Sum(&mut self.max_manapoints),
+            Hrid::BUFF_TYPE_FURY_ACCURACY => Slot::Sum(&mut self.fury_accuracy),
+            Hrid::BUFF_TYPE_FURY_DAMAGE => Slot::Sum(&mut self.fury_damage),
+            Hrid::BUFF_TYPE_ACCURACY => Slot::Sum(&mut self.accuracy),
+            Hrid::BUFF_TYPE_DAMAGE => Slot::Sum(&mut self.damage),
+            Hrid::BUFF_TYPE_DAMAGE_TAKEN => Slot::Sum(&mut self.damage_taken),
+            Hrid::BUFF_TYPE_PHYSICAL_AMPLIFY => Slot::Sum(&mut self.physical_amplify),
+            Hrid::BUFF_TYPE_WATER_AMPLIFY => Slot::Sum(&mut self.water_amplify),
+            Hrid::BUFF_TYPE_NATURE_AMPLIFY => Slot::Sum(&mut self.nature_amplify),
+            Hrid::BUFF_TYPE_FIRE_AMPLIFY => Slot::Sum(&mut self.fire_amplify),
+            Hrid::BUFF_TYPE_HEALING_AMPLIFY => Slot::Sum(&mut self.healing_amplify),
+            Hrid::BUFF_TYPE_ATTACK_SPEED => Slot::Sum(&mut self.attack_speed),
+            Hrid::BUFF_TYPE_HP_REGEN => Slot::Sum(&mut self.hp_regen),
+            Hrid::BUFF_TYPE_MP_REGEN => Slot::Sum(&mut self.mp_regen),
+            Hrid::BUFF_TYPE_LIFE_STEAL => Slot::Sum(&mut self.life_steal),
+            Hrid::BUFF_TYPE_PHYSICAL_THORNS => Slot::Sum(&mut self.physical_thorns),
+            Hrid::BUFF_TYPE_ELEMENTAL_THORNS => Slot::Sum(&mut self.elemental_thorns),
+            Hrid::BUFF_TYPE_WISDOM => Slot::Sum(&mut self.wisdom),
+            Hrid::BUFF_TYPE_CRITICAL_RATE => Slot::Sum(&mut self.critical_rate),
+            Hrid::BUFF_TYPE_CRITICAL_DAMAGE => Slot::Sum(&mut self.critical_damage),
+            Hrid::BUFF_TYPE_CAST_SPEED => Slot::Sum(&mut self.cast_speed),
+            Hrid::BUFF_TYPE_COMBAT_DROP_RATE => Slot::Sum(&mut self.combat_drop_rate),
+            Hrid::BUFF_TYPE_RARE_FIND => Slot::Sum(&mut self.rare_find),
+            Hrid::BUFF_TYPE_COMBAT_DROP_QUANTITY => Slot::Sum(&mut self.combat_drop_quantity),
+            Hrid::BUFF_TYPE_THREAT => Slot::Sum(&mut self.threat),
+            Hrid::BUFF_TYPE_RETALIATION => Slot::Sum(&mut self.retaliation),
+            Hrid::BUFF_TYPE_TENACITY => Slot::Sum(&mut self.tenacity),
             _ => return None,
         })
     }
@@ -634,9 +635,9 @@ pub struct BuffList {
 #[serde(rename_all = "camelCase")]
 pub struct RawBuffInput {
     #[serde(default)]
-    pub unique_hrid: Option<String>,
+    pub unique_hrid: Option<Hrid>,
     #[serde(default)]
-    pub type_hrid: Option<String>,
+    pub type_hrid: Option<Hrid>,
     #[serde(default)]
     pub ratio_boost: Option<f64>,
     #[serde(default)]
@@ -646,7 +647,7 @@ pub struct RawBuffInput {
     #[serde(default)]
     pub start_time: Option<f64>,
     #[serde(default)]
-    pub multiplier_for_skill_hrid: Option<String>,
+    pub multiplier_for_skill_hrid: Option<Hrid>,
     #[serde(default)]
     pub multiplier_per_skill_level: Option<f64>,
 }
@@ -656,7 +657,7 @@ pub struct RawBuffInput {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CombatScrollConfig {
-    pub item_hrid: String,
+    pub item_hrid: Hrid,
     /// `None` = JS `null`（无限库存）；`Some` = 正安全整数。
     #[serde(default)]
     pub quantity: Option<f64>,
@@ -668,7 +669,7 @@ pub enum BuffSourceSelector {
     /// 省略参数：定位当前活动源（含漂移防御回退）。
     ActiveSource,
     /// 显式参数：`None` 等价 JS 的 `null`（指向 `default` 键）。
-    Explicit(Option<String>),
+    Explicit(Option<Hrid>),
 }
 
 /// 战斗单位（等价 JS `CombatUnit` 的引擎相关状态）。
@@ -712,19 +713,19 @@ pub struct CombatUnit {
     /// JS 的 `Player` / `Monster` 覆写在捕获基准前会重写类自有字段（装备 / 怪物数据），
     /// Rust 无该覆写步骤，因此在 `clear_ccs` 的基准刷新点用它恢复这些字段。
     pub class_base_combat_stats: Option<CombatStats>,
-    pub combat_buffs: OrderedMap<String, Buff>,
-    pub permanent_buffs: OrderedMap<String, Buff>,
-    pub buff_sources: OrderedMap<String, OrderedMap<String, BuffSourceEntry>>,
-    pub active_buff_source_keys: OrderedMap<String, String>,
-    pub buff_source_policies: OrderedMap<String, BuffSourcePolicy>,
+    pub combat_buffs: OrderedMap<Hrid, Buff>,
+    pub permanent_buffs: OrderedMap<Hrid, Buff>,
+    pub buff_sources: OrderedMap<Hrid, OrderedMap<Hrid, BuffSourceEntry>>,
+    pub active_buff_source_keys: OrderedMap<Hrid, Hrid>,
+    pub buff_source_policies: OrderedMap<Hrid, BuffSourcePolicy>,
     pub buff_source_sequence: u64,
     /// `/equipment_types/two_hand` 槽位的 hrid（bulwark 判定；等价 JS `equipment?.[...]?.hrid`）。
-    pub two_hand_hrid: Option<String>,
+    pub two_hand_hrid: Option<Hrid>,
     // -----------------------------------------------------------------------
     // 模拟循环所需的单位状态（JS `combatUnit.js` 字段 + 模拟器写入的运行时字段）
     // -----------------------------------------------------------------------
     /// 单位标识（JS `unit.hrid`）；事件定位、按 hrid 查找与日志都使用它。
-    pub hrid: String,
+    pub hrid: Hrid,
     /// JS `isWeakened` 在整个仓库中从未被赋值（恒 undefined ⇒ 恒假），如实建模。
     pub is_weakened: bool,
     /// JS `weakenPercentage` 同样从未赋值；`processAttack` 的命中惩罚分支恒不触发。
@@ -741,7 +742,7 @@ pub struct CombatUnit {
     pub food: Vec<Option<Consumable>>,
     pub drinks: Vec<Option<Consumable>>,
     /// 每个技能累计消耗的魔法值（JS `abilityManaCosts` Map，仅玩家记账）。
-    pub ability_mana_costs: OrderedMap<String, f64>,
+    pub ability_mana_costs: OrderedMap<Hrid, f64>,
 }
 
 impl Default for CombatUnit {
@@ -783,7 +784,7 @@ impl Default for CombatUnit {
             buff_source_policies: OrderedMap::new(),
             buff_source_sequence: 0,
             two_hand_hrid: None,
-            hrid: String::new(),
+            hrid: Hrid::EMPTY,
             is_weakened: false,
             weaken_percentage: 0.0,
             weaken_expire_time: None,
@@ -799,8 +800,8 @@ impl Default for CombatUnit {
 // 源选择（JS 70-162 行）
 // ---------------------------------------------------------------------------
 
-fn pick_latest_buff_source(sources: &OrderedMap<String, BuffSourceEntry>) -> Option<(&String, &BuffSourceEntry)> {
-    let mut latest: Option<(&String, &BuffSourceEntry)> = None;
+fn pick_latest_buff_source(sources: &OrderedMap<Hrid, BuffSourceEntry>) -> Option<(&Hrid, &BuffSourceEntry)> {
+    let mut latest: Option<(&Hrid, &BuffSourceEntry)> = None;
     for (source_key, entry) in sources.iter() {
         if latest.is_none() || entry.sequence > latest.expect("latest checked").1.sequence {
             latest = Some((source_key, entry));
@@ -810,9 +811,9 @@ fn pick_latest_buff_source(sources: &OrderedMap<String, BuffSourceEntry>) -> Opt
 }
 
 fn pick_strongest_buff_source(
-    sources: &OrderedMap<String, BuffSourceEntry>,
-) -> Result<Option<(&String, &BuffSourceEntry)>, UnitError> {
-    let mut best: Option<(&String, &BuffSourceEntry)> = None;
+    sources: &OrderedMap<Hrid, BuffSourceEntry>,
+) -> Result<Option<(&Hrid, &BuffSourceEntry)>, UnitError> {
+    let mut best: Option<(&Hrid, &BuffSourceEntry)> = None;
     for (source_key, entry) in sources.iter() {
         // 完全相等的 ratio/flat 刻意不算「更强」：迭代保留最先注册的源（平局规则）。
         if is_stronger_party_aura_buff(Some(&entry.buff), best.map(|(_, best_entry)| &best_entry.buff))? {
@@ -823,15 +824,15 @@ fn pick_strongest_buff_source(
 }
 
 fn pick_active_buff_source<'a>(
-    sources: &'a OrderedMap<String, BuffSourceEntry>,
+    sources: &'a OrderedMap<Hrid, BuffSourceEntry>,
     policy: BuffSourcePolicy,
-    preferred_source_key: Option<&str>,
-) -> Result<Option<(&'a String, &'a BuffSourceEntry)>, UnitError> {
+    preferred_source_key: Option<Hrid>,
+) -> Result<Option<(&'a Hrid, &'a BuffSourceEntry)>, UnitError> {
     if policy == BuffSourcePolicy::Strongest {
         return pick_strongest_buff_source(sources);
     }
     if let Some(preferred) = preferred_source_key {
-        if let Some(entry) = sources.iter().find(|(source_key, _)| source_key.as_str() == preferred) {
+        if let Some(entry) = sources.iter().find(|(source_key, _)| **source_key == preferred) {
             return Ok(Some(entry));
         }
     }
@@ -854,16 +855,16 @@ pub fn policy_name(policy: BuffSourcePolicy) -> &'static str {
     }
 }
 
-fn read_non_empty_hrid(value: Option<&str>, field_name: &str) -> Result<String, UnitError> {
+fn read_non_empty_hrid(value: Option<Hrid>, field_name: &str) -> Result<Hrid, UnitError> {
     match value {
-        Some(text) if !text.trim().is_empty() => Ok(text.to_string()),
+        Some(hrid) if with_hrid(hrid, |text| !text.trim().is_empty()) => Ok(hrid),
         _ => Err(UnitError::type_error(format!(
             "CombatUnit buff {field_name} must be a non-empty string"
         ))),
     }
 }
 
-fn read_finite_number(value: Option<f64>, field_name: &str, unique_hrid: &str) -> Result<f64, UnitError> {
+fn read_finite_number(value: Option<f64>, field_name: &str, unique_hrid: Hrid) -> Result<f64, UnitError> {
     match value.filter(|candidate| candidate.is_finite()) {
         Some(number) => Ok(number),
         None => Err(UnitError::type_error(format!(
@@ -876,13 +877,13 @@ fn raw_buff_from_input(input: &RawBuffInput, start_time: Option<f64>) -> Buff {
     // JS 侧缺失字段为 undefined；此处 ratio/flat 以 NaN 兜底（消费端 NaN 语义一致，
     // 探针轨迹两边都归一为 null），其余字段按 `?? ''` / `?? 0` 归一。
     Buff {
-        unique_hrid: input.unique_hrid.clone().unwrap_or_default(),
-        type_hrid: input.type_hrid.clone().unwrap_or_default(),
+        unique_hrid: input.unique_hrid.unwrap_or(Hrid::EMPTY),
+        type_hrid: input.type_hrid.unwrap_or(Hrid::EMPTY),
         ratio_boost: input.ratio_boost.unwrap_or(f64::NAN),
         flat_boost: input.flat_boost.unwrap_or(f64::NAN),
         duration: input.duration,
         start_time,
-        multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.clone().unwrap_or_default(),
+        multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.unwrap_or(Hrid::EMPTY),
         multiplier_per_skill_level: input.multiplier_per_skill_level.unwrap_or(0.0),
     }
 }
@@ -943,7 +944,7 @@ impl CombatUnit {
         let ranged_level = settled_level(self.ranged_level, &boosts.ranged_level);
         let magic_level = settled_level(self.magic_level, &boosts.magic_level);
 
-        let is_bulwark = self.two_hand_hrid.as_deref().is_some_and(|hrid| hrid.contains("bulwark"));
+        let is_bulwark = self.two_hand_hrid.is_some_and(|hrid| with_hrid(hrid, |text| text.contains("bulwark")));
         let cd = &mut self.combat_details;
 
         cd.stamina_level = stamina_level;
@@ -1162,7 +1163,7 @@ impl CombatUnit {
         &mut self,
         input: &RawBuffInput,
         current_time: f64,
-        source_hrid: Option<&str>,
+        source_hrid: Option<Hrid>,
         source_policy: Option<&str>,
     ) -> Result<(), UnitError> {
         let _prof = crate::prof::start("unit.add_buff");
@@ -1170,24 +1171,24 @@ impl CombatUnit {
             return Err(UnitError::type_error("CombatUnit.addBuff requires a finite numeric currentTime"));
         }
 
-        let unique_hrid = read_non_empty_hrid(input.unique_hrid.as_deref(), "uniqueHrid")?;
-        let type_hrid = read_non_empty_hrid(input.type_hrid.as_deref(), "typeHrid")?;
-        let ratio_boost = read_finite_number(input.ratio_boost, "ratioBoost", &unique_hrid)?;
-        let flat_boost = read_finite_number(input.flat_boost, "flatBoost", &unique_hrid)?;
-        let duration = read_finite_number(input.duration, "duration", &unique_hrid)?;
+        let unique_hrid = read_non_empty_hrid(input.unique_hrid, "uniqueHrid")?;
+        let type_hrid = read_non_empty_hrid(input.type_hrid, "typeHrid")?;
+        let ratio_boost = read_finite_number(input.ratio_boost, "ratioBoost", unique_hrid)?;
+        let flat_boost = read_finite_number(input.flat_boost, "flatBoost", unique_hrid)?;
+        let duration = read_finite_number(input.duration, "duration", unique_hrid)?;
 
         // 注册副本：调用方对象不被修改，startTime 由注册时刻决定。
         let registered_buff = Buff {
-            unique_hrid: unique_hrid.clone(),
+            unique_hrid,
             type_hrid,
             ratio_boost,
             flat_boost,
             duration: Some(duration),
             start_time: Some(current_time),
-            multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.clone().unwrap_or_default(),
+            multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.unwrap_or(Hrid::EMPTY),
             multiplier_per_skill_level: input.multiplier_per_skill_level.unwrap_or(0.0),
         };
-        let source_key = source_hrid.unwrap_or("default");
+        let source_key = source_hrid.unwrap_or(Hrid::DEFAULT);
         let expires_at = current_time + duration;
         let normalized_policy = normalize_buff_source_policy(source_policy)?;
         if normalized_policy == BuffSourcePolicy::Strongest {
@@ -1196,10 +1197,10 @@ impl CombatUnit {
         }
 
         // JS 语义：源注册表先建（即便随后策略冲突抛错也会留下空表）。
-        if !self.buff_sources.contains_key_str(&unique_hrid) {
-            self.buff_sources.set(unique_hrid.clone(), OrderedMap::new());
+        if !self.buff_sources.contains_key(&unique_hrid) {
+            self.buff_sources.set(unique_hrid, OrderedMap::new());
         }
-        if let Some(existing_policy) = self.buff_source_policies.get_str(&unique_hrid).copied() {
+        if let Some(existing_policy) = self.buff_source_policies.get(&unique_hrid).copied() {
             if existing_policy != normalized_policy {
                 return Err(UnitError::error(format!(
                     "CombatUnit buff source policy mismatch for {unique_hrid}: {} vs {}",
@@ -1208,27 +1209,27 @@ impl CombatUnit {
                 )));
             }
         }
-        self.buff_source_policies.set_str(&unique_hrid, normalized_policy);
+        self.buff_source_policies.set(unique_hrid, normalized_policy);
         self.buff_source_sequence += 1;
         let sequence = self.buff_source_sequence;
         if let Some(sources) = self.buff_sources.get_mut(&unique_hrid) {
-            sources.set_str(source_key, BuffSourceEntry { buff: registered_buff, expires_at, sequence });
+            sources.set(source_key, BuffSourceEntry { buff: registered_buff, expires_at, sequence });
         }
 
-        self.reconcile_buff_source_live(&unique_hrid, true, Some(source_key))?;
+        self.reconcile_buff_source_live(unique_hrid, true, Some(source_key))?;
         Ok(())
     }
 
     /// 等价 JS `reconcileBuffSource(uniqueHrid, sources, { updateDetails, preferredSourceKey })`。
     pub fn reconcile_buff_source(
         &mut self,
-        unique_hrid: &str,
-        sources: Option<&OrderedMap<String, BuffSourceEntry>>,
+        unique_hrid: Hrid,
+        sources: Option<&OrderedMap<Hrid, BuffSourceEntry>>,
         update_details: bool,
-        preferred_source_key: Option<&str>,
+        preferred_source_key: Option<Hrid>,
     ) -> Result<bool, UnitError> {
-        let previous_active_buff = self.combat_buffs.get_str(unique_hrid).cloned();
-        let policy = self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+        let previous_active_buff = self.combat_buffs.get(&unique_hrid).cloned();
+        let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
         let next_active_source = match sources {
             Some(sources) if !sources.is_empty() => pick_active_buff_source(sources, policy, preferred_source_key)?,
             _ => None,
@@ -1236,11 +1237,11 @@ impl CombatUnit {
         let next_active_buff = next_active_source.map(|(_, entry)| entry.buff.clone());
 
         if let Some((source_key, entry)) = next_active_source {
-            self.active_buff_source_keys.set_str(unique_hrid, source_key.clone());
-            self.combat_buffs.set_str(unique_hrid, entry.buff.clone());
+            self.active_buff_source_keys.set(unique_hrid, *source_key);
+            self.combat_buffs.set(unique_hrid, entry.buff.clone());
         } else {
-            self.active_buff_source_keys.delete_str(unique_hrid);
-            self.combat_buffs.delete_str(unique_hrid);
+            self.active_buff_source_keys.delete(&unique_hrid);
+            self.combat_buffs.delete(&unique_hrid);
         }
 
         let active_buff_changed = !buffs_affect_stats_equally(next_active_buff.as_ref(), previous_active_buff.as_ref());
@@ -1258,28 +1259,28 @@ impl CombatUnit {
     /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。可观察行为不变。
     fn reconcile_buff_source_live(
         &mut self,
-        unique_hrid: &str,
+        unique_hrid: Hrid,
         update_details: bool,
-        preferred_source_key: Option<&str>,
+        preferred_source_key: Option<Hrid>,
     ) -> Result<bool, UnitError> {
-        let policy = self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
-        let next_active_source = match self.buff_sources.get_str(unique_hrid) {
+        let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+        let next_active_source = match self.buff_sources.get(&unique_hrid) {
             Some(sources) if !sources.is_empty() => pick_active_buff_source(sources, policy, preferred_source_key)?,
             _ => None,
         };
-        let next_active = next_active_source.map(|(key, entry)| (key.clone(), entry.buff.clone()));
+        let next_active = next_active_source.map(|(key, entry)| (*key, entry.buff.clone()));
 
         let active_buff_changed = {
-            let previous_active_buff = self.combat_buffs.get_str(unique_hrid);
+            let previous_active_buff = self.combat_buffs.get(&unique_hrid);
             !buffs_affect_stats_equally(next_active.as_ref().map(|(_, buff)| buff), previous_active_buff)
         };
 
         if let Some((source_key, buff)) = next_active {
-            self.active_buff_source_keys.set_str(unique_hrid, source_key);
-            self.combat_buffs.set_str(unique_hrid, buff);
+            self.active_buff_source_keys.set(unique_hrid, source_key);
+            self.combat_buffs.set(unique_hrid, buff);
         } else {
-            self.active_buff_source_keys.delete_str(unique_hrid);
-            self.combat_buffs.delete_str(unique_hrid);
+            self.active_buff_source_keys.delete(&unique_hrid);
+            self.combat_buffs.delete(&unique_hrid);
         }
 
         if active_buff_changed && update_details {
@@ -1290,15 +1291,13 @@ impl CombatUnit {
     }
 
     /// JS `unit.buffSources?.[uniqueHrid]?.has(sourceKey)`（切片 17：卷轴活跃 buff 恢复判定）。
-    pub fn has_buff_source(&self, unique_hrid: &str, source_key: &str) -> bool {
-        self.buff_sources
-            .get_str(unique_hrid)
-            .is_some_and(|sources| sources.contains_key_str(source_key))
+    pub fn has_buff_source(&self, unique_hrid: Hrid, source_key: Hrid) -> bool {
+        self.buff_sources.get(&unique_hrid).is_some_and(|sources| sources.contains_key(&source_key))
     }
 
     /// 等价 JS `removeBuff(buff, sourceHrid = REMOVE_ACTIVE_SOURCE)`（`uniqueHrid` 为空则不动作）。
-    pub fn remove_buff(&mut self, unique_hrid: Option<&str>, selector: BuffSourceSelector) -> Result<(), UnitError> {
-        let Some(unique_hrid) = unique_hrid.filter(|hrid| !hrid.is_empty()) else {
+    pub fn remove_buff(&mut self, unique_hrid: Option<Hrid>, selector: BuffSourceSelector) -> Result<(), UnitError> {
+        let Some(unique_hrid) = unique_hrid.filter(|hrid| !hrid_is_empty(*hrid)) else {
             return Ok(());
         };
         self.remove_buff_by_unique_hrid(unique_hrid, selector)
@@ -1307,43 +1306,43 @@ impl CombatUnit {
     /// 等价 JS `removeBuffByUniqueHrid(uniqueHrid, sourceHrid = REMOVE_ACTIVE_SOURCE)`。
     pub fn remove_buff_by_unique_hrid(
         &mut self,
-        unique_hrid: &str,
+        unique_hrid: Hrid,
         selector: BuffSourceSelector,
     ) -> Result<(), UnitError> {
-        let sources_snapshot = self.buff_sources.get_str(unique_hrid).cloned();
+        let sources_snapshot = self.buff_sources.get(&unique_hrid).cloned();
 
-        let mut source_key: Option<String> = None;
+        let mut source_key: Option<Hrid> = None;
         match selector {
             BuffSourceSelector::ActiveSource => {
-                let active_source_key = self.active_buff_source_keys.get_str(unique_hrid).cloned();
-                let use_active = active_source_key
-                    .as_ref()
-                    .is_some_and(|active| sources_snapshot.as_ref().map_or(true, |sources| sources.contains_key_str(active)));
+                let active_source_key = self.active_buff_source_keys.get(&unique_hrid).copied();
+                let use_active = active_source_key.is_some_and(|active| {
+                    sources_snapshot.as_ref().map_or(true, |sources| sources.contains_key(&active))
+                });
                 if use_active {
                     source_key = active_source_key;
                 } else if let Some(sources) = sources_snapshot.as_ref() {
                     if !sources.is_empty() {
                         // 恢复/遗留状态：推导与对账相同的活动源，而不是静默返回空操作。
                         let policy =
-                            self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
-                        source_key = pick_active_buff_source(sources, policy, None)?.map(|(key, _)| key.clone());
+                            self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+                        source_key = pick_active_buff_source(sources, policy, None)?.map(|(key, _)| *key);
                     }
                 }
             }
             BuffSourceSelector::Explicit(explicit) => source_key = explicit,
         }
-        let source_key = source_key.unwrap_or_else(|| "default".to_string());
+        let source_key = source_key.unwrap_or(Hrid::DEFAULT);
 
         if let Some(sources) = sources_snapshot.as_ref() {
-            if !sources.contains_key_str(&source_key) {
+            if !sources.contains_key(&source_key) {
                 return Ok(());
             }
 
-            let policy = self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+            let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
             let source_was_active =
-                self.active_buff_source_keys.get_str(unique_hrid).is_some_and(|active| *active == source_key);
+                self.active_buff_source_keys.get(&unique_hrid).is_some_and(|active| *active == source_key);
             let mut remaining = sources.len();
-            if let Some(live_sources) = self.buff_sources.get_mut_str(unique_hrid) {
+            if let Some(live_sources) = self.buff_sources.get_mut(&unique_hrid) {
                 if live_sources.delete(&source_key) {
                     remaining -= 1;
                 }
@@ -1351,24 +1350,24 @@ impl CombatUnit {
 
             if policy == BuffSourcePolicy::Replace && source_was_active {
                 // 后写覆盖的增益被移除时不揭示旧值：级联清除该 uniqueHrid 的全部源。
-                self.buff_sources.delete_str(unique_hrid);
-                self.buff_source_policies.delete_str(unique_hrid);
+                self.buff_sources.delete(&unique_hrid);
+                self.buff_source_policies.delete(&unique_hrid);
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
             } else if remaining == 0 {
-                self.buff_sources.delete_str(unique_hrid);
-                self.buff_source_policies.delete_str(unique_hrid);
+                self.buff_sources.delete(&unique_hrid);
+                self.buff_source_policies.delete(&unique_hrid);
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
-            } else if source_was_active || self.active_buff_source_keys.get_str(unique_hrid).is_none() {
+            } else if source_was_active || self.active_buff_source_keys.get(&unique_hrid).is_none() {
                 self.reconcile_buff_source_live(unique_hrid, true, None)?;
             }
             return Ok(());
         }
 
         // 早于源注册机制的旧式增益兼容回退。
-        if self.combat_buffs.contains_key_str(unique_hrid) {
-            self.combat_buffs.delete_str(unique_hrid);
-            self.active_buff_source_keys.delete_str(unique_hrid);
-            self.buff_source_policies.delete_str(unique_hrid);
+        if self.combat_buffs.contains_key(&unique_hrid) {
+            self.combat_buffs.delete(&unique_hrid);
+            self.active_buff_source_keys.delete(&unique_hrid);
+            self.buff_source_policies.delete(&unique_hrid);
             self.update_combat_details();
         }
         Ok(())
@@ -1378,7 +1377,7 @@ impl CombatUnit {
     pub fn add_permanent_buff(&mut self, input: &RawBuffInput) {
         // JS 对象键会把 undefined 字符串化为 "undefined"；探针脚本始终给出合法
         // typeHrid，此处复刻该字符串化以保持两侧一致。
-        let type_key = input.type_hrid.clone().unwrap_or_else(|| "undefined".to_string());
+        let type_key = input.type_hrid.unwrap_or(Hrid::UNDEFINED);
         let ratio_boost = input.ratio_boost.unwrap_or(f64::NAN);
         let flat_boost = input.flat_boost.unwrap_or(f64::NAN);
         if let Some(existing) = self.permanent_buffs.get_mut(&type_key) {
@@ -1426,32 +1425,32 @@ impl CombatUnit {
     /// 返回「派生属性是否变脏」（JS 布尔返回值，逐字保留）。
     pub fn remove_expired_buff_by_unique_hrid(
         &mut self,
-        unique_hrid: &str,
+        unique_hrid: Hrid,
         current_time: f64,
         update_details: bool,
     ) -> Result<bool, UnitError> {
-        if unique_hrid.is_empty() {
+        if hrid_is_empty(unique_hrid) {
             return Ok(false);
         }
 
         let mut details_dirty = false;
-        if self.buff_sources.contains_key_str(unique_hrid) {
-            let active_source_key = self.active_buff_source_keys.get_str(unique_hrid).cloned();
-            let policy = self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+        if self.buff_sources.contains_key(&unique_hrid) {
+            let active_source_key = self.active_buff_source_keys.get(&unique_hrid).copied();
+            let policy = self.buff_source_policies.get(&unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
             let mut active_source_expired = false;
             {
                 let sources = self
                     .buff_sources
-                    .get_mut_str(unique_hrid)
+                    .get_mut(&unique_hrid)
                     .expect("buff sources entry exists for known uniqueHrid");
                 // 在扫描快照时删除，避免修改影响迭代语义。
-                let mut expired_keys: Vec<String> = Vec::new();
+                let mut expired_keys: Vec<Hrid> = Vec::new();
                 for (source_key, entry) in sources.iter() {
                     if entry.expires_at <= current_time {
-                        if active_source_key.as_deref() == Some(source_key.as_str()) {
+                        if active_source_key == Some(*source_key) {
                             active_source_expired = true;
                         }
-                        expired_keys.push(source_key.clone());
+                        expired_keys.push(*source_key);
                     }
                 }
                 for source_key in &expired_keys {
@@ -1459,20 +1458,22 @@ impl CombatUnit {
                 }
             }
 
-            let remaining = self.buff_sources.get_str(unique_hrid).map_or(0, |sources| sources.len());
-            let active_key_missing = match active_source_key.as_deref() {
-                Some(active) => !self.buff_sources.get_str(unique_hrid).is_some_and(|sources| sources.contains_key_str(active)),
+            let remaining = self.buff_sources.get(&unique_hrid).map_or(0, |sources| sources.len());
+            let active_key_missing = match active_source_key {
+                Some(active) => {
+                    !self.buff_sources.get(&unique_hrid).is_some_and(|sources| sources.contains_key(&active))
+                }
                 None => true,
             };
 
             if policy == BuffSourcePolicy::Replace && active_source_expired {
-                self.buff_sources.delete_str(unique_hrid);
-                self.buff_source_policies.delete_str(unique_hrid);
+                self.buff_sources.delete(&unique_hrid);
+                self.buff_source_policies.delete(&unique_hrid);
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if remaining == 0 {
-                self.buff_sources.delete_str(unique_hrid);
-                self.buff_source_policies.delete_str(unique_hrid);
+                self.buff_sources.delete(&unique_hrid);
+                self.buff_source_policies.delete(&unique_hrid);
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if active_source_expired || active_key_missing {
@@ -1480,12 +1481,12 @@ impl CombatUnit {
             }
         } else {
             // 与源注册机制引入前由旧调用方恢复的运行时增益保持兼容。
-            let buff = self.combat_buffs.get_str(unique_hrid).cloned();
+            let buff = self.combat_buffs.get(&unique_hrid).cloned();
             if let Some(buff) = buff {
                 if is_timed_buff_expired(&buff, current_time) {
-                    self.combat_buffs.delete_str(unique_hrid);
-                    self.active_buff_source_keys.delete_str(unique_hrid);
-                    self.buff_source_policies.delete_str(unique_hrid);
+                    self.combat_buffs.delete(&unique_hrid);
+                    self.active_buff_source_keys.delete(&unique_hrid);
+                    self.buff_source_policies.delete(&unique_hrid);
                     details_dirty = true;
                 }
             }
@@ -1503,16 +1504,16 @@ impl CombatUnit {
         let _prof = crate::prof::start("unit.remove_expired_buffs");
         let mut details_dirty = false;
         // Object.keys 快照：先收集再逐项处理（处理过程会删除条目）。
-        let unique_hrids: Vec<String> = self.buff_sources.keys().cloned().collect();
+        let unique_hrids: Vec<Hrid> = self.buff_sources.keys().copied().collect();
         for unique_hrid in unique_hrids {
-            details_dirty = self.remove_expired_buff_by_unique_hrid(&unique_hrid, current_time, false)? || details_dirty;
+            details_dirty = self.remove_expired_buff_by_unique_hrid(unique_hrid, current_time, false)? || details_dirty;
         }
 
         // 与未在 buffSources 中表示、由旧调用方恢复的运行时增益保持兼容。
-        let combat_buff_entries: Vec<(String, Buff)> =
-            self.combat_buffs.iter().map(|(key, buff)| (key.clone(), buff.clone())).collect();
+        let combat_buff_entries: Vec<(Hrid, Buff)> =
+            self.combat_buffs.iter().map(|(key, buff)| (*key, buff.clone())).collect();
         for (unique_hrid, buff) in combat_buff_entries {
-            if self.buff_sources.contains_key_str(&unique_hrid) {
+            if self.buff_sources.contains_key(&unique_hrid) {
                 continue;
             }
             if is_timed_buff_expired(&buff, current_time) {
@@ -1571,7 +1572,7 @@ impl CombatUnit {
     }
 
     /// 等价 JS `getBuffBoosts(type)`（无快照路径：按 combatBuffs 遍历序投影）。
-    pub fn get_buff_boosts(&self, type_hrid: &str) -> Vec<BuffBoost> {
+    pub fn get_buff_boosts(&self, type_hrid: Hrid) -> Vec<BuffBoost> {
         let _prof = crate::prof::start("unit.get_buff_boosts");
         self.combat_buffs
             .values()
@@ -1581,7 +1582,7 @@ impl CombatUnit {
     }
 
     /// 等价 JS `getBuffBoost(type)`（无快照路径：`?? 0` 归一后逐项累加）。
-    pub fn get_buff_boost(&self, type_hrid: &str) -> BuffBoost {
+    pub fn get_buff_boost(&self, type_hrid: Hrid) -> BuffBoost {
         let mut boost = BuffBoost::ZERO;
         for buff in self.combat_buffs.values().filter(|buff| buff.type_hrid == type_hrid) {
             boost.ratio_boost += buff.ratio_boost;
@@ -1604,11 +1605,12 @@ fn is_timed_buff_expired(buff: &Buff, current_time: f64) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hrid::hrid_to_string;
 
     fn raw(unique_hrid: &str, type_hrid: &str, ratio: f64, flat: f64, duration: f64) -> RawBuffInput {
         RawBuffInput {
-            unique_hrid: Some(unique_hrid.to_string()),
-            type_hrid: Some(type_hrid.to_string()),
+            unique_hrid: Some(intern_hrid(unique_hrid)),
+            type_hrid: Some(intern_hrid(type_hrid)),
             ratio_boost: Some(ratio),
             flat_boost: Some(flat),
             duration: Some(duration),
@@ -1633,7 +1635,7 @@ mod tests {
         assert_eq!(unit.combat_details.combat_stats.threat, 100.0);
         assert_eq!(unit.combat_details.combat_stats.hp_regen_per10, 0.01);
         assert_eq!(unit.combat_details.combat_stats.food_slots, 1.0);
-        assert_eq!(unit.combat_details.combat_stats.combat_style_hrid, "/combat_styles/smash");
+        assert_eq!(unit.combat_details.combat_stats.combat_style_hrid, Hrid::COMBAT_STYLE_SMASH);
         assert!(unit.base_combat_stats.is_none());
         assert_eq!(unit.buff_source_sequence, 0);
     }
@@ -1715,26 +1717,33 @@ mod tests {
     fn strongest_policy_hands_off_and_ties_keep_incumbent() {
         let mut unit = CombatUnit::default();
         unit.refresh_base_combat_stats();
-        fn active(unit: &CombatUnit) -> Option<&str> {
-            unit.active_buff_source_keys.get_str("/buff_uniques/fierce_aura").map(String::as_str)
+        fn active(unit: &CombatUnit) -> Option<String> {
+            unit.active_buff_source_keys
+                .get(&intern_hrid("/buff_uniques/fierce_aura"))
+                .map(|key| hrid_to_string(*key))
         }
 
-        unit.add_buff(&fierce_aura(0.2), 0.0, Some("ally_a"), Some("strongest")).expect("registers");
-        unit.add_buff(&fierce_aura(0.1), 100.0, Some("ally_b"), Some("strongest")).expect("registers");
+        unit.add_buff(&fierce_aura(0.2), 0.0, Some(intern_hrid("ally_a")), Some("strongest"))
+            .expect("registers");
+        unit.add_buff(&fierce_aura(0.1), 100.0, Some(intern_hrid("ally_b")), Some("strongest"))
+            .expect("registers");
         // 新源更弱：不交接
-        assert_eq!(active(&unit), Some("ally_a"));
+        assert_eq!(active(&unit).as_deref(), Some("ally_a"));
 
         // 平局：保留先注册的 ally_a（迭代顺序决定，而非「后写覆盖」）
-        unit.add_buff(&fierce_aura(0.2), 200.0, Some("ally_c"), Some("strongest")).expect("registers");
-        assert_eq!(active(&unit), Some("ally_a"));
+        unit.add_buff(&fierce_aura(0.2), 200.0, Some(intern_hrid("ally_c")), Some("strongest"))
+            .expect("registers");
+        assert_eq!(active(&unit).as_deref(), Some("ally_a"));
 
         // 明确更强：交接
-        unit.add_buff(&fierce_aura(0.3), 300.0, Some("ally_d"), Some("strongest")).expect("registers");
-        assert_eq!(active(&unit), Some("ally_d"));
+        unit.add_buff(&fierce_aura(0.3), 300.0, Some(intern_hrid("ally_d")), Some("strongest"))
+            .expect("registers");
+        assert_eq!(active(&unit).as_deref(), Some("ally_d"));
 
         // 移除活动源 → 交接给剩余最强（ally_a 与 ally_c 平局 → 先注册的 ally_a）
-        unit.remove_buff(Some("/buff_uniques/fierce_aura"), BuffSourceSelector::ActiveSource).expect("removes");
-        assert_eq!(active(&unit), Some("ally_a"));
+        unit.remove_buff(Some(intern_hrid("/buff_uniques/fierce_aura")), BuffSourceSelector::ActiveSource)
+            .expect("removes");
+        assert_eq!(active(&unit).as_deref(), Some("ally_a"));
         assert_eq!(unit.buff_source_sequence, 4);
     }
 
@@ -1743,15 +1752,18 @@ mod tests {
         let mut unit = CombatUnit::default();
         unit.refresh_base_combat_stats();
         unit.add_buff(&raw("/scrolls/x", "/buff_types/damage", 0.1, 0.0, 1000.0), 0.0, None, None).expect("registers");
-        unit.add_buff(&raw("/scrolls/x", "/buff_types/damage", 0.2, 0.0, 5000.0), 100.0, Some("scroll:x"), None)
+        unit.add_buff(&raw("/scrolls/x", "/buff_types/damage", 0.2, 0.0, 5000.0), 100.0, Some(intern_hrid("scroll:x")), None)
             .expect("registers");
-        assert_eq!(unit.active_buff_source_keys.get_str("/scrolls/x").map(String::as_str), Some("scroll:x"));
+        assert_eq!(
+            unit.active_buff_source_keys.get(&intern_hrid("/scrolls/x")).map(|key| hrid_to_string(*key)),
+            Some("scroll:x".to_string())
+        );
 
-        unit.remove_buff(Some("/scrolls/x"), BuffSourceSelector::ActiveSource).expect("removes");
+        unit.remove_buff(Some(intern_hrid("/scrolls/x")), BuffSourceSelector::ActiveSource).expect("removes");
         // REPLACE + 活动源移除 → 级联清除：无休眠交接
-        assert!(!unit.combat_buffs.contains_key_str("/scrolls/x"));
-        assert!(!unit.buff_sources.contains_key_str("/scrolls/x"));
-        assert!(!unit.buff_source_policies.contains_key_str("/scrolls/x"));
+        assert!(!unit.combat_buffs.contains_key(&intern_hrid("/scrolls/x")));
+        assert!(!unit.buff_sources.contains_key(&intern_hrid("/scrolls/x")));
+        assert!(!unit.buff_source_policies.contains_key(&intern_hrid("/scrolls/x")));
         assert!(unit.active_buff_source_keys.is_empty());
     }
 
@@ -1761,57 +1773,62 @@ mod tests {
         unit.add_buff(&raw("/u/expire", "/buff_types/damage", 1.0, 0.0, 500.0), 0.0, None, None).expect("registers");
         assert!(!unit.remove_expired_buffs(100.0, true).expect("scans"));
         assert!(unit.remove_expired_buffs(500.0, true).expect("scans"));
-        assert!(!unit.combat_buffs.contains_key_str("/u/expire"));
-        assert!(!unit.buff_sources.contains_key_str("/u/expire"));
-        assert!(!unit.remove_expired_buff_by_unique_hrid("", 9999.0, true).expect("ignores empty hrid"));
+        assert!(!unit.combat_buffs.contains_key(&intern_hrid("/u/expire")));
+        assert!(!unit.buff_sources.contains_key(&intern_hrid("/u/expire")));
+        assert!(!unit
+            .remove_expired_buff_by_unique_hrid(Hrid::EMPTY, 9999.0, true)
+            .expect("ignores empty hrid"));
     }
 
     #[test]
     fn legacy_buff_without_sources_expires_by_start_time() {
         let mut unit = CombatUnit::default();
         unit.combat_buffs.set(
-            "/u/legacy".to_string(),
+            intern_hrid("/u/legacy"),
             Buff {
-                unique_hrid: "/u/legacy".to_string(),
-                type_hrid: "/buff_types/damage".to_string(),
+                unique_hrid: intern_hrid("/u/legacy"),
+                type_hrid: Hrid::BUFF_TYPE_DAMAGE,
                 ratio_boost: 0.5,
                 flat_boost: 0.0,
                 duration: Some(100.0),
                 start_time: Some(50.0),
-                multiplier_for_skill_hrid: String::new(),
+                multiplier_for_skill_hrid: Hrid::EMPTY,
                 multiplier_per_skill_level: 0.0,
             },
         );
         assert!(!unit.remove_expired_buffs(149.0, false).expect("scans"));
         assert!(unit.remove_expired_buffs(150.0, false).expect("scans"));
-        assert!(!unit.combat_buffs.contains_key_str("/u/legacy"));
+        assert!(!unit.combat_buffs.contains_key(&intern_hrid("/u/legacy")));
     }
 
     #[test]
     fn permanent_buffs_accumulate_by_type_and_survive_clear() {
         let mut unit = CombatUnit::default();
         unit.add_permanent_buff(&RawBuffInput {
-            type_hrid: Some("/buff_types/damage".to_string()),
-            unique_hrid: Some("/u/house".to_string()),
+            type_hrid: Some(Hrid::BUFF_TYPE_DAMAGE),
+            unique_hrid: Some(intern_hrid("/u/house")),
             ratio_boost: Some(0.1),
             flat_boost: Some(5.0),
             ..Default::default()
         });
         unit.add_permanent_buff(&RawBuffInput {
-            type_hrid: Some("/buff_types/damage".to_string()),
-            unique_hrid: Some("/u/guild".to_string()),
+            type_hrid: Some(Hrid::BUFF_TYPE_DAMAGE),
+            unique_hrid: Some(intern_hrid("/u/guild")),
             ratio_boost: Some(0.05),
             flat_boost: Some(2.0),
             ..Default::default()
         });
-        let merged = unit.permanent_buffs.get_str("/buff_types/damage").expect("permanent buff stored");
+        let merged = unit
+            .permanent_buffs
+            .get(&Hrid::BUFF_TYPE_DAMAGE)
+            .expect("permanent buff stored");
         assert_eq!(merged.ratio_boost, 0.15000000000000002);
         assert_eq!(merged.flat_boost, 7.0);
         // 首次写入克隆：保留首个记录的 uniqueHrid，累加只作用于本单位副本
-        assert_eq!(merged.unique_hrid, "/u/house");
+        assert_eq!(hrid_to_string(merged.unique_hrid), "/u/house");
 
         unit.clear_buffs();
-        assert!(unit.combat_buffs.contains_key_str("/buff_types/damage"));
+        assert!(unit.combat_buffs.contains_key(&Hrid::BUFF_TYPE_DAMAGE));
         assert_eq!(unit.permanent_buffs.len(), 1);
         assert!(unit.buff_sources.is_empty());
         assert_eq!(unit.buff_source_sequence, 0);
@@ -1822,8 +1839,8 @@ mod tests {
         let mut unit = CombatUnit {
             house_rooms: vec![BuffList {
                 buffs: vec![RawBuffInput {
-                    type_hrid: Some("/buff_types/max_hitpoints".to_string()),
-                    unique_hrid: Some("/house/room".to_string()),
+                    type_hrid: Some(Hrid::BUFF_TYPE_MAX_HITPOINTS),
+                    unique_hrid: Some(intern_hrid("/house/room")),
                     ratio_boost: Some(0.0),
                     flat_boost: Some(30.0),
                     ..Default::default()
@@ -1831,8 +1848,8 @@ mod tests {
             }],
             guild_buffs: vec![BuffList {
                 buffs: vec![RawBuffInput {
-                    type_hrid: Some("/buff_types/max_hitpoints".to_string()),
-                    unique_hrid: Some("/guild/buff".to_string()),
+                    type_hrid: Some(Hrid::BUFF_TYPE_MAX_HITPOINTS),
+                    unique_hrid: Some(intern_hrid("/guild/buff")),
                     ratio_boost: Some(0.0),
                     flat_boost: Some(20.0),
                     ..Default::default()
@@ -1840,23 +1857,23 @@ mod tests {
             }],
             achievements: Some(BuffList {
                 buffs: vec![RawBuffInput {
-                    type_hrid: Some("/buff_types/evasion".to_string()),
-                    unique_hrid: Some("/achievements/a".to_string()),
+                    type_hrid: Some(Hrid::BUFF_TYPE_EVASION),
+                    unique_hrid: Some(intern_hrid("/achievements/a")),
                     ratio_boost: Some(0.05),
                     flat_boost: Some(0.0),
                     ..Default::default()
                 }],
             }),
             zone_buffs: vec![RawBuffInput {
-                type_hrid: Some("/buff_types/evasion".to_string()),
-                unique_hrid: Some("/zone/buff".to_string()),
+                type_hrid: Some(Hrid::BUFF_TYPE_EVASION),
+                unique_hrid: Some(intern_hrid("/zone/buff")),
                 ratio_boost: Some(0.01),
                 flat_boost: Some(2.0),
                 ..Default::default()
             }],
             extra_buffs: vec![RawBuffInput {
-                type_hrid: Some("/buff_types/evasion".to_string()),
-                unique_hrid: Some("/extra/buff".to_string()),
+                type_hrid: Some(Hrid::BUFF_TYPE_EVASION),
+                unique_hrid: Some(intern_hrid("/extra/buff")),
                 ratio_boost: Some(0.02),
                 flat_boost: Some(1.0),
                 ..Default::default()
@@ -1865,10 +1882,13 @@ mod tests {
         };
         unit.generate_permanent_buffs();
         assert_eq!(unit.permanent_buffs.len(), 2);
-        let hitpoints = unit.permanent_buffs.get_str("/buff_types/max_hitpoints").expect("merged");
+        let hitpoints = unit
+            .permanent_buffs
+            .get(&Hrid::BUFF_TYPE_MAX_HITPOINTS)
+            .expect("merged");
         assert_eq!(hitpoints.flat_boost, 50.0);
-        assert_eq!(hitpoints.unique_hrid, "/house/room");
-        let evasion = unit.permanent_buffs.get_str("/buff_types/evasion").expect("merged");
+        assert_eq!(hrid_to_string(hitpoints.unique_hrid), "/house/room");
+        let evasion = unit.permanent_buffs.get(&Hrid::BUFF_TYPE_EVASION).expect("merged");
         assert_eq!(evasion.ratio_boost, 0.05 + 0.01 + 0.02);
         assert_eq!(evasion.flat_boost, 3.0);
     }
@@ -1881,7 +1901,8 @@ mod tests {
         assert_eq!(plain.combat_details.defensive_max_damage, 11.0);
         assert_eq!(plain.combat_details.smash_max_damage, 11.0);
 
-        let mut bulwark_unit = CombatUnit { two_hand_hrid: Some("x_bulwark_shield".to_string()), ..Default::default() };
+        let mut bulwark_unit =
+            CombatUnit { two_hand_hrid: Some(intern_hrid("x_bulwark_shield")), ..Default::default() };
         bulwark_unit.refresh_base_combat_stats();
         bulwark_unit.update_combat_details();
         assert_eq!(bulwark_unit.combat_details.defensive_max_damage, 11.0);
@@ -1937,8 +1958,9 @@ mod tests {
     fn remove_buff_with_explicit_null_targets_default_source() {
         let mut unit = CombatUnit::default();
         unit.add_buff(&raw("/u/default_key", "/buff_types/damage", 0.3, 0.0, 1000.0), 0.0, None, None).expect("registers");
-        unit.remove_buff(Some("/u/default_key"), BuffSourceSelector::Explicit(None)).expect("removes default");
-        assert!(!unit.combat_buffs.contains_key_str("/u/default_key"));
-        assert!(!unit.buff_sources.contains_key_str("/u/default_key"));
+        unit.remove_buff(Some(intern_hrid("/u/default_key")), BuffSourceSelector::Explicit(None))
+            .expect("removes default");
+        assert!(!unit.combat_buffs.contains_key(&intern_hrid("/u/default_key")));
+        assert!(!unit.buff_sources.contains_key(&intern_hrid("/u/default_key")));
     }
 }

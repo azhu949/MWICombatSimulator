@@ -6,6 +6,7 @@
 //! - 冷却在 `abilityHaste > 0` 时按 `cooldown * 100 / (100 + haste)` 缩放。
 
 use crate::buff::Buff;
+use crate::hrid::Hrid;
 use crate::sim_unit::{UnitArena, UnitId};
 use crate::trigger::Trigger;
 use crate::unit::UnitError;
@@ -20,12 +21,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AbilityEffect {
-    pub target_type: String,
-    pub effect_type: String,
+    pub target_type: Hrid,
+    pub effect_type: Hrid,
     #[serde(default)]
-    pub combat_style_hrid: Option<String>,
+    pub combat_style_hrid: Option<Hrid>,
     #[serde(default)]
-    pub damage_type: Option<String>,
+    pub damage_type: Option<Hrid>,
     pub damage_flat: f64,
     pub damage_ratio: f64,
     pub bonus_accuracy_ratio: f64,
@@ -58,13 +59,13 @@ pub struct AbilityEffect {
 
 impl AbilityEffect {
     /// JS `abilityEffect.combatStyleHrid`（可能为 undefined）。
-    pub fn combat_style(&self) -> Option<&str> {
-        self.combat_style_hrid.as_deref()
+    pub fn combat_style(&self) -> Option<Hrid> {
+        self.combat_style_hrid
     }
 
     /// JS `abilityEffect.damageType`（可能为 undefined）。
-    pub fn damage_type(&self) -> Option<&str> {
-        self.damage_type.as_deref()
+    pub fn damage_type(&self) -> Option<Hrid> {
+        self.damage_type
     }
 }
 
@@ -72,7 +73,7 @@ impl AbilityEffect {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Ability {
-    pub hrid: String,
+    pub hrid: Hrid,
     #[serde(default = "crate::ability::default_level")]
     pub level: f64,
     pub mana_cost: f64,

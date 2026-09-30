@@ -18,6 +18,7 @@
 //! `REMOVE_ACTIVE_SOURCE`；显式 `null` = `default` 键；字符串 = 显式源键。
 
 use crate::buff::Buff;
+use crate::hrid::{hrid_to_string, intern_hrid};
 use crate::unit::{policy_name, BuffList, BuffSourceEntry, BuffSourceSelector, CombatUnit, RawBuffInput, UnitError};
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
@@ -208,7 +209,7 @@ fn apply_op(unit: &mut Option<CombatUnit>, op: UnitOp) -> Result<Value, UnitErro
             Ok(Value::Null)
         }
         UnitOp::SetEquipment { two_hand_hrid } => {
-            require_unit(unit)?.two_hand_hrid = two_hand_hrid;
+            require_unit(unit)?.two_hand_hrid = two_hand_hrid.as_deref().map(intern_hrid);
             Ok(Value::Null)
         }
         UnitOp::SetPermanentSources { house_rooms, guild_buffs, achievements, zone_buffs, extra_buffs } => {
@@ -235,20 +236,20 @@ fn apply_op(unit: &mut Option<CombatUnit>, op: UnitOp) -> Result<Value, UnitErro
             Ok(Value::Null)
         }
         UnitOp::AddBuff { buff, current_time, source_hrid, source_policy } => {
-            require_unit(unit)?.add_buff(&buff, current_time, source_hrid.as_deref(), source_policy.as_deref())?;
+            require_unit(unit)?.add_buff(&buff, current_time, source_hrid.as_deref().map(intern_hrid), source_policy.as_deref())?;
             Ok(Value::Null)
         }
         UnitOp::RemoveBuff { unique_hrid, source_hrid } => {
             let selector = match source_hrid {
                 None => BuffSourceSelector::ActiveSource,
-                Some(explicit) => BuffSourceSelector::Explicit(explicit),
+                Some(explicit) => BuffSourceSelector::Explicit(explicit.as_deref().map(intern_hrid)),
             };
-            require_unit(unit)?.remove_buff(unique_hrid.as_deref(), selector)?;
+            require_unit(unit)?.remove_buff(unique_hrid.as_deref().map(intern_hrid), selector)?;
             Ok(Value::Null)
         }
         UnitOp::ExpireBuff { unique_hrid, current_time, update_details } => {
             let dirty =
-                require_unit(unit)?.remove_expired_buff_by_unique_hrid(&unique_hrid, current_time, update_details)?;
+                require_unit(unit)?.remove_expired_buff_by_unique_hrid(intern_hrid(&unique_hrid), current_time, update_details)?;
             Ok(Value::Bool(dirty))
         }
         UnitOp::ExpireBuffs { current_time, update_details } => {
@@ -268,11 +269,11 @@ fn apply_op(unit: &mut Option<CombatUnit>, op: UnitOp) -> Result<Value, UnitErro
             Ok(Value::Null)
         }
         UnitOp::GetBoost { type_hrid } => {
-            let boost = require_unit(unit)?.get_buff_boost(&type_hrid);
+            let boost = require_unit(unit)?.get_buff_boost(intern_hrid(&type_hrid));
             Ok(json!({ "ratioBoost": boost.ratio_boost, "flatBoost": boost.flat_boost }))
         }
         UnitOp::GetBoosts { type_hrid } => {
-            let boosts = require_unit(unit)?.get_buff_boosts(&type_hrid);
+            let boosts = require_unit(unit)?.get_buff_boosts(intern_hrid(&type_hrid));
             let values: Vec<Value> = boosts
                 .iter()
                 .map(|boost| json!({ "ratioBoost": boost.ratio_boost, "flatBoost": boost.flat_boost }))
@@ -315,36 +316,36 @@ fn source_entry_to_trace(entry: &BuffSourceEntry) -> Value {
 
 /// 单位全量快照（面板 + 增益注册表 + 源注册表 + 键序），两侧 schema 成对维护。
 fn snapshot_unit(unit: &CombatUnit) -> Value {
-    let combat_buff_keys: Vec<&String> = unit.combat_buffs.keys().collect();
+    let combat_buff_keys: Vec<String> = unit.combat_buffs.keys().map(|key| hrid_to_string(*key)).collect();
     let mut combat_buffs = Map::new();
     for (key, buff) in unit.combat_buffs.iter() {
-        combat_buffs.insert(key.clone(), buff_to_trace(buff));
+        combat_buffs.insert(hrid_to_string(*key), buff_to_trace(buff));
     }
 
-    let permanent_buff_keys: Vec<&String> = unit.permanent_buffs.keys().collect();
+    let permanent_buff_keys: Vec<String> = unit.permanent_buffs.keys().map(|key| hrid_to_string(*key)).collect();
     let mut permanent_buffs = Map::new();
     for (key, buff) in unit.permanent_buffs.iter() {
-        permanent_buffs.insert(key.clone(), buff_to_trace(buff));
+        permanent_buffs.insert(hrid_to_string(*key), buff_to_trace(buff));
     }
 
     let mut active_buff_source_keys = Map::new();
     for (unique_hrid, source_key) in unit.active_buff_source_keys.iter() {
-        active_buff_source_keys.insert(unique_hrid.clone(), Value::String(source_key.clone()));
+        active_buff_source_keys.insert(hrid_to_string(*unique_hrid), Value::String(hrid_to_string(*source_key)));
     }
 
     let mut buff_source_policies = Map::new();
     for (unique_hrid, policy) in unit.buff_source_policies.iter() {
-        buff_source_policies.insert(unique_hrid.clone(), Value::String(policy_name(*policy).to_string()));
+        buff_source_policies.insert(hrid_to_string(*unique_hrid), Value::String(policy_name(*policy).to_string()));
     }
 
     let mut buff_sources = Map::new();
     for (unique_hrid, sources) in unit.buff_sources.iter() {
-        let keys: Vec<&String> = sources.keys().collect();
+        let keys: Vec<String> = sources.keys().map(|key| hrid_to_string(*key)).collect();
         let mut entries = Map::new();
         for (source_key, entry) in sources.iter() {
-            entries.insert(source_key.clone(), source_entry_to_trace(entry));
+            entries.insert(hrid_to_string(*source_key), source_entry_to_trace(entry));
         }
-        buff_sources.insert(unique_hrid.clone(), json!({ "keys": keys, "entries": entries }));
+        buff_sources.insert(hrid_to_string(*unique_hrid), json!({ "keys": keys, "entries": entries }));
     }
 
     json!({
