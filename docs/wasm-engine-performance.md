@@ -1754,3 +1754,84 @@ spec_loadout ≈ 3858 ns/次），单次省 ≈ 2545 ns × 7030 次/10 轮 ≈ *
   深拷贝 + 新槽累积；复用消除了两者（restore 2.5 μs/次 vs build 3.9 μs/次）。
 - 与 mwi-fastsim 的剩余差 → 切片 27+ 候选：结算 / 施法路径剩余克隆、`OrderedMap` →
   FxIndexMap、热点循环句柄缓存（`unit_hrid` 159260 次/轮）。
+
+## 27. 切片 27：结算 / 施法路径深挖——命中键零分配 + 遭遇战判定去克隆（2026-09-30）
+
+按 §26.4 候选开工：先用细粒度 prof 探针把 `ability.try_use`（≈4.3 μs/次）内部构成拆开，
+再削减占比最高的两处——`result.add_attack`（每轮约 4700 次命中记账）与
+`encounter.check_end`（每轮约 3700 次调用）的克隆 / 分配开销。
+
+### 27.1 实现
+
+**探针（12 处，`#[cfg(feature="prof")]`，生产构建零开销）**：`try_use.pre` / `.effects` /
+`.post`（取还式窗口分段）、`ability.damage.setup` / `.parry` / `.parry_body` / `.attack` /
+`.body`、`encounter.check_end`、`unit.remove_buff`、`unit.clear_buffs`、`result.add_attack`。
+
+**优化（四文件）**：
+
+- `ordered_map.rs`：新增 `entry_or_default_mut`（`map[k] ??= default` 语义，单趟扫描，替代
+  `contains_key` + `set` + `get_mut` 的 2–3 趟）与 `OrderedMap<String, f64>::add_value_str`
+  （`map[k] += delta`，键已存在零分配）。
+- `sim_result.rs`：`ensure_child` 改走 `entry_or_default_mut`；`add_attack` 命中键改用复用
+  缓冲（新字段 `hit_key_scratch`，不参与序列化）。数字键走**写入版** `write_js_number_key`——
+  `js_number_key` 抽出写入版后由前者委托，保证 JS `String(number)` 语义（`1e+21` / `1e-7` /
+  `-0` → `"0"`）唯一事实源。**首版直接用 Rust `{value}` Display 格式化，`attack_table_nested_keys_match_js`
+  立即捕获两个键错（大 / 小量级未走指数写法），改回写入版后 143/143 全绿**。
+- `simulator.rs`：`check_encounter_end` 去掉 `enemies` 两次 `clone()`（take → 未清场原样放回、
+  清场维持 `None`）与 `players` 的 `clone()`（下标遍历）；团灭分支 `enemies.clone()` →
+  `take()`。安全性核对：take 窗口内被调函数（`finalize_enemy_experience` /
+  `commit_pending_experience` / `release_dead_enemy_slots` 等）均不读写 `self.enemies`
+  （grep 全量 + 函数级目检 + 四路径 case 分析）。
+- `unit.rs`：`remove_buff` / `clear_buffs` 落探针（无逻辑改动）。
+
+### 27.2 验收（全绿，零漂移）
+
+| 环节                               | 结果                                       |
+| ---------------------------------- | ------------------------------------------ |
+| `cargo test`                       | 143 全绿（含捕获并修复的键格式化回归）     |
+| `cargo check`（tests / prof 路径） | 0 警告                                     |
+| golden 快照（四套件）              | **29/29 通过、零漂移**、无需重锚           |
+| vitest 全量 + prettier             | 184+1 文件 / 2570 passed + 5 skipped 全绿  |
+| `build` / `verify-pages-build`     | 通过                                       |
+| 产物体积                           | 812002 B → **809660 B**（sha `36EE4A0E…`） |
+
+### 27.3 性能
+
+**WASM 端到端**（full-result 1h，seed 101；同进程交错法 120 轮 + 5 预热，每轮交替先后）：
+
+| 轮次                    | A=切片26  | B=切片27  | B/A               | wins B         |
+| ----------------------- | --------- | --------- | ----------------- | -------------- |
+| 第 1 次                 | 26.117 ms | 23.474 ms | 0.8988×           | 90/120         |
+| 第 2 次                 | 24.755 ms | 20.870 ms | 0.8431×           | 105/120        |
+| 交换臂（B=切片26）      | 20.650 ms | 23.720 ms | 1.1487×           | 15/120         |
+| 自对照（同产物 × 2 次） | 22.9 ms   | 23.4 ms   | 1.0270× / 1.0222× | 48/120、51/120 |
+
+minimal 口径 0.9990× / 0.9791×（wins 61/120、73/120）：`add_attack` 在 minimal 分支不记账，
+持平符合预期。**裁决口径：full-result -10% 至 -15%**（交换臂与自对照双向校验；扣自对照
++2.2–2.7% 位置偏置后仍 ≥ 10%）；吞吐 ≈0.37M → ≈0.41M 事件/s（估算，跨会话仅供参考）。
+
+**原生 prof 复测**（同请求 10 轮；before = 本切片优化前读数，after = 3 连跑；绝对值随机器
+状态浮动，ns/次 对照为主）：
+
+| 分段                  | before               | after（3 连跑）       | 变化           |
+| --------------------- | -------------------- | --------------------- | -------------- |
+| `result.add_attack`   | 597 ns/次（28.3 ms） | 241 / 250 / 272 ns/次 | **降 55%–60%** |
+| `encounter.check_end` | 283 ns/次（10.6 ms） | 149 / 158 / 158 ns/次 | **降 44%–47%** |
+| `simulate(total)`     | 185.4 ms/10 轮       | 143.5 / 149.2 / 153.1 | 方向一致       |
+
+第二批候选（prof 现读数）：`try_use.effects` 2227–2358 ns/次（当前最大单段）、
+`event.enemyRespawn` 簇（instantiate + restore_for_respawn）、`unit.update_details` /
+`index_buffs`、`attack.schedule` / `triggers.check`、`unit_hrid` 缓存、`OrderedMap` →
+FxIndexMap。
+
+### 27.4 结论
+
+- **测量法复用**：切片 26 的「同进程交错 A/B + 自对照 + 交换臂」三件套继续有效；本切片
+  交换臂（把两产物角色对调）与直接 A/B 的方向 / 幅度互证（0.8431× vs 1.1487×），是排除
+  「实例加载顺序」混淆的低成本手段，建议后续切片沿用。
+- **take/restore 改造的核对清单**（本切片确立）：take 窗口内被调函数对目标字段的读写必须
+  为空集；用 grep 全量访问点 + 函数级目检 + 路径 case 分析（None / 未清场 / 清场 /
+  minimal）三重核对后才可落盘。
+- 数字键 / 文本键的「零分配改写」红线：一切格式化的语义必须与既有 `js_number_key` 逐字
+  一致（含指数写法与 `-0`）；写入版抽取 + 委托是保持唯一事实源的安全形态。
+- 与 mwi-fastsim 的剩余差（约 1.8–2×）→ 切片 28+ 候选见 27.3 末段。
