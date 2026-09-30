@@ -210,8 +210,10 @@ pub fn process_attack(
     }
 
     // JS 先赋 1 再无条件覆盖；此处直接计算最终值。
+    let prof_hit_chance = crate::prof::start("attack.hit_chance");
     let hit_chance = source_accuracy_rating.powf(1.4)
         / (source_accuracy_rating.powf(1.4) + target_evasion_rating.powf(1.4));
+    drop(prof_hit_chance);
 
     if combat_style == Hrid::COMBAT_STYLE_RANGED {
         crit_chance = 0.3 * hit_chance;
