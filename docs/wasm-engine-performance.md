@@ -1626,7 +1626,7 @@ unit / sim_result` 及 `simulator.rs` 热路径、探针调用点。三条纪律
 
 基线当日读数高于切片 24 归档（min 22.3 / median 23.5），系会话噪声；交替配对设计抵消
 漂移，比率有效。逐轮配对 5/5 新版更快；事件吞吐 ≈0.32M/s → **≈0.47~0.49M/s**（对
-mwi-fastsim 0.70~~0.88M/s 的差距缩至约 1.5~~1.9×）。
+mwi-fastsim 0.70–0.88M/s 的差距缩至约 1.5–1.9×）。
 
 **原生 prof**（10 轮 + 2 预热，同一 52 KB 生产请求）：
 
@@ -1649,5 +1649,108 @@ WASM 收益（-31~-34%）大于原生（-21~-28%）：wasm 侧字符串分配 / 
   下限更强——连输出形状都未变）。§23 头号遗留项清账。
 - `unit_hrid` 仍有 159260 次/轮 × 31 ns ≈ 4.9 ms/10 轮：调用点多为「按 UnitId 取句柄」
   的一次查表，后续可在热点循环内缓存句柄。
-- 与 mwi-fastsim 的剩余差（~~1.5~~1.9×）→ 切片 26 候选：结算 / 施法路径剩余克隆、
+- 与 mwi-fastsim 的剩余差（约 1.5–1.9×）→ 切片 26 候选：结算 / 施法路径剩余克隆、
   `OrderedMap` 底层结构（FxIndexMap）、热点循环句柄缓存。
+
+## 26. 切片 26：重生路径死槽复用——池化重建 + 记账槽位化（2026-09-30）
+
+三岩石第三块（§23.2 热点：`enemyRespawn` 段 + `instantiate` 段合计占 simulate 约 40%）。
+此前每次重生都 `arena.push` 一个新 `CombatUnit`（深拷贝模板 + 全新分配），arena 与分配
+只增不减；本切片改为**死槽原位重建 + 按 (hrid, tier) 键池化复用**，并把切片 14 记账从
+UnitId 列表改为**按槽位下标索引**（旧 WeakSet 式语义阻碍槽位复用，属同一原子改动）。
+
+### 26.1 实现
+
+四文件（`simulator.rs` 为主战场，`unit.rs` / `sim_unit.rs` / `ordered_map.rs` 配套）：
+
+- **`CombatUnit` 复用基建**（`unit.rs`）：新字段 `respawn_pool_key: Option<String>`
+  （仅带池键的敌人参与复用；玩家 / 探针恒 `None`）；新方法
+  `reset_to_default_in_place()`——把全部字段恢复 default 形态（abilities / food /
+  drinks `resize` 保留容量后逐槽清空、`CombatDetails::default()`、各 OrderedMap 重建），
+  注释注明「新增字段必须与 `Default for CombatUnit` 同步维护」。
+- **死槽释放**（`sim_unit.rs`）：`UnitArena::release(id) -> CombatUnit`，`Vec::swap_remove`
+  语义——**末位单位换入该下标、其余下标不变**（非顺序删除、无 -1 平移）；模块 doc
+  补例外注记。`ordered_map.rs` 新增 `values_mut()`（键序不变，池索引重映射用）。
+- **build 拆分**（`simulator.rs`）：`build_unit_from_spec` 拆出公共主体
+  `apply_unit_spec(unit, spec) -> Result<(), UnitError>`；新
+  `CombatUnit::restore_for_respawn(unit, spec, pool_key, tier)`：`reset_to_default_in_place`
+  → `is_player` → `apply_unit_spec` → 写 `difficulty_tier` / `respawn_pool_key`（与 build
+  逐字段一致，由复用开 / 关双跑测试锁定）。
+- **池与记账槽位化**（`simulator.rs`）：`pool_by_key: OrderedMap<String, Vec<UnitId>>`
+  （键 `"{hrid}|{js_number_key(tier)}"`，迷宫 override `"|lab"`）；计数器
+  `pool_reuse_hits` / `pool_build_misses`；`enemy_death_snapshots` / `experience_awarded`
+  改为**下标 = 槽位** 的 `Vec` 记账表（`pending_experience_gains` 键恒玩家、保持线性）。
+  入池链：`release_dead_enemy_slots`（仅收回「已死 + 有池键」槽位）→ 事件已清 + 记账
+  已清 → 入池；接入 `check_encounter_end` 清场分支与副本团灭分支两处。
+- **swap 重映射**（`simulator.rs`）：`remove_slot_or_degrade(slot) -> bool` 前置检查
+  （非玩家、不在 `enemies`、末位非玩家、末位无队列事件引用）→ `try_clear_events_for_unit`
+  → `arena.release` → `remap_unit_ids_after_release(removed, moved)`；任一不满足返回
+  false **降级（不 panic）**。重映射覆盖 `players` / `enemies` / `observer_unit` /
+  `cost_bound_unit` / `pending_experience_gains` 键 / `enemy_death_snapshots`（含内部
+  玩家下标）/ `scroll_runtime[].player_id` / `pool_by_key` 全部桶；记账表按槽位搬移。
+  **复用前提链：入池 ⇒ 事件已清 + 记账已清**；`restore_for_respawn` 必须覆盖
+  `apply_unit_spec` 的全部写入字段。
+- **升变产物入池**：`process_ability_promote_effect` 给升变产物设
+  `respawn_pool_key = "{hrid}|{js_number_key(tier)}"`（跨轮复用同一键空间）。
+- **无效 / 退化输入**（模板缺失、tier 不可渲染、`is_player` 不符）走 build 回退并
+  计数 / 降级，不 panic。
+
+### 26.2 验收（全绿，零漂移）
+
+| 环节                            | 结果                                                          |
+| ------------------------------- | ------------------------------------------------------------- |
+| `cargo test`                    | 138 → **143**（+5：swap 重映射 ×3、复用双跑全等、跨轮池命中） |
+| `cargo check --release` / tests | 0 警告                                                        |
+| golden 快照（四套件）           | **29/29 通过、零漂移**、无需重锚                              |
+| vitest 全量 + prettier          | 184+1 文件 / 2570 passed + 5 skipped 全绿                     |
+| `build` / `verify-pages-build`  | 通过                                                          |
+| 产物体积                        | 802422 B → **812002 B**（sha `92AD25EC…`；glue 未变）         |
+
+### 26.3 性能
+
+**WASM 端到端**（full-result 1h，seed 101；同进程交错法，详见 26.4）：三连测 median
+speedup **1.0802× / 1.0639× / 1.0551×**（wins 51/60、91/120、83/120）；自对照（两臂同
+产物）120 轮 1.0033×、wins 56/120 ⇒ 方法无偏置。**裁决口径：引擎耗时 -5.2% ~ -7.4%**。
+旧跨进程协议（`WASM_BENCH_ROUNDS=15`，base/new 各 6 次追加）：12 对 wins 9/12、median
+17.15 → 15.65 ms（-9%）、配对差值 median +0.99 ms——方向一致、幅度偏大（噪声未压干）。
+吞吐 ≈0.35M → ≈0.37M 事件/s（1h full-result 单轮 5486 事件；跨会话绝对值仅供参考）。
+
+**原生 prof before/after**（同会话、同请求、10 轮；基线 = 切片 25 源码
+`git show db48b83` 换入独立目录单独构建，当前版 = engine 本体）：
+
+口径A（minimal，`tmp/prof-request.json`）：
+
+| 分段                       | 切片 25                 | 切片 26                        | 变化        |
+| -------------------------- | ----------------------- | ------------------------------ | ----------- |
+| 原生壁钟 median / min      | 13.4 / 11.6 ms          | 10.5 / 9.5 ms                  | -22% / -18% |
+| `simulate(total)`          | 122.64 ms               | 101.16 ms                      | -18%        |
+| `event.enemyRespawn`       | 36.34 ms（15017 ns/次） | 21.66 ms（8951 ns/次）         | **-40%**    |
+| `encounter.instantiate`    | 25.61 ms                | 12.35 ms                       | **-52%**    |
+| `unit.build_from_spec`     | 16.30 ms（7170 次）     | 0.37 ms（140 次）              | **-98%**    |
+| `unit.restore_for_respawn` | —                       | 9.23 ms（7030 次，1313 ns/次） | 新增        |
+| `unit.spec_loadout`        | 5.49 ms                 | 2.20 ms                        | -60%        |
+| `unit.spec_apply`          | 3.70 ms                 | 3.10 ms                        | -16%        |
+
+口径B（full-result）：壁钟 median 18.0 → 15.6 ms（-13%）；`simulate(total)` 159.89 →
+140.84 ms（-12%）；enemyRespawn 34.82 → 23.19 ms（-33%）；instantiate 24.47 → 13.04 ms
+（-47%）；build 15.25 → 0.41 ms（7170 → 140 次）；restore 9.97 ms 新增。
+
+参考归因：`restore_for_respawn` ≈ 1313 ns/次 vs `build_from_spec`（build+spec_apply+
+spec_loadout ≈ 3858 ns/次），单次省 ≈ 2545 ns × 7030 次/10 轮 ≈ **17.9 ms/10 轮**——
+与 simulate 段 -21.5 ms / 壁钟 -2.9 ms 的观测吻合。
+
+### 26.4 结论与测量法修订
+
+- **方法学修订（重要）**：切片 24/25 的跨进程交替法（base / new 各自独立进程、
+  median 比对）在 ≈1 ms/次量级的效应上噪声压不住——切片 26 效应恰在该量级，旧法测得
+  -9% 偏大。新法 = **同进程交错 A/B**：同一 vitest 进程加载两个 wasm 实例、逐轮交替
+  计时、成对差值 + wins 计数，并以**自对照**（两臂同产物，实测 1.0033× / wins
+  56/120）验证无偏置。§24.3 的「**9+ 轮才可判读**」论断需校准：9 轮够判 -31% 级效应，
+  但约 5% 级效应需 60~120 轮 + 逐轮配对 + 自对照。
+- `remove_slot_or_degrade` 的 swap 语义与降级设计（前置检查不过 → false、不 panic），
+  把「复用失败」限制为「性能退化回 build」，不会引入错误状态。
+- 记账槽位化与死槽复用是同一提交的原子改动（旧 UnitId 记账在槽位复用下语义失效），
+  勿拆半提交。切片 23 证伪的「模板 clone」与本次「原地复用」的本质差别：clone 仍付
+  深拷贝 + 新槽累积；复用消除了两者（restore 2.5 μs/次 vs build 3.9 μs/次）。
+- 与 mwi-fastsim 的剩余差 → 切片 27+ 候选：结算 / 施法路径剩余克隆、`OrderedMap` →
+  FxIndexMap、热点循环句柄缓存（`unit_hrid` 159260 次/轮）。

@@ -4,7 +4,8 @@
 //! 设计要点：
 //! - 事件持有 `UnitId`（= 竞技场下标）而非引用，避免 Rust 借用冲突；
 //! - 玩家 / 敌人的遍历顺序由各自的 id 列表维护（与 JS 数组顺序一致）；
-//! - 单位列表**只增不减**（死亡单位保留在竞技场中，只是 HP = 0）。
+//! - 单位列表在模拟期**只增不减**（死亡单位保留在竞技场中，只是 HP = 0）；
+//!   切片 26 的唯一例外是重生池的形态不符丢弃（`release`，调用方负责全表重映射）。
 
 use crate::ability::Ability;
 use crate::consumable::Consumable;
@@ -45,6 +46,15 @@ impl UnitArena {
 
     pub fn get_mut(&mut self, id: UnitId) -> &mut CombatUnit {
         &mut self.units[id]
+    }
+
+    /// 切片 26（重生槽位复用）：移除一个槽位——`Vec::swap_remove` 语义，**末位单位被换入
+    /// 该下标、其余下标一律不变**，返回被移除的单位。
+    ///
+    /// 调用方必须负责重映射所有持有 `UnitId` 的表（`CombatSimulator::remove_slot_or_degrade`
+    /// 一次性完成）——遗留旧下标会让后续 `arena.get` 越界 panic。
+    pub fn release(&mut self, id: UnitId) -> CombatUnit {
+        self.units.swap_remove(id)
     }
 
     /// 同时可变借用两个不同单位（等价 JS 里两个对象引用各自可变）。

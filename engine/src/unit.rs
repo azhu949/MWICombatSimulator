@@ -743,6 +743,10 @@ pub struct CombatUnit {
     pub drinks: Vec<Option<Consumable>>,
     /// 每个技能累计消耗的魔法值（JS `abilityManaCosts` Map，仅玩家记账）。
     pub ability_mana_costs: OrderedMap<Hrid, f64>,
+    /// 切片 26：重生池键（`"<hrid>|<tier 键>"`，迷宫为 `"<hrid>|lab"`）。
+    /// 仅由 `instantiate_templates` / 升变产物写入——`Some` 的怪物死亡后其槽位可入池、
+    /// 被同键重生**原地复用**；玩家与探针合成单位恒 `None`（永不入池/复用）。
+    pub respawn_pool_key: Option<String>,
 }
 
 impl Default for CombatUnit {
@@ -792,6 +796,7 @@ impl Default for CombatUnit {
             food: vec![None, None, None],
             drinks: vec![None, None, None],
             ability_mana_costs: OrderedMap::new(),
+            respawn_pool_key: None,
         }
     }
 }
@@ -899,6 +904,69 @@ fn settled_level(base_level: f64, boosts: &[BuffBoost]) -> f64 {
 }
 
 impl CombatUnit {
+    /// 切片 26（重生槽位复用）：把全部字段恢复为 `Default` 形态，**原地**保留
+    /// `abilities` / `food` / `drinks` 等 Vec 的已分配容量。
+    ///
+    /// 字段清单与 `Default for CombatUnit` 一一对应——**新增字段时必须同步维护两处**
+    /// （`build_unit_from_spec` 的写入字段与 default 形态共同构成复用的覆盖面）。
+    pub fn reset_to_default_in_place(&mut self) {
+        self.is_player = false;
+        self.is_stunned = false;
+        self.stun_expire_time = None;
+        self.is_blinded = false;
+        self.blind_expire_time = None;
+        self.is_silenced = false;
+        self.silence_expire_time = None;
+        self.is_out_of_mana = false;
+        self.stamina_level = 1.0;
+        self.intelligence_level = 1.0;
+        self.attack_level = 1.0;
+        self.melee_level = 1.0;
+        self.defense_level = 1.0;
+        self.ranged_level = 1.0;
+        self.magic_level = 1.0;
+        self.experience = 0.0;
+        self.experience_rate = 0.0;
+        self.enrage_time = 0.0;
+        self.difficulty_tier = None;
+        self.debuff_on_level_gap = 0.0;
+        self.house_rooms.clear();
+        self.guild_buffs.clear();
+        self.achievements = None;
+        self.zone_buffs.clear();
+        self.extra_buffs.clear();
+        self.combat_scrolls.clear();
+        self.combat_details = CombatDetails::default();
+        self.base_combat_stats = None;
+        self.class_base_combat_stats = None;
+        self.combat_buffs = OrderedMap::new();
+        self.permanent_buffs = OrderedMap::new();
+        self.buff_sources = OrderedMap::new();
+        self.active_buff_source_keys = OrderedMap::new();
+        self.buff_source_policies = OrderedMap::new();
+        self.buff_source_sequence = 0;
+        self.two_hand_hrid = None;
+        self.hrid = Hrid::EMPTY;
+        self.is_weakened = false;
+        self.weaken_percentage = 0.0;
+        self.weaken_expire_time = None;
+        // Vec 容量保留：先按默认槽位数截断/补齐，再逐槽清空（旧值随之释放）。
+        self.abilities.resize(4, None);
+        for slot in self.abilities.iter_mut() {
+            *slot = None;
+        }
+        self.food.resize(3, None);
+        for slot in self.food.iter_mut() {
+            *slot = None;
+        }
+        self.drinks.resize(3, None);
+        for slot in self.drinks.iter_mut() {
+            *slot = None;
+        }
+        self.ability_mana_costs = OrderedMap::new();
+        self.respawn_pool_key = None;
+    }
+
     // -----------------------------------------------------------------------
     // 基准属性（JS 368-404 行）
     // -----------------------------------------------------------------------
