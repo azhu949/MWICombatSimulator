@@ -4,18 +4,18 @@
     "consumablesUsed": {
       "player1": {
         "/items/apple_gummy": 60,
-        "/items/blackberry_donut": 43,
+        "/items/blackberry_donut": 49,
         "/items/channeling_coffee": 14,
         "/items/super_magic_coffee": 14,
         "/items/wisdom_coffee": 14
       }
     },
     "deaths": {
-      "/monsters/centaur_archer": 74,
-      "/monsters/jungle_sprite": 99,
-      "/monsters/luna_empress": 11,
-      "/monsters/myconid": 93,
-      "/monsters/treant": 79
+      "/monsters/centaur_archer": 72,
+      "/monsters/jungle_sprite": 105,
+      "/monsters/luna_empress": 12,
+      "/monsters/myconid": 85,
+      "/monsters/treant": 90
     },
     "difficultyTier": 1,
     "dungeonsCompleted": 0,
@@ -23,7 +23,7 @@
     "isDungeon": false,
     "isLabyrinth": false,
     "lastDungeonFinishTime": 0,
-    "lastEncounterFinishTime": 3595523667990.0786,
+    "lastEncounterFinishTime": 3574983410994.4185,
     "maxEnrageStack": 0,
     "maxWaveReached": 0,
     "minDungenonTime": 0,
@@ -38,8 +38,8 @@
     "playerRanOutOfManaTime": {
       "player1": {
         "isOutOfMana": true,
-        "startTimeForOutOfMana": 3598523667990.0786,
-        "totalTimeForOutOfMana": 2420365408150.1475
+        "startTimeForOutOfMana": 3581288415473.926,
+        "totalTimeForOutOfMana": 2478125177927.6553
       }
     },
     "scrollUsage": {
@@ -55,15 +55,15 @@
   },
   "observers": {
     "inactiveMinimum": {
-      "hp": 470,
+      "hp": 664,
       "mp": 1680
     },
     "thresholdRanges": [
       {
         "hrid": "/items/blackberry_donut",
         "kind": "hp",
-        "max": 103,
-        "min": 99
+        "max": 100,
+        "min": 98
       },
       {
         "hrid": "/items/apple_gummy",

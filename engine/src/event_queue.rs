@@ -1,11 +1,22 @@
-//! 事件队列：逐行复刻 JS 侧 `heap-js` MinHeap（v2.2.0）的堆算法与 `EventQueue` 语义。
+//! 事件队列：按 `(time, seq)` 全序弹出的稳定优先级队列。
 //!
-//! 为什么不是「重新实现一个等价的最小堆」：模拟器对**同时间事件的处理顺序**敏感，
-//! 而该顺序由 heap-js 的内部数组布局与上浮/下沉细节决定（不是稳定排序保证）。
-//! 逐行复刻是逐位 parity 的前提；`tests` 中的基准数据全部由真实 heap-js 生成。
+//! 切片 24（用户已批的契约放宽）：**放弃逐行复刻 heap-js**。平局（同 time）弹出序不再
+//! 依赖堆内部数组布局，而是按**入队序**（FIFO tie-break，`seq` 单调递增）——这也正是
+//! 旧注释里「同时间事件顺序敏感」的真实约束：顺序确定且可复现即可，不必与 JS 堆同构
+//! （JS 引擎已随切片 21B 删除）。
 //!
-//! 对应 JS：`src/combatsimulator/events/eventQueue.js`（用法）
-//! + `node_modules/heap-js/dist/heap-js.es5.js`（算法）。
+//! 语义防线：本文件测试锁定队列自身的 (time, seq) 全序与各查询/清除契约；
+//! `queue_probe` 探针测试 + 生产 golden 快照（切片 24 已重锚）承载模拟轨迹级漂移。
+//!
+//! 数据结构：`VecDeque<QueueEntry>` 按 (time, seq) 升序存储——
+//! - `add_event`：二分定位插入点后 `insert`（`O(n)` 移动，元素紧凑、队列小）；
+//! - `get_next_event`：`pop_front`（`O(1)`），恒取 (time, seq) 最小者；
+//! - `clear_matching`：`retain` 单趟完成（旧的堆复刻是快照 + 逐身份移除的 `O(n²)`）；
+//! - 各查询方法按 (time, seq) 序扫描。
+//!
+//! 契约细节：`time` 保证非 NaN（引擎产生的时间均为有限值）；NaN 输入行为未定义。
+
+use std::collections::VecDeque;
 
 /// 队列项契约：事件队列只依赖这些字段（对应 JS 事件对象中被队列逻辑用到的部分）。
 pub trait QueueItem {
@@ -19,14 +30,24 @@ pub trait QueueItem {
     fn hrid(&self) -> Option<&str>;
 }
 
-/// 二叉最小堆事件队列（比较器等价于 JS `(a, b) => a.time - b.time`）。
+/// 队列条目：事件 + 入队序号（全序键的第二部分，`add_event` 时单调分配）。
+struct QueueEntry<E> {
+    seq: u64,
+    event: E,
+}
+
+/// `(time, seq)` 全序稳定优先级队列（弹出序 = 时间升序，同时间按入队序）。
 pub struct EventQueue<E: QueueItem> {
-    heap: Vec<E>,
+    items: VecDeque<QueueEntry<E>>,
+    next_seq: u64,
 }
 
 impl<E: QueueItem> Default for EventQueue<E> {
     fn default() -> Self {
-        Self { heap: Vec::new() }
+        Self {
+            items: VecDeque::new(),
+            next_seq: 0,
+        }
     }
 }
 
@@ -36,39 +57,48 @@ impl<E: QueueItem> EventQueue<E> {
     }
 
     pub fn len(&self) -> usize {
-        self.heap.len()
+        self.items.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.heap.is_empty()
+        self.items.is_empty()
     }
 
-    /// JS `addEvent`：push 后从末尾上浮。
+    /// JS `addEvent`：按 (time, seq) 插入。新事件 seq 恒最大，因此同时间事件排在
+    /// 既有同时间事件之后（FIFO tie-break）。绝大多数调度的时间 ≥ 队尾（事件随时间
+    /// 递增产生），故先走尾部追加快速路径，仅当新事件时间早于队尾（乱序调度）时二分定位。
     pub fn add_event(&mut self, event: E) {
         let _prof = crate::prof::start("queue.add_event");
-        self.heap.push(event);
-        let index = self.heap.len() - 1;
-        self.sort_node_up(index);
+        let seq = self.next_seq;
+        self.next_seq += 1;
+        let entry = QueueEntry { seq, event };
+        // 尾部快速路径：队尾 ≤ 新键时插入位置恒为队尾（seq 最大，同 time 不落前）。
+        if self
+            .items
+            .back()
+            .map_or(true, |back| (back.event.time(), back.seq) <= (entry.event.time(), entry.seq))
+        {
+            self.items.push_back(entry);
+            return;
+        }
+        let index = self.lower_bound(entry.event.time(), seq);
+        self.items.insert(index, entry);
     }
 
-    /// JS `getNextEvent`（heap-js `pop`）：取根，末元素顶到根后下沉。
+    /// JS `getNextEvent`：弹出 (time, seq) 最小者（队首）。
     pub fn get_next_event(&mut self) -> Option<E> {
         let _prof = crate::prof::start("queue.get_next_event");
-        let last = self.heap.pop()?;
-        if self.heap.is_empty() {
-            return Some(last);
-        }
-        Some(self.replace_root(last))
+        self.items.pop_front().map(|entry| entry.event)
     }
 
-    /// JS `peekNextEvent`：非修改性读取堆根。
+    /// JS `peekNextEvent`：非修改性读取队首。
     pub fn peek_next_event(&self) -> Option<&E> {
-        self.heap.first()
+        self.items.front().map(|entry| &entry.event)
     }
 
-    /// JS `clear`。
+    /// JS `clear`。`seq` 计数器不复位（无语义影响，避免溢出回绕的边界讨论）。
     pub fn clear(&mut self) {
-        self.heap.clear();
+        self.items.clear();
     }
 
     /// JS `clearEventsForUnit`：source 或 target 命中即清。
@@ -83,127 +113,77 @@ impl<E: QueueItem> EventQueue<E> {
         self.clear_matching(|event| event.event_type() == event_type);
     }
 
-    /// JS `clearMatching`：先对 `toArray()` 快照按数组顺序求值，匹配者按身份逐个移除。
-    /// 返回是否有事件被清除。
+    /// JS `clearMatching`：单趟 `retain` 移除全部匹配项，剩余元素保持 (time, seq) 序。
+    /// 返回是否有事件被清除。（旧堆复刻为快照 + 逐身份移除；对纯谓词 matcher 结果等价，
+    /// matcher 的求值顺序由堆数组序改为 (time, seq) 序。）
     pub fn clear_matching<F: Fn(&E) -> bool>(&mut self, matcher: F) -> bool {
         let _prof = crate::prof::start("queue.clear_matching");
-        let snapshot: Vec<u64> = self.heap.iter().map(|event| event.id()).collect();
         let mut cleared = false;
-        for id in snapshot {
-            let matched = self
-                .heap
-                .iter()
-                .find(|event| event.id() == id)
-                .map_or(false, |event| matcher(event));
-            if matched {
-                self.remove_by_id(id);
+        self.items.retain(|entry| {
+            if matcher(&entry.event) {
                 cleared = true;
+                false
+            } else {
+                true
             }
-        }
+        });
         cleared
     }
 
-    /// JS `getMatching`：按堆数组顺序找首个匹配事件（非修改性）。
+    /// JS `getMatching`：按 (time, seq) 序找首个匹配事件（非修改性）。
     pub fn get_matching<F: Fn(&E) -> bool>(&self, matcher: F) -> Option<&E> {
-        self.heap.iter().find(|event| matcher(event))
+        self.items
+            .iter()
+            .find(|entry| matcher(&entry.event))
+            .map(|entry| &entry.event)
     }
 
     /// JS `containsEventOfType`。
     pub fn contains_event_of_type(&self, event_type: &str) -> bool {
-        self.heap.iter().any(|event| event.event_type() == event_type)
+        self.items.iter().any(|entry| entry.event.event_type() == event_type)
     }
 
     /// JS `containsEventOfTypeAndHrid`。
     pub fn contains_event_of_type_and_hrid(&self, event_type: &str, hrid: &str) -> bool {
-        self.heap
+        self.items
             .iter()
-            .any(|event| event.event_type() == event_type && event.hrid() == Some(hrid))
+            .any(|entry| entry.event.event_type() == event_type && entry.event.hrid() == Some(hrid))
     }
 
     /// JS `containsEventOfTypesAndSource`：类型命中任一 type 后即检查 source，未命中类型
     /// 则看下一个事件（原实现用 break 短路类型链，等价于「任一类型命中 且 source 命中」）。
     pub fn contains_event_of_types_and_source(&self, types: &[&str], source: u64) -> bool {
-        self.heap.iter().any(|event| {
-            types.iter().any(|candidate| event.event_type() == *candidate)
-                && event.source() == Some(source)
+        self.items.iter().any(|entry| {
+            types.iter().any(|candidate| entry.event.event_type() == *candidate)
+                && entry.event.source() == Some(source)
         })
     }
 
-    /// heap-js `remove`（默认身份比较）的等价实现：按 id 找到首个匹配项后移除。
+    /// 按 id 找到首个匹配项后移除（原 heap-js `remove` 身份移除的等价实现）。
     pub fn remove_by_id(&mut self, id: u64) -> bool {
         let _prof = crate::prof::start("queue.remove_by_id");
-        if self.heap.is_empty() {
-            return false;
-        }
-        let Some(index) = self.heap.iter().position(|event| event.id() == id) else {
+        let Some(index) = self.items.iter().position(|entry| entry.event.id() == id) else {
             return false;
         };
-        if index == 0 {
-            self.get_next_event();
-        } else if index == self.heap.len() - 1 {
-            self.heap.pop();
-        } else {
-            let last = self.heap.pop().expect("heap is non-empty");
-            self.heap[index] = last;
-            self.sort_node_up(index);
-            self.sort_node_down(index);
-        }
+        self.items.remove(index);
         true
     }
 
-    /// heap-js `replace`：旧根被替换后自根下沉，返回旧根。
-    fn replace_root(&mut self, element: E) -> E {
-        let old = std::mem::replace(&mut self.heap[0], element);
-        self.sort_node_down(0);
-        old
-    }
-
-    /// heap-js `_sortNodeUp`：与父节点比较，严格更小则交换上浮。
-    fn sort_node_up(&mut self, mut index: usize) {
-        while index > 0 {
-            let parent = parent_index(index);
-            if self.heap[parent].time() - self.heap[index].time() > 0.0 {
-                self.heap.swap(index, parent);
-                index = parent;
+    /// 二分查找插入点：返回第一个 `(time, seq) > (time_arg, seq_arg)` 的下标
+    /// （即第一个应排在目标键之后的元素位置）。
+    fn lower_bound(&self, time: f64, seq: u64) -> usize {
+        let mut lo = 0usize;
+        let mut hi = self.items.len();
+        while lo < hi {
+            let mid = lo + (hi - lo) / 2;
+            let entry = &self.items[mid];
+            if (entry.event.time(), entry.seq) <= (time, seq) {
+                lo = mid + 1;
             } else {
-                break;
+                hi = mid;
             }
         }
-    }
-
-    /// heap-js `_sortNodeDown`：与更小的子节点比较并交换下沉。
-    fn sort_node_down(&mut self, mut index: usize) {
-        // JS：var moveIt = i < heapArray.length - 1（length 为 0 时恒 false）。
-        if index + 1 >= self.heap.len() {
-            return;
-        }
-        // JS 在循环前读取一次 self 节点；它随交换向下移动，比较基准不变。
-        let node_time = self.heap[index].time();
-        loop {
-            let left = index * 2 + 1;
-            let right = index * 2 + 2;
-            // heap-js `getPotentialParent`：右侧子节点在范围内且严格更小时取代左侧。
-            let mut best = left;
-            if self.heap.len() > right && self.heap[right].time() - self.heap[best].time() < 0.0 {
-                best = right;
-            }
-            match self.heap.get(best).map(|event| event.time()) {
-                Some(best_child_time) if node_time - best_child_time > 0.0 => {
-                    self.heap.swap(index, best);
-                    index = best;
-                }
-                _ => break,
-            }
-        }
-    }
-}
-
-/// heap-js `getParentIndexOf`：奇数 → (idx-1)/2；偶数 → (idx-2)/2。
-fn parent_index(index: usize) -> usize {
-    if index % 2 == 1 {
-        index / 2
-    } else {
-        index / 2 - 1
+        lo
     }
 }
 
@@ -261,10 +241,10 @@ mod tests {
         order
     }
 
-    // 以下基准数据由真实 heap-js（v2.2.0）生成。
+    // 以下期望值按切片 24 的 (time, seq) 全序语义人工推导（旧 heap-js 金标已弃用）。
 
     #[test]
-    fn pop_order_with_ties_matches_heap_js() {
+    fn pop_order_with_ties_is_insertion_stable() {
         let mut queue = EventQueue::new();
         for (id, time) in [
             (1u64, 2000.0),
@@ -276,11 +256,22 @@ mod tests {
         ] {
             queue.add_event(event(id, time));
         }
+        // 1000 组按入队序 [2,4,6]，随后 2000 组 [1,3]，最后 3000 组 [5]。
         assert_eq!(pop_all(&mut queue), vec![2, 4, 6, 1, 3, 5]);
     }
 
     #[test]
-    fn identity_removals_match_heap_js() {
+    fn insertion_keeps_sorted_order_for_mixed_times() {
+        // 乱序插入 + 重复时间：弹出序恒为 (time, seq) 升序。
+        let mut queue = EventQueue::new();
+        for (id, time) in [(1u64, 500.0), (2, 100.0), (3, 300.0), (4, 100.0), (5, 500.0), (6, 0.0)] {
+            queue.add_event(event(id, time));
+        }
+        assert_eq!(pop_all(&mut queue), vec![6, 2, 4, 3, 1, 5]);
+    }
+
+    #[test]
+    fn identity_removals_preserve_remaining_order() {
         let mut queue = EventQueue::new();
         for (id, time) in [
             (1u64, 500.0),
@@ -296,11 +287,24 @@ mod tests {
         }
         assert!(queue.remove_by_id(3));
         assert!(queue.remove_by_id(6));
-        assert_eq!(pop_all(&mut queue), vec![1, 5, 8, 7, 4, 2]);
+        assert!(!queue.remove_by_id(99));
+        // 500 组 [1,5,8] → 1500 组 [2,4,7]（2500 的 id6 已移除）。
+        assert_eq!(pop_all(&mut queue), vec![1, 5, 8, 2, 4, 7]);
     }
 
     #[test]
-    fn clear_by_type_matches_heap_js() {
+    fn removal_and_reinsertion_get_new_tie_sequence() {
+        // 移除后重新入队的事件拿到新 seq：同时间组内排到既有成员之后。
+        let mut queue = EventQueue::new();
+        queue.add_event(event(1, 100.0));
+        queue.add_event(event(2, 100.0));
+        assert!(queue.remove_by_id(1));
+        queue.add_event(event(3, 100.0));
+        assert_eq!(pop_all(&mut queue), vec![2, 3]);
+    }
+
+    #[test]
+    fn clear_by_type_removes_matching_entries() {
         let mut queue = EventQueue::new();
         for (id, time, event_type) in [
             (1u64, 100.0, "a"),
@@ -322,6 +326,18 @@ mod tests {
         assert_eq!(pop_all(&mut queue), vec![2, 4]);
         // 再次调用是幂等的空操作（JS 包装方法无返回值，无法断言 cleared 标志）
         queue.clear_events_of_type("a");
+    }
+
+    #[test]
+    fn clear_matching_keeps_untouched_entries_in_order() {
+        // 清除不改变剩余元素的相对序（retain 单趟保序）。
+        let mut queue = EventQueue::new();
+        for (id, time) in [(1u64, 300.0), (2, 100.0), (3, 200.0), (4, 100.0)] {
+            queue.add_event(event(id, time));
+        }
+        assert!(queue.clear_matching(|entry| entry.event_type() == "type1"));
+        assert!(!queue.clear_matching(|entry| entry.event_type() == "type1"));
+        assert_eq!(pop_all(&mut queue), vec![2, 4, 3]);
     }
 
     #[test]

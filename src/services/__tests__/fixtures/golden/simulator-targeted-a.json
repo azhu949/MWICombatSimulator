@@ -253,7 +253,7 @@
     {
       "hrid": null,
       "source": "/parity/player/0",
-      "target": "/parity/enemy/1",
+      "target": "/parity/enemy/0",
       "time": 4899845121.321631,
       "type": "damageOverTime",
       "value": 1
@@ -261,7 +261,7 @@
     {
       "hrid": null,
       "source": "/parity/player/0",
-      "target": "/parity/enemy/0",
+      "target": "/parity/enemy/1",
       "time": 4899845121.321631,
       "type": "damageOverTime",
       "value": 1
@@ -284,7 +284,7 @@
     },
     {
       "hrid": "/abilities/entangle",
-      "source": "/parity/enemy/1",
+      "source": "/parity/enemy/0",
       "target": null,
       "time": 5217391304.347827,
       "type": "abilityCastEndEvent",
@@ -292,7 +292,7 @@
     },
     {
       "hrid": "/abilities/entangle",
-      "source": "/parity/enemy/0",
+      "source": "/parity/enemy/1",
       "target": null,
       "time": 5217391304.347827,
       "type": "abilityCastEndEvent",
@@ -492,7 +492,7 @@
     },
     {
       "hrid": "/abilities/entangle",
-      "source": "/parity/enemy/1",
+      "source": "/parity/enemy/0",
       "target": null,
       "time": 7826086956.52174,
       "type": "abilityCastEndEvent",
@@ -500,7 +500,7 @@
     },
     {
       "hrid": "/abilities/entangle",
-      "source": "/parity/enemy/0",
+      "source": "/parity/enemy/1",
       "target": null,
       "time": 7826086956.52174,
       "type": "abilityCastEndEvent",
@@ -1461,7 +1461,7 @@
     {
       "hrid": null,
       "source": "/parity/player/0",
-      "target": "/parity/enemy/1",
+      "target": "/parity/enemy/0",
       "time": 21599114174.58403,
       "type": "damageOverTime",
       "value": 1
@@ -1469,7 +1469,7 @@
     {
       "hrid": null,
       "source": "/parity/player/0",
-      "target": "/parity/enemy/0",
+      "target": "/parity/enemy/1",
       "time": 21599114174.58403,
       "type": "damageOverTime",
       "value": 1
@@ -4240,18 +4240,18 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "damageOverTime",
-        9
+        19
       ],
       "method": "addAttack"
     },
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "damageOverTime",
-        19
+        9
       ],
       "method": "addAttack"
     },
@@ -4302,7 +4302,7 @@
     },
     {
       "args": [
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "/parity/player/0",
         "/abilities/entangle",
         60
@@ -4312,7 +4312,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "retaliation",
         "miss"
       ],
@@ -4320,7 +4320,7 @@
     },
     {
       "args": [
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "/parity/player/0",
         "/abilities/entangle",
         31
@@ -4330,7 +4330,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "elementalThorns",
         1
       ],
@@ -4339,7 +4339,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "retaliation",
         "miss"
       ],
@@ -5041,7 +5041,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "parry",
         "miss"
       ],
@@ -5049,7 +5049,7 @@
     },
     {
       "args": [
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "/parity/player/0",
         "physicalThorns",
         1
@@ -5058,7 +5058,7 @@
     },
     {
       "args": [
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "/parity/player/0",
         "retaliation",
         "miss"
@@ -5067,7 +5067,7 @@
     },
     {
       "args": [
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "/parity/player/0",
         "/abilities/entangle",
         46
@@ -5077,7 +5077,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "elementalThorns",
         1
       ],
@@ -5086,7 +5086,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "retaliation",
         "miss"
       ],
@@ -8465,18 +8465,18 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "damageOverTime",
-        11
+        10
       ],
       "method": "addAttack"
     },
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "damageOverTime",
-        10
+        11
       ],
       "method": "addAttack"
     },
@@ -14667,7 +14667,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/1",
+        "/parity/enemy/0",
         "damageOverTime",
         11
       ],
@@ -14676,7 +14676,7 @@
     {
       "args": [
         "/parity/player/0",
-        "/parity/enemy/0",
+        "/parity/enemy/1",
         "damageOverTime",
         11
       ],
@@ -16638,7 +16638,7 @@
           "waterResistance": 0,
           "weaken": 0.2
         },
-        "currentHitpoints": 3295,
+        "currentHitpoints": 3297,
         "currentManapoints": 0,
         "defenseLevel": 100,
         "defensiveMaxDamage": 110,
@@ -16671,7 +16671,7 @@
         "totalThreat": 300,
         "totalWaterResistance": 20
       },
-      "currentHitpoints": 3295,
+      "currentHitpoints": 3297,
       "currentManapoints": 0,
       "drinks": [
         null,
@@ -16817,7 +16817,7 @@
           "waterResistance": 0,
           "weaken": 0.2
         },
-        "currentHitpoints": 3911,
+        "currentHitpoints": 3909,
         "currentManapoints": 0,
         "defenseLevel": 100,
         "defensiveMaxDamage": 110,
@@ -16850,7 +16850,7 @@
         "totalThreat": 300,
         "totalWaterResistance": 20
       },
-      "currentHitpoints": 3911,
+      "currentHitpoints": 3909,
       "currentManapoints": 0,
       "drinks": [
         null,

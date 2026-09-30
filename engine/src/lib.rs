@@ -1,8 +1,9 @@
 //! MWI combat engine — Rust/WASM port.
 //!
 //! Slice 1: infrastructure (crate skeleton, wasm build chain, loader, benchmark + parity harness).
-//! Slice 2: event queue (exact port of the heap-js based `EventQueue`) + mulberry32 RNG
-//! (bit-for-bit identical to `src/services/seededRandom.js`), with JS-vs-Rust parity probes.
+//! Slice 2: event queue + mulberry32 RNG (bit-for-bit identical to `src/services/seededRandom.js`),
+//! with JS-vs-Rust parity probes. Slice 24: the queue is a `(time, seq)` ordered priority queue
+//! (the heap-js port was dropped under the relaxed parity contract; see `event_queue.rs`).
 //! Slice 3: combat units (exact port of `combatUnit.js` / `buff.js` / `buffSourcePolicy.js`
 //! stat resolution + buff lifecycle, plus the equipment stat rule), with unit parity probes.
 //! Slice 4: combat main loop (event types, ability/trigger/consumable behaviour, damage math,

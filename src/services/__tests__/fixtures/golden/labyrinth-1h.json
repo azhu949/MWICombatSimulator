@@ -1626,9 +1626,9 @@
   },
   "manapointsGained": {
     "player1": {
-      "/items/dragon_fruit_yogurt": 465,
+      "/items/dragon_fruit_yogurt": 445,
       "/items/star_fruit_gummy": 43400,
-      "regen": 10267
+      "regen": 10287
     }
   },
   "maxEnrageStack": 0,

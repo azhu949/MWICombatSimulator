@@ -1,6 +1,7 @@
-//! 事件队列操作回放探针：把 JS 侧 parity 测试生成的操作脚本喂给 Rust 事件队列，
+//! 事件队列操作回放探针：把 golden 测试生成的操作脚本喂给 Rust 事件队列，
 //! 输出可逐项比较的轨迹（JSON）。由 `src/services/__tests__/wasmEngineParity.test.js`
-//! 驱动，并与真实 JS EventQueue 在同一脚本下的轨迹做**精确对账**。
+//! 驱动，并与 golden 快照（切片 21B 起）做**精确对账**；切片 24 起队列语义为
+//! (time, seq) 全序（堆复刻已弃用，见 `event_queue.rs`）。
 //!
 //! 操作脚本形如：
 //! ```json

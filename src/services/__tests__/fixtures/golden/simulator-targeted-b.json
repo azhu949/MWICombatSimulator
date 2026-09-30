@@ -87,7 +87,7 @@
       "source": null,
       "target": null,
       "time": 60000000000,
-      "type": "regenTick",
+      "type": "cooldownReady",
       "value": null
     },
     {
@@ -95,7 +95,7 @@
       "source": null,
       "target": null,
       "time": 60000000000,
-      "type": "cooldownReady",
+      "type": "regenTick",
       "value": null
     },
     {

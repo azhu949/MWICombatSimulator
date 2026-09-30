@@ -16,8 +16,8 @@ export function findTraceDivergence(jsTrace, rustTrace) {
   return null;
 }
 
-// 定向脚本：覆盖同时间事件（tie 顺序）、f64 小数时间、超大时间、按类型/单位清除、
-// 空队列查询等边界。与 Rust 侧的堆实现逐位对账。
+// 定向脚本：覆盖同时间事件（FIFO tie 顺序）、f64 小数时间、超大时间、按类型/单位清除、
+// 空队列查询等边界。与 Rust 侧的 (time, seq) 全序队列（切片 24）对账。
 export function buildTargetedEventQueueOps() {
   return [
     { op: 'push', id: 1, type: 'autoAttack', time: 1200, source: 10, target: 20 },
