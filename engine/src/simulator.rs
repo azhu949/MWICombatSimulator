@@ -3203,20 +3203,28 @@ impl CombatSimulator {
         for index in 0..alive_targets.len() {
             let mut target = alive_targets[index];
             if !is_player && alive_targets.len() > 1 {
+                let prof_threat = crate::prof::start("autoAttack.threat");
                 target = self.pick_threat_target(&alive_targets)?;
+                drop(prof_threat);
             }
 
             let mut current_source = event_source;
+            let prof_parry = crate::prof::start("autoAttack.parry");
             let parry_target = self.check_parry(&alive_targets);
+            drop(prof_parry);
             if let Some(parry) = parry_target {
                 target = current_source;
                 current_source = parry;
             }
 
             let attack_result = {
+                let prof_attack = crate::prof::start("autoAttack.attack");
                 let (source_unit, target_unit) = self.arena.two_mut(current_source, target);
-                process_attack(source_unit, target_unit, None, &mut self.rng)
+                let result = process_attack(source_unit, target_unit, None, &mut self.rng);
+                drop(prof_attack);
+                result
             };
+            let _prof_body = crate::prof::start("autoAttack.body");
 
             // 切片 19：JS :1017-1027——副本日志（普攻直击玩家且造成伤害）。
             if self.wipe_logs.is_some()
@@ -4306,6 +4314,7 @@ impl CombatSimulator {
         // 路径读 source 的技能槽（已核实 damage 目标恒为敌方列表、promote/revive 触新单位）。
         self.arena.get_mut(source).abilities[slot] = Some(ability);
 
+        let prof_ripple = crate::prof::start("try_use.post.ripple");
         let ripple = self.arena.get(current_source).combat_details.combat_stats.ripple;
         if ripple > 0.0 && self.rng.next_f64() < ripple {
             let manapoints_added = self.arena.get_mut(current_source).add_manapoints(10.0);
@@ -4329,6 +4338,7 @@ impl CombatSimulator {
                 }
             }
         }
+        drop(prof_ripple);
 
         self.add_next_attack_event(current_source)?;
 
@@ -4615,13 +4625,17 @@ impl CombatSimulator {
                     }
                 } else {
                     // 候选表原地收缩（单调），等价原实现对全集的逐轮重过滤。
+                    let prof_cand = crate::prof::start("ability.damage.candidates");
                     candidates.retain(|id| {
                         let unit = self.arena.get(*id);
                         !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
                     });
+                    drop(prof_cand);
 
                     if !candidates.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
+                        let prof_threat = crate::prof::start("ability.damage.threat");
                         target = self.pick_threat_target(&candidates)?;
+                        drop(prof_threat);
                         let hrid = self.unit_hrid(target);
                         avoid_target.push(hrid);
                     }
