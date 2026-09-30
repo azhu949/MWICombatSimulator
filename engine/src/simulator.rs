@@ -27,6 +27,7 @@ use crate::combat_utilities::{
 };
 use crate::consumable::Consumable;
 use crate::event_queue::{EventQueue, QueueItem};
+use crate::hrid::{hrid_is, hrid_is_empty, hrid_to_string, intern_hrid, with_hrid, Hrid};
 use crate::ordered_map::OrderedMap;
 use crate::rng::Mulberry32;
 use crate::sim_events::SimEvent;
@@ -46,11 +47,11 @@ pub const ENEMY_RESPAWN_INTERVAL: f64 = 3.0 * ONE_SECOND;
 pub const PLAYER_RESPAWN_INTERVAL: f64 = 150.0 * ONE_SECOND;
 pub const RESTART_INTERVAL: f64 = 3.0 * ONE_SECOND;
 pub const ENRAGE_TICK_INTERVAL: f64 = 60.0 * ONE_SECOND;
-pub const CURSE_UNIQUE_HRID: &str = "/buff_uniques/curse";
-pub const WEAKEN_UNIQUE_HRID: &str = "/buff_uniques/weaken";
-pub const FURY_ACCURACY_UNIQUE_HRID: &str = "/buff_uniques/fury_accuracy";
-pub const FURY_DAMAGE_UNIQUE_HRID: &str = "/buff_uniques/fury_damage";
-pub const ATTACK_EVENT_TYPES: [&str; 2] = ["abilityCastEndEvent", "autoAttack"];
+pub const CURSE_UNIQUE_HRID: Hrid = Hrid::BUFF_UNIQUE_CURSE;
+pub const WEAKEN_UNIQUE_HRID: Hrid = Hrid::BUFF_UNIQUE_WEAKEN;
+pub const FURY_ACCURACY_UNIQUE_HRID: Hrid = Hrid::BUFF_UNIQUE_FURY_ACCURACY;
+pub const FURY_DAMAGE_UNIQUE_HRID: Hrid = Hrid::BUFF_UNIQUE_FURY_DAMAGE;
+pub const ATTACK_EVENT_TYPES: [Hrid; 2] = [Hrid::EVENT_ABILITY_CAST_END, Hrid::EVENT_AUTO_ATTACK];
 
 const CURSE_EXPIRE_TIME: f64 = 15_000_000_000.0;
 const FURY_EXPIRE_TIME: f64 = 15_000_000_000.0;
@@ -95,6 +96,11 @@ fn normalize_time_limit(value: f64) -> f64 {
     } else {
         value
     }
+}
+
+/// JS `scroll:${itemHrid}` 源键（切片 25：驻留为句柄；构造点均为低频路径）。
+fn scroll_source_key(item_hrid: Hrid) -> Hrid {
+    intern_hrid(&format!("scroll:{}", hrid_to_string(item_hrid)))
 }
 
 /// 切片 15：`zone.dungeonSpawnInfo.maxWaves`（缺失时为 NaN —— JS `undefined` 参与
@@ -166,7 +172,7 @@ impl SimResultTally {
         }
     }
 
-    pub fn add_death(&mut self, hrid: &str) {
+    pub fn add_death(&mut self, hrid: Hrid) {
         if let Some(real) = self.real.as_mut() {
             real.add_death(hrid);
             return;
@@ -174,7 +180,7 @@ impl SimResultTally {
         self.push("addDeath", vec![json!(hrid)]);
     }
 
-    pub fn add_attack(&mut self, source_hrid: &str, target_hrid: &str, ability: &str, outcome: AttackOutcome) {
+    pub fn add_attack(&mut self, source_hrid: Hrid, target_hrid: Hrid, ability: Hrid, outcome: AttackOutcome) {
         if let Some(real) = self.real.as_mut() {
             real.add_attack(source_hrid, target_hrid, ability, &outcome);
             return;
@@ -185,7 +191,7 @@ impl SimResultTally {
         );
     }
 
-    pub fn add_hitpoints_gained(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+    pub fn add_hitpoints_gained(&mut self, hrid: Hrid, source_hrid: Hrid, amount: f64) {
         if let Some(real) = self.real.as_mut() {
             real.add_hitpoints_gained(hrid, source_hrid, amount);
             return;
@@ -193,7 +199,7 @@ impl SimResultTally {
         self.push("addHitpointsGained", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
-    pub fn add_manapoints_gained(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+    pub fn add_manapoints_gained(&mut self, hrid: Hrid, source_hrid: Hrid, amount: f64) {
         if let Some(real) = self.real.as_mut() {
             real.add_manapoints_gained(hrid, source_hrid, amount);
             return;
@@ -201,7 +207,7 @@ impl SimResultTally {
         self.push("addManapointsGained", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
-    pub fn add_hitpoints_spent(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+    pub fn add_hitpoints_spent(&mut self, hrid: Hrid, source_hrid: Hrid, amount: f64) {
         if let Some(real) = self.real.as_mut() {
             real.add_hitpoints_spent(hrid, source_hrid, amount);
             return;
@@ -209,7 +215,7 @@ impl SimResultTally {
         self.push("addHitpointsSpent", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
-    pub fn add_ran_out_of_mana_count(&mut self, hrid: &str, ran_out: bool, time: f64) {
+    pub fn add_ran_out_of_mana_count(&mut self, hrid: Hrid, ran_out: bool, time: f64) {
         if let Some(real) = self.real.as_mut() {
             real.add_ran_out_of_mana_count(hrid, ran_out, time);
             return;
@@ -217,7 +223,7 @@ impl SimResultTally {
         self.push("addRanOutOfManaCount", vec![json!(hrid), json!(ran_out), json!(time)]);
     }
 
-    pub fn add_consumable_use(&mut self, hrid: &str, consumable_hrid: &str) {
+    pub fn add_consumable_use(&mut self, hrid: Hrid, consumable_hrid: Hrid) {
         if let Some(real) = self.real.as_mut() {
             real.add_consumable_use(hrid, consumable_hrid);
             return;
@@ -243,7 +249,7 @@ impl SimResultTally {
     }
 
     /// 切片 12：提前停止谓词的只读视图（`hrid` 未记账时等价 JS 的 `undefined` 归一）。
-    pub fn deaths_for(&self, hrid: &str) -> f64 {
+    pub fn deaths_for(&self, hrid: Hrid) -> f64 {
         match self.real.as_ref() {
             Some(real) => real.deaths_value(hrid),
             None => 0.0,
@@ -251,7 +257,7 @@ impl SimResultTally {
     }
 
     /// `playerRanOutOfMana[hrid] === true`（缺键 / false / 探针模式都为假）。
-    pub fn mana_out_for(&self, hrid: &str) -> bool {
+    pub fn mana_out_for(&self, hrid: Hrid) -> bool {
         match self.real.as_ref() {
             Some(real) => real.player_ran_out_of_mana_value(hrid),
             None => false,
@@ -259,7 +265,7 @@ impl SimResultTally {
     }
 
     /// 切片 20：`consumablesUsed[unitHrid]?.[itemHrid] || 0`（探针模式恒 0）。
-    pub fn consumables_used_for(&self, unit_hrid: &str, item_hrid: &str) -> f64 {
+    pub fn consumables_used_for(&self, unit_hrid: Hrid, item_hrid: Hrid) -> f64 {
         match self.real.as_ref() {
             Some(real) => real.consumables_used_value(unit_hrid, item_hrid),
             None => 0.0,
@@ -269,7 +275,7 @@ impl SimResultTally {
     /// 探针模式只记录 hrid（与 JS `ParitySimResult` 一致）；生产模式转发完整统计值。
     pub fn set_drop_rate_multipliers(
         &mut self,
-        hrid: &str,
+        hrid: Hrid,
         combat_drop_rate: f64,
         combat_rare_find: f64,
         combat_drop_quantity: f64,
@@ -291,7 +297,7 @@ impl SimResultTally {
     }
 
     /// 探针模式只记录 hrid；生产模式复制 `abilityManaCosts` 快照。
-    pub fn set_mana_used(&mut self, hrid: &str, entries: &[(String, f64)]) {
+    pub fn set_mana_used(&mut self, hrid: Hrid, entries: &[(Hrid, f64)]) {
         if let Some(real) = self.real.as_mut() {
             real.set_mana_used(hrid, entries);
             return;
@@ -316,7 +322,7 @@ impl SimResultTally {
     }
 
     /// 切片 17：生产模式专用：JS `simResult.setScrollConfiguration(playerHrid, itemHrid, finiteQuantity)`。
-    pub fn set_scroll_configuration(&mut self, player_hrid: &str, item_hrid: &str, configured_quantity: Option<f64>) {
+    pub fn set_scroll_configuration(&mut self, player_hrid: Hrid, item_hrid: Hrid, configured_quantity: Option<f64>) {
         if let Some(real) = self.real.as_mut() {
             real.set_scroll_configuration(player_hrid, item_hrid, configured_quantity);
             return;
@@ -327,8 +333,8 @@ impl SimResultTally {
     /// 切片 17：生产模式专用：JS `simResult.recordScrollOpen(playerHrid, itemHrid, details)`。
     pub fn record_scroll_open(
         &mut self,
-        player_hrid: &str,
-        item_hrid: &str,
+        player_hrid: Hrid,
+        item_hrid: Hrid,
         opened_count: f64,
         active_duration_ns: f64,
         exhausted: Option<bool>,
@@ -341,7 +347,7 @@ impl SimResultTally {
     }
 
     /// 切片 17：生产模式专用：JS `simResult.recordScrollWindow(playerHrid, itemHrid, duration)`。
-    pub fn record_scroll_window(&mut self, player_hrid: &str, item_hrid: &str, active_duration_ns: f64) {
+    pub fn record_scroll_window(&mut self, player_hrid: Hrid, item_hrid: Hrid, active_duration_ns: f64) {
         if let Some(real) = self.real.as_mut() {
             real.record_scroll_window(player_hrid, item_hrid, active_duration_ns);
             return;
@@ -350,7 +356,7 @@ impl SimResultTally {
     }
 
     /// 切片 17：生产模式专用：JS `finalizeScrollUsage` 的 `entry.exhausted = ...` 直写。
-    pub fn finalize_scroll_exhausted(&mut self, player_hrid: &str, item_hrid: &str, configured_quantity: Option<f64>) {
+    pub fn finalize_scroll_exhausted(&mut self, player_hrid: Hrid, item_hrid: Hrid, configured_quantity: Option<f64>) {
         if let Some(real) = self.real.as_mut() {
             real.finalize_scroll_exhausted(player_hrid, item_hrid, configured_quantity);
             return;
@@ -395,7 +401,7 @@ impl SimResultTally {
     }
 
     /// 生产模式专用：`addTimeSeriesSnapshot`（可视化关闭时不会被调用）。
-    pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(String, f64, f64, f64, f64)]) {
+    pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(Hrid, f64, f64, f64, f64)]) {
         if let Some(real) = self.real.as_mut() {
             real.add_time_series_snapshot(time, players);
         }
@@ -529,7 +535,7 @@ pub struct UnitSpec {
 pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     let _prof = crate::prof::start("unit.build_from_spec");
     let mut unit = CombatUnit { is_player: spec.is_player, ..Default::default() };
-    unit.hrid = spec.hrid.clone();
+    unit.hrid = intern_hrid(&spec.hrid);
 
     let _prof_spec_apply = crate::prof::start("unit.spec_apply");
     if let Some(levels) = &spec.levels {
@@ -559,7 +565,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     unit.enrage_time = spec.enrage_time;
     unit.experience = spec.experience;
     unit.debuff_on_level_gap = spec.debuff_on_level_gap;
-    unit.two_hand_hrid = spec.two_hand_hrid.clone();
+    unit.two_hand_hrid = spec.two_hand_hrid.as_deref().map(intern_hrid);
     unit.house_rooms = spec.house_rooms.clone();
     unit.guild_buffs = spec.guild_buffs.clone();
     unit.achievements = spec.achievements.clone();
@@ -568,7 +574,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     unit.combat_scrolls = spec.combat_scrolls.clone();
     // 构造期永久增益：JS 侧 `permanentBuffs` 已按 typeHrid 合并，这里直接按序播种。
     for buff in &spec.permanent_buffs {
-        unit.permanent_buffs.set(buff.type_hrid.clone(), buff.clone());
+        unit.permanent_buffs.set(buff.type_hrid, buff.clone());
     }
 
     // 构造期「类自有」面板快照：与基准同源，供 `clear_ccs` 的基准刷新点恢复字段。
@@ -712,8 +718,8 @@ pub struct SimulatorOptions {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EarlyStopSpec {
-    /// 监视单位的 hrid（如 `player1`）。
-    pub watch_hrid: String,
+    /// 监视单位的 hrid（如 `player1`；反序列化时直接驻留为句柄）。
+    pub watch_hrid: Hrid,
     /// 死亡上限；`None` = JS `Infinity`（不因死亡停止）。
     pub death_limit: Option<f64>,
 }
@@ -724,8 +730,8 @@ pub struct EarlyStopSpec {
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ObserverSpec {
-    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`）。
-    pub watch_hrid: String,
+    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`；反序列化时直接驻留为句柄）。
+    pub watch_hrid: Hrid,
 }
 
 /// 切片 20：成本上界观察器参数（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
@@ -737,8 +743,8 @@ pub struct ObserverSpec {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CostBoundSpec {
-    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`）。
-    pub watch_hrid: String,
+    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`；反序列化时直接驻留为句柄）。
+    pub watch_hrid: Hrid,
     /// 成本上界（JS `cutoff`；有限非负由桥侧安装条件保证，非法值不激活观察器）。
     pub cutoff: f64,
     /// 已完成轮次的累计小时成本（JS `completedCostPerHour`）。
@@ -790,17 +796,17 @@ impl ObserverState {
                 state.threshold_ranges.clear();
                 break;
             };
-            let kind = match trigger.condition_hrid.as_str() {
-                "/combat_trigger_conditions/missing_hp" => "hp",
-                "/combat_trigger_conditions/missing_mp" => "mp",
+            let kind = match trigger.condition_hrid {
+                Hrid::TRIGGER_COND_MISSING_HP => "hp",
+                Hrid::TRIGGER_COND_MISSING_MP => "mp",
                 _ => {
                     state.threshold_valid = false;
                     state.threshold_ranges.clear();
                     break;
                 }
             };
-            if trigger.dependency_hrid != "/combat_trigger_dependencies/self"
-                || trigger.comparator_hrid != "/combat_trigger_comparators/greater_than_equal"
+            if trigger.dependency_hrid != Hrid::TRIGGER_DEP_SELF
+                || trigger.comparator_hrid != Hrid::TRIGGER_CMP_GREATER_THAN_EQUAL
                 || consumable.triggers.len() != 1
                 || !is_safe_integer(trigger.value)
             {
@@ -809,7 +815,7 @@ impl ObserverState {
                 break;
             }
             state.threshold_ranges.push(ThresholdRange {
-                hrid: consumable.hrid.clone(),
+                hrid: hrid_to_string(consumable.hrid),
                 kind: kind.to_string(),
                 min: 1.0,
                 max: MAX_SAFE_INTEGER_F64,
@@ -921,8 +927,8 @@ impl CostBoundState {
     }
 
     /// JS `foods.has(consumable)` 的等价判断（价格快照键集 = food 槽 hrid 集合）。
-    fn watches_food(&self, hrid: &str) -> bool {
-        self.prices.iter().any(|(food, _)| food == hrid)
+    fn watches_food(&self, hrid: Hrid) -> bool {
+        with_hrid(hrid, |name| self.prices.iter().any(|(food, _)| food == name))
     }
 
     /// JS `shouldStop()` 的 dirty 分支：从 `consumablesUsed` 全量快照重算。
@@ -931,7 +937,7 @@ impl CostBoundState {
     ///（绝不除以已流逝时长）、按 foodUsed 键序（= 槽序）累加 `max(0,count)*max(0,price)`、
     /// 总和除以小时数。`hours <= 0` 在安装守卫下不可达（JS 会抛 RangeError），防御性
     /// 保持上次结果不变。
-    fn recompute(&mut self, tally: &SimResultTally, watch_hrid: &str, simulation_time_limit: f64) {
+    fn recompute(&mut self, tally: &SimResultTally, watch_hrid: Hrid, simulation_time_limit: f64) {
         self.dirty = false;
         let hours = simulation_time_limit / 3_600_000_000_000.0;
         if !(hours > 0.0) {
@@ -939,7 +945,8 @@ impl CostBoundState {
         }
         let mut total = 0.0;
         for (hrid, price) in &self.prices {
-            let count = tally.consumables_used_for(watch_hrid, hrid);
+            let item_hrid = intern_hrid(hrid);
+            let count = tally.consumables_used_for(watch_hrid, item_hrid);
             total += count.max(0.0) * price.max(0.0);
         }
         let current_cost_per_hour = total / hours;
@@ -1187,7 +1194,7 @@ impl CombatSimulator {
         self.player_count += 1;
         // 切片 13：观察器跟随匹配玩家初始化（JS 在轮次开始前对找到的 player 装观察器）。
         if let Some(spec_observer) = self.observer_spec.as_ref() {
-            if spec_observer.watch_hrid == spec.hrid && self.observer_state.is_none() {
+            if with_hrid(spec_observer.watch_hrid, |hrid| hrid == spec.hrid) && self.observer_state.is_none() {
                 self.observer_state = Some(ObserverState::new(spec_observer, &self.arena.get(id).food));
                 self.observer_unit = Some(id);
             }
@@ -1195,7 +1202,7 @@ impl CombatSimulator {
         // 切片 20：成本观察器同样跟随匹配玩家初始化（等价 JS `simulateFoodOptimizerRound`
         // 找到 player 后装观察器；安装校验不过 → 恒不激活——unit 不写入，reset 守卫随之跳过）。
         if let Some(spec_cost) = self.cost_bound_spec.as_ref() {
-            if spec_cost.watch_hrid == spec.hrid && self.cost_bound_state.is_none() {
+            if with_hrid(spec_cost.watch_hrid, |hrid| hrid == spec.hrid) && self.cost_bound_state.is_none() {
                 self.cost_bound_state = CostBoundState::try_new(spec_cost);
                 if self.cost_bound_state.is_some() {
                     self.cost_bound_unit = Some(id);
@@ -1233,8 +1240,11 @@ impl CombatSimulator {
         // 静默产出「0 经验」的错误结果。minimal 结果不参与经验记账，故不检查。
         if !self.minimal_result {
             for player in &self.players {
-                let style_hrid = self.arena.get(*player).combat_details.combat_stats.combat_style_hrid.clone();
-                if !self.combat_style_skill_exp_map.iter().any(|(hrid, _)| *hrid == style_hrid) {
+                let style_hrid = self.arena.get(*player).combat_details.combat_stats.combat_style_hrid;
+                let style_in_map = with_hrid(style_hrid, |style_name| {
+                    self.combat_style_skill_exp_map.iter().any(|(hrid, _)| hrid == style_name)
+                });
+                if !style_in_map {
                     return Err(UnitError::error(format!(
                         "wasm production path is missing the combat style skill exp map for {style_hrid}"
                     )));
@@ -1250,13 +1260,10 @@ impl CombatSimulator {
         id
     }
 
-    /// 注：曾试验改成返回 `&str` 借用（热路径约 1.6 万次/轮的 String 克隆），但调用点
-    /// 与 `self.tally` / `self.arena.get_mut` 交错的约 30 处会全部报借用冲突，且调用
-    /// 频率分布很平（无单点热点）。收益约 2–4%，改动面大；待与「效果循环直借 arena
-    /// 中技能」的重构（第 7.4 节第 1 条）一起做。
-    fn unit_hrid(&self, id: UnitId) -> String {
+    /// 注（切片 25）：返回 `Hrid` 句柄（Copy 无克隆）；句柄由构造期驻留，恒有效。
+    fn unit_hrid(&self, id: UnitId) -> Hrid {
         let _prof = crate::prof::start("unit_hrid");
-        self.arena.get(id).hrid.clone()
+        self.arena.get(id).hrid
     }
 
     fn clear_events_for_unit(&mut self, id: UnitId) {
@@ -1266,7 +1273,7 @@ impl CombatSimulator {
 
     fn record_unit_death(&mut self, unit: UnitId) {
         let hrid = self.unit_hrid(unit);
-        self.tally.add_death(&hrid);
+        self.tally.add_death(hrid);
         // 切片 14 full-result：JS `recordUnitDeath` 的 minimal 之后分支——只有
         // 遭遇战成员的经验快照 + 每玩家掉落上下文桶。real 分支以外（探针流水）跳过。
         if !self.real_result || self.minimal_result {
@@ -1353,8 +1360,8 @@ impl CombatSimulator {
             return;
         };
         let _ = real.record_monster_death_from_context(
-            &player_hrid,
-            &monster_hrid,
+            player_hrid,
+            monster_hrid,
             1.0,
             monster_tier,
             drop_rate,
@@ -1434,10 +1441,10 @@ impl CombatSimulator {
                 continue;
             };
             // JS `addExperienceGainValues` → `ensureExperienceGainEntry`：空增益也建零值模板。
-            real.ensure_experience_gain_entry(&hrid);
+            real.ensure_experience_gain_entry(hrid);
             // 只对已有模板键累加（calculate 产出的键恒在模板内；模板外键静默丢弃）。
             for (skill, value) in gains {
-                let _ = real.add_experience_gain_value(&hrid, &skill, value);
+                let _ = real.add_experience_gain_value(hrid, &skill, value);
             }
         }
     }
@@ -1449,11 +1456,11 @@ impl CombatSimulator {
         let Some(spec) = self.early_stop.as_ref() else {
             return false;
         };
-        if self.tally.mana_out_for(&spec.watch_hrid) {
+        if self.tally.mana_out_for(spec.watch_hrid) {
             return true;
         }
         match spec.death_limit {
-            Some(death_limit) => self.tally.deaths_for(&spec.watch_hrid) > death_limit,
+            Some(death_limit) => self.tally.deaths_for(spec.watch_hrid) > death_limit,
             None => false,
         }
     }
@@ -1469,7 +1476,7 @@ impl CombatSimulator {
             return false;
         };
         if state.dirty {
-            state.recompute(&self.tally, &spec.watch_hrid, self.simulation_time_limit);
+            state.recompute(&self.tally, spec.watch_hrid, self.simulation_time_limit);
         }
         state.above_cutoff
     }
@@ -1536,13 +1543,13 @@ impl CombatSimulator {
                 // 切片 14：JS 每 1000 个事件采集一次 HP/MP 时序快照（开启可视化时）。
                 // 进度派发是 UI 流式通知，wasm 侧不复制（结果一次性返回）。
                 if self.enable_hp_mp_visualization {
-                    let snapshot: Vec<(String, f64, f64, f64, f64)> = self
+                    let snapshot: Vec<(Hrid, f64, f64, f64, f64)> = self
                         .players
                         .iter()
                         .map(|id| {
                             let unit = self.arena.get(*id);
                             (
-                                unit.hrid.clone(),
+                                unit.hrid,
                                 unit.combat_details.current_hitpoints,
                                 unit.combat_details.current_manapoints,
                                 unit.combat_details.max_hitpoints,
@@ -1591,18 +1598,18 @@ impl CombatSimulator {
                 let stats = &self.arena.get(player).combat_details.combat_stats;
                 (stats.combat_drop_rate, stats.combat_rare_find, stats.combat_drop_quantity)
             };
-            let mana_entries: Vec<(String, f64)> = self
+            let mana_entries: Vec<(Hrid, f64)> = self
                 .arena
                 .get(player)
                 .ability_mana_costs
                 .iter()
-                .map(|(key, value)| (key.clone(), *value))
+                .map(|(key, value)| (*key, *value))
                 .collect();
             // 切片 14：JS `setDropRateMultipliers(unit)` 读 `unit.debuffOnLevelGap`
             //（下拉难度的等级差惩罚；怪物恒 0，仅玩家有值）。
             let debuff_on_level_gap = self.arena.get(player).debuff_on_level_gap;
-            self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, debuff_on_level_gap);
-            self.tally.set_mana_used(&hrid, &mana_entries);
+            self.tally.set_drop_rate_multipliers(hrid, drop_rate, rare_find, drop_quantity, debuff_on_level_gap);
+            self.tally.set_mana_used(hrid, &mana_entries);
         }
         if zone_is_dungeon {
             // JS：副本收尾把 fixedSpawnsMap 的波次清单与普通 bossSpawns 追加到 simResult.bossSpawns。
@@ -1709,7 +1716,7 @@ impl CombatSimulator {
 
         match event {
             SimEvent::CombatStart { time, .. } => self.process_combat_start_event(time)?,
-            SimEvent::PlayerRespawn { hrid, .. } => self.process_player_respawn_event(&hrid)?,
+            SimEvent::PlayerRespawn { hrid, .. } => self.process_player_respawn_event(hrid)?,
             SimEvent::EnemyRespawn { .. } => self.start_new_encounter()?,
             SimEvent::AutoAttack { source, .. } => self.process_auto_attack_event(source)?,
             SimEvent::ConsumableTick { source, is_food, slot, total_ticks, current_tick, .. } => {
@@ -1732,11 +1739,11 @@ impl CombatSimulator {
                 combat_style_hrid,
             )?,
             SimEvent::CheckBuffExpiration { source, buff_unique_hrid, .. } => {
-                // 免克隆：事件本身已拥有该 String（process_event 按值收事件），直接移动后按 &str 传递。
-                self.process_check_buff_expiration_event(source, buff_unique_hrid.as_deref())?
+                // 免克隆：事件本身已拥有句柄（process_event 按值收事件），直接按值传递。
+                self.process_check_buff_expiration_event(source, buff_unique_hrid)?
             }
             SimEvent::ScrollRenewal { time, player_hrid, item_hrid, token, .. } => {
-                self.process_scroll_renewal_event(&player_hrid, &item_hrid, token, time)?;
+                self.process_scroll_renewal_event(player_hrid, item_hrid, token, time)?;
             }
             SimEvent::RegenTick { .. } => self.process_regen_tick_event()?,
             SimEvent::StunExpiration { source, .. } => {
@@ -1778,22 +1785,22 @@ impl CombatSimulator {
     }
 
     fn build_trace_entry(&self, event: &SimEvent) -> EventTraceEntry {
-        let hrid = |id: UnitId| Some(self.arena.get(id).hrid.clone());
+        let hrid = |id: UnitId| Some(hrid_to_string(self.arena.get(id).hrid));
         let ability_hrid = |id: UnitId, slot: usize| {
             self.arena
                 .get(id)
                 .abilities
                 .get(slot)
                 .and_then(|ability| ability.as_ref())
-                .map(|ability| ability.hrid.clone())
+                .map(|ability| hrid_to_string(ability.hrid))
         };
         let consumable_hrid = |id: UnitId, is_food: bool, slot: usize| {
-            consumable_slot_ref(self.arena.get(id), is_food, slot).map(|item| item.hrid.clone())
+            consumable_slot_ref(self.arena.get(id), is_food, slot).map(|item| hrid_to_string(item.hrid))
         };
         let (time, event_type, source, target, entry_hrid, value) = match event {
             SimEvent::CombatStart { time, .. } => (*time, "combatStart", None, None, None, None),
             SimEvent::PlayerRespawn { time, hrid: player_hrid, .. } => {
-                (*time, "playerRespawn", None, None, Some(player_hrid.clone()), None)
+                (*time, "playerRespawn", None, None, Some(hrid_to_string(*player_hrid)), None)
             }
             SimEvent::EnemyRespawn { time, .. } => (*time, "enemyRespawn", None, None, None, None),
             SimEvent::AutoAttack { time, source, .. } => (*time, "autoAttack", hrid(*source), None, None, None),
@@ -1821,11 +1828,11 @@ impl CombatSimulator {
                 "checkBuffExpiration",
                 hrid(*source),
                 None,
-                buff_unique_hrid.clone(),
+                buff_unique_hrid.map(hrid_to_string),
                 None,
             ),
             SimEvent::ScrollRenewal { time, item_hrid, token, .. } => {
-                (*time, "scrollRenewal", None, None, Some(item_hrid.clone()), Some(*token))
+                (*time, "scrollRenewal", None, None, Some(hrid_to_string(*item_hrid)), Some(*token))
             }
             SimEvent::RegenTick { time, .. } => (*time, "regenTick", None, None, None, None),
             SimEvent::StunExpiration { time, source, .. } => {
@@ -1871,17 +1878,17 @@ impl CombatSimulator {
         for index in 0..self.scroll_runtime.len() {
             let (player_id, buff_unique_hrid, item_hrid) = {
                 let state = &self.scroll_runtime[index];
-                (state.player_id, state.buff_unique_hrid.clone(), state.item_hrid.clone())
+                (state.player_id, state.buff_unique_hrid, state.item_hrid)
             };
-            if buff_unique_hrid.is_empty() {
+            if hrid_is_empty(buff_unique_hrid) {
                 continue;
             }
-            let source_key = format!("scroll:{item_hrid}");
+            let source_key = scroll_source_key(item_hrid);
             // Replace 策略 + 显式源键：与 JS `removeBuff` 同路径不会触发策略校验错误。
             let _ = self
                 .arena
                 .get_mut(player_id)
-                .remove_buff(Some(&buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)));
+                .remove_buff(Some(buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)));
         }
     }
 
@@ -1892,7 +1899,7 @@ impl CombatSimulator {
 
         for player_id in self.players.clone() {
             let player_hrid = self.unit_hrid(player_id);
-            if player_hrid.is_empty() {
+            if hrid_is_empty(player_hrid) {
                 continue;
             }
             let configs = self.arena.get(player_id).combat_scrolls.clone();
@@ -1900,7 +1907,7 @@ impl CombatSimulator {
                 let Some(definition_index) = self
                     .scroll_definitions
                     .iter()
-                    .position(|definition| definition.item_hrid == config.item_hrid)
+                    .position(|definition| hrid_is(config.item_hrid, &definition.item_hrid))
                 else {
                     // JS `getCombatScrollDefinition` 缺定义时整项跳过（不注册库存与账目）。
                     continue;
@@ -1910,15 +1917,11 @@ impl CombatSimulator {
                     Some(quantity) if is_safe_integer(quantity) && quantity > 0.0 => Some(quantity),
                     _ => None,
                 };
-                let buff_unique_hrid = self.scroll_definitions[definition_index]
-                    .buff
-                    .unique_hrid
-                    .clone()
-                    .unwrap_or_default();
+                let buff_unique_hrid = self.scroll_definitions[definition_index].buff.unique_hrid.unwrap_or_default();
                 self.scroll_runtime.push(ScrollState {
                     player_id,
-                    player_hrid: player_hrid.clone(),
-                    item_hrid: config.item_hrid.clone(),
+                    player_hrid,
+                    item_hrid: config.item_hrid,
                     configured_quantity,
                     remaining: configured_quantity,
                     started: false,
@@ -1931,7 +1934,7 @@ impl CombatSimulator {
                     definition_index,
                 });
                 self.tally
-                    .set_scroll_configuration(&player_hrid, &config.item_hrid, configured_quantity);
+                    .set_scroll_configuration(player_hrid, config.item_hrid, configured_quantity);
             }
         }
     }
@@ -1953,13 +1956,7 @@ impl CombatSimulator {
     fn schedule_scroll_renewal(&mut self, index: usize) {
         let (active, active_until, player_hrid, item_hrid, token) = {
             let state = &self.scroll_runtime[index];
-            (
-                state.active,
-                state.active_until,
-                state.player_hrid.clone(),
-                state.item_hrid.clone(),
-                state.token,
-            )
+            (state.active, state.active_until, state.player_hrid, state.item_hrid, state.token)
         };
         if !active || active_until >= self.simulation_time_limit {
             return;
@@ -1984,12 +1981,14 @@ impl CombatSimulator {
         }
         let (player_id, item_hrid) = {
             let state = &self.scroll_runtime[index];
-            (state.player_id, state.item_hrid.clone())
+            (state.player_id, state.item_hrid)
         };
         // JS `createCombatScrollBuff(itemHrid)`：每次开启都从定义新建 Buff 实例（level=1）。
         let buff_input = self.scroll_definitions[definition_index].buff.clone();
-        let source_key = format!("scroll:{item_hrid}");
-        self.arena.get_mut(player_id).add_buff(&buff_input, start_time, Some(&source_key), None)?;
+        let source_key = scroll_source_key(item_hrid);
+        self.arena
+            .get_mut(player_id)
+            .add_buff(&buff_input, start_time, Some(source_key), None)?;
 
         {
             let state = &mut self.scroll_runtime[index];
@@ -2015,9 +2014,9 @@ impl CombatSimulator {
             };
             let (player_hrid, item_hrid) = {
                 let state = &self.scroll_runtime[index];
-                (state.player_hrid.clone(), state.item_hrid.clone())
+                (state.player_hrid, state.item_hrid)
             };
-            self.tally.record_scroll_open(&player_hrid, &item_hrid, 1.0, 0.0, Some(exhausted));
+            self.tally.record_scroll_open(player_hrid, item_hrid, 1.0, 0.0, Some(exhausted));
         }
 
         self.schedule_scroll_renewal(index);
@@ -2033,10 +2032,10 @@ impl CombatSimulator {
             let state = &self.scroll_runtime[index];
             (
                 state.player_id,
-                state.item_hrid.clone(),
+                state.item_hrid,
                 state.active_start_time,
-                state.buff_unique_hrid.clone(),
-                state.player_hrid.clone(),
+                state.buff_unique_hrid,
+                state.player_hrid,
             )
         };
         // JS `Math.min(Math.max(Number(endTime) || 0, state.activeStartTime), this.simulationTimeLimit)`。
@@ -2045,13 +2044,13 @@ impl CombatSimulator {
         let duration = (bounded_end - active_start_time).max(0.0);
         if duration > 0.0 {
             self.scroll_runtime[index].accumulated_duration_ns += duration;
-            self.tally.record_scroll_window(&player_hrid, &item_hrid, duration);
+            self.tally.record_scroll_window(player_hrid, item_hrid, duration);
         }
-        if !buff_unique_hrid.is_empty() {
-            let source_key = format!("scroll:{item_hrid}");
+        if !hrid_is_empty(buff_unique_hrid) {
+            let source_key = scroll_source_key(item_hrid);
             self.arena
                 .get_mut(player_id)
-                .remove_buff(Some(&buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)))?;
+                .remove_buff(Some(buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)))?;
         }
         let state = &mut self.scroll_runtime[index];
         state.active = false;
@@ -2069,21 +2068,21 @@ impl CombatSimulator {
                 state.active,
                 state.active_until,
                 state.active_start_time,
-                state.buff_unique_hrid.clone(),
+                state.buff_unique_hrid,
                 state.player_id,
             )
         };
-        if !active || current_time >= active_until || buff_unique_hrid.is_empty() {
+        if !active || current_time >= active_until || hrid_is_empty(buff_unique_hrid) {
             return Ok(());
         }
-        let item_hrid = self.scroll_runtime[index].item_hrid.clone();
-        let source_key = format!("scroll:{item_hrid}");
-        let has_registered_source = self.arena.get(player_id).has_buff_source(&buff_unique_hrid, &source_key);
+        let item_hrid = self.scroll_runtime[index].item_hrid;
+        let source_key = scroll_source_key(item_hrid);
+        let has_registered_source = self.arena.get(player_id).has_buff_source(buff_unique_hrid, source_key);
         if !has_registered_source {
             let buff_input = self.scroll_definitions[self.scroll_runtime[index].definition_index].buff.clone();
             self.arena
                 .get_mut(player_id)
-                .add_buff(&buff_input, active_start_time, Some(&source_key), None)?;
+                .add_buff(&buff_input, active_start_time, Some(source_key), None)?;
         }
         Ok(())
     }
@@ -2148,8 +2147,8 @@ impl CombatSimulator {
     /// 通常因 token 已变而短路）。
     fn process_scroll_renewal_event(
         &mut self,
-        player_hrid: &str,
-        item_hrid: &str,
+        player_hrid: Hrid,
+        item_hrid: Hrid,
         token: f64,
         time: f64,
     ) -> Result<(), UnitError> {
@@ -2184,10 +2183,10 @@ impl CombatSimulator {
             }
             let (player_hrid, item_hrid, configured_quantity) = {
                 let state = &self.scroll_runtime[index];
-                (state.player_hrid.clone(), state.item_hrid.clone(), state.configured_quantity)
+                (state.player_hrid, state.item_hrid, state.configured_quantity)
             };
             self.tally
-                .finalize_scroll_exhausted(&player_hrid, &item_hrid, configured_quantity);
+                .finalize_scroll_exhausted(player_hrid, item_hrid, configured_quantity);
         }
         Ok(())
     }
@@ -2216,7 +2215,7 @@ impl CombatSimulator {
             "wave": js_number_value(self.wipe_wave()),
             "source": source_value,
             "ability": ability,
-            "target": target_unit.hrid.clone(),
+            "target": target_unit.hrid,
             "damage": js_number_value(damage),
             "beforeHp": js_number_value(before_hp),
             "afterHp": js_number_value(after_hp),
@@ -2229,7 +2228,10 @@ impl CombatSimulator {
     /// damage 取 `attackResult?.damageDone || 0`（NaN/未命中归 0）。
     fn generate_wipe_log_entry(&self, source: UnitId, ability: &str, target: UnitId, attack_result: &AttackResult) -> Value {
         let damage = if attack_result.damage_done.is_finite() { attack_result.damage_done } else { 0.0 };
-        let mut entry = self.build_wipe_log_entry(&self.unit_hrid(source), ability, target, damage);
+        let source_hrid = self.unit_hrid(source);
+        let mut entry = with_hrid(source_hrid, |source_name| {
+            self.build_wipe_log_entry(source_name, ability, target, damage)
+        });
         if let Some(object) = entry.as_object_mut() {
             object.insert("isCrit".to_string(), serde_json::json!(attack_result.is_crit));
         }
@@ -2252,7 +2254,7 @@ impl CombatSimulator {
                 .map(|id| {
                     let unit = self.arena.get(*id);
                     json!({
-                        "hrid": unit.hrid.clone(),
+                        "hrid": unit.hrid,
                         "current": js_number_value(unit.combat_details.current_hitpoints),
                         "max": js_number_value(unit.combat_details.max_hitpoints),
                     })
@@ -2308,8 +2310,8 @@ impl CombatSimulator {
         self.start_new_encounter()
     }
 
-    fn process_player_respawn_event(&mut self, hrid: &str) -> Result<(), UnitError> {
-        let respawning_player = self.players.iter().copied().find(|id| self.arena.get(*id).hrid == *hrid);
+    fn process_player_respawn_event(&mut self, hrid: Hrid) -> Result<(), UnitError> {
+        let respawning_player = self.players.iter().copied().find(|id| self.arena.get(*id).hrid == hrid);
         let Some(player) = respawning_player else {
             return Err(UnitError::type_error(
                 "Cannot read properties of undefined (reading 'combatDetails')",
@@ -2397,11 +2399,11 @@ impl CombatSimulator {
                 let time = self.simulation_time;
                 let hrid = self.unit_hrid(enemy);
                 self.arena.get_mut(enemy).reset(time, &mut self.rng);
-                self.tally.update_time_spent_alive(&hrid, true, time);
+                with_hrid(hrid, |name| self.tally.update_time_spent_alive(name, true, time));
             }
         }
 
-        self.queue.clear_events_of_type("enrageTick");
+        self.queue.clear_events_of_type(Hrid::EVENT_ENRAGE_TICK);
         let enrage_time = self.simulation_time + ENRAGE_TICK_INTERVAL;
         let id = self.take_event_id();
         self.queue.add_event(SimEvent::EnrageTick {
@@ -2411,7 +2413,7 @@ impl CombatSimulator {
         });
         self.enrage_begin_time = self.simulation_time;
 
-        self.queue.clear_events_of_type("abilityCastEndEvent");
+        self.queue.clear_events_of_type(Hrid::EVENT_ABILITY_CAST_END);
 
         // 提前检查 trigger 让吃喝先跑。
         self.check_triggers()?;
@@ -2743,31 +2745,36 @@ impl CombatSimulator {
                 } else {
                     AttackOutcome::Miss
                 };
-                self.tally.add_attack(&source_hrid, &target_hrid, "autoAttack", outcome);
+                // JS 侧的普攻能力键是字面量 `'autoAttack'`（与事件 type 同一字符串，句柄一致）。
+                self.tally.add_attack(source_hrid, target_hrid, Hrid::EVENT_AUTO_ATTACK, outcome);
             }
 
             if attack_result.life_steal_heal > 0.0 {
-                self.tally.add_hitpoints_gained(&source_hrid, "lifesteal", attack_result.life_steal_heal);
+                self.tally
+                    .add_hitpoints_gained(source_hrid, intern_hrid("lifesteal"), attack_result.life_steal_heal);
             }
             if attack_result.mana_leech_mana > 0.0 {
-                self.tally.add_manapoints_gained(&source_hrid, "manaLeech", attack_result.mana_leech_mana);
+                self.tally
+                    .add_manapoints_gained(source_hrid, intern_hrid("manaLeech"), attack_result.mana_leech_mana);
             }
             if attack_result.thorn_damage_done > 0.0 {
                 self.tally.add_attack(
-                    &target_hrid,
-                    &source_hrid,
-                    &attack_result.thorn_type,
+                    target_hrid,
+                    source_hrid,
+                    intern_hrid(&attack_result.thorn_type),
                     AttackOutcome::Damage(attack_result.thorn_damage_done),
                 );
             }
             // 切片 19：JS :1146-1149——反伤日志（thorn 打到玩家）。
             if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(current_source).is_player {
-                let entry = self.build_wipe_log_entry(
-                    &target_hrid,
-                    &attack_result.thorn_type,
-                    current_source,
-                    attack_result.thorn_damage_done,
-                );
+                let entry = with_hrid(target_hrid, |target_name| {
+                    self.build_wipe_log_entry(
+                        target_name,
+                        &attack_result.thorn_type,
+                        current_source,
+                        attack_result.thorn_damage_done,
+                    )
+                });
                 self.wipe_logs.as_mut().expect("checked").push(entry);
             }
             if self.arena.get(target).combat_details.combat_stats.retaliation > 0.0 {
@@ -2776,19 +2783,22 @@ impl CombatSimulator {
                 } else {
                     AttackOutcome::Miss
                 };
-                self.tally.add_attack(&target_hrid, &source_hrid, "retaliation", outcome);
+                self.tally
+                    .add_attack(target_hrid, source_hrid, intern_hrid("retaliation"), outcome);
             }
             // 切片 19：JS :1159-1162——反击日志（retaliation 打到玩家）。
             if self.wipe_logs.is_some()
                 && attack_result.retaliation_damage_done > 0.0
                 && self.arena.get(current_source).is_player
             {
-                let entry = self.build_wipe_log_entry(
-                    &target_hrid,
-                    "retaliation",
-                    current_source,
-                    attack_result.retaliation_damage_done,
-                );
+                let entry = with_hrid(target_hrid, |target_name| {
+                    self.build_wipe_log_entry(
+                        target_name,
+                        "retaliation",
+                        current_source,
+                        attack_result.retaliation_damage_done,
+                    )
+                });
                 self.wipe_logs.as_mut().expect("checked").push(entry);
             }
 
@@ -2797,7 +2807,7 @@ impl CombatSimulator {
                 self.record_unit_death(target);
                 if !self.arena.get(target).is_player {
                     let time = self.simulation_time;
-                    self.tally.update_time_spent_alive(&target_hrid, false, time);
+                    with_hrid(target_hrid, |name| self.tally.update_time_spent_alive(name, false, time));
                 }
             }
 
@@ -2809,7 +2819,7 @@ impl CombatSimulator {
                 self.record_unit_death(current_source);
                 if !self.arena.get(current_source).is_player {
                     let time = self.simulation_time;
-                    self.tally.update_time_spent_alive(&source_hrid, false, time);
+                    with_hrid(source_hrid, |name| self.tally.update_time_spent_alive(name, false, time));
                 }
                 break;
             }
@@ -2842,12 +2852,13 @@ impl CombatSimulator {
         let current_amount = self
             .queue
             .get_matching(|event| {
-                event.event_type() == "curseExpiration" && event.source() == Some(target as u64)
+                event.event_type() == Hrid::EVENT_CURSE_EXPIRATION && event.source() == Some(target as u64)
             })
             .and_then(|event| event.curse_amount())
             .unwrap_or(0.0);
-        self.queue
-            .clear_matching(|event| event.event_type() == "curseExpiration" && event.source() == Some(target as u64));
+        self.queue.clear_matching(|event| {
+            event.event_type() == Hrid::EVENT_CURSE_EXPIRATION && event.source() == Some(target as u64)
+        });
 
         let time = self.simulation_time;
         let id = self.take_event_id();
@@ -2855,8 +2866,8 @@ impl CombatSimulator {
         let curse_amount = event.curse_amount().unwrap_or(0.0);
 
         let curse_buff = RawBuffInput {
-            unique_hrid: Some(CURSE_UNIQUE_HRID.to_string()),
-            type_hrid: Some("/buff_types/damage_taken".to_string()),
+            unique_hrid: Some(CURSE_UNIQUE_HRID),
+            type_hrid: Some(Hrid::BUFF_TYPE_DAMAGE_TAKEN),
             ratio_boost: Some(0.0),
             flat_boost: Some(curse_power * curse_amount),
             duration: Some(CURSE_EXPIRE_TIME),
@@ -2871,11 +2882,12 @@ impl CombatSimulator {
         let fury_power = self.arena.get(source).combat_details.combat_stats.fury;
         let current_amount = self
             .queue
-            .get_matching(|event| event.event_type() == "furyExpiration" && event.source() == Some(source as u64))
+            .get_matching(|event| event.event_type() == Hrid::EVENT_FURY_EXPIRATION && event.source() == Some(source as u64))
             .and_then(|event| event.fury_amount())
             .unwrap_or(0.0);
-        self.queue
-            .clear_matching(|event| event.event_type() == "furyExpiration" && event.source() == Some(source as u64));
+        self.queue.clear_matching(|event| {
+            event.event_type() == Hrid::EVENT_FURY_EXPIRATION && event.source() == Some(source as u64)
+        });
 
         let mut fury_amount = current_amount;
         if did_hit {
@@ -2885,16 +2897,16 @@ impl CombatSimulator {
         }
 
         let accuracy_buff = RawBuffInput {
-            unique_hrid: Some(FURY_ACCURACY_UNIQUE_HRID.to_string()),
-            type_hrid: Some("/buff_types/fury_accuracy".to_string()),
+            unique_hrid: Some(FURY_ACCURACY_UNIQUE_HRID),
+            type_hrid: Some(Hrid::BUFF_TYPE_FURY_ACCURACY),
             ratio_boost: Some(fury_amount * fury_power),
             flat_boost: Some(0.0),
             duration: Some(FURY_EXPIRE_TIME),
             ..Default::default()
         };
         let damage_buff = RawBuffInput {
-            unique_hrid: Some(FURY_DAMAGE_UNIQUE_HRID.to_string()),
-            type_hrid: Some("/buff_types/fury_damage".to_string()),
+            unique_hrid: Some(FURY_DAMAGE_UNIQUE_HRID),
+            type_hrid: Some(Hrid::BUFF_TYPE_FURY_DAMAGE),
             ratio_boost: Some(fury_amount * fury_power),
             flat_boost: Some(0.0),
             duration: Some(FURY_EXPIRE_TIME),
@@ -2927,19 +2939,22 @@ impl CombatSimulator {
 
         let current_amount = self
             .queue
-            .get_matching(|event| event.event_type() == "weakenExpiration" && event.source() == Some(source as u64))
+            .get_matching(|event| {
+                event.event_type() == Hrid::EVENT_WEAKEN_EXPIRATION && event.source() == Some(source as u64)
+            })
             .and_then(|event| event.weaken_amount())
             .unwrap_or(0.0);
-        self.queue
-            .clear_matching(|event| event.event_type() == "weakenExpiration" && event.source() == Some(source as u64));
+        self.queue.clear_matching(|event| {
+            event.event_type() == Hrid::EVENT_WEAKEN_EXPIRATION && event.source() == Some(source as u64)
+        });
 
         let id = self.take_event_id();
         let event = SimEvent::weaken_expiration(time + WEAKEN_EXPIRE_TIME, id, current_amount, source);
         let weaken_amount = event.weaken_amount().unwrap_or(0.0);
 
         let weaken_buff = RawBuffInput {
-            unique_hrid: Some(WEAKEN_UNIQUE_HRID.to_string()),
-            type_hrid: Some("/buff_types/damage".to_string()),
+            unique_hrid: Some(WEAKEN_UNIQUE_HRID),
+            type_hrid: Some(Hrid::BUFF_TYPE_DAMAGE),
             ratio_boost: Some(-1.0 * weaken_power * weaken_amount),
             flat_boost: Some(0.0),
             duration: Some(WEAKEN_EXPIRE_TIME),
@@ -2977,7 +2992,7 @@ impl CombatSimulator {
                 .iter()
                 .any(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0);
             if all_dead {
-                self.queue.clear_events_of_type("autoAttack");
+                self.queue.clear_events_of_type(Hrid::EVENT_AUTO_ATTACK);
                 let time = self.simulation_time + ENEMY_RESPAWN_INTERVAL;
                 let id = self.take_event_id();
                 self.queue.add_event(SimEvent::EnemyRespawn { time, id });
@@ -3018,14 +3033,14 @@ impl CombatSimulator {
                 continue;
             }
             let hrid = self.unit_hrid(player);
-            if !self.queue.contains_event_of_type_and_hrid("playerRespawn", &hrid) {
+            if !self.queue.contains_event_of_type_and_hrid(Hrid::EVENT_PLAYER_RESPAWN, hrid) {
                 if self.zone_present && !self.zone_is_dungeon {
                     let time = self.simulation_time + PLAYER_RESPAWN_INTERVAL;
                     let id = self.take_event_id();
-                    self.queue.add_event(SimEvent::PlayerRespawn { time, id, hrid: hrid.clone() });
+                    self.queue.add_event(SimEvent::PlayerRespawn { time, id, hrid });
                 }
                 let time = self.simulation_time;
-                self.tally.add_ran_out_of_mana_count(&hrid, false, time);
+                self.tally.add_ran_out_of_mana_count(hrid, false, time);
             }
         }
 
@@ -3043,24 +3058,24 @@ impl CombatSimulator {
                 if self.wipe_logs.is_some() {
                     self.save_wipe_logs_to_result();
                 }
-                self.queue.clear_events_of_type("autoAttack");
-                self.queue.clear_events_of_type("abilityCastEndEvent");
-                self.queue.clear_events_of_type("damageOverTime");
-                self.queue.clear_events_of_type("consumableTick");
-                self.queue.clear_events_of_type("regenTick");
-                self.queue.clear_events_of_type("enrageTick");
-                self.queue.clear_events_of_type("stunExpiration");
-                self.queue.clear_events_of_type("blindExpiration");
-                self.queue.clear_events_of_type("silenceExpiration");
-                self.queue.clear_events_of_type("awaitCooldownEvent");
+                self.queue.clear_events_of_type(Hrid::EVENT_AUTO_ATTACK);
+                self.queue.clear_events_of_type(Hrid::EVENT_ABILITY_CAST_END);
+                self.queue.clear_events_of_type(Hrid::EVENT_DAMAGE_OVER_TIME);
+                self.queue.clear_events_of_type(Hrid::EVENT_CONSUMABLE_TICK);
+                self.queue.clear_events_of_type(Hrid::EVENT_REGEN_TICK);
+                self.queue.clear_events_of_type(Hrid::EVENT_ENRAGE_TICK);
+                self.queue.clear_events_of_type(Hrid::EVENT_STUN_EXPIRATION);
+                self.queue.clear_events_of_type(Hrid::EVENT_BLIND_EXPIRATION);
+                self.queue.clear_events_of_type(Hrid::EVENT_SILENCE_EXPIRATION);
+                self.queue.clear_events_of_type(Hrid::EVENT_AWAIT_COOLDOWN);
                 self.pending_experience_gains.clear();
                 self.enemies = None;
                 let time = self.simulation_time + RESTART_INTERVAL;
                 let id = self.take_event_id();
                 self.queue.add_event(SimEvent::CombatStart { time, id });
             } else if self.zone_present && !self.zone_is_dungeon {
-                self.queue.clear_events_of_type("autoAttack");
-                self.queue.clear_events_of_type("abilityCastEndEvent");
+                self.queue.clear_events_of_type(Hrid::EVENT_AUTO_ATTACK);
+                self.queue.clear_events_of_type(Hrid::EVENT_ABILITY_CAST_END);
             }
             encounter_ended = true;
             self.all_players_dead = true;
@@ -3108,13 +3123,13 @@ impl CombatSimulator {
         if consumable.hitpoint_restore > 0.0 {
             let tick_value = calculate_tick_value(consumable.hitpoint_restore, total_ticks, current_tick);
             let hitpoints_added = self.arena.get_mut(source).add_hitpoints(tick_value);
-            self.tally.add_hitpoints_gained(&source_hrid, &consumable.hrid, hitpoints_added);
+            self.tally.add_hitpoints_gained(source_hrid, consumable.hrid, hitpoints_added);
         }
 
         if consumable.manapoint_restore > 0.0 {
             let tick_value = calculate_tick_value(consumable.manapoint_restore, total_ticks, current_tick);
             let manapoints_added = self.arena.get_mut(source).add_manapoints(tick_value);
-            self.tally.add_manapoints_gained(&source_hrid, &consumable.hrid, manapoints_added);
+            self.tally.add_manapoints_gained(source_hrid, consumable.hrid, manapoints_added);
 
             if self.arena.get(source).is_out_of_mana {
                 let time = self.simulation_time;
@@ -3146,7 +3161,7 @@ impl CombatSimulator {
         damage: f64,
         total_ticks: f64,
         current_tick: f64,
-        combat_style_hrid: Option<String>,
+        combat_style_hrid: Option<Hrid>,
     ) -> Result<(), UnitError> {
         let tick_damage = calculate_tick_value(damage, total_ticks, current_tick);
         let current_hitpoints = self.arena.get(target).combat_details.current_hitpoints;
@@ -3155,7 +3170,8 @@ impl CombatSimulator {
         self.arena.get_mut(target).combat_details.current_hitpoints -= applied;
         let source_hrid = self.unit_hrid(source_ref);
         let target_hrid = self.unit_hrid(target);
-        self.tally.add_attack(&source_hrid, &target_hrid, "damageOverTime", AttackOutcome::Damage(applied));
+        self.tally
+            .add_attack(source_hrid, target_hrid, intern_hrid("damageOverTime"), AttackOutcome::Damage(applied));
 
         // 切片 19：JS :1453-1456——副本日志（DoT tick，无 isPlayer/伤害门控——JS 原样记录）。
         if self.wipe_logs.is_some() {
@@ -3183,7 +3199,7 @@ impl CombatSimulator {
             self.record_unit_death(target);
             if !self.arena.get(target).is_player {
                 let time = self.simulation_time;
-                self.tally.update_time_spent_alive(&target_hrid, false, time);
+                with_hrid(target_hrid, |name| self.tally.update_time_spent_alive(name, false, time));
             }
         }
 
@@ -3204,7 +3220,7 @@ impl CombatSimulator {
             };
             let hitpoint_regen = (max_hitpoints * hp_regen_per10).floor();
             let hitpoints_added = self.arena.get_mut(player).add_hitpoints(hitpoint_regen);
-            self.tally.add_hitpoints_gained(&hrid, "regen", hitpoints_added);
+            self.tally.add_hitpoints_gained(hrid, intern_hrid("regen"), hitpoints_added);
 
             let (max_manapoints, mp_regen_per10) = {
                 let details = &self.arena.get(player).combat_details;
@@ -3212,7 +3228,7 @@ impl CombatSimulator {
             };
             let manapoint_regen = (max_manapoints * mp_regen_per10).floor();
             let manapoints_added = self.arena.get_mut(player).add_manapoints(manapoint_regen);
-            self.tally.add_manapoints_gained(&hrid, "regen", manapoints_added);
+            self.tally.add_manapoints_gained(hrid, intern_hrid("regen"), manapoints_added);
 
             if self.arena.get(player).is_out_of_mana {
                 let time = self.simulation_time;
@@ -3230,7 +3246,7 @@ impl CombatSimulator {
     fn process_check_buff_expiration_event(
         &mut self,
         source: UnitId,
-        buff_unique_hrid: Option<&str>,
+        buff_unique_hrid: Option<Hrid>,
     ) -> Result<(), UnitError> {
         let time = self.simulation_time;
         match buff_unique_hrid {
@@ -3250,15 +3266,15 @@ impl CombatSimulator {
         &mut self,
         target: UnitId,
         buff: &crate::buff::Buff,
-        source_key: &str,
+        source_key: Hrid,
     ) -> Result<(), UnitError> {
-        let unique_hrid = buff.unique_hrid.clone();
-        let key = source_key.to_string();
+        let unique_hrid = buff.unique_hrid;
+        let key = source_key;
         self.queue.clear_matching(|event| {
-            event.event_type() == "checkBuffExpiration"
+            event.event_type() == Hrid::EVENT_CHECK_BUFF_EXPIRATION
                 && event.source() == Some(target as u64)
-                && event.buff_unique_hrid() == Some(unique_hrid.as_str())
-                && event.buff_source_key() == Some(key.as_str())
+                && event.buff_unique_hrid() == Some(unique_hrid)
+                && event.buff_source_key() == Some(key)
         });
         let duration = buff.duration.unwrap_or(f64::NAN);
         let time = self.simulation_time + duration;
@@ -3295,16 +3311,16 @@ impl CombatSimulator {
                 continue;
             }
             let damage_buff = RawBuffInput {
-                unique_hrid: Some("/buff_uniques/enrage_damage".to_string()),
-                type_hrid: Some("/buff_types/damage".to_string()),
+                unique_hrid: Some(Hrid::BUFF_UNIQUE_ENRAGE_DAMAGE),
+                type_hrid: Some(Hrid::BUFF_TYPE_DAMAGE),
                 ratio_boost: Some(now_stack * 0.1),
                 flat_boost: Some(0.0),
                 duration: Some(ENRAGE_TICK_INTERVAL),
                 ..Default::default()
             };
             let accuracy_buff = RawBuffInput {
-                unique_hrid: Some("/buff_uniques/enrage_accuracy".to_string()),
-                type_hrid: Some("/buff_types/accuracy".to_string()),
+                unique_hrid: Some(Hrid::BUFF_UNIQUE_ENRAGE_ACCURACY),
+                type_hrid: Some(Hrid::BUFF_TYPE_ACCURACY),
                 ratio_boost: Some(now_stack * 0.1),
                 flat_boost: Some(0.0),
                 duration: Some(ENRAGE_TICK_INTERVAL),
@@ -3500,7 +3516,7 @@ impl CombatSimulator {
             }
         }
 
-        let is_drink = consumable.category_hrid.contains("drink");
+        let is_drink = with_hrid(consumable.category_hrid, |category| category.contains("drink"));
         let (drink_concentration, food_haste) = {
             let stats = &self.arena.get(source).combat_details.combat_stats;
             (stats.drink_concentration, stats.food_haste)
@@ -3509,23 +3525,23 @@ impl CombatSimulator {
         let mut consume_cooldown = consumable.cooldown_duration;
         if drink_concentration > 0.0 && is_drink {
             consume_cooldown = consume_cooldown / (1.0 + drink_concentration);
-        } else if food_haste > 0.0 && consumable.category_hrid.contains("food") {
+        } else if food_haste > 0.0 && with_hrid(consumable.category_hrid, |category| category.contains("food")) {
             consume_cooldown = consume_cooldown / (1.0 + food_haste);
         }
         let id = self.take_event_id();
         self.queue.add_event(SimEvent::CooldownReady { time: time + consume_cooldown, id });
 
         let source_hrid = self.unit_hrid(source);
-        self.tally.add_consumable_use(&source_hrid, &consumable.hrid);
+        self.tally.add_consumable_use(source_hrid, consumable.hrid);
 
         if consumable.recovery_duration == 0.0 {
             if consumable.hitpoint_restore > 0.0 {
                 let hitpoints_added = self.arena.get_mut(source).add_hitpoints(consumable.hitpoint_restore);
-                self.tally.add_hitpoints_gained(&source_hrid, &consumable.hrid, hitpoints_added);
+                self.tally.add_hitpoints_gained(source_hrid, consumable.hrid, hitpoints_added);
             }
             if consumable.manapoint_restore > 0.0 {
                 let manapoints_added = self.arena.get_mut(source).add_manapoints(consumable.manapoint_restore);
-                self.tally.add_manapoints_gained(&source_hrid, &consumable.hrid, manapoints_added);
+                self.tally.add_manapoints_gained(source_hrid, consumable.hrid, manapoints_added);
 
                 if self.arena.get(source).is_out_of_mana {
                     let id = self.take_event_id();
@@ -3588,7 +3604,7 @@ impl CombatSimulator {
                     && self
                         .cost_bound_state
                         .as_ref()
-                        .is_some_and(|state| state.watches_food(&consumable.hrid))
+                        .is_some_and(|state| state.watches_food(consumable.hrid))
                 {
                     self.cost_bound_state.as_mut().expect("checked above").dirty = true;
                 }
@@ -3611,14 +3627,14 @@ impl CombatSimulator {
             if is_player && oom_check {
                 let hrid = self.unit_hrid(source);
                 let time = self.simulation_time;
-                self.tally.add_ran_out_of_mana_count(&hrid, true, time);
+                self.tally.add_ran_out_of_mana_count(hrid, true, time);
             }
             return false;
         }
         if is_player && oom_check {
             let hrid = self.unit_hrid(source);
             let time = self.simulation_time;
-            self.tally.add_ran_out_of_mana_count(&hrid, false, time);
+            self.tally.add_ran_out_of_mana_count(hrid, false, time);
         }
         true
     }
@@ -3626,14 +3642,14 @@ impl CombatSimulator {
     /// 只扣蓝 + 玩家侧蓝耗记账。`last_used` 的写入由调用方完成：取还式窗口内
     /// （见 `try_use_ability`）技能槽位为 None，冷却时间戳写在调用方的 owned 副本上，
     /// 随 restore 一并落回槽位。
-    fn spend_ability_mana(&mut self, source: UnitId, ability_hrid: &str, mana_cost: f64) {
+    fn spend_ability_mana(&mut self, source: UnitId, ability_hrid: Hrid, mana_cost: f64) {
         let is_player = self.arena.get(source).is_player;
         if is_player {
             let unit = self.arena.get_mut(source);
-            let existing = unit.ability_mana_costs.get_str(ability_hrid).copied();
+            let existing = unit.ability_mana_costs.get(&ability_hrid).copied();
             match existing {
-                Some(current) => unit.ability_mana_costs.set_str(ability_hrid, current + mana_cost),
-                None => unit.ability_mana_costs.set(ability_hrid.to_string(), mana_cost),
+                Some(current) => unit.ability_mana_costs.set(ability_hrid, current + mana_cost),
+                None => unit.ability_mana_costs.set(ability_hrid, mana_cost),
             }
         }
 
@@ -3664,7 +3680,7 @@ impl CombatSimulator {
 
         let time = self.simulation_time;
         ability.last_used = time;
-        self.spend_ability_mana(source, &ability.hrid, ability.mana_cost);
+        self.spend_ability_mana(source, ability.hrid, ability.mana_cost);
 
         // 免克隆：原先 `todo_abilities: Vec<Ability>` 会把每个待施放技能再深拷贝一遍；
         // 改为「owned 主技能 + 可选 blaze/bloom owned 技能」的引用链——遍历顺序、
@@ -3692,27 +3708,27 @@ impl CombatSimulator {
         let mut current_source = source;
         for todo_ability in std::iter::once(&ability).chain(blaze_ability.iter()).chain(bloom_ability.iter()) {
             for effect in &todo_ability.ability_effects {
-                match effect.effect_type.as_str() {
-                    "/ability_effect_types/buff" => {
+                match effect.effect_type {
+                    Hrid::EFFECT_BUFF => {
                         let _prof = crate::prof::start("ability.effect.buff");
                         self.process_ability_buff_effect(current_source, todo_ability, effect, true)?;
                     }
-                    "/ability_effect_types/damage" => {
+                    Hrid::EFFECT_DAMAGE => {
                         self.process_ability_damage_effect(current_source, todo_ability, effect)?;
                     }
-                    "/ability_effect_types/heal" => {
+                    Hrid::EFFECT_HEAL => {
                         let _prof = crate::prof::start("ability.effect.heal");
                         self.process_ability_heal_effect(current_source, todo_ability, effect)?;
                     }
-                    "/ability_effect_types/spend_hp" => {
+                    Hrid::EFFECT_SPEND_HP => {
                         let _prof = crate::prof::start("ability.effect.spendHp");
                         self.process_ability_spend_hp_effect(current_source, todo_ability, effect)?;
                     }
-                    "/ability_effect_types/revive" => {
+                    Hrid::EFFECT_REVIVE => {
                         let _prof = crate::prof::start("ability.effect.revive");
                         self.process_ability_revive_effect(current_source, todo_ability, effect)?;
                     }
-                    "/ability_effect_types/promote" => {
+                    Hrid::EFFECT_PROMOTE => {
                         self.clear_events_for_unit(current_source);
                         let promoted = self.process_ability_promote_effect(current_source)?;
                         current_source = promoted;
@@ -3737,7 +3753,7 @@ impl CombatSimulator {
         if ripple > 0.0 && self.rng.next_f64() < ripple {
             let manapoints_added = self.arena.get_mut(current_source).add_manapoints(10.0);
             let hrid = self.unit_hrid(current_source);
-            self.tally.add_manapoints_gained(&hrid, "ripple", manapoints_added);
+            self.tally.add_manapoints_gained(hrid, intern_hrid("ripple"), manapoints_added);
 
             let time = self.simulation_time;
             let unit = self.arena.get_mut(current_source);
@@ -3765,7 +3781,7 @@ impl CombatSimulator {
             if !self.arena.get(current_source).is_player {
                 let hrid = self.unit_hrid(current_source);
                 let time = self.simulation_time;
-                self.tally.update_time_spent_alive(&hrid, false, time);
+                with_hrid(hrid, |name| self.tally.update_time_spent_alive(name, false, time));
             }
         }
 
@@ -3781,7 +3797,7 @@ impl CombatSimulator {
         effect: &AbilityEffect,
         schedule_expiration_events: bool,
     ) -> Result<(), UnitError> {
-        if effect.target_type == "allAllies" {
+        if effect.target_type == Hrid::TARGET_ALL_ALLIES {
             // 免克隆：下标遍历替代 players/enemies 的 Vec 克隆（循环内只调
             // add_ability_buff / schedule，不增删单位列表，遍历语义与快照一致）。
             let is_player = self.arena.get(source).is_player;
@@ -3801,25 +3817,25 @@ impl CombatSimulator {
                 for buff in &effect.buffs {
                     let mut current_buff = buff.clone();
                     if ability.is_special_ability
-                        && !buff.multiplier_for_skill_hrid.is_empty()
+                        && !hrid_is_empty(buff.multiplier_for_skill_hrid)
                         && buff.multiplier_per_skill_level > 0.0
                     {
                         let multiplier = 1.0
-                            + self.skill_level_value(source, &buff.multiplier_for_skill_hrid)
+                            + self.skill_level_value(source, buff.multiplier_for_skill_hrid)
                                 * buff.multiplier_per_skill_level;
                         current_buff.flat_boost *= multiplier;
                         current_buff.ratio_boost *= multiplier;
                     }
                     let source_key = self.add_ability_buff(target, &current_buff, source, ability)?;
                     if schedule_expiration_events {
-                        self.schedule_buff_expiration_event(target, &current_buff, &source_key)?;
+                        self.schedule_buff_expiration_event(target, &current_buff, source_key)?;
                     }
                 }
             }
             return Ok(());
         }
 
-        if effect.target_type != "self" {
+        if effect.target_type != Hrid::TARGET_SELF {
             return Err(UnitError::error(format!(
                 "Unsupported target type for buff ability effect: {}",
                 ability.hrid
@@ -3829,17 +3845,16 @@ impl CombatSimulator {
         for buff in &effect.buffs {
             let source_key = self.add_ability_buff(source, buff, source, ability)?;
             if schedule_expiration_events {
-                self.schedule_buff_expiration_event(source, buff, &source_key)?;
+                self.schedule_buff_expiration_event(source, buff, source_key)?;
             }
         }
         Ok(())
     }
 
     /// JS `source.combatDetails[buff.multiplierForSkillHrid.split('/')[2] + 'Level']`。
-    fn skill_level_value(&self, source: UnitId, multiplier_for_skill_hrid: &str) -> f64 {
-        let segment = multiplier_for_skill_hrid.split('/').nth(2).unwrap_or("");
+    fn skill_level_value(&self, source: UnitId, multiplier_for_skill_hrid: Hrid) -> f64 {
         let details = &self.arena.get(source).combat_details;
-        match segment {
+        with_hrid(multiplier_for_skill_hrid, |name| match name.split('/').nth(2).unwrap_or("") {
             "stamina" => details.stamina_level,
             "intelligence" => details.intelligence_level,
             "attack" => details.attack_level,
@@ -3849,7 +3864,7 @@ impl CombatSimulator {
             "magic" => details.magic_level,
             // JS：combatDetails[undefined + 'Level'] → undefined ⇒ 与数值相乘得 NaN。
             _ => f64::NAN,
-        }
+        })
     }
 
     /// 等价 JS 顶层 `addAbilityBuff(target, buff, currentTime, source, ability)`。
@@ -3859,31 +3874,31 @@ impl CombatSimulator {
         buff: &crate::buff::Buff,
         source: UnitId,
         ability: &Ability,
-    ) -> Result<String, UnitError> {
-        let policy = get_ability_buff_source_policy(&ability.hrid, &buff.unique_hrid);
+    ) -> Result<Hrid, UnitError> {
+        let policy = get_ability_buff_source_policy(ability.hrid, buff.unique_hrid);
         let source_key = if policy == BuffSourcePolicy::Strongest {
             let hrid = self.unit_hrid(source);
-            if hrid.is_empty() {
-                "default".to_string()
+            if hrid_is_empty(hrid) {
+                Hrid::DEFAULT
             } else {
                 hrid
             }
         } else {
-            "default".to_string()
+            Hrid::DEFAULT
         };
 
         let input = RawBuffInput {
-            unique_hrid: Some(buff.unique_hrid.clone()),
-            type_hrid: Some(buff.type_hrid.clone()),
+            unique_hrid: Some(buff.unique_hrid),
+            type_hrid: Some(buff.type_hrid),
             ratio_boost: Some(buff.ratio_boost),
             flat_boost: Some(buff.flat_boost),
             duration: buff.duration,
-            multiplier_for_skill_hrid: Some(buff.multiplier_for_skill_hrid.clone()),
+            multiplier_for_skill_hrid: Some(buff.multiplier_for_skill_hrid),
             multiplier_per_skill_level: Some(buff.multiplier_per_skill_level),
             start_time: buff.start_time,
         };
         let time = self.simulation_time;
-        let source_hrid_arg = if policy == BuffSourcePolicy::Strongest { Some(source_key.as_str()) } else { None };
+        let source_hrid_arg = if policy == BuffSourcePolicy::Strongest { Some(source_key) } else { None };
         self.arena
             .get_mut(target)
             .add_buff(&input, time, source_hrid_arg, Some(policy_name(policy)))?;
@@ -3899,8 +3914,8 @@ impl CombatSimulator {
     ) -> Result<(), UnitError> {
         let _prof = crate::prof::start("ability.damage");
         let is_player = self.arena.get(source).is_player;
-        let targets_option: Option<Vec<UnitId>> = match effect.target_type.as_str() {
-            "enemy" | "allEnemies" => {
+        let targets_option: Option<Vec<UnitId>> = match effect.target_type {
+            Hrid::TARGET_ENEMY | Hrid::TARGET_ALL_ENEMIES => {
                 if is_player {
                     self.enemies.clone()
                 } else {
@@ -3919,7 +3934,7 @@ impl CombatSimulator {
             return Ok(());
         };
 
-        let mut avoid_target: Vec<String> = Vec::new();
+        let mut avoid_target: Vec<Hrid> = Vec::new();
         let mut is_skip_parry = false;
 
         let alive_targets: Vec<UnitId> = targets
@@ -3952,21 +3967,22 @@ impl CombatSimulator {
                 } else {
                     AttackOutcome::Miss
                 };
-                self.tally.add_attack(&temp_source_hrid, &temp_target_hrid, "parry", outcome);
+                self.tally
+                    .add_attack(temp_source_hrid, temp_target_hrid, intern_hrid("parry"), outcome);
 
                 if attack_result.life_steal_heal > 0.0 {
                     self.tally
-                        .add_hitpoints_gained(&temp_source_hrid, "lifesteal", attack_result.life_steal_heal);
+                        .add_hitpoints_gained(temp_source_hrid, intern_hrid("lifesteal"), attack_result.life_steal_heal);
                 }
                 if attack_result.mana_leech_mana > 0.0 {
                     self.tally
-                        .add_manapoints_gained(&temp_source_hrid, "manaLeech", attack_result.mana_leech_mana);
+                        .add_manapoints_gained(temp_source_hrid, intern_hrid("manaLeech"), attack_result.mana_leech_mana);
                 }
                 if attack_result.thorn_damage_done > 0.0 {
                     self.tally.add_attack(
-                        &temp_target_hrid,
-                        &temp_source_hrid,
-                        &attack_result.thorn_type,
+                        temp_target_hrid,
+                        temp_source_hrid,
+                        intern_hrid(&attack_result.thorn_type),
                         AttackOutcome::Damage(attack_result.thorn_damage_done),
                     );
                 }
@@ -3977,7 +3993,7 @@ impl CombatSimulator {
                         AttackOutcome::Miss
                     };
                     self.tally
-                        .add_attack(&temp_target_hrid, &temp_source_hrid, "retaliation", outcome);
+                        .add_attack(temp_target_hrid, temp_source_hrid, intern_hrid("retaliation"), outcome);
                 }
 
                 if self.arena.get(temp_target).combat_details.current_hitpoints == 0.0 {
@@ -3985,7 +4001,9 @@ impl CombatSimulator {
                     self.record_unit_death(temp_target);
                     if !self.arena.get(temp_target).is_player {
                         let time = self.simulation_time;
-                        self.tally.update_time_spent_alive(&temp_target_hrid, false, time);
+                        with_hrid(temp_target_hrid, |name| {
+                            self.tally.update_time_spent_alive(name, false, time)
+                        });
                     }
                 }
 
@@ -3996,7 +4014,9 @@ impl CombatSimulator {
                     self.record_unit_death(temp_source);
                     if !self.arena.get(temp_source).is_player {
                         let time = self.simulation_time;
-                        self.tally.update_time_spent_alive(&temp_source_hrid, false, time);
+                        with_hrid(temp_source_hrid, |name| {
+                            self.tally.update_time_spent_alive(name, false, time)
+                        });
                     }
                 }
             } else {
@@ -4005,13 +4025,11 @@ impl CombatSimulator {
                     .copied()
                     .filter(|id| {
                         let unit = self.arena.get(*id);
-                        let hrid = unit.hrid.clone();
-                        !avoid_target.iter().any(|avoid| avoid == &hrid)
-                            && unit.combat_details.current_hitpoints > 0.0
+                        !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
                     })
                     .collect();
 
-                if !is_player && !targets.is_empty() && effect.target_type == "enemy" {
+                if !is_player && !targets.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
                     target = self.pick_threat_target(&targets)?;
                     let hrid = self.unit_hrid(target);
                     avoid_target.push(hrid);
@@ -4034,18 +4052,21 @@ impl CombatSimulator {
                     && attack_result.did_hit
                     && attack_result.damage_done > 0.0
                 {
-                    let entry = self.generate_wipe_log_entry(source, &ability.hrid, target, &attack_result);
+                    let entry = with_hrid(ability.hrid, |ability_name| {
+                        self.generate_wipe_log_entry(source, ability_name, target, &attack_result)
+                    });
                     self.wipe_logs.as_mut().expect("checked").push(entry);
                 }
 
                 if attack_result.hp_drain > 0.0 {
-                    self.tally.add_hitpoints_gained(&source_hrid, &ability.hrid, attack_result.hp_drain);
+                    self.tally
+                        .add_hitpoints_gained(source_hrid, ability.hrid, attack_result.hp_drain);
                 }
 
                 if attack_result.did_hit && !effect.buffs.is_empty() {
                     for buff in &effect.buffs {
                         let source_key = self.add_ability_buff(target, buff, source, ability)?;
-                        self.schedule_buff_expiration_event(target, buff, &source_key)?;
+                        self.schedule_buff_expiration_event(target, buff, source_key)?;
                     }
                 }
 
@@ -4086,9 +4107,9 @@ impl CombatSimulator {
                             unit.stun_expire_time = Some(expire_time);
                         }
                         self.queue.clear_matching(|event| {
-                            (event.event_type() == "autoAttack"
-                                || event.event_type() == "abilityCastEndEvent"
-                                || event.event_type() == "stunExpiration")
+                            (event.event_type() == Hrid::EVENT_AUTO_ATTACK
+                                || event.event_type() == Hrid::EVENT_ABILITY_CAST_END
+                                || event.event_type() == Hrid::EVENT_STUN_EXPIRATION)
                                 && event.source() == Some(target as u64)
                         });
                         let id = self.take_event_id();
@@ -4117,11 +4138,11 @@ impl CombatSimulator {
                             unit.blind_expire_time = Some(expire_time);
                         }
                         self.queue.clear_matching(|event| {
-                            event.event_type() == "blindExpiration" && event.source() == Some(target as u64)
+                            event.event_type() == Hrid::EVENT_BLIND_EXPIRATION && event.source() == Some(target as u64)
                         });
-                        let cleared_auto_attack = self
-                            .queue
-                            .clear_matching(|event| event.event_type() == "autoAttack" && event.source() == Some(target as u64));
+                        let cleared_auto_attack = self.queue.clear_matching(|event| {
+                            event.event_type() == Hrid::EVENT_AUTO_ATTACK && event.source() == Some(target as u64)
+                        });
                         if cleared_auto_attack {
                             self.add_next_attack_event(target)?;
                         }
@@ -4151,10 +4172,10 @@ impl CombatSimulator {
                             unit.silence_expire_time = Some(expire_time);
                         }
                         self.queue.clear_matching(|event| {
-                            event.event_type() == "silenceExpiration" && event.source() == Some(target as u64)
+                            event.event_type() == Hrid::EVENT_SILENCE_EXPIRATION && event.source() == Some(target as u64)
                         });
                         let cleared_cast = self.queue.clear_matching(|event| {
-                            event.event_type() == "abilityCastEndEvent" && event.source() == Some(target as u64)
+                            event.event_type() == Hrid::EVENT_ABILITY_CAST_END && event.source() == Some(target as u64)
                         });
                         if cleared_cast {
                             self.add_next_attack_event(target)?;
@@ -4185,24 +4206,26 @@ impl CombatSimulator {
                 } else {
                     AttackOutcome::Miss
                 };
-                self.tally.add_attack(&source_hrid, &target_hrid, &ability.hrid, outcome);
+                self.tally.add_attack(source_hrid, target_hrid, ability.hrid, outcome);
 
                 if attack_result.thorn_damage_done > 0.0 {
                     self.tally.add_attack(
-                        &target_hrid,
-                        &source_hrid,
-                        &attack_result.thorn_type,
+                        target_hrid,
+                        source_hrid,
+                        intern_hrid(&attack_result.thorn_type),
                         AttackOutcome::Damage(attack_result.thorn_damage_done),
                     );
                 }
                 // 切片 19：JS :2216-2219——技能反伤日志（thorn 打到玩家攻击者）。
                 if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(source).is_player {
-                    let entry = self.build_wipe_log_entry(
-                        &target_hrid,
-                        &attack_result.thorn_type,
-                        source,
-                        attack_result.thorn_damage_done,
-                    );
+                    let entry = with_hrid(target_hrid, |target_name| {
+                        self.build_wipe_log_entry(
+                            target_name,
+                            &attack_result.thorn_type,
+                            source,
+                            attack_result.thorn_damage_done,
+                        )
+                    });
                     self.wipe_logs.as_mut().expect("checked").push(entry);
                 }
 
@@ -4212,19 +4235,22 @@ impl CombatSimulator {
                     } else {
                         AttackOutcome::Miss
                     };
-                    self.tally.add_attack(&target_hrid, &source_hrid, "retaliation", outcome);
+                    self.tally
+                        .add_attack(target_hrid, source_hrid, intern_hrid("retaliation"), outcome);
                 }
                 // 切片 19：JS :2229-2232——技能反击日志（retaliation 打到玩家攻击者）。
                 if self.wipe_logs.is_some()
                     && attack_result.retaliation_damage_done > 0.0
                     && self.arena.get(source).is_player
                 {
-                    let entry = self.build_wipe_log_entry(
-                        &target_hrid,
-                        "retaliation",
-                        source,
-                        attack_result.retaliation_damage_done,
-                    );
+                    let entry = with_hrid(target_hrid, |target_name| {
+                        self.build_wipe_log_entry(
+                            target_name,
+                            "retaliation",
+                            source,
+                            attack_result.retaliation_damage_done,
+                        )
+                    });
                     self.wipe_logs.as_mut().expect("checked").push(entry);
                 }
 
@@ -4233,7 +4259,7 @@ impl CombatSimulator {
                     self.record_unit_death(target);
                     if !self.arena.get(target).is_player {
                         let time = self.simulation_time;
-                        self.tally.update_time_spent_alive(&target_hrid, false, time);
+                        with_hrid(target_hrid, |name| self.tally.update_time_spent_alive(name, false, time));
                     }
                 }
 
@@ -4247,7 +4273,7 @@ impl CombatSimulator {
             if parry_target.is_some() {
                 break;
             }
-            if effect.target_type == "enemy" {
+            if effect.target_type == Hrid::TARGET_ENEMY {
                 break;
             }
         }
@@ -4272,7 +4298,7 @@ impl CombatSimulator {
             }
         };
 
-        if effect.target_type == "allAllies" {
+        if effect.target_type == Hrid::TARGET_ALL_ALLIES {
             for index in 0..allies_len {
                 let Some(target) = ally_at(index) else { break };
                 if self.arena.get(target).combat_details.current_hitpoints <= 0.0 {
@@ -4287,12 +4313,12 @@ impl CombatSimulator {
                     &mut self.rng,
                 );
                 let target_hrid = self.unit_hrid(target);
-                self.tally.add_hitpoints_gained(&target_hrid, &ability.hrid, amount_healed);
+                self.tally.add_hitpoints_gained(target_hrid, ability.hrid, amount_healed);
             }
             return Ok(());
         }
 
-        if effect.target_type == "lowestHpAlly" {
+        if effect.target_type == Hrid::TARGET_LOWEST_HP_ALLY {
             let mut heal_target: Option<UnitId> = None;
             for index in 0..allies_len {
                 let Some(target) = ally_at(index) else { break };
@@ -4322,12 +4348,12 @@ impl CombatSimulator {
                     &mut self.rng,
                 );
                 let target_hrid = self.unit_hrid(heal_target);
-                self.tally.add_hitpoints_gained(&target_hrid, &ability.hrid, amount_healed);
+                self.tally.add_hitpoints_gained(target_hrid, ability.hrid, amount_healed);
             }
             return Ok(());
         }
 
-        if effect.target_type != "self" {
+        if effect.target_type != Hrid::TARGET_SELF {
             return Err(UnitError::error(format!(
                 "Unsupported target type for heal ability effect: {}",
                 ability.hrid
@@ -4338,7 +4364,7 @@ impl CombatSimulator {
         let amount_healed =
             process_heal_with_stats(healing_amplify, magic_max_damage, effect, self.arena.get_mut(source), &mut self.rng);
         let source_hrid = self.unit_hrid(source);
-        self.tally.add_hitpoints_gained(&source_hrid, &ability.hrid, amount_healed);
+        self.tally.add_hitpoints_gained(source_hrid, ability.hrid, amount_healed);
         Ok(())
     }
 
@@ -4354,7 +4380,7 @@ impl CombatSimulator {
         ability: &Ability,
         effect: &AbilityEffect,
     ) -> Result<(), UnitError> {
-        if effect.target_type != "deadAlly" {
+        if !hrid_is(effect.target_type, "deadAlly") {
             return Err(UnitError::error(format!(
                 "Unsupported target type for revive ability effect: {}",
                 ability.hrid
@@ -4371,7 +4397,7 @@ impl CombatSimulator {
         if let Some(revive_target) = revive_target {
             let revive_hrid = self.unit_hrid(revive_target);
             self.queue
-                .clear_matching(|event| event.event_type() == "playerRespawn" && event.hrid() == Some(revive_hrid.as_str()));
+                .clear_matching(|event| event.event_type() == Hrid::EVENT_PLAYER_RESPAWN && event.hrid() == Some(revive_hrid));
 
             let time = self.simulation_time;
             self.arena.get_mut(revive_target).remove_expired_buffs(time, true)?;
@@ -4385,12 +4411,12 @@ impl CombatSimulator {
                 &mut self.rng,
             );
 
-            self.tally.add_hitpoints_gained(&revive_hrid, &ability.hrid, amount_healed);
+            self.tally.add_hitpoints_gained(revive_hrid, ability.hrid, amount_healed);
             self.add_next_attack_event(revive_target)?;
 
             if !is_player {
                 let time = self.simulation_time;
-                self.tally.update_time_spent_alive(&revive_hrid, true, time);
+                with_hrid(revive_hrid, |name| self.tally.update_time_spent_alive(name, true, time));
             }
         }
         Ok(())
@@ -4423,7 +4449,7 @@ impl CombatSimulator {
         ability: &Ability,
         effect: &AbilityEffect,
     ) -> Result<(), UnitError> {
-        if effect.target_type != "self" {
+        if effect.target_type != Hrid::TARGET_SELF {
             return Err(UnitError::error(format!(
                 "Unsupported target type for spend hp ability effect: {}",
                 ability.hrid
@@ -4431,7 +4457,7 @@ impl CombatSimulator {
         }
         let hp_spent = process_spend_hp(self.arena.get_mut(source), effect);
         let source_hrid = self.unit_hrid(source);
-        self.tally.add_hitpoints_spent(&source_hrid, &ability.hrid, hp_spent);
+        self.tally.add_hitpoints_spent(source_hrid, ability.hrid, hp_spent);
         Ok(())
     }
 }
@@ -4461,7 +4487,7 @@ mod tests {
             encounter_specs: vec![vec![enemy]],
             promotion_specs: vec![],
             blaze_ability: Some(Ability {
-                hrid: "blaze".to_string(),
+                hrid: intern_hrid("blaze"),
                 level: 1.0,
                 mana_cost: 0.0,
                 cooldown_duration: 0.0,
@@ -4580,7 +4606,7 @@ mod tests {
     fn early_stop_triggers_on_death_limit_and_reports_partial_time() {
         // 监视怪物死亡数：deathLimit=2 → 第 3 次死亡后立即停止（怪物 HP 很低，玩家速杀）。
         let (mut options, player) = early_stop_production_options(Some(EarlyStopSpec {
-            watch_hrid: "/monsters/dummy".to_string(),
+            watch_hrid: intern_hrid("/monsters/dummy"),
             death_limit: Some(2.0),
         }));
         // 拉长时限，让死亡预算成为唯一停止原因。
@@ -4614,7 +4640,7 @@ mod tests {
     fn early_stop_none_death_limit_ignores_deaths() {
         // deathLimit: None（JS Infinity）：怪物死亡不触发停止，跑满时限。
         let (mut options, player) = early_stop_production_options(Some(EarlyStopSpec {
-            watch_hrid: "/monsters/dummy".to_string(),
+            watch_hrid: intern_hrid("/monsters/dummy"),
             death_limit: None,
         }));
         options.simulation_time_limit = 30.0 * ONE_SECOND;
@@ -4634,17 +4660,17 @@ mod tests {
     /// 每次触发检查都会走到 compare_value，观察点充分暴露）。
     fn observer_trigger_food(hrid: &str, condition: &str, value: f64) -> Consumable {
         Consumable {
-            hrid: hrid.to_string(),
+            hrid: intern_hrid(hrid),
             cooldown_duration: 0.0,
             hitpoint_restore: 10.0,
             manapoint_restore: 10.0,
             recovery_duration: 0.0,
-            category_hrid: "/item_categories/food".to_string(),
+            category_hrid: intern_hrid("/item_categories/food"),
             buffs: Vec::new(),
             triggers: vec![crate::trigger::Trigger {
-                dependency_hrid: "/combat_trigger_dependencies/self".to_string(),
-                condition_hrid: condition.to_string(),
-                comparator_hrid: "/combat_trigger_comparators/greater_than_equal".to_string(),
+                dependency_hrid: intern_hrid("/combat_trigger_dependencies/self"),
+                condition_hrid: intern_hrid(condition),
+                comparator_hrid: intern_hrid("/combat_trigger_comparators/greater_than_equal"),
                 value,
                 is_single_target: true,
             }],
@@ -4703,7 +4729,7 @@ mod tests {
         baseline.simulate().expect("baseline runs");
         let baseline_result = baseline.tally.real.as_ref().expect("real result").to_value();
 
-        options.observers = Some(ObserverSpec { watch_hrid: "player1".to_string() });
+        options.observers = Some(ObserverSpec { watch_hrid: intern_hrid("player1") });
         let mut observed = CombatSimulator::new(options.clone());
         observed.add_player(&player).expect("player builds");
         observed.simulate().expect("observed run succeeds");
@@ -4746,9 +4772,9 @@ mod tests {
             -1.0,
         );
         bad.triggers[0].comparator_hrid =
-            "/combat_trigger_comparators/less_than_equal".to_string();
+            intern_hrid("/combat_trigger_comparators/less_than_equal");
         player.food = vec![Some(bad)];
-        options.observers = Some(ObserverSpec { watch_hrid: "player1".to_string() });
+        options.observers = Some(ObserverSpec { watch_hrid: intern_hrid("player1") });
 
         let mut simulator = CombatSimulator::new(options);
         simulator.add_player(&player).expect("player builds");
@@ -4790,7 +4816,7 @@ mod tests {
             1.0,
         ))];
         options.cost_bound = Some(CostBoundSpec {
-            watch_hrid: "player1".to_string(),
+            watch_hrid: intern_hrid("player1"),
             cutoff: 0.0,
             completed_cost_per_hour: 0.0,
             total_rounds: 3.0,
@@ -4837,7 +4863,7 @@ mod tests {
             1.0,
         ))];
         options.cost_bound = Some(CostBoundSpec {
-            watch_hrid: "player1".to_string(),
+            watch_hrid: intern_hrid("player1"),
             cutoff: 1e12,
             completed_cost_per_hour: 0.0,
             total_rounds: 3.0,
@@ -4863,7 +4889,7 @@ mod tests {
         let (mut options, player) = early_stop_production_options(None);
         options.simulation_time_limit = 5.0 * ONE_SECOND;
         options.cost_bound = Some(CostBoundSpec {
-            watch_hrid: "player1".to_string(),
+            watch_hrid: intern_hrid("player1"),
             cutoff: 0.0,
             completed_cost_per_hour: 0.0,
             total_rounds: 0.0,
@@ -4877,7 +4903,7 @@ mod tests {
         let (mut options, player) = early_stop_production_options(None);
         options.simulation_time_limit = 5.0 * ONE_SECOND;
         options.cost_bound = Some(CostBoundSpec {
-            watch_hrid: "/players/ghost".to_string(),
+            watch_hrid: intern_hrid("/players/ghost"),
             cutoff: 0.0,
             completed_cost_per_hour: 0.0,
             total_rounds: 3.0,
@@ -4903,11 +4929,11 @@ mod tests {
         // 0 蓝玩家：无法施法（无技能）但触发不了空蓝——改用死亡预算监视怪物：
         // 玩家速杀怪物（HP 低），deathLimit=0 → 首杀即停，成本分支永不被求值。
         options.early_stop = Some(EarlyStopSpec {
-            watch_hrid: "/monsters/dummy".to_string(),
+            watch_hrid: intern_hrid("/monsters/dummy"),
             death_limit: Some(0.0),
         });
         options.cost_bound = Some(CostBoundSpec {
-            watch_hrid: "player1".to_string(),
+            watch_hrid: intern_hrid("player1"),
             cutoff: 0.0,
             completed_cost_per_hour: 0.0,
             total_rounds: 3.0,
@@ -5250,7 +5276,7 @@ mod tests {
         // CombatStart 排到 RESTART_INTERVAL 之后（而不是立即重开）。
         let restart = simulator
             .queue
-            .get_matching(|event| event.event_type() == "combatStart")
+            .get_matching(|event| event.event_type() == Hrid::EVENT_COMBAT_START)
             .expect("团灭必须排程 CombatStart");
         let restart_time = restart.time();
         assert_eq!(restart_time, simulator.simulation_time + RESTART_INTERVAL);
@@ -5512,8 +5538,8 @@ mod tests {
     /// 卷轴 buff 输入（合成定义；level=1 不做等级并入，ratio/flat 原样注册）。
     fn scroll_test_buff(duration_ns: f64) -> RawBuffInput {
         RawBuffInput {
-            unique_hrid: Some("/buff_uniques/test_scroll".to_string()),
-            type_hrid: Some("/buff_types/damage".to_string()),
+            unique_hrid: Some(intern_hrid("/buff_uniques/test_scroll")),
+            type_hrid: Some(intern_hrid("/buff_types/damage")),
             ratio_boost: Some(0.5),
             flat_boost: Some(0.0),
             duration: Some(duration_ns),
@@ -5536,7 +5562,7 @@ mod tests {
             levels: Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() }),
             combat_stats: vec![("attackInterval".to_string(), 1_000_000.0)],
             combat_stats_strings: vec![("combatStyleHrid".to_string(), "/combat_styles/smash".to_string())],
-            combat_scrolls: vec![CombatScrollConfig { item_hrid: SCROLL_ITEM_HRID.to_string(), quantity }],
+            combat_scrolls: vec![CombatScrollConfig { item_hrid: intern_hrid(SCROLL_ITEM_HRID), quantity }],
             ..Default::default()
         };
         let enemy = UnitSpec {
@@ -5612,7 +5638,7 @@ mod tests {
         // 收尾关闭窗口后按源移除增益（finalizeScrollUsage → closeScrollWindow）。
         let unit = simulator.arena.get(simulator.players[0]);
         assert!(
-            !unit.combat_buffs.contains_key_str("/buff_uniques/test_scroll"),
+            !unit.combat_buffs.contains_key(&intern_hrid("/buff_uniques/test_scroll")),
             "finalize 后卷轴增益必须已按源移除"
         );
     }
@@ -5647,7 +5673,7 @@ mod tests {
             duration_ns: 20.0 * ONE_SECOND,
             buff: scroll_test_buff(20.0 * ONE_SECOND),
         }];
-        player.combat_scrolls = vec![CombatScrollConfig { item_hrid: SCROLL_ITEM_HRID.to_string(), quantity: None }];
+        player.combat_scrolls = vec![CombatScrollConfig { item_hrid: intern_hrid(SCROLL_ITEM_HRID), quantity: None }];
 
         let mut simulator = CombatSimulator::new(options.clone());
         simulator.add_player(&player).expect("player builds");

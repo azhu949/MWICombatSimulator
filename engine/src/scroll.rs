@@ -9,6 +9,7 @@
 //!   Rust 侧不持有游戏数据；buff 模板与 `new Buff(template, 1)` 的注册输入一致
 //!   （卷轴无等级，level=1 不做等级并入）。
 
+use crate::hrid::Hrid;
 use crate::sim_unit::UnitId;
 use crate::unit::RawBuffInput;
 use serde::{Deserialize, Serialize};
@@ -30,8 +31,8 @@ pub struct ScrollState {
     /// 拥有该卷轴的玩家（arena 下标；初始化时解析，副本/迷宫重开不改变）。
     pub player_id: UnitId,
     /// JS `String(player?.hrid || '')`（续期事件按此 hrid 定位）。
-    pub player_hrid: String,
-    pub item_hrid: String,
+    pub player_hrid: Hrid,
+    pub item_hrid: Hrid,
     /// JS `configuredQuantity`（`None` = `null` 无限库存）。
     pub configured_quantity: Option<f64>,
     /// JS `remaining`（`None` = 无限库存）。
@@ -45,7 +46,7 @@ pub struct ScrollState {
     /// JS `token`（每次 open 自增；续期事件按 token 守卫过期事件）。
     pub token: f64,
     /// JS `state.buffUniqueHrid`（定义缺失时为 `""`）。
-    pub buff_unique_hrid: String,
+    pub buff_unique_hrid: Hrid,
     /// 定义表下标（初始化时解析；定义缺失的项不进入运行时状态）。
     pub definition_index: usize,
 }

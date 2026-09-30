@@ -7,14 +7,13 @@
 //! - 最强源策略仅对官方队伍光环 uniqueHrid 开放，且要求「强度字段非负、次字段为 0」，
 //!   形状不符时必须报错（而不是发明排序规则）。
 
+use crate::hrid::Hrid;
 use serde::{Deserialize, Serialize};
-
-/// 注册后的运行时增益（等价 JS `Buff` 实例 / 被 structuredClone 的值）。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Buff {
-    pub unique_hrid: String,
-    pub type_hrid: String,
+    pub unique_hrid: Hrid,
+    pub type_hrid: Hrid,
     pub ratio_boost: f64,
     pub flat_boost: f64,
     // 以下字段带默认值：JS 运行时记录允许缺失（structuredClone 保留 undefined，
@@ -24,7 +23,7 @@ pub struct Buff {
     #[serde(default)]
     pub start_time: Option<f64>,
     #[serde(default)]
-    pub multiplier_for_skill_hrid: String,
+    pub multiplier_for_skill_hrid: Hrid,
     #[serde(default)]
     pub multiplier_per_skill_level: f64,
 }
@@ -41,8 +40,8 @@ fn default_level() -> f64 {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BuffInput {
-    pub unique_hrid: String,
-    pub type_hrid: String,
+    pub unique_hrid: Hrid,
+    pub type_hrid: Hrid,
     pub ratio_boost: f64,
     pub flat_boost: f64,
     pub duration: Option<f64>,
@@ -52,7 +51,7 @@ pub struct BuffInput {
     #[serde(default = "nan_default")]
     pub flat_boost_level_bonus: f64,
     #[serde(default)]
-    pub multiplier_for_skill_hrid: Option<String>,
+    pub multiplier_for_skill_hrid: Option<Hrid>,
     #[serde(default)]
     pub multiplier_per_skill_level: Option<f64>,
     #[serde(default = "default_level")]
@@ -64,13 +63,13 @@ pub struct BuffInput {
 /// 等价 JS `new Buff(input, level)`：把等级奖励并入有效 ratio/flat。
 pub fn buff_from_input(input: &BuffInput) -> Buff {
     Buff {
-        unique_hrid: input.unique_hrid.clone(),
-        type_hrid: input.type_hrid.clone(),
+        unique_hrid: input.unique_hrid,
+        type_hrid: input.type_hrid,
         ratio_boost: input.ratio_boost + (input.level - 1.0) * input.ratio_boost_level_bonus,
         flat_boost: input.flat_boost + (input.level - 1.0) * input.flat_boost_level_bonus,
         duration: input.duration,
         start_time: input.start_time,
-        multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.clone().unwrap_or_default(),
+        multiplier_for_skill_hrid: input.multiplier_for_skill_hrid.unwrap_or(Hrid::EMPTY),
         multiplier_per_skill_level: input.multiplier_per_skill_level.unwrap_or(0.0),
     }
 }
@@ -83,21 +82,21 @@ pub enum BuffSourcePolicy {
 }
 
 /// `PARTY_AURA_STRENGTH_FIELDS` 的忠实快照（uniqueHrid → 强度字段名）。
-pub const PARTY_AURA_STRENGTH_FIELDS: &[(&str, &str)] = &[
-    ("/buff_uniques/speed_aura_attack_speed", "ratioBoost"),
-    ("/buff_uniques/speed_aura_cast_speed", "flatBoost"),
-    ("/buff_uniques/guardian_aura_healing_amplify", "flatBoost"),
-    ("/buff_uniques/guardian_aura_evasion", "ratioBoost"),
-    ("/buff_uniques/guardian_aura_armor", "flatBoost"),
-    ("/buff_uniques/guardian_aura_water_resistance", "flatBoost"),
-    ("/buff_uniques/guardian_aura_nature_resistance", "flatBoost"),
-    ("/buff_uniques/guardian_aura_fire_resistance", "flatBoost"),
-    ("/buff_uniques/fierce_aura", "flatBoost"),
-    ("/buff_uniques/critical_aura_rate", "flatBoost"),
-    ("/buff_uniques/critical_aura_damage", "flatBoost"),
-    ("/buff_uniques/mystic_aura_water_amplify", "flatBoost"),
-    ("/buff_uniques/mystic_aura_nature_amplify", "flatBoost"),
-    ("/buff_uniques/mystic_aura_fire_amplify", "flatBoost"),
+pub const PARTY_AURA_STRENGTH_FIELDS: &[(Hrid, &str)] = &[
+    (Hrid::BUFF_UNIQUE_SPEED_AURA_ATTACK_SPEED, "ratioBoost"),
+    (Hrid::BUFF_UNIQUE_SPEED_AURA_CAST_SPEED, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_HEALING_AMPLIFY, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_EVASION, "ratioBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_ARMOR, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_WATER_RESISTANCE, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_NATURE_RESISTANCE, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_GUARDIAN_AURA_FIRE_RESISTANCE, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_FIERCE_AURA, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_CRITICAL_AURA_RATE, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_CRITICAL_AURA_DAMAGE, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_MYSTIC_AURA_WATER_AMPLIFY, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_MYSTIC_AURA_NATURE_AMPLIFY, "flatBoost"),
+    (Hrid::BUFF_UNIQUE_MYSTIC_AURA_FIRE_AMPLIFY, "flatBoost"),
 ];
 
 /// 队伍光环校验错误的类别（与 JS 抛出的内置错误一一对应）。
@@ -135,7 +134,7 @@ impl std::fmt::Display for PartyAuraError {
     }
 }
 
-pub fn strength_field_for(unique_hrid: &str) -> Option<&'static str> {
+pub fn strength_field_for(unique_hrid: Hrid) -> Option<&'static str> {
     PARTY_AURA_STRENGTH_FIELDS
         .iter()
         .find(|(hrid, _)| *hrid == unique_hrid)
@@ -143,22 +142,22 @@ pub fn strength_field_for(unique_hrid: &str) -> Option<&'static str> {
 }
 
 /// 官方队伍光环技能 hrid 集合（等价 JS `PARTY_AURA_ABILITY_HRIDS`）。
-pub const PARTY_AURA_ABILITY_HRIDS: &[&str] = &[
-    "/abilities/speed_aura",
-    "/abilities/guardian_aura",
-    "/abilities/fierce_aura",
-    "/abilities/critical_aura",
-    "/abilities/mystic_aura",
+pub const PARTY_AURA_ABILITY_HRIDS: &[Hrid] = &[
+    Hrid::ABILITY_SPEED_AURA,
+    Hrid::ABILITY_GUARDIAN_AURA,
+    Hrid::ABILITY_FIERCE_AURA,
+    Hrid::ABILITY_CRITICAL_AURA,
+    Hrid::ABILITY_MYSTIC_AURA,
 ];
 
 /// 等价 JS `isPartyAuraBuff`。
-pub fn is_party_aura_buff(unique_hrid: &str) -> bool {
+pub fn is_party_aura_buff(unique_hrid: Hrid) -> bool {
     strength_field_for(unique_hrid).is_some()
 }
 
 /// 等价 JS `getAbilityBuffSourcePolicy(ability, buff)`：
 /// 官方队伍光环技能施加官方队伍光环增益才启用最强源策略，其余一律 replace。
-pub fn get_ability_buff_source_policy(ability_hrid: &str, buff_unique_hrid: &str) -> BuffSourcePolicy {
+pub fn get_ability_buff_source_policy(ability_hrid: Hrid, buff_unique_hrid: Hrid) -> BuffSourcePolicy {
     if PARTY_AURA_ABILITY_HRIDS.contains(&ability_hrid) && is_party_aura_buff(buff_unique_hrid) {
         BuffSourcePolicy::Strongest
     } else {
@@ -168,7 +167,7 @@ pub fn get_ability_buff_source_policy(ability_hrid: &str, buff_unique_hrid: &str
 
 /// 等价 JS `getPartyAuraBuffStrength`；形状/数值不符时返回 Err（JS 抛异常）。
 pub fn get_party_aura_buff_strength(buff: &Buff) -> Result<f64, PartyAuraError> {
-    let Some(strength_field) = strength_field_for(&buff.unique_hrid) else {
+    let Some(strength_field) = strength_field_for(buff.unique_hrid) else {
         return Err(PartyAuraError::type_error(format!(
             "Strongest-source policy is unsupported for {}",
             buff.unique_hrid
@@ -226,11 +225,12 @@ pub fn buffs_affect_stats_equally(a: Option<&Buff>, b: Option<&Buff>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hrid::{hrid_to_string, intern_hrid};
 
     fn input(unique_hrid: &str, ratio: f64, flat: f64) -> BuffInput {
         BuffInput {
-            unique_hrid: unique_hrid.to_string(),
-            type_hrid: "/buff_types/test".to_string(),
+            unique_hrid: intern_hrid(unique_hrid),
+            type_hrid: intern_hrid("/buff_types/test"),
             ratio_boost: ratio,
             flat_boost: flat,
             duration: Some(1000.0),
@@ -252,7 +252,7 @@ mod tests {
         let buff = buff_from_input(&raw);
         assert_eq!(buff.ratio_boost, 2.0);
         assert_eq!(buff.flat_boost, 2.5);
-        assert_eq!(buff.multiplier_for_skill_hrid, "");
+        assert_eq!(hrid_to_string(buff.multiplier_for_skill_hrid), "");
         assert_eq!(buff.multiplier_per_skill_level, 0.0);
     }
 

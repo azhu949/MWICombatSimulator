@@ -1565,3 +1565,89 @@ median 24.2 ms → 新版 min 22.3 / median 23.5 ms，即 **-3~5%**（与原生�
   净增 ~1.3 ms/10 轮；prof 读数含记账开销，差异在噪声内）。
 - 切片 25 / 26 的预期校准：先按 prof 口径估「该段占总时长比例 × 可削减比例」，再以
   WASM A/B 大样本验证，避免重复「占比 ≠ 收益」的误读。
+
+## 25. 切片 25：hrid 字符串键 → u32 驻留（Hrid）（2026-09-30）
+
+§23 记录的头号候选项（§5.2 首选项）。热路径上的 hrid 字符串（`/buff_types/damage` 一类）
+此前承担约 15~30 万次/轮的小字符串分配 / 克隆 / 比较；本切片把引擎内部全部 hrid 键换成
+`u32` 句柄（`Hrid`），字符串只在输入 / 输出边界驻留一次。契约放宽后收益由 WASM A/B 裁决
+（教训：prof 段占比 ≠ 可得收益）。
+
+### 25.1 实现
+
+新增 `engine/src/hrid.rs`：
+
+- `Hrid(u32)`：Copy/Clone/PartialEq/Eq/Hash（刻意不派生 Ord，避免误用位序比较）；
+  `Default` = `Hrid::EMPTY`。句柄 `Hrid::UNDEFINED` 承载 JS `undefined` 的字符串语义
+  （只在 `process_attack` 缺字段的错误路径出现，报错文本逐字一致）。
+- `Interner`（`by_name` 哈希 + `names` 序号表）+ 线程本地 `INTERNER`；`with_well_known()`
+  预注册常量表。
+- well-known 常量表**冻结、只可尾部追加**（序号 = u32；共 125 项 0..=124：0-2 哨兵
+  EMPTY/UNDEFINED/DEFAULT、3-7 战斗风格、8-11 伤害类型、12-17 效果类型、18-22 目标类型、
+  23-62 buff 类型、63-81 事件类型、82-99 触发器、100-105 负面 buff、106-110 光环技能、
+  111-124 光环 buff）。
+- serde 双向：Serialize 输出原字符串（JSON 形状不变）；Deserialize 走 `deserialize_str`
+  visitor 自动注册。
+
+契约层全量替换：`buff / ability / consumable / trigger / sim_events / event_queue / scroll /
+unit / sim_result` 及 `simulator.rs` 热路径、探针调用点。三条纪律：
+
+- **输入层保留 String**（UnitSpec / RawBuffInput / UnitOp 等 DTO），调用点 `intern_hrid`；
+  **输出层保留 String**（eventTrace / thresholdRanges / zoneName / scrollUsage 等），显式
+  `hrid_to_string`。
+- 非 well-known 的动态串（`player1..5`、`regen`、`lifesteal` / `manaLeech` / `ripple`、
+  `scroll:<item>` 源键、`physicalThorns` / `elementalThorns` 等）按需注册，JSON 输出逐字相同。
+- 雷区：`json!({ hrid: ... })` 的键会退化成字面量 `"hrid"`——输出键必须显式
+  `hrid_to_string`；`with_hrid` 闭包内禁止再触发驻留（借用冲突）；驻留表按线程独立
+  （原生测试每线程一套，WASM 单线程）。
+
+时间语义、随机数消费顺序、错误消息文本均未改动；全部 `expected_json` 硬编码期望一字未改。
+
+### 25.2 验收协议（全绿，零漂移）
+
+| 环节                           | 结果                                                                  |
+| ------------------------------ | --------------------------------------------------------------------- |
+| `cargo test`                   | 131 → 138（+7 hrid 基建测试，0 警告）                                 |
+| golden 快照（四套件）          | **29/29 通过、零漂移**、无需重锚（JSON 形状不变的直接证明）           |
+| vitest 全量 + prettier         | 185 文件 / 2575 用例（2570 passed + 5 skipped）全绿                   |
+| `build` / `verify-pages-build` | 通过                                                                  |
+| 产物体积                       | 810784 B（`0207EE46…`）→ 802422 B（`04C5E57A…`），wasm-opt -O4 -12.8% |
+
+### 25.3 性能
+
+**WASM 端到端**（full-result 1h；基线 / 新版交替 5 轮、每轮 15 回合；同一调用内两臂读数
+合并，各 n=10，同会话同机）：
+
+| 指标（引擎耗时） | 基线（切片 24，`0207EE46`） | 新版（切片 25，`04C5E57A`） | 变化              |
+| ---------------- | --------------------------- | --------------------------- | ----------------- |
+| min              | 23.3 ms                     | 15.3 ms                     | **-34%**          |
+| median           | 27.4 ms                     | 18.8 ms                     | **-31%（1.46×）** |
+| max              | 32.8 ms                     | 21.4 ms                     | -35%              |
+
+基线当日读数高于切片 24 归档（min 22.3 / median 23.5），系会话噪声；交替配对设计抵消
+漂移，比率有效。逐轮配对 5/5 新版更快；事件吞吐 ≈0.32M/s → **≈0.47~0.49M/s**（对
+mwi-fastsim 0.70~~0.88M/s 的差距缩至约 1.5~~1.9×）。
+
+**原生 prof**（10 轮 + 2 预热，同一 52 KB 生产请求）：
+
+| 分段                   | 切片 24              | 切片 25             | 变化        |
+| ---------------------- | -------------------- | ------------------- | ----------- |
+| 壁钟 median / min      | 16.8 / 16.3 ms       | 13.2 / 11.7 ms      | -21% / -28% |
+| `simulate(total)`      | 144.88 ms/10 轮      | 122.47 ms/10 轮     | -15%        |
+| `event.abilityCastEnd` | 64.55 ms（24620 次） | 53.91 ms            | -16%        |
+| `ability.try_use`      | 57.08 ms（24620 次） | 46.04 ms            | -19%        |
+| `event.enemyRespawn`   | 43.38 ms（2420 次）  | 37.10 ms            | -14%        |
+| `ability.damage`       | 25.81 ms（26620 次） | 20.58 ms            | -20%        |
+| `unit_hrid`            | 6.90 ms（43 ns/次）  | 4.92 ms（31 ns/次） | -29%        |
+
+WASM 收益（-31~-34%）大于原生（-21~-28%）：wasm 侧字符串分配 / 比较的单位成本更高，
+消除后省得更多。
+
+### 25.4 结论
+
+- 契约放宽后的第一个完整「A/B 裁决」闭环：端到端 **-1/3**，且 golden 零漂移（比验收
+  下限更强——连输出形状都未变）。§23 头号遗留项清账。
+- `unit_hrid` 仍有 159260 次/轮 × 31 ns ≈ 4.9 ms/10 轮：调用点多为「按 UnitId 取句柄」
+  的一次查表，后续可在热点循环内缓存句柄。
+- 与 mwi-fastsim 的剩余差（~~1.5~~1.9×）→ 切片 26 候选：结算 / 施法路径剩余克隆、
+  `OrderedMap` 底层结构（FxIndexMap）、热点循环句柄缓存。

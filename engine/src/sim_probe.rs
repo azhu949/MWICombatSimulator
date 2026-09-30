@@ -18,6 +18,7 @@
 //! 结果形如 `{"results":[{"simulatedTime":…,"eventCount":…,"eventTrace":[…],"resultCalls":[…],"units":[…]}]}`；
 //! 单轮内部报错（例如触发器指向已死单位）记 `"error":{"name":…,"message":…}`，其余字段照常返回。
 
+use crate::hrid::hrid_to_string;
 use crate::simulator::{CombatSimulator, EventTraceEntry, SimulatorOptions, UnitSpec};
 use crate::unit::{CombatUnit, UnitError};
 use serde::Deserialize;
@@ -39,11 +40,11 @@ struct SimProbeRequest {
 }
 
 pub(crate) fn unit_snapshot(unit: &CombatUnit) -> Value {
-    let combat_buff_keys: Vec<&String> = unit.combat_buffs.keys().collect();
+    let combat_buff_keys: Vec<String> = unit.combat_buffs.keys().map(|key| hrid_to_string(*key)).collect();
     let mut combat_buffs = Map::new();
     for (key, buff) in unit.combat_buffs.iter() {
         combat_buffs.insert(
-            key.clone(),
+            hrid_to_string(*key),
             json!({
                 "uniqueHrid": buff.unique_hrid,
                 "typeHrid": buff.type_hrid,

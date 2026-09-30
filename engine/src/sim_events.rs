@@ -14,6 +14,7 @@
 //! `(UnitId, slot)` 定位（槽位在运行期不会被替换，语义等价）。
 
 use crate::event_queue::QueueItem;
+use crate::hrid::Hrid;
 use crate::sim_unit::UnitId;
 
 /// JS `Math.min`：NaN 会传播（Rust `f64::min` 会忽略 NaN，故不能直接映射）。
@@ -37,7 +38,7 @@ pub enum SimEvent {
     PlayerRespawn {
         time: f64,
         id: u64,
-        hrid: String,
+        hrid: Hrid,
     },
     EnemyRespawn {
         time: f64,
@@ -71,20 +72,20 @@ pub enum SimEvent {
         damage: f64,
         total_ticks: f64,
         current_tick: f64,
-        combat_style_hrid: Option<String>,
+        combat_style_hrid: Option<Hrid>,
     },
     CheckBuffExpiration {
         time: f64,
         id: u64,
         source: UnitId,
-        buff_unique_hrid: Option<String>,
-        buff_source_key: Option<String>,
+        buff_unique_hrid: Option<Hrid>,
+        buff_source_key: Option<Hrid>,
     },
     ScrollRenewal {
         time: f64,
         id: u64,
-        player_hrid: String,
-        item_hrid: String,
+        player_hrid: Hrid,
+        item_hrid: Hrid,
         token: f64,
     },
     RegenTick {
@@ -200,16 +201,16 @@ impl SimEvent {
         }
     }
 
-    pub fn buff_unique_hrid(&self) -> Option<&str> {
+    pub fn buff_unique_hrid(&self) -> Option<Hrid> {
         match self {
-            SimEvent::CheckBuffExpiration { buff_unique_hrid, .. } => buff_unique_hrid.as_deref(),
+            SimEvent::CheckBuffExpiration { buff_unique_hrid, .. } => *buff_unique_hrid,
             _ => None,
         }
     }
 
-    pub fn buff_source_key(&self) -> Option<&str> {
+    pub fn buff_source_key(&self) -> Option<Hrid> {
         match self {
-            SimEvent::CheckBuffExpiration { buff_source_key, .. } => buff_source_key.as_deref(),
+            SimEvent::CheckBuffExpiration { buff_source_key, .. } => *buff_source_key,
             _ => None,
         }
     }
@@ -281,23 +282,23 @@ impl SimEvent {
         }
     }
 
-    pub fn combat_style_hrid(&self) -> Option<&str> {
+    pub fn combat_style_hrid(&self) -> Option<Hrid> {
         match self {
-            SimEvent::DamageOverTime { combat_style_hrid, .. } => combat_style_hrid.as_deref(),
+            SimEvent::DamageOverTime { combat_style_hrid, .. } => *combat_style_hrid,
             _ => None,
         }
     }
 
-    pub fn player_hrid(&self) -> Option<&str> {
+    pub fn player_hrid(&self) -> Option<Hrid> {
         match self {
-            SimEvent::ScrollRenewal { player_hrid, .. } => Some(player_hrid.as_str()),
+            SimEvent::ScrollRenewal { player_hrid, .. } => Some(*player_hrid),
             _ => None,
         }
     }
 
-    pub fn item_hrid(&self) -> Option<&str> {
+    pub fn item_hrid(&self) -> Option<Hrid> {
         match self {
-            SimEvent::ScrollRenewal { item_hrid, .. } => Some(item_hrid.as_str()),
+            SimEvent::ScrollRenewal { item_hrid, .. } => Some(*item_hrid),
             _ => None,
         }
     }
@@ -359,28 +360,28 @@ impl QueueItem for SimEvent {
         }
     }
 
-    /// JS 事件 `type` 字符串（队列匹配依赖它们逐字一致）。
-    fn event_type(&self) -> &str {
+    /// JS 事件 `type` 字符串（队列匹配依赖它们逐字一致；以 well-known 常量承载）。
+    fn event_type(&self) -> Hrid {
         match self {
-            SimEvent::CombatStart { .. } => "combatStart",
-            SimEvent::PlayerRespawn { .. } => "playerRespawn",
-            SimEvent::EnemyRespawn { .. } => "enemyRespawn",
-            SimEvent::AutoAttack { .. } => "autoAttack",
-            SimEvent::AbilityCastEnd { .. } => "abilityCastEndEvent",
-            SimEvent::ConsumableTick { .. } => "consumableTick",
-            SimEvent::DamageOverTime { .. } => "damageOverTime",
-            SimEvent::CheckBuffExpiration { .. } => "checkBuffExpiration",
-            SimEvent::ScrollRenewal { .. } => "scrollRenewal",
-            SimEvent::RegenTick { .. } => "regenTick",
-            SimEvent::StunExpiration { .. } => "stunExpiration",
-            SimEvent::BlindExpiration { .. } => "blindExpiration",
-            SimEvent::SilenceExpiration { .. } => "silenceExpiration",
-            SimEvent::CurseExpiration { .. } => "curseExpiration",
-            SimEvent::WeakenExpiration { .. } => "weakenExpiration",
-            SimEvent::FuryExpiration { .. } => "furyExpiration",
-            SimEvent::EnrageTick { .. } => "enrageTick",
-            SimEvent::AwaitCooldown { .. } => "awaitCooldownEvent",
-            SimEvent::CooldownReady { .. } => "cooldownReady",
+            SimEvent::CombatStart { .. } => Hrid::EVENT_COMBAT_START,
+            SimEvent::PlayerRespawn { .. } => Hrid::EVENT_PLAYER_RESPAWN,
+            SimEvent::EnemyRespawn { .. } => Hrid::EVENT_ENEMY_RESPAWN,
+            SimEvent::AutoAttack { .. } => Hrid::EVENT_AUTO_ATTACK,
+            SimEvent::AbilityCastEnd { .. } => Hrid::EVENT_ABILITY_CAST_END,
+            SimEvent::ConsumableTick { .. } => Hrid::EVENT_CONSUMABLE_TICK,
+            SimEvent::DamageOverTime { .. } => Hrid::EVENT_DAMAGE_OVER_TIME,
+            SimEvent::CheckBuffExpiration { .. } => Hrid::EVENT_CHECK_BUFF_EXPIRATION,
+            SimEvent::ScrollRenewal { .. } => Hrid::EVENT_SCROLL_RENEWAL,
+            SimEvent::RegenTick { .. } => Hrid::EVENT_REGEN_TICK,
+            SimEvent::StunExpiration { .. } => Hrid::EVENT_STUN_EXPIRATION,
+            SimEvent::BlindExpiration { .. } => Hrid::EVENT_BLIND_EXPIRATION,
+            SimEvent::SilenceExpiration { .. } => Hrid::EVENT_SILENCE_EXPIRATION,
+            SimEvent::CurseExpiration { .. } => Hrid::EVENT_CURSE_EXPIRATION,
+            SimEvent::WeakenExpiration { .. } => Hrid::EVENT_WEAKEN_EXPIRATION,
+            SimEvent::FuryExpiration { .. } => Hrid::EVENT_FURY_EXPIRATION,
+            SimEvent::EnrageTick { .. } => Hrid::EVENT_ENRAGE_TICK,
+            SimEvent::AwaitCooldown { .. } => Hrid::EVENT_AWAIT_COOLDOWN,
+            SimEvent::CooldownReady { .. } => Hrid::EVENT_COOLDOWN_READY,
         }
     }
 
@@ -412,9 +413,9 @@ impl QueueItem for SimEvent {
     }
 
     /// JS 事件的 `hrid` 字段（仅 playerRespawn 携带；scrollRenewal 用的是 playerHrid/itemHrid）。
-    fn hrid(&self) -> Option<&str> {
+    fn hrid(&self) -> Option<Hrid> {
         match self {
-            SimEvent::PlayerRespawn { hrid, .. } => Some(hrid.as_str()),
+            SimEvent::PlayerRespawn { hrid, .. } => Some(*hrid),
             _ => None,
         }
     }
@@ -423,6 +424,7 @@ impl QueueItem for SimEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hrid::{hrid_to_string, intern_hrid};
 
     #[test]
     fn curse_and_weaken_amounts_increment_and_cap_like_js_constructors() {
@@ -443,39 +445,41 @@ mod tests {
             damage: 10.0,
             total_ticks: 3.0,
             current_tick: 1.0,
-            combat_style_hrid: Some("/combat_styles/magic".to_string()),
+            combat_style_hrid: Some(Hrid::COMBAT_STYLE_MAGIC),
         };
         assert_eq!(event.source(), None);
         assert_eq!(event.target(), Some(2));
         assert_eq!(event.source_ref(), Some(1));
-        assert_eq!(event.event_type(), "damageOverTime");
+        assert_eq!(hrid_to_string(event.event_type()), "damageOverTime");
     }
 
     #[test]
     fn event_type_strings_match_js_classes() {
-        assert_eq!(SimEvent::CombatStart { time: 0.0, id: 0 }.event_type(), "combatStart");
-        assert_eq!(SimEvent::EnemyRespawn { time: 0.0, id: 0 }.event_type(), "enemyRespawn");
+        assert_eq!(hrid_to_string(SimEvent::CombatStart { time: 0.0, id: 0 }.event_type()), "combatStart");
+        assert_eq!(hrid_to_string(SimEvent::EnemyRespawn { time: 0.0, id: 0 }.event_type()), "enemyRespawn");
         assert_eq!(
-            SimEvent::AbilityCastEnd { time: 0.0, id: 0, source: 0, ability_slot: 0 }.event_type(),
+            hrid_to_string(SimEvent::AbilityCastEnd { time: 0.0, id: 0, source: 0, ability_slot: 0 }.event_type()),
             "abilityCastEndEvent"
         );
         assert_eq!(
-            SimEvent::AwaitCooldown { time: 0.0, id: 0, source: 0 }.event_type(),
+            hrid_to_string(SimEvent::AwaitCooldown { time: 0.0, id: 0, source: 0 }.event_type()),
             "awaitCooldownEvent"
         );
         assert_eq!(
-            SimEvent::PlayerRespawn { time: 0.0, id: 0, hrid: "/p/0".to_string() }.hrid(),
-            Some("/p/0")
+            SimEvent::PlayerRespawn { time: 0.0, id: 0, hrid: intern_hrid("/p/0") }.hrid(),
+            Some(intern_hrid("/p/0"))
         );
         assert_eq!(
-            SimEvent::CheckBuffExpiration {
-                time: 0.0,
-                id: 0,
-                source: 0,
-                buff_unique_hrid: Some("/buff_uniques/x".to_string()),
-                buff_source_key: None,
-            }
-            .event_type(),
+            hrid_to_string(
+                SimEvent::CheckBuffExpiration {
+                    time: 0.0,
+                    id: 0,
+                    source: 0,
+                    buff_unique_hrid: Some(intern_hrid("/buff_uniques/x")),
+                    buff_source_key: None,
+                }
+                .event_type()
+            ),
             "checkBuffExpiration"
         );
     }
@@ -489,8 +493,8 @@ mod tests {
             SimEvent::ScrollRenewal {
                 time: 1.0,
                 id: 3,
-                player_hrid: "/p/0".to_string(),
-                item_hrid: "/items/x".to_string(),
+                player_hrid: intern_hrid("/p/0"),
+                item_hrid: intern_hrid("/items/x"),
                 token: 1.0,
             }
             .source(),

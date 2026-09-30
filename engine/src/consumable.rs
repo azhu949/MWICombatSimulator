@@ -8,6 +8,7 @@
 //!   'food' / 其它区分，与 JS 的 if/else 顺序一致）。
 
 use crate::buff::Buff;
+use crate::hrid::{with_hrid, Hrid};
 use crate::sim_unit::{UnitArena, UnitId};
 use crate::simulator::ThresholdObserve;
 use crate::trigger::Trigger;
@@ -17,12 +18,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Consumable {
-    pub hrid: String,
+    pub hrid: Hrid,
     pub cooldown_duration: f64,
     pub hitpoint_restore: f64,
     pub manapoint_restore: f64,
     pub recovery_duration: f64,
-    pub category_hrid: String,
+    pub category_hrid: Hrid,
     #[serde(default)]
     pub buffs: Vec<Buff>,
     #[serde(default)]
@@ -53,7 +54,7 @@ impl Consumable {
 
         // JS `if (this.catagoryHrid.includes('food'))`：食物取 foodHaste，其余取 drinkConcentration。
         let combat_stats = &unit.combat_details.combat_stats;
-        let consumable_haste = if self.category_hrid.contains("food") {
+        let consumable_haste = if with_hrid(self.category_hrid, |category| category.contains("food")) {
             combat_stats.food_haste
         } else {
             combat_stats.drink_concentration
@@ -76,10 +77,10 @@ impl Consumable {
         // 仍走 compareValue，保持优化器的阈值观察点与 JS 完全一致。
         if self.triggers.len() == 1 {
             let trigger = &self.triggers[0];
-            let is_missing_hp = trigger.condition_hrid == "/combat_trigger_conditions/missing_hp";
-            let is_missing_mp = trigger.condition_hrid == "/combat_trigger_conditions/missing_mp";
-            if trigger.dependency_hrid == "/combat_trigger_dependencies/self"
-                && trigger.comparator_hrid == "/combat_trigger_comparators/greater_than_equal"
+            let is_missing_hp = trigger.condition_hrid == Hrid::TRIGGER_COND_MISSING_HP;
+            let is_missing_mp = trigger.condition_hrid == Hrid::TRIGGER_COND_MISSING_MP;
+            if trigger.dependency_hrid == Hrid::TRIGGER_DEP_SELF
+                && trigger.comparator_hrid == Hrid::TRIGGER_CMP_GREATER_THAN_EQUAL
                 && (is_missing_hp || is_missing_mp)
             {
                 let current = if is_missing_hp {
@@ -111,16 +112,17 @@ impl Consumable {
 mod tests {
     use super::*;
     use crate::ability::default_last_used;
+    use crate::hrid::intern_hrid;
     use crate::unit::CombatUnit;
 
     fn consumable(hrid: &str, category_hrid: &str, cooldown_duration: f64, triggers: Vec<Trigger>) -> Consumable {
         Consumable {
-            hrid: hrid.to_string(),
+            hrid: intern_hrid(hrid),
             cooldown_duration,
             hitpoint_restore: 0.0,
             manapoint_restore: 0.0,
             recovery_duration: 0.0,
-            category_hrid: category_hrid.to_string(),
+            category_hrid: intern_hrid(category_hrid),
             buffs: Vec::new(),
             triggers,
             last_used: default_last_used(),
@@ -129,9 +131,9 @@ mod tests {
 
     fn missing_hp_trigger(value: f64) -> Trigger {
         Trigger {
-            dependency_hrid: "/combat_trigger_dependencies/self".to_string(),
-            condition_hrid: "/combat_trigger_conditions/missing_hp".to_string(),
-            comparator_hrid: "/combat_trigger_comparators/greater_than_equal".to_string(),
+            dependency_hrid: Hrid::TRIGGER_DEP_SELF,
+            condition_hrid: Hrid::TRIGGER_COND_MISSING_HP,
+            comparator_hrid: Hrid::TRIGGER_CMP_GREATER_THAN_EQUAL,
             value,
             is_single_target: true,
         }
@@ -208,9 +210,9 @@ mod tests {
             "/item_categories/drink",
             0.0,
             vec![Trigger {
-                dependency_hrid: "/combat_trigger_dependencies/self".to_string(),
-                condition_hrid: "/combat_trigger_conditions/missing_mp".to_string(),
-                comparator_hrid: "/combat_trigger_comparators/greater_than_equal".to_string(),
+                dependency_hrid: Hrid::TRIGGER_DEP_SELF,
+                condition_hrid: Hrid::TRIGGER_COND_MISSING_MP,
+                comparator_hrid: Hrid::TRIGGER_CMP_GREATER_THAN_EQUAL,
                 value: 50.0,
                 is_single_target: true,
             }],

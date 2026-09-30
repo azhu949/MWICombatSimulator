@@ -15,6 +15,7 @@ pub mod combat_utilities;
 pub mod consumable;
 pub mod equipment;
 pub mod event_queue;
+pub mod hrid;
 pub mod ordered_map;
 pub mod prof;
 pub mod prod_probe;

@@ -26,6 +26,7 @@
 //! 运行路径上的两个入参都是由有限数算出的伤害 / 血量，因此按约定直接映射为 `.min()`。
 
 use crate::ability::AbilityEffect;
+use crate::hrid::Hrid;
 use crate::rng::Mulberry32;
 use crate::unit::{CombatUnit, UnitError};
 
@@ -99,14 +100,14 @@ pub fn process_attack(
 ) -> AttackResult {
     let _prof = crate::prof::start("attack.process");
     // JS：abilityEffect 存在时用效果自带的战斗风格 / 伤害类型；两个字段缺失时均为 undefined。
-    let combat_style: String = match ability_effect {
-        Some(effect) => effect.combat_style().unwrap_or("undefined").to_string(),
-        None => source.combat_details.combat_stats.combat_style_hrid.clone(),
+    let combat_style: Hrid = match ability_effect {
+        Some(effect) => effect.combat_style().unwrap_or(Hrid::UNDEFINED),
+        None => source.combat_details.combat_stats.combat_style_hrid,
     };
     // 同上：伤害类型同样取自技能效果字段。
-    let damage_type: String = match ability_effect {
-        Some(effect) => effect.damage_type().unwrap_or("undefined").to_string(),
-        None => source.combat_details.combat_stats.damage_type.clone(),
+    let damage_type: Hrid = match ability_effect {
+        Some(effect) => effect.damage_type().unwrap_or(Hrid::UNDEFINED),
+        None => source.combat_details.combat_stats.damage_type,
     };
 
     // 移植说明（逐行移植）：JS 的 `let x = 1` 初始值仅存在于抛错路径，合法战斗风格都会覆盖它；
@@ -115,28 +116,28 @@ pub fn process_attack(
     let source_auto_attack_max_damage: f64;
     let target_evasion_rating: f64;
 
-    match combat_style.as_str() {
-        "/combat_styles/stab" => {
+    match combat_style {
+        Hrid::COMBAT_STYLE_STAB => {
             source_accuracy_rating = source.combat_details.stab_accuracy_rating;
             source_auto_attack_max_damage = source.combat_details.stab_max_damage;
             target_evasion_rating = target.combat_details.stab_evasion_rating;
         }
-        "/combat_styles/slash" => {
+        Hrid::COMBAT_STYLE_SLASH => {
             source_accuracy_rating = source.combat_details.slash_accuracy_rating;
             source_auto_attack_max_damage = source.combat_details.slash_max_damage;
             target_evasion_rating = target.combat_details.slash_evasion_rating;
         }
-        "/combat_styles/smash" => {
+        Hrid::COMBAT_STYLE_SMASH => {
             source_accuracy_rating = source.combat_details.smash_accuracy_rating;
             source_auto_attack_max_damage = source.combat_details.smash_max_damage;
             target_evasion_rating = target.combat_details.smash_evasion_rating;
         }
-        "/combat_styles/ranged" => {
+        Hrid::COMBAT_STYLE_RANGED => {
             source_accuracy_rating = source.combat_details.ranged_accuracy_rating;
             source_auto_attack_max_damage = source.combat_details.ranged_max_damage;
             target_evasion_rating = target.combat_details.ranged_evasion_rating;
         }
-        "/combat_styles/magic" => {
+        Hrid::COMBAT_STYLE_MAGIC => {
             source_accuracy_rating = source.combat_details.magic_accuracy_rating;
             source_auto_attack_max_damage = source.combat_details.magic_max_damage;
             target_evasion_rating = target.combat_details.magic_evasion_rating;
@@ -155,8 +156,8 @@ pub fn process_attack(
     let target_penetration: f64;
     let thorn_type: &'static str;
 
-    match damage_type.as_str() {
-        "/damage_types/physical" => {
+    match damage_type {
+        Hrid::DAMAGE_TYPE_PHYSICAL => {
             source_damage_multiplier = 1.0 + source.combat_details.combat_stats.physical_amplify;
             source_resistance = source.combat_details.total_armor;
             source_penetration = source.combat_details.combat_stats.armor_penetration;
@@ -165,7 +166,7 @@ pub fn process_attack(
             target_penetration = target.combat_details.combat_stats.armor_penetration;
             thorn_type = "physicalThorns";
         }
-        "/damage_types/water" => {
+        Hrid::DAMAGE_TYPE_WATER => {
             source_damage_multiplier = 1.0 + source.combat_details.combat_stats.water_amplify;
             source_resistance = source.combat_details.total_water_resistance;
             source_penetration = source.combat_details.combat_stats.water_penetration;
@@ -174,7 +175,7 @@ pub fn process_attack(
             target_penetration = target.combat_details.combat_stats.water_penetration;
             thorn_type = "elementalThorns";
         }
-        "/damage_types/nature" => {
+        Hrid::DAMAGE_TYPE_NATURE => {
             source_damage_multiplier = 1.0 + source.combat_details.combat_stats.nature_amplify;
             source_resistance = source.combat_details.total_nature_resistance;
             source_penetration = source.combat_details.combat_stats.nature_penetration;
@@ -183,7 +184,7 @@ pub fn process_attack(
             target_penetration = target.combat_details.combat_stats.nature_penetration;
             thorn_type = "elementalThorns";
         }
-        "/damage_types/fire" => {
+        Hrid::DAMAGE_TYPE_FIRE => {
             source_damage_multiplier = 1.0 + source.combat_details.combat_stats.fire_amplify;
             source_resistance = source.combat_details.total_fire_resistance;
             source_penetration = source.combat_details.combat_stats.fire_penetration;
@@ -212,7 +213,7 @@ pub fn process_attack(
     let hit_chance = source_accuracy_rating.powf(1.4)
         / (source_accuracy_rating.powf(1.4) + target_evasion_rating.powf(1.4));
 
-    if combat_style == "/combat_styles/ranged" {
+    if combat_style == Hrid::COMBAT_STYLE_RANGED {
         crit_chance = 0.3 * hit_chance;
     }
 
@@ -378,10 +379,10 @@ pub fn process_heal(
     target: &mut CombatUnit,
     rng: &mut Mulberry32,
 ) -> f64 {
-    if ability_effect.combat_style() != Some("/combat_styles/magic") {
+    if ability_effect.combat_style() != Some(Hrid::COMBAT_STYLE_MAGIC) {
         std::panic::panic_any(UnitError::error(format!(
             "Heal ability effect not supported for combat style: {}",
-            ability_effect.combat_style().unwrap_or("undefined")
+            ability_effect.combat_style().unwrap_or(Hrid::UNDEFINED)
         )));
     }
 
@@ -419,10 +420,10 @@ pub fn process_revive(
     target: &mut CombatUnit,
     rng: &mut Mulberry32,
 ) -> f64 {
-    if ability_effect.combat_style() != Some("/combat_styles/magic") {
+    if ability_effect.combat_style() != Some(Hrid::COMBAT_STYLE_MAGIC) {
         std::panic::panic_any(UnitError::error(format!(
             "Heal ability effect not supported for combat style: {}",
-            ability_effect.combat_style().unwrap_or("undefined")
+            ability_effect.combat_style().unwrap_or(Hrid::UNDEFINED)
         )));
     }
 
@@ -479,6 +480,7 @@ pub fn calculate_tick_value(total_value: f64, total_ticks: f64, current_tick: f6
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hrid::intern_hrid;
     use crate::unit::UnitErrorKind;
 
     // 以下期望值（含每次调用后的「下一次抽样」）由真实 JS 实现生成：
@@ -488,8 +490,8 @@ mod tests {
 
     fn base_ability_effect() -> AbilityEffect {
         AbilityEffect {
-            target_type: "/target_types/enemy".to_string(),
-            effect_type: "/ability_effect_types/damage".to_string(),
+            target_type: intern_hrid("/target_types/enemy"),
+            effect_type: intern_hrid("/ability_effect_types/damage"),
             combat_style_hrid: None,
             damage_type: None,
             damage_flat: 0.0,
@@ -728,7 +730,7 @@ mod tests {
 
         // 元素反伤：火伤改用 totalFireResistance / elementalThorns，thornType 同步切换。
         let mut source = smash_attacker();
-        source.combat_details.combat_stats.damage_type = "/damage_types/fire".to_string();
+        source.combat_details.combat_stats.damage_type = intern_hrid("/damage_types/fire");
         source.combat_details.total_fire_resistance = 2.0;
         let mut target = CombatUnit::default();
         target.combat_details.smash_evasion_rating = 20.0;
@@ -845,8 +847,8 @@ mod tests {
         target.combat_details.max_hitpoints = 1000.0;
         target.combat_details.combat_stats.damage_taken = 0.1;
         let effect = AbilityEffect {
-            combat_style_hrid: Some("/combat_styles/magic".to_string()),
-            damage_type: Some("/damage_types/fire".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/magic")),
+            damage_type: Some(intern_hrid("/damage_types/fire")),
             damage_flat: 5.0,
             damage_ratio: 1.5,
             bonus_accuracy_ratio: 0.2,
@@ -890,7 +892,7 @@ mod tests {
         // 未知战斗风格（普攻来源）。
         let error = capture_unit_error(|| {
             let mut source = smash_attacker();
-            source.combat_details.combat_stats.combat_style_hrid = "/combat_styles/bogus".to_string();
+        source.combat_details.combat_stats.combat_style_hrid = intern_hrid("/combat_styles/bogus");
             let mut target = armor_target();
             let mut rng = Mulberry32::new(1);
             process_attack(&mut source, &mut target, None, &mut rng);
@@ -901,7 +903,7 @@ mod tests {
         // 未知伤害类型。
         let error = capture_unit_error(|| {
             let mut source = smash_attacker();
-            source.combat_details.combat_stats.damage_type = "/damage_types/bogus".to_string();
+            source.combat_details.combat_stats.damage_type = intern_hrid("/damage_types/bogus");
             let mut target = armor_target();
             let mut rng = Mulberry32::new(1);
             process_attack(&mut source, &mut target, None, &mut rng);
@@ -919,7 +921,7 @@ mod tests {
         assert_eq!(error.message, "Unknown combat style: undefined");
 
         let missing_damage_type = AbilityEffect {
-            combat_style_hrid: Some("/combat_styles/smash".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/smash")),
             ..base_ability_effect()
         };
         let error = capture_unit_error(|| {
@@ -944,7 +946,7 @@ mod tests {
             unit
         };
         let ability = AbilityEffect {
-            combat_style_hrid: Some("/combat_styles/magic".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/magic")),
             damage_flat: 10.0,
             damage_ratio: 0.5,
             ..base_ability_effect()
@@ -977,7 +979,7 @@ mod tests {
             unit
         };
         let ability = AbilityEffect {
-            combat_style_hrid: Some("/combat_styles/magic".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/magic")),
             damage_flat: 10.0,
             damage_ratio: 0.5,
             ..base_ability_effect()
@@ -1008,7 +1010,7 @@ mod tests {
         let mut target = CombatUnit::default();
 
         let smash_effect = AbilityEffect {
-            combat_style_hrid: Some("/combat_styles/smash".to_string()),
+            combat_style_hrid: Some(intern_hrid("/combat_styles/smash")),
             ..base_ability_effect()
         };
         let error = capture_unit_error(|| {

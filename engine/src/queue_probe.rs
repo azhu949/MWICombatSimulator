@@ -14,6 +14,7 @@
 //! 轨迹形如 `[{"op":"pop","id":1},{"op":"containsTypesAndSource","value":true}]`。
 
 use crate::event_queue::{EventQueue, QueueItem};
+use crate::hrid::Hrid;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -23,51 +24,51 @@ enum QueueOp {
     Push {
         id: u64,
         #[serde(rename = "type")]
-        event_type: String,
+        event_type: Hrid,
         time: f64,
         #[serde(default)]
         source: Option<u64>,
         #[serde(default)]
         target: Option<u64>,
         #[serde(default)]
-        hrid: Option<String>,
+        hrid: Option<Hrid>,
     },
     Pop,
     Peek,
     ContainsType {
         #[serde(rename = "type")]
-        event_type: String,
+        event_type: Hrid,
     },
     ContainsTypeAndHrid {
         #[serde(rename = "type")]
-        event_type: String,
-        hrid: String,
+        event_type: Hrid,
+        hrid: Hrid,
     },
     ContainsTypesAndSource {
-        types: Vec<String>,
+        types: Vec<Hrid>,
         source: u64,
     },
     ClearByType {
         #[serde(rename = "type")]
-        event_type: String,
+        event_type: Hrid,
     },
     ClearEventsForUnit {
         unit: u64,
     },
     GetMatchingByType {
         #[serde(rename = "type")]
-        event_type: String,
+        event_type: Hrid,
     },
     Clear,
 }
 
 struct ProbeEvent {
     id: u64,
-    event_type: String,
+    event_type: Hrid,
     time: f64,
     source: Option<u64>,
     target: Option<u64>,
-    hrid: Option<String>,
+    hrid: Option<Hrid>,
 }
 
 impl QueueItem for ProbeEvent {
@@ -77,8 +78,8 @@ impl QueueItem for ProbeEvent {
     fn id(&self) -> u64 {
         self.id
     }
-    fn event_type(&self) -> &str {
-        &self.event_type
+    fn event_type(&self) -> Hrid {
+        self.event_type
     }
     fn source(&self) -> Option<u64> {
         self.source
@@ -86,8 +87,8 @@ impl QueueItem for ProbeEvent {
     fn target(&self) -> Option<u64> {
         self.target
     }
-    fn hrid(&self) -> Option<&str> {
-        self.hrid.as_deref()
+    fn hrid(&self) -> Option<Hrid> {
+        self.hrid
     }
 }
 
@@ -127,24 +128,23 @@ pub fn run_event_queue_operations(ops_json: &str) -> Result<String, String> {
             QueueOp::ContainsType { event_type } => {
                 trace.push(json!({
                     "op": "containsType",
-                    "value": queue.contains_event_of_type(&event_type),
+                    "value": queue.contains_event_of_type(event_type),
                 }));
             }
             QueueOp::ContainsTypeAndHrid { event_type, hrid } => {
                 trace.push(json!({
                     "op": "containsTypeAndHrid",
-                    "value": queue.contains_event_of_type_and_hrid(&event_type, &hrid),
+                    "value": queue.contains_event_of_type_and_hrid(event_type, hrid),
                 }));
             }
             QueueOp::ContainsTypesAndSource { types, source } => {
-                let type_refs: Vec<&str> = types.iter().map(String::as_str).collect();
                 trace.push(json!({
                     "op": "containsTypesAndSource",
-                    "value": queue.contains_event_of_types_and_source(&type_refs, source),
+                    "value": queue.contains_event_of_types_and_source(&types, source),
                 }));
             }
             QueueOp::ClearByType { event_type } => {
-                queue.clear_events_of_type(&event_type);
+                queue.clear_events_of_type(event_type);
                 // JS 包装方法不返回结果（undefined）；轨迹记录 null 以保持两侧 schema 对齐。
                 trace.push(json!({ "op": "clearByType", "value": null }));
             }

@@ -19,6 +19,7 @@
 //! - 缺失的增益键 / 未命中前缀返回 `undefined`（Rust 用 `TriggerValue::Undefined`），
 //!   `>=` 比较因 NaN 恒假，`is_active` 因 `!!undefined` 恒假。
 
+use crate::hrid::{intern_hrid, with_interner, Hrid};
 use crate::sim_unit::{UnitArena, UnitId};
 use crate::unit::{CombatUnit, UnitError};
 use serde::{Deserialize, Serialize};
@@ -26,9 +27,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trigger {
-    pub dependency_hrid: String,
-    pub condition_hrid: String,
-    pub comparator_hrid: String,
+    pub dependency_hrid: Hrid,
+    pub condition_hrid: Hrid,
+    pub comparator_hrid: Hrid,
     #[serde(default)]
     pub value: f64,
     /// 官方数据 `combatTriggerDependencyDetailMap[dependencyHrid].isSingleTarget`。
@@ -222,14 +223,47 @@ enum BuffConditionLookup {
     Prefix,
 }
 
-fn buff_condition_lookup(condition_hrid: &str) -> Option<BuffConditionLookup> {
-    if EXACT_KEY_BUFF_CONDITIONS.contains(&condition_hrid) {
-        return Some(BuffConditionLookup::ExactKey);
+/// 条件 hrid → (类别, 目标增益键) 的惰性派生表。
+///
+/// 组建键的规则与 JS 完全一致：`/buff_uniques` + `conditionHrid.slice(lastIndexOf('/'))`；
+/// Hrid 逐线程独立，故该表也逐线程构建（首次求值时完成推导与注册，之后零分配）。
+struct BuffConditionTable {
+    exact: Vec<(Hrid, Hrid)>,
+    prefix: Vec<(Hrid, Hrid)>,
+}
+
+impl BuffConditionTable {
+    fn build() -> Self {
+        let derive = |name: &str| intern_hrid(&format!("/buff_uniques{}", unique_hrid_suffix(name)));
+        Self {
+            exact: EXACT_KEY_BUFF_CONDITIONS
+                .iter()
+                .map(|name| (intern_hrid(name), derive(name)))
+                .collect(),
+            prefix: PREFIX_BUFF_CONDITIONS
+                .iter()
+                .map(|name| (intern_hrid(name), derive(name)))
+                .collect(),
+        }
     }
-    if PREFIX_BUFF_CONDITIONS.contains(&condition_hrid) {
-        return Some(BuffConditionLookup::Prefix);
+
+    fn lookup(&self, condition_hrid: Hrid) -> Option<(BuffConditionLookup, Hrid)> {
+        if let Some((_, buff_key)) = self.exact.iter().find(|(condition, _)| *condition == condition_hrid) {
+            return Some((BuffConditionLookup::ExactKey, *buff_key));
+        }
+        if let Some((_, buff_key)) = self.prefix.iter().find(|(condition, _)| *condition == condition_hrid) {
+            return Some((BuffConditionLookup::Prefix, *buff_key));
+        }
+        None
     }
-    None
+}
+
+thread_local! {
+    static BUFF_CONDITION_TABLE: BuffConditionTable = BuffConditionTable::build();
+}
+
+fn buff_condition_lookup(condition_hrid: Hrid) -> Option<(BuffConditionLookup, Hrid)> {
+    BUFF_CONDITION_TABLE.with(|table| table.lookup(condition_hrid))
 }
 
 impl Trigger {
@@ -257,19 +291,15 @@ impl Trigger {
         target: Option<UnitId>,
         current_time: f64,
     ) -> Result<bool, UnitError> {
-        let dependency_value = match self.dependency_hrid.as_str() {
-            "/combat_trigger_dependencies/self" => {
-                self.get_dependency_value(arena.get(source), current_time)?
-            }
-            "/combat_trigger_dependencies/targeted_enemy" => {
-                let Some(target) = target else {
-                    return Ok(false);
-                };
-                self.get_dependency_value(arena.get(target), current_time)?
-            }
-            other => {
-                return Err(UnitError::error(format!("Unknown dependencyHrid in trigger: {other}")));
-            }
+        let dependency_value = if self.dependency_hrid == Hrid::TRIGGER_DEP_SELF {
+            self.get_dependency_value(arena.get(source), current_time)?
+        } else if self.dependency_hrid == Hrid::TRIGGER_DEP_TARGETED_ENEMY {
+            let Some(target) = target else {
+                return Ok(false);
+            };
+            self.get_dependency_value(arena.get(target), current_time)?
+        } else {
+            return Err(UnitError::error(format!("Unknown dependencyHrid in trigger: {}", self.dependency_hrid)));
         };
         self.compare_value(&dependency_value)
     }
@@ -281,54 +311,47 @@ impl Trigger {
         enemies: Option<&[UnitId]>,
         current_time: f64,
     ) -> Result<bool, UnitError> {
-        let dependency: &[UnitId] = match self.dependency_hrid.as_str() {
-            "/combat_trigger_dependencies/all_allies" => friendlies,
-            "/combat_trigger_dependencies/all_enemies" => {
-                let Some(enemies) = enemies else {
-                    return Ok(false);
-                };
-                enemies
-            }
-            other => {
-                return Err(UnitError::error(format!("Unknown dependencyHrid in trigger: {other}")));
-            }
+        let dependency: &[UnitId] = if self.dependency_hrid == Hrid::TRIGGER_DEP_ALL_ALLIES {
+            friendlies
+        } else if self.dependency_hrid == Hrid::TRIGGER_DEP_ALL_ENEMIES {
+            let Some(enemies) = enemies else {
+                return Ok(false);
+            };
+            enemies
+        } else {
+            return Err(UnitError::error(format!("Unknown dependencyHrid in trigger: {}", self.dependency_hrid)));
         };
 
-        let dependency_value = match self.condition_hrid.as_str() {
-            "/combat_trigger_conditions/number_of_active_units" => {
-                let count = dependency.iter().filter(|id| arena.get(**id).combat_details.current_hitpoints > 0.0).count();
-                TriggerValue::Number(count as f64)
-            }
-            "/combat_trigger_conditions/number_of_dead_units" => {
-                let count = dependency.iter().filter(|id| arena.get(**id).combat_details.current_hitpoints <= 0.0).count();
-                TriggerValue::Number(count as f64)
-            }
-            "/combat_trigger_conditions/lowest_hp_percentage" => {
-                // JS reduce 初值 2（200%）：空列表 ⇒ 200。
-                let mut lowest = 2.0_f64;
-                for id in dependency {
-                    let unit = arena.get(*id);
-                    if unit.combat_details.current_hitpoints > 0.0 {
-                        let percentage =
-                            unit.combat_details.current_hitpoints / unit.combat_details.max_hitpoints;
-                        if percentage < lowest {
-                            lowest = percentage;
-                        }
+        let dependency_value = if self.condition_hrid == Hrid::TRIGGER_COND_NUMBER_OF_ACTIVE_UNITS {
+            let count = dependency.iter().filter(|id| arena.get(**id).combat_details.current_hitpoints > 0.0).count();
+            TriggerValue::Number(count as f64)
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_NUMBER_OF_DEAD_UNITS {
+            let count = dependency.iter().filter(|id| arena.get(**id).combat_details.current_hitpoints <= 0.0).count();
+            TriggerValue::Number(count as f64)
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_LOWEST_HP_PERCENTAGE {
+            // JS reduce 初值 2（200%）：空列表 ⇒ 200。
+            let mut lowest = 2.0_f64;
+            for id in dependency {
+                let unit = arena.get(*id);
+                if unit.combat_details.current_hitpoints > 0.0 {
+                    let percentage =
+                        unit.combat_details.current_hitpoints / unit.combat_details.max_hitpoints;
+                    if percentage < lowest {
+                        lowest = percentage;
                     }
                 }
-                TriggerValue::Number(lowest * 100.0)
             }
-            _ => {
-                let mut acc = TriggerValue::Number(0.0);
-                for id in dependency {
-                    let unit = arena.get(*id);
-                    if unit.combat_details.current_hitpoints > 0.0 {
-                        let value = self.get_dependency_value(unit, current_time)?;
-                        acc = acc.add(value);
-                    }
+            TriggerValue::Number(lowest * 100.0)
+        } else {
+            let mut acc = TriggerValue::Number(0.0);
+            for id in dependency {
+                let unit = arena.get(*id);
+                if unit.combat_details.current_hitpoints > 0.0 {
+                    let value = self.get_dependency_value(unit, current_time)?;
+                    acc = acc.add(value);
                 }
-                acc
             }
+            acc
         };
 
         self.compare_value(&dependency_value)
@@ -336,11 +359,10 @@ impl Trigger {
 
     /// 等价 JS `Trigger.getDependencyValue(source, currentTime)`。
     fn get_dependency_value(&self, source: &CombatUnit, current_time: f64) -> Result<TriggerValue, UnitError> {
-        if let Some(kind) = buff_condition_lookup(&self.condition_hrid) {
-            let unique_hrid = format!("/buff_uniques{}", unique_hrid_suffix(&self.condition_hrid));
+        if let Some((kind, buff_key)) = buff_condition_lookup(self.condition_hrid) {
             return Ok(match kind {
                 BuffConditionLookup::ExactKey => {
-                    if source.combat_buffs.contains_key_str(&unique_hrid) {
+                    if source.combat_buffs.contains_key(&buff_key) {
                         TriggerValue::Buff
                     } else {
                         TriggerValue::Undefined
@@ -348,7 +370,10 @@ impl Trigger {
                 }
                 BuffConditionLookup::Prefix => {
                     // Object.keys 顺序 = 插入顺序；命中首个前缀匹配的键即返回其增益对象。
-                    let matched = source.combat_buffs.keys().any(|key| key.starts_with(&unique_hrid));
+                    let matched = with_interner(|interner| {
+                        let prefix = interner.resolve(buff_key);
+                        source.combat_buffs.keys().any(|key| interner.resolve(*key).starts_with(prefix))
+                    });
                     if matched {
                         TriggerValue::Buff
                     } else {
@@ -358,44 +383,41 @@ impl Trigger {
             });
         }
 
-        match self.condition_hrid.as_str() {
-            "/combat_trigger_conditions/current_hp" => {
-                Ok(TriggerValue::Number(source.combat_details.current_hitpoints))
-            }
-            "/combat_trigger_conditions/current_mp" => {
-                Ok(TriggerValue::Number(source.combat_details.current_manapoints))
-            }
-            "/combat_trigger_conditions/missing_hp" => Ok(TriggerValue::Number(
+        if self.condition_hrid == Hrid::TRIGGER_COND_CURRENT_HP {
+            Ok(TriggerValue::Number(source.combat_details.current_hitpoints))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_CURRENT_MP {
+            Ok(TriggerValue::Number(source.combat_details.current_manapoints))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_MISSING_HP {
+            Ok(TriggerValue::Number(
                 source.combat_details.max_hitpoints - source.combat_details.current_hitpoints,
-            )),
-            "/combat_trigger_conditions/missing_mp" => Ok(TriggerValue::Number(
+            ))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_MISSING_MP {
+            Ok(TriggerValue::Number(
                 source.combat_details.max_manapoints - source.combat_details.current_manapoints,
-            )),
-            "/combat_trigger_conditions/stun_status" => Ok(TriggerValue::Boolean(
-                source.is_stunned || source.stun_expire_time == Some(current_time),
-            )),
-            "/combat_trigger_conditions/blind_status" => Ok(TriggerValue::Boolean(
-                source.is_blinded || source.blind_expire_time == Some(current_time),
-            )),
-            "/combat_trigger_conditions/silence_status" => Ok(TriggerValue::Boolean(
-                source.is_silenced || source.silence_expire_time == Some(current_time),
-            )),
-            other => Err(UnitError::error(format!("Unknown conditionHrid in trigger: {other}"))),
+            ))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_STUN_STATUS {
+            Ok(TriggerValue::Boolean(source.is_stunned || source.stun_expire_time == Some(current_time)))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_BLIND_STATUS {
+            Ok(TriggerValue::Boolean(source.is_blinded || source.blind_expire_time == Some(current_time)))
+        } else if self.condition_hrid == Hrid::TRIGGER_COND_SILENCE_STATUS {
+            Ok(TriggerValue::Boolean(source.is_silenced || source.silence_expire_time == Some(current_time)))
+        } else {
+            Err(UnitError::error(format!("Unknown conditionHrid in trigger: {}", self.condition_hrid)))
         }
     }
 
     /// 等价 JS `Trigger.compareValue(dependencyValue)`。
     pub fn compare_value(&self, dependency_value: &TriggerValue) -> Result<bool, UnitError> {
-        match self.comparator_hrid.as_str() {
-            "/combat_trigger_comparators/greater_than_equal" => {
-                Ok(dependency_value.to_number() >= self.value)
-            }
-            "/combat_trigger_comparators/less_than_equal" => {
-                Ok(dependency_value.to_number() <= self.value)
-            }
-            "/combat_trigger_comparators/is_active" => Ok(dependency_value.is_truthy()),
-            "/combat_trigger_comparators/is_inactive" => Ok(!dependency_value.is_truthy()),
-            other => Err(UnitError::error(format!("Unknown comparatorHrid in trigger: {other}"))),
+        if self.comparator_hrid == Hrid::TRIGGER_CMP_GREATER_THAN_EQUAL {
+            Ok(dependency_value.to_number() >= self.value)
+        } else if self.comparator_hrid == Hrid::TRIGGER_CMP_LESS_THAN_EQUAL {
+            Ok(dependency_value.to_number() <= self.value)
+        } else if self.comparator_hrid == Hrid::TRIGGER_CMP_IS_ACTIVE {
+            Ok(dependency_value.is_truthy())
+        } else if self.comparator_hrid == Hrid::TRIGGER_CMP_IS_INACTIVE {
+            Ok(!dependency_value.is_truthy())
+        } else {
+            Err(UnitError::error(format!("Unknown comparatorHrid in trigger: {}", self.comparator_hrid)))
         }
     }
 }
@@ -404,14 +426,15 @@ impl Trigger {
 mod tests {
     use super::*;
     use crate::buff::Buff;
+    use crate::hrid::intern_hrid;
     use crate::ordered_map::OrderedMap;
     use crate::unit::CombatUnit;
 
     fn trigger(dependency: &str, condition: &str, comparator: &str, value: f64, single: bool) -> Trigger {
         Trigger {
-            dependency_hrid: dependency.to_string(),
-            condition_hrid: condition.to_string(),
-            comparator_hrid: comparator.to_string(),
+            dependency_hrid: intern_hrid(dependency),
+            condition_hrid: intern_hrid(condition),
+            comparator_hrid: intern_hrid(comparator),
             value,
             is_single_target: single,
         }
@@ -427,13 +450,13 @@ mod tests {
 
     fn buff(unique_hrid: &str) -> Buff {
         Buff {
-            unique_hrid: unique_hrid.to_string(),
-            type_hrid: "/buff_types/damage".to_string(),
+            unique_hrid: intern_hrid(unique_hrid),
+            type_hrid: intern_hrid("/buff_types/damage"),
             ratio_boost: 0.1,
             flat_boost: 0.0,
             duration: Some(1000.0),
             start_time: Some(0.0),
-            multiplier_for_skill_hrid: String::new(),
+            multiplier_for_skill_hrid: Hrid::EMPTY,
             multiplier_per_skill_level: 0.0,
         }
     }
@@ -525,9 +548,9 @@ mod tests {
     #[test]
     fn buff_conditions_use_exact_and_prefix_lookup_with_insertion_order() {
         let mut unit = CombatUnit::default();
-        let mut buffs: OrderedMap<String, Buff> = OrderedMap::new();
-        buffs.set("/buff_uniques/fury_1".to_string(), buff("/buff_uniques/fury_1"));
-        buffs.set("/buff_uniques/fury".to_string(), buff("/buff_uniques/fury"));
+        let mut buffs: OrderedMap<Hrid, Buff> = OrderedMap::new();
+        buffs.set(intern_hrid("/buff_uniques/fury_1"), buff("/buff_uniques/fury_1"));
+        buffs.set(intern_hrid("/buff_uniques/fury"), buff("/buff_uniques/fury"));
         unit.combat_buffs = buffs;
         let arena = arena_with(vec![unit]);
 
