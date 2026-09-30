@@ -128,18 +128,6 @@ impl<V> OrderedMap<String, V> {
     }
 }
 
-impl OrderedMap<String, f64> {
-    /// `map[key] += delta`（键缺失时插入 `delta`）：单趟查找；键已存在零分配。
-    /// 切片 27：攻击命中计数热路径专用（原实现每次调用都构造新 `String` 并两趟扫描）。
-    pub fn add_value_str(&mut self, key: &str, delta: f64) {
-        if let Some((_, value)) = self.entries.iter_mut().find(|(candidate, _)| candidate.as_str() == key) {
-            *value += delta;
-            return;
-        }
-        self.entries.push((key.to_string(), delta));
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
