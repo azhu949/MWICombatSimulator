@@ -408,8 +408,8 @@ describe('simulatorStore', () => {
 
       expect(simulator.detectedHardwareCoreCount).toBe(16);
       expect(simulator.queueParallelWorkerHardMax).toBe(16);
-      expect(simulator.queueParallelWorkerRecommended).toBe(8);
-      expect(simulator.queueRuntime.parallelWorkerLimit).toBe(8);
+      expect(simulator.queueParallelWorkerRecommended).toBe(12);
+      expect(simulator.queueRuntime.parallelWorkerLimit).toBe(12);
     });
   });
 
@@ -444,7 +444,7 @@ describe('simulatorStore', () => {
       const simulator = useSimulatorStore();
 
       expect(simulator.queueRuntime.parallelWorkerLimit).toBe(3);
-      expect(simulator.queueParallelWorkerRecommended).toBe(8);
+      expect(simulator.queueParallelWorkerRecommended).toBe(12);
     });
   });
 

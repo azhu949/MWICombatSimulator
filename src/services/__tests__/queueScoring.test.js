@@ -553,7 +553,9 @@ describe('queueScoring 并行默认自适应（§55）', () => {
     expect(resolveAdaptiveParallelWorkerDefault(6, 8)).toBe(5);
     expect(resolveAdaptiveParallelWorkerDefault(8, 8)).toBe(7);
     expect(resolveAdaptiveParallelWorkerDefault(9, 8)).toBe(8);
-    expect(resolveAdaptiveParallelWorkerDefault(16, 8)).toBe(8);
+    expect(resolveAdaptiveParallelWorkerDefault(12, 8)).toBe(11);
+    expect(resolveAdaptiveParallelWorkerDefault(13, 8)).toBe(12);
+    expect(resolveAdaptiveParallelWorkerDefault(16, 8)).toBe(12);
     expect(resolveAdaptiveParallelWorkerDefault(64, 8)).toBe(QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP);
   });
 
@@ -582,9 +584,9 @@ describe('queueScoring 并行默认自适应（§55）', () => {
     };
 
     expect(withNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => getRecommendedParallelWorkerLimit())).toBe(
-      8,
+      12,
     );
-    expect(withNavigator({ hardwareConcurrency: 16 }, () => getRecommendedParallelWorkerLimit())).toBe(8);
+    expect(withNavigator({ hardwareConcurrency: 16 }, () => getRecommendedParallelWorkerLimit())).toBe(12);
     expect(withNavigator({ hardwareConcurrency: 16, deviceMemory: 2 }, () => getRecommendedParallelWorkerLimit())).toBe(
       2,
     );

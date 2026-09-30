@@ -23,9 +23,12 @@ export const QUEUE_WEIGHT_SUM_EPSILON = 1e-6;
 // 上下文的存储 / 测试路径）继续沿用 4；读得到机型的机器由 resolveAdaptiveParallelWorkerDefault
 // 给出自适应推荐（见下方「机型探测与自适应推荐」段）。
 export const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
-// 自适应推荐的绝对上限（不随核数无限放大）：每多一个工人就多一份引擎 realm 的内存（引擎 chunk +
-// 游戏数据），桌面端还要给用户其它工作留余量；用户仍可在设置页手动调到核数（保存校验只拦 > 核数）。
-export const QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP = 8;
+// 自适应推荐的绝对上限（不随核数无限放大）：每多一个工人就多一份引擎 realm 的内存
+// （引擎 chunk + 游戏数据），桌面端还要给用户其它工作留余量；用户仍可在设置页手动调到
+// 核数（保存校验只拦 > 核数）。2026-10-01 从 8 提到 12：引擎切片 24-32 后单 worker 内存
+// 压力已下降，12 档让 13+ 核机器的重度负载（step10 全目录 / 多轮优化）墙钟再降 ~1/4；
+// 内存护栏（deviceMemory ≤2GB→2、≤4GB→4）继续兜底低配机器。
+export const QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP = 12;
 export const QUEUE_MULTI_ROUND_METRIC_KEYS = ['dps', 'dailyNoRngProfit', 'xpPerHour', 'killsPerHour'];
 export const QUEUE_BASELINE_METRIC_KEYS = [
   'encountersPerHour',
