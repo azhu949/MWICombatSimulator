@@ -1,4 +1,18 @@
 {
+  "2026年10月1日（v3.0.1）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.1）",
+      "en": "October 1, 2026 (v3.0.1)"
+    },
+    "improvements": {
+      "zh": [
+        "首次点击「开始模拟」不再卡顿：页面加载完成后会在后台空闲时自动预热模拟引擎，点击后立即全速开始模拟，首次点击与后续点击一样快。"
+      ],
+      "en": [
+        "The first \"Start Simulation\" click no longer stalls: the simulation engine is prewarmed in the background while the page is idle, so the first click starts at full speed just like every later one."
+      ]
+    }
+  },
   "2026年10月1日（v3.0.0）": {
     "label": {
       "zh": "2026年10月1日（v3.0.0）",

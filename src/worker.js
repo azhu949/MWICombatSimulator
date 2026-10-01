@@ -68,6 +68,13 @@ self.onmessage = async function (event) {
     return;
   }
   switch (event.data.type) {
+    // 空闲预热握手（enginePrewarm.js）：能处理到这条消息说明 worker bundle 已下载
+    // 并执行完毕（冷启动资源已进 HTTP 缓存）；立即回 pong 让主线程 terminate 本 realm。
+    // 不做任何模拟，与 start_simulation 完全隔离。
+    case 'prewarm_ping': {
+      this.postMessage({ type: 'prewarm_pong' });
+      break;
+    }
     case 'start_simulation': {
       let extra = event.data.extra || {};
       let extraBuffs = buildSimulationExtraBuffs(extra);
