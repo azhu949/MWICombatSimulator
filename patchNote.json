@@ -1,4 +1,20 @@
 {
+  "2026年10月1日（v3.0.5）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.5）",
+      "en": "October 1, 2026 (v3.0.5)"
+    },
+    "bugFixes": {
+      "zh": [
+        "修复副本内玩家阵亡后限时增益不再到期、导致相关技能中途停摆的问题。",
+        "修复副本完成复活后，残留的眩晕/致盲/沉默效果一直不解除、角色无法施法的问题。"
+      ],
+      "en": [
+        "Fixed timed buffs no longer expiring after a player died in a dungeon, which could stall related skills for the rest of the run.",
+        "Fixed control effects (stun, blind, silence) staying on characters revived by the dungeon-completion full restore, preventing them from casting."
+      ]
+    }
+  },
   "2026年10月1日（v3.0.4）": {
     "label": {
       "zh": "2026年10月1日（v3.0.4）",

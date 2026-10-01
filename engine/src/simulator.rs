@@ -1537,6 +1537,35 @@ impl CombatSimulator {
         self.queue.clear_events_for_unit(id as u64);
     }
 
+    /// 死亡点专用清场（修复：副本内玩家死亡不复活 + 副本完成回满不清 buff 的路径下，
+    /// 时限增益的过期事件被一并清掉会让 buff 永久滞留——`self/<buff> is_inactive` 类
+    /// 触发器恒假（技能永久停摆），卡住的增益还会持续计入面板）。
+    /// 与 `clear_events_for_unit` 的区别：**保留死者自身的增益/减益过期事件**
+    /// （checkBuffExpiration / curse / weaken / fury——到期只做 buff 移除与面板重算的
+    /// 记账类事件，不重排攻击），其余事件照旧清除。`promote` 的置换清场仍用全清版本。
+    fn clear_events_for_unit_on_death(&mut self, id: UnitId) {
+        let unit = id as u64;
+        self.queue.clear_matching(|event| {
+            let source_hit = event.source() == Some(unit);
+            let target_hit = event.target() == Some(unit);
+            if !(source_hit || target_hit) {
+                return false;
+            }
+            if source_hit
+                && matches!(
+                    event.event_type(),
+                    Hrid::EVENT_CHECK_BUFF_EXPIRATION
+                        | Hrid::EVENT_CURSE_EXPIRATION
+                        | Hrid::EVENT_WEAKEN_EXPIRATION
+                        | Hrid::EVENT_FURY_EXPIRATION
+                )
+            {
+                return false;
+            }
+            true
+        });
+    }
+
     /// 切片 26：尽力清掉引用该槽位的队列事件（`clear_matching` 单趟 retain，**不会 panic**）。
     /// 返回是否有事件被清除——槽位入池/移除前的防御性清场（死亡点已清，此处兜底）。
     fn try_clear_events_for_unit(&mut self, id: UnitId) -> bool {
@@ -2740,11 +2769,19 @@ impl CombatSimulator {
     }
 
     /// JS `startNewEncounter`：副本完成数刷新时把全队 HP/MP 回满（不消耗随机数、不触发行程）。
+    /// 修复：回满即全队复活——对**回满前处于死亡状态**的玩家顺带清掉残留 CC。这类玩家的
+    /// CC 过期事件在死亡清场时已丢失，若不清除，复活后会永久卡在眩晕/致盲/沉默状态
+    /// （只普攻不施法），直到下一次团灭重开的 `reset` 才恢复。存活玩家不动（其 CC 事件仍在
+    /// 队列中，按自然时间到期）。
     fn restore_players_to_full(&mut self) {
         for player in self.players.clone() {
             let unit = self.arena.get_mut(player);
+            let was_dead = unit.combat_details.current_hitpoints <= 0.0;
             unit.combat_details.current_hitpoints = unit.combat_details.max_hitpoints;
             unit.combat_details.current_manapoints = unit.combat_details.max_manapoints;
+            if was_dead {
+                unit.clear_ccs();
+            }
         }
     }
 
@@ -3321,7 +3358,7 @@ impl CombatSimulator {
             }
 
             if self.arena.get(target).combat_details.current_hitpoints == 0.0 {
-                self.clear_events_for_unit(target);
+                self.clear_events_for_unit_on_death(target);
                 self.record_unit_death(target);
                 if !self.arena.get(target).is_player {
                     let time = self.simulation_time;
@@ -3333,7 +3370,7 @@ impl CombatSimulator {
             if self.arena.get(current_source).combat_details.current_hitpoints == 0.0
                 && (attack_result.thorn_damage_done != 0.0 || attack_result.retaliation_damage_done != 0.0)
             {
-                self.clear_events_for_unit(current_source);
+                self.clear_events_for_unit_on_death(current_source);
                 self.record_unit_death(current_source);
                 if !self.arena.get(current_source).is_player {
                     let time = self.simulation_time;
@@ -3727,7 +3764,7 @@ impl CombatSimulator {
         }
 
         if self.arena.get(target).combat_details.current_hitpoints == 0.0 {
-            self.clear_events_for_unit(target);
+            self.clear_events_for_unit_on_death(target);
             self.record_unit_death(target);
             if !self.arena.get(target).is_player {
                 let time = self.simulation_time;
@@ -4343,7 +4380,7 @@ impl CombatSimulator {
         self.add_next_attack_event(current_source)?;
 
         if self.arena.get(current_source).combat_details.current_hitpoints == 0.0 {
-            self.clear_events_for_unit(current_source);
+            self.clear_events_for_unit_on_death(current_source);
             self.record_unit_death(current_source);
             if !self.arena.get(current_source).is_player {
                 let hrid = self.unit_hrid(current_source);
@@ -4590,7 +4627,7 @@ impl CombatSimulator {
                 }
 
                 if self.arena.get(temp_target).combat_details.current_hitpoints == 0.0 {
-                    self.clear_events_for_unit(temp_target);
+                    self.clear_events_for_unit_on_death(temp_target);
                     self.record_unit_death(temp_target);
                     if !self.arena.get(temp_target).is_player {
                         let time = self.simulation_time;
@@ -4603,7 +4640,7 @@ impl CombatSimulator {
                 if self.arena.get(temp_source).combat_details.current_hitpoints == 0.0
                     && (attack_result.thorn_damage_done != 0.0 || attack_result.retaliation_damage_done != 0.0)
                 {
-                    self.clear_events_for_unit(temp_source);
+                    self.clear_events_for_unit_on_death(temp_source);
                     self.record_unit_death(temp_source);
                     if !self.arena.get(temp_source).is_player {
                         let time = self.simulation_time;
@@ -4865,7 +4902,7 @@ impl CombatSimulator {
                 }
 
                 if self.arena.get(target).combat_details.current_hitpoints == 0.0 {
-                    self.clear_events_for_unit(target);
+                    self.clear_events_for_unit_on_death(target);
                     self.record_unit_death(target);
                     if !self.arena.get(target).is_player {
                         let time = self.simulation_time;
@@ -5800,6 +5837,20 @@ mod tests {
         (options, player)
     }
 
+    /// 引导辅助：按 (time, seq) 全序从队列自然弹出首个满足 `matcher` 的事件。
+    /// 期间弹出的其它事件一律丢弃（不处理）——引导阶段产生的旁支事件不该影响受测状态。
+    fn pop_event_where(
+        simulator: &mut CombatSimulator,
+        mut matcher: impl FnMut(&SimEvent) -> bool,
+    ) -> Option<SimEvent> {
+        while let Some(event) = simulator.queue.get_next_event() {
+            if matcher(&event) {
+                return Some(event);
+            }
+        }
+        None
+    }
+
     #[test]
     fn dungeon_waves_advance_and_finalize_summary() {
         let (options, player) = dungeon_production_options();
@@ -5909,6 +5960,282 @@ mod tests {
         );
         assert!(!simulator.all_players_dead);
         assert!(simulator.enemies.is_some(), "重开后重新开波");
+    }
+
+    /// 修复回归：副本内玩家死亡不复活，但死者身上的时限增益必须照常到期——死亡清场
+    /// （`clear_events_for_unit_on_death`）只保留死者自身的 4 类失效类事件
+    /// （checkBuffExpiration / curse / weaken / fury），其余引用该死者的队列事件照旧清除。
+    /// 若被一并清掉，`self/<buff> is_inactive` 触发器恒假（技能永久停摆）且卡住的增益
+    /// 持续计入面板。后半段从队列自然弹出到期事件走 `process_event`（端到端链路）。
+    #[test]
+    fn player_death_preserves_own_buff_expiration_events() {
+        let (options, player) = dungeon_production_options();
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+
+        simulator.reset();
+        let id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::CombatStart { time: 0.0, id });
+        let event = simulator.queue.get_next_event().expect("combat start queued");
+        simulator.process_event(event).expect("combat start processes");
+
+        let player_id = simulator.players[0];
+        // 给玩家挂一个 20s 时限增益，并按其施放语义排入过期事件（source = 玩家自身）。
+        let buff = RawBuffInput {
+            unique_hrid: Some(intern_hrid("/buff_uniques/frenzy")),
+            type_hrid: Some(intern_hrid("/buff_types/attack_speed")),
+            ratio_boost: Some(0.24),
+            flat_boost: Some(0.0),
+            duration: Some(20.0 * ONE_SECOND),
+            ..Default::default()
+        };
+        simulator
+            .arena
+            .get_mut(player_id)
+            .add_buff(&buff, simulator.simulation_time, None, Some("replace"))
+            .expect("buff registers");
+        let buff_hrid = intern_hrid("/buff_uniques/frenzy");
+        simulator
+            .schedule_buff_expiration_event(player_id, &crate::buff::Buff {
+                unique_hrid: buff_hrid,
+                type_hrid: intern_hrid("/buff_types/attack_speed"),
+                ratio_boost: 0.24,
+                flat_boost: 0.0,
+                duration: Some(20.0 * ONE_SECOND),
+                start_time: Some(simulator.simulation_time),
+                multiplier_for_skill_hrid: Hrid::EMPTY,
+                multiplier_per_skill_level: 0.0,
+            }, Hrid::DEFAULT)
+            .expect("expiration scheduled");
+        assert!(
+            simulator
+                .queue
+                .get_matching(|event| event.event_type() == Hrid::EVENT_CHECK_BUFF_EXPIRATION
+                    && event.source() == Some(player_id as u64))
+                .is_some(),
+            "排程后过期事件在队列中"
+        );
+
+        // 保留集合的另外 3 类（curse / weaken / fury）与 buff 过期同属不重排攻击的记账类
+        // 事件，构造方式对齐生产构造点（apply_curse_expiration / apply_weaken / apply_fury）。
+        let probe_time = simulator.simulation_time + 2.0 * ONE_SECOND;
+        let curse_id = simulator.take_event_id();
+        simulator
+            .queue
+            .add_event(SimEvent::curse_expiration(probe_time, curse_id, 0.0, player_id));
+        let weaken_id = simulator.take_event_id();
+        simulator
+            .queue
+            .add_event(SimEvent::weaken_expiration(probe_time, weaken_id, 0.0, player_id));
+        let fury_id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::FuryExpiration {
+            time: probe_time,
+            id: fury_id,
+            source: player_id,
+            fury_amount: 1.0,
+        });
+
+        // 清除补集：其余 source/target 命中该死者的队列事件——DoT（target=死者）、
+        // CC 过期（source=死者）与 AwaitCooldown（source=死者）——必须照旧清除。
+        let enemy_id = simulator.enemies.as_ref().expect("开波后应有敌人")[0];
+        let mut cleared_probe: Vec<(&str, SimEvent)> = Vec::new();
+        let dot_id = simulator.take_event_id();
+        cleared_probe.push((
+            "damageOverTime(target=死者)",
+            SimEvent::DamageOverTime {
+                time: probe_time,
+                id: dot_id,
+                source_ref: enemy_id,
+                target: player_id,
+                damage: 10.0,
+                total_ticks: 3.0,
+                current_tick: 1.0,
+                combat_style_hrid: Some(Hrid::COMBAT_STYLE_MAGIC),
+            },
+        ));
+        let stun_id = simulator.take_event_id();
+        cleared_probe.push((
+            "stunExpiration",
+            SimEvent::StunExpiration { time: probe_time, id: stun_id, source: player_id },
+        ));
+        let blind_id = simulator.take_event_id();
+        cleared_probe.push((
+            "blindExpiration",
+            SimEvent::BlindExpiration { time: probe_time, id: blind_id, source: player_id },
+        ));
+        let silence_id = simulator.take_event_id();
+        cleared_probe.push((
+            "silenceExpiration",
+            SimEvent::SilenceExpiration { time: probe_time, id: silence_id, source: player_id },
+        ));
+        let cooldown_id = simulator.take_event_id();
+        cleared_probe.push((
+            "awaitCooldown",
+            SimEvent::AwaitCooldown { time: probe_time, id: cooldown_id, source: player_id },
+        ));
+        for (_, probe) in &cleared_probe {
+            simulator.queue.add_event(probe.clone());
+        }
+
+        // 杀死该玩家（等价受击致死路径的死亡清场）。
+        simulator.arena.get_mut(player_id).combat_details.current_hitpoints = 0.0;
+        simulator.clear_events_for_unit_on_death(player_id);
+
+        // 死者的 4 类过期事件必须保留（修复点）。
+        for (label, event_type) in [
+            ("checkBuffExpiration", Hrid::EVENT_CHECK_BUFF_EXPIRATION),
+            ("curseExpiration", Hrid::EVENT_CURSE_EXPIRATION),
+            ("weakenExpiration", Hrid::EVENT_WEAKEN_EXPIRATION),
+            ("furyExpiration", Hrid::EVENT_FURY_EXPIRATION),
+        ] {
+            assert!(
+                simulator
+                    .queue
+                    .get_matching(|event| event.event_type() == event_type
+                        && event.source() == Some(player_id as u64))
+                    .is_some(),
+                "死亡清场必须保留死者自身的 {label} 过期事件（否则 buff 永久滞留）"
+            );
+        }
+        for (label, probe) in &cleared_probe {
+            assert!(
+                simulator.queue.get_matching(|event| event.id() == probe.id()).is_none(),
+                "死亡清场必须清除 {label} 事件（保留集合之外照旧清除）"
+            );
+        }
+
+        // 战斗类事件照旧被清掉（例如引用了该死者的 AutoAttack）；二次清场不影响保留集合。
+        let id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::AutoAttack {
+            time: simulator.simulation_time + ONE_SECOND,
+            id,
+            source: player_id,
+        });
+        simulator.clear_events_for_unit_on_death(player_id);
+        assert!(
+            simulator
+                .queue
+                .get_matching(|event| event.event_type() == Hrid::EVENT_AUTO_ATTACK
+                    && event.source() == Some(player_id as u64))
+                .is_none(),
+            "战斗类事件照旧被死亡清场清除"
+        );
+        assert!(
+            simulator
+                .queue
+                .get_matching(|event| event.event_type() == Hrid::EVENT_CHECK_BUFF_EXPIRATION
+                    && event.source() == Some(player_id as u64))
+                .is_some(),
+            "二次清场后 buff 过期事件仍在队列中"
+        );
+
+        // 端到端：不再手工改时间 + 直接调用处理函数——把到期事件从队列自然弹出（(time, seq) 全序）
+        // 后交给 `process_event`（覆盖队列弹出与尾部 check_triggers）；更早的引导事件
+        // （RegenTick / EnrageTick / 敌人 AutoAttack 等）丢弃不处理，避免改变受测状态。
+        let expiration = pop_event_where(&mut simulator, |event| {
+            event.event_type() == Hrid::EVENT_CHECK_BUFF_EXPIRATION
+                && event.source() == Some(player_id as u64)
+                && event.buff_unique_hrid() == Some(buff_hrid)
+        })
+        .expect("死亡清场保留的到期事件必须能从队列自然弹出");
+        assert_eq!(expiration.time(), 20.0 * ONE_SECOND, "到期时间 = 挂接时刻 + buff 持续时间");
+        simulator.process_event(expiration).expect("expiration event processes");
+        assert_eq!(simulator.simulation_time, 20.0 * ONE_SECOND, "事件时间同步进模拟时钟");
+        assert!(
+            !simulator.arena.get(player_id).combat_buffs.contains_key(&buff_hrid),
+            "到期后过期 buff 必须被移除（修复前因事件被清而永久滞留）"
+        );
+    }
+
+    /// 修复回归：副本完成回满时，仍处于死亡状态的玩家清空 CC（复活语义），
+    /// 存活玩家的 CC 不受影响（其过期事件仍在队列中按自然时间到期）。
+    /// 经 `start_new_encounter` 的副本完成分支真实驱动（`dungeons_completed` 增长 →
+    /// `restore_players_to_full`）：玩家 1 全程死亡，玩家 2 陪跑清完 3 波。
+    #[test]
+    fn restore_players_to_full_clears_cc_only_for_revived_players() {
+        let (options, player) = dungeon_production_options();
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        // 第二个玩家：玩家 1 死亡后由它完成清波（副本内死亡不复活）。
+        let mut second = player.clone();
+        second.hrid = "player2".to_string();
+        simulator.add_player(&second).expect("second player builds");
+
+        simulator.reset();
+        let id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::CombatStart { time: 0.0, id });
+        let event = simulator.queue.get_next_event().expect("combat start queued");
+        simulator.process_event(event).expect("combat start processes");
+        assert!(simulator.enemies.is_some(), "开波后应有敌人");
+        assert_eq!(simulator.temp_dungeon_count, 0.0, "尚未完成任何副本");
+
+        let dead_player = simulator.players[0];
+        let alive_player = simulator.players[1];
+        // 玩家 1 死亡并带上 CC：副本内不复活，直到下一轮副本开波回满才复活。
+        simulator.arena.get_mut(dead_player).combat_details.current_hitpoints = 0.0;
+        simulator.arena.get_mut(dead_player).is_stunned = true;
+        simulator.arena.get_mut(alive_player).is_stunned = true;
+
+        // 逐波清怪推进（副本共 3 波）：手动打死本波 → `check_encounter_end` 结算清波并排
+        // EnemyRespawn → 从队列自然弹出该事件交给 `process_event`（`start_new_encounter`
+        // 开下一波）。第 3 波清完后的那次开波即下一轮副本，命中 dungeons_completed 完成分支。
+        for wave in 1..=3 {
+            let enemies = simulator.enemies.clone().expect("开波后应有敌人");
+            for enemy in enemies {
+                simulator.arena.get_mut(enemy).combat_details.current_hitpoints = 0.0;
+            }
+            assert!(
+                simulator.check_encounter_end().expect("check succeeds"),
+                "第 {wave} 波全灭必须结束当前遭遇战"
+            );
+            assert!(simulator.enemies.is_none(), "清波后 enemies 失效");
+            if wave == 3 {
+                // 回满前一瞬的状态锚点：死者仍死亡、双方 CC 未被其它路径清掉、死者无挂起攻击。
+                assert_eq!(simulator.arena.get(dead_player).combat_details.current_hitpoints, 0.0);
+                assert!(simulator.arena.get(dead_player).is_stunned);
+                assert!(simulator.arena.get(alive_player).is_stunned);
+                assert!(
+                    !simulator
+                        .queue
+                        .contains_event_of_types_and_source(&ATTACK_EVENT_TYPES, dead_player as u64),
+                    "回满前死者不在攻击排程中"
+                );
+            }
+            let respawn = pop_event_where(&mut simulator, |event| event.event_type() == Hrid::EVENT_ENEMY_RESPAWN)
+                .expect("清波必须排程 EnemyRespawn");
+            simulator.process_event(respawn).expect("EnemyRespawn processes");
+        }
+
+        // 完成分支真的走到了：dungeons_completed 增长并记账（回满由此触发）。
+        assert_eq!(
+            simulator.zone.as_ref().expect("zone").dungeons_completed(),
+            1.0,
+            "清空 3 波即完成一个副本"
+        );
+        assert_eq!(simulator.temp_dungeon_count, 1.0, "完成分支已记账");
+        assert_eq!(simulator.players, vec![dead_player, alive_player], "玩家槽位在副本推进期间保持稳定");
+
+        assert!(!simulator.arena.get(dead_player).is_stunned, "死亡玩家回满即复活：CC 清除");
+        assert!(simulator.arena.get(alive_player).is_stunned, "存活玩家的 CC 不受回满影响");
+        assert_eq!(
+            simulator.arena.get(dead_player).combat_details.current_hitpoints,
+            simulator.arena.get(dead_player).combat_details.max_hitpoints,
+            "死亡玩家回满即复活：HP 回满"
+        );
+        assert_eq!(
+            simulator.arena.get(alive_player).combat_details.current_hitpoints,
+            simulator.arena.get(alive_player).combat_details.max_hitpoints,
+            "存活玩家同样回满"
+        );
+        // 回满后攻击事件恢复：死者复活（HP > 0）后重新进入 start_attacks 排程。
+        assert!(
+            simulator
+                .queue
+                .get_matching(|event| event.event_type() == Hrid::EVENT_AUTO_ATTACK
+                    && event.source() == Some(dead_player as u64))
+                .is_some(),
+            "回满即复活：死者必须重新进入攻击排程"
+        );
     }
 
     /// 切片 19：副本 + full-result + logCombatEvents 不再被拒绝——团灭日志由引擎生成
