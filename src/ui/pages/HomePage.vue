@@ -45,7 +45,7 @@
     />
 
     <div :class="['grid gap-4', activeWorkspaceTab !== 'results' ? 'xl:grid-cols-[minmax(0,1fr)_340px]' : '']">
-      <div class="space-y-4">
+      <div class="min-w-0 space-y-4">
         <div class="grid gap-4 xl:grid-cols-12">
           <div
             v-if="activeWorkspaceTab === 'base'"

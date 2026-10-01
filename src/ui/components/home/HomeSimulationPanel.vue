@@ -284,6 +284,21 @@
           max="72"
         />
       </label>
+      <label v-if="simulator.simulationSettings.runScope === 'single'" class="block">
+        <span class="control-label"
+          >{{ t('common:vue.home.simulationRounds', 'Rounds')
+          }}<span class="ml-1 text-xs font-normal text-muted-foreground">{{
+            t('common:vue.home.simulationRoundsHint', '(Multiple rounds with different seeds for robust statistics.)')
+          }}</span></span
+        >
+        <input
+          v-model.number="simulator.simulationSettings.simulationRounds"
+          class="control-input"
+          type="number"
+          min="1"
+          max="100"
+        />
+      </label>
       <div class="flex flex-wrap items-end gap-2">
         <label class="status-chip min-h-9 flex items-center justify-center gap-2 text-sm">
           <input
@@ -626,6 +641,7 @@ function simulationUiSettingsKey(
     simulator.simulationSettings.comDropEnabled,
     simulator.simulationSettings.comDrop,
     simulator.simulationSettings.combatScrollsEnabled,
+    simulator.simulationSettings.simulationRounds,
   ],
 ) {
   return JSON.stringify(values);
@@ -662,6 +678,7 @@ watch(
     simulator.simulationSettings.comDropEnabled,
     simulator.simulationSettings.comDrop,
     simulator.simulationSettings.combatScrollsEnabled,
+    simulator.simulationSettings.simulationRounds,
   ],
   scheduleSimulationUiSettingsPersist,
 );

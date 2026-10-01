@@ -1,4 +1,30 @@
 {
+  "2026年10月1日（v3.0.4）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.4）",
+      "en": "October 1, 2026 (v3.0.4)"
+    },
+    "newFeatures": {
+      "zh": [
+        "首页「单目标模拟」新增「重复次数」设置（默认 1，最多 100），可按不同随机种子多轮模拟并合并结果，结论更稳定。",
+        "模拟结果新增「多轮统计」面板，汇总各轮中位数、稳健值与 95% 区间，并可展开逐轮明细；轮数大于 1 时，结果详情与时序图会标注数据取自哪一轮。"
+      ],
+      "en": [
+        "Home single-target simulations gain a Rounds setting (default 1, up to 100); merging results from multiple seeded rounds makes conclusions more stable.",
+        "Results gain a Multi-round Statistics panel with medians, robust means, and 95% intervals across rounds, plus expandable per-round details; with more than one round, result details and the timeline note which round they come from."
+      ]
+    },
+    "improvements": {
+      "zh": ["结果页大数值改为 k/m/b 缩写显示，与首页摘要口径统一；团灭事件日志的伤害与血量保持完整数值。"],
+      "en": [
+        "Large numbers on the results page now use k/m/b abbreviations, consistent with the home summary; wipe event log damage and HP stay fully expanded."
+      ]
+    },
+    "bugFixes": {
+      "zh": ["修复模拟出错时错误提示可能只显示 {} 的问题，现显示具体错误信息。"],
+      "en": ["Fixed simulation error messages sometimes showing only {}; the actual error is now shown."]
+    }
+  },
   "2026年10月1日（v3.0.3）": {
     "label": {
       "zh": "2026年10月1日（v3.0.3）",

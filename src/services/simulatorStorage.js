@@ -39,6 +39,7 @@ import {
   normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
 import { normalizeTriggerOptimizerSettings } from './triggerOptimizerDomain.js';
+import { clampSimulationRounds, HOME_MULTI_ROUND_DEFAULT_ROUNDS } from './homeMultiRoundSimulation.js';
 
 const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
@@ -184,6 +185,10 @@ export function normalizeSimulationUiSettings(rawSettings) {
     // 落盘触发点在 store 层（setLabyrinthUpgrade 与导入合并点），此处只定义归一化形状。
     // labyrinthCrates 有意不持久化：与 mode/zoneHrid/difficultyTier 等同为会话级运行输入。
     labyrinthUpgrades: normalizeLabyrinthShopUpgrades(source.labyrinthUpgrades),
+    // 首页多轮模拟的重复次数：随 UI 设置持久化（刷新后保留上次选择，2026-10-01 从
+    // 「会话级运行输入」转入白名单）。归一化复用 homeMultiRoundSimulation.clampSimulationRounds
+    // 的 [1,100]/默认 1 口径（存储层与读取端共用同一入口，勿在此另写常量）。
+    simulationRounds: clampSimulationRounds(source.simulationRounds),
   };
 }
 
@@ -195,6 +200,7 @@ export function loadSimulationUiSettingsFromStorage() {
     comDropEnabled: true,
     combatScrollsEnabled: false,
     enableHpMpVisualization: true,
+    simulationRounds: HOME_MULTI_ROUND_DEFAULT_ROUNDS,
     ...stored,
   });
 }

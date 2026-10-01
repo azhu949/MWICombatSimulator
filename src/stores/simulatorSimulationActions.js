@@ -14,17 +14,48 @@ import {
   summarizeResult,
 } from '../services/simulationDomain.js';
 import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
+import {
+  HOME_MULTI_ROUND_SEED_BASE,
+  aggregateMultiRoundRows,
+  buildMultiRoundPayloads,
+  clampSimulationRounds,
+} from '../services/homeMultiRoundSimulation.js';
+import { deriveSeedSet } from '../services/seededRandom.js';
 import { normalizeParallelWorkerLimit } from '../services/queueScoring.js';
 import { createProfitPricingOptions, persistSimulationUiSettingsToStorage } from '../services/simulatorStorage.js';
 import {
   cancelSharedWorkerRun,
+  DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
+  hasHomeMultiRoundWorkerRunInProgress,
   hasSharedWorkerRunInProgress,
+  isWorkerRunCancelledError,
   runSharedSingleSimulationPayload,
+  runSimulationBatchWithDedicatedWorker,
   runSingleSimulationPayloadWithDedicatedWorker,
+  stopHomeMultiRoundWorkerRuns,
   stopQueueWorkerClients,
   stopTriggerOptimizerWorkerRuns,
 } from '../services/simulatorWorkerRuns.js';
 import { clamp, toFiniteNumber } from '../services/utils.js';
+
+// 运行期失败上报的 error 可能是 worker 结构化克隆传回的 Error 实例（worker.js 的
+// simulation_error 直接携带 new Error(...)）：JSON.stringify(Error) 输出 '{}'（message
+// 是不可枚举属性），全局错误弹窗会只剩花括号。与 queue 路径的 formatQueueErrorMessage
+// 同款口径：字符串原样、Error 取 message、其余序列化兜底。
+function formatSimulationRunError(error, fallback = 'Simulation failed.') {
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+  if (error?.message) {
+    return String(error.message);
+  }
+  try {
+    const serialized = JSON.stringify(error);
+    return serialized && serialized !== 'null' ? serialized : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export function createSimulationActions({ loadPlayerMapperModule, workerClient }) {
   return {
@@ -46,6 +77,11 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
     },
     runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
       return runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress, options);
+    },
+    // 批量入口（一个 realm 跑完全部 payload）：首页多轮模拟使用；测试可覆盖此 action
+    // 注入 WorkerClientCtor 桩（与 runSingleSimulationPayload* 的既有覆盖先例一致）。
+    runSimulationBatchPayloads(payloads, onProgress = () => {}, options = {}) {
+      return runSimulationBatchWithDedicatedWorker(payloads, onProgress, options);
     },
     setSimulationMode(mode) {
       this.simulationSettings.mode = mode === 'labyrinth' ? 'labyrinth' : 'zone';
@@ -174,6 +210,8 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       this.results.batchRows = [];
       this.results.batchResultType = '';
       this.results.timeSeriesData = null;
+      // 首页多轮聚合随新运行开始整体失效（单轮/批量路径不写该字段，保持 null 即可）。
+      this.results.multiRound = null;
       this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
     },
     stopSimulation() {
@@ -192,6 +230,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       workerClient.stopSimulation();
       stopQueueWorkerClients();
       stopTriggerOptimizerWorkerRuns();
+      stopHomeMultiRoundWorkerRuns();
       if (manualRunInProgress) {
         this.runtime.isRunning = false;
         this.runtime.progress = 0;
@@ -229,6 +268,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
 
       if (
         hasSharedWorkerRunInProgress() ||
+        hasHomeMultiRoundWorkerRunInProgress() ||
         this.foodOptimizer?.runtime.isRunning ||
         this.triggerOptimizer?.runtime.isRunning
       ) {
@@ -284,6 +324,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       // 在上面的 await 之后重新检查：共享运行可能在此期间已经开始。
       if (
         hasSharedWorkerRunInProgress() ||
+        hasHomeMultiRoundWorkerRunInProgress() ||
         this.foodOptimizer?.runtime.isRunning ||
         this.triggerOptimizer?.runtime.isRunning
       ) {
@@ -308,24 +349,137 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
 
       const onError = (error) => {
         this.runtime.isRunning = false;
-        this.runtime.error = typeof error === 'string' ? error : JSON.stringify(error);
+        this.runtime.error = formatSimulationRunError(error);
       };
 
       if (runScope === RUN_SCOPE_SINGLE) {
-        workerClient.startSimulation(this.buildSingleSimulationPayload(playersToSim), {
-          onProgress,
-          onResult: (simResult) => {
+        const rounds = clampSimulationRounds(this.simulationSettings.simulationRounds);
+
+        // 红线：rounds <= 1 完全保持既有单轮语义（共享 worker、不传 seed、单场随机流）。
+        if (rounds <= 1) {
+          workerClient.startSimulation(this.buildSingleSimulationPayload(playersToSim), {
+            onProgress,
+            onResult: (simResult) => {
+              this.runtime.progress = 1;
+              this.runtime.isRunning = false;
+              this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+              this.results.simResult = simResult;
+              this.results.timeSeriesData = simResult?.timeSeriesData ?? this.results.timeSeriesData;
+              this.results.summaryRows = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions);
+              this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
+              this.runtime.completionNoticeId += 1;
+            },
+            onError,
+          });
+
+          return;
+        }
+
+        // 多轮（2..100）：克隆单轮 payload、逐轮注入确定性种子，一个专用 realm 跑完全部
+        // 轮次（runSimulationBatchWithDedicatedWorker 批量入口，省掉逐轮新建 realm 的固定
+        // 开销）；完成后写第 1 个成功轮的明细 + 全部成功轮的稳健聚合（口径对齐队列多轮）。
+        // 失败轮从聚合中剔除并计入 failedCount；全部失败走 onError 同款错误通道。
+        const seeds = deriveSeedSet(HOME_MULTI_ROUND_SEED_BASE, rounds);
+        // 多轮逐轮关闭战斗事件日志（worker 侧默认开启）：wasm 引擎在副本 full-result 下会
+        // 生成 wipeEvents 团灭日志，体积可达无日志结果的 10 倍以上（golden 夹具 1.16MB vs
+        // 104KB），而整批完整 simResult 会同时驻留主线程直到聚合完成，100 轮存在内存峰值
+        // 风险。聚合与利润指标（summarizeResult / estimateNoRngProfit）只读数值字段，不依赖
+        // 事件流；同 seed 下关日志不改变任何数值（golden 对账锁定）。需要团灭日志做逐事件
+        // 分析时跑单轮（rounds <= 1 路径保持默认开启）。
+        const basePayload = this.buildSingleSimulationPayload(playersToSim);
+        basePayload.logCombatEvents = false;
+        const batchPayloads = buildMultiRoundPayloads(basePayload, rounds, HOME_MULTI_ROUND_SEED_BASE);
+        let settledRounds = 0;
+
+        const batchOnProgress = (data) => {
+          // 运行中的流式时序（当前轮局部数据）：保留与单轮路径一致的实时曲线行为；
+          // 结算后由第 1 个成功轮的完整时序覆盖（若有）。
+          if (data?.timeSeriesData) {
+            this.results.timeSeriesData = data.timeSeriesData;
+          }
+          const fraction = clamp(Number(data?.progress || 0), 0, 1);
+          onProgress({ progress: clamp((settledRounds + fraction) / rounds, 0, 1) });
+        };
+
+        this.runSimulationBatchPayloads(batchPayloads, batchOnProgress, {
+          scope: DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
+          // 每完成一轮（成功或失败）推进整体进度：批运行上一条结算后才发下一条。
+          onItemSettled: () => {
+            settledRounds += 1;
+            onProgress({ progress: clamp(settledRounds / rounds, 0, 1) });
+          },
+        })
+          .then((batch) => {
+            const simResults = Array.isArray(batch?.simResults) ? batch.simResults : [];
+            const errors = Array.isArray(batch?.errors) ? batch.errors : [];
+            const successfulIndexes = [];
+            for (let index = 0; index < batchPayloads.length; index += 1) {
+              if (simResults[index] && !errors[index]) {
+                successfulIndexes.push(index);
+              }
+            }
+
+            if (successfulIndexes.length === 0) {
+              onError(errors.find((entry) => entry) || 'All simulation rounds failed.');
+              return;
+            }
+
+            const successfulIndexSet = new Set(successfulIndexes);
+            const firstSuccessfulIndex = successfulIndexes[0];
+            const perRoundRows = successfulIndexes.map((index) =>
+              summarizeResult(simResults[index], selectedPlayersSnapshot, pricingOptions),
+            );
+            const { aggregatedRows, playerStats } = aggregateMultiRoundRows(
+              perRoundRows,
+              successfulIndexes.map((index) => index + 1),
+            );
+
             this.runtime.progress = 1;
             this.runtime.isRunning = false;
             this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-            this.results.simResult = simResult;
-            this.results.timeSeriesData = simResult?.timeSeriesData ?? this.results.timeSeriesData;
-            this.results.summaryRows = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions);
+            this.results.simResult = simResults[firstSuccessfulIndex];
+            this.results.timeSeriesData =
+              simResults[firstSuccessfulIndex]?.timeSeriesData ?? this.results.timeSeriesData;
+            this.results.summaryRows = aggregatedRows;
+            this.results.multiRound = {
+              // clamp 后的实际轮数 + 固定基种子：相同输入配置 + 相同轮数复现同一组种子。
+              rounds,
+              // 首个成功轮的 1-based 轮号：上方明细/时序取自该轮，首轮失败时会大于 1，
+              // 页面「基于第 N 轮」标注必须读这里，不能写死 1。
+              firstSuccessfulRound: firstSuccessfulIndex + 1,
+              seedBase: HOME_MULTI_ROUND_SEED_BASE,
+              seeds: [...seeds],
+              successCount: successfulIndexes.length,
+              failedCount: batchPayloads.length - successfulIndexes.length,
+              // 逐轮执行明细（1-based 轮号、该轮种子、失败状态与原因）。
+              perRound: batchPayloads.map((payload, index) => ({
+                round: index + 1,
+                seed: payload.seed,
+                failed: !successfulIndexSet.has(index),
+                error: errors[index] ? String(errors[index]) : '',
+              })),
+              // 每玩家每指标统计：values / rounds（1-based 原始轮号）为成功轮逐轮序列，
+              // 其余字段为 summarizeSeries 的 12 项稳健统计。
+              perPlayer: playerStats,
+              // 聚合行来源自证：results.summaryRows 由成功轮的 summarizeResult 行经
+              // summarizeSeries 稳健融合（robustMean）得到，口径与队列多轮排名一致。
+              aggregation: {
+                metricSource: 'summarizeSeries.robustMean',
+                summaryRowSource: 'perRoundSummaries',
+                successRounds: successfulIndexes.length,
+              },
+            };
             this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
             this.runtime.completionNoticeId += 1;
-          },
-          onError,
-        });
+          })
+          .catch((error) => {
+            if (isWorkerRunCancelledError(error)) {
+              // 用户点「停止」：stopSimulation 已复位运行时状态；这里只保证失败路径不挂起。
+              this.runtime.isRunning = false;
+              return;
+            }
+            onError(error);
+          });
 
         return;
       }

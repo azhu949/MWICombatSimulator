@@ -1039,6 +1039,8 @@
         "target": "Target"
       },
       "simulationHours": "Simulation Hours",
+      "simulationRounds": "Rounds",
+      "simulationRoundsHint": "(Multiple rounds with different seeds for robust statistics.)",
       "labyrinthShopUpgrades": {
         "label": "Labyrinth Shop Upgrades (Permanent Buffs · Labyrinth Only)",
         "damage": "Damage",
@@ -1258,7 +1260,22 @@
       "breakdownAmount": "Amount",
       "breakdownUnitPrice": "Unit Price",
       "breakdownTotal": "Total",
-      "breakdownTrimHint": "Showing first entries only."
+      "breakdownTrimHint": "Showing first entries only.",
+      "multiRound": {
+        "title": "Multi-round Statistics",
+        "roundsLabel": "Rounds",
+        "seedBaseLabel": "Base Seed",
+        "failedCount": "{{count}} rounds failed (excluded from statistics)",
+        "median": "Median",
+        "robustMean": "Robust Mean",
+        "mean": "Mean",
+        "interval": "95% Interval",
+        "confidence": "Confidence",
+        "perRoundTitle": "Per-round Details",
+        "seedColumn": "Seed",
+        "firstRoundNote": "The timeline and result details are based on round {{round}} of {{rounds}}",
+        "wipeEventsNotRecorded": "Multi-round runs do not capture combat event logs; run a single round to replay combat events."
+      }
     },
     "settings": {
       "openMigrationNote": "Open Migration Note",

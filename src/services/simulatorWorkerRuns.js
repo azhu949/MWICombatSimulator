@@ -5,6 +5,8 @@ export const DEDICATED_WORKER_SCOPE_ADVISOR = 'advisor';
 export const DEDICATED_WORKER_SCOPE_EXPERIMENTAL = 'experimental';
 // 技能触发器优化器：每个候选评估各起一个专用 worker（设计 §3.2/§4.1）。
 export const DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER = 'trigger-optimizer';
+// 首页单目标「多轮模拟」：全部播种轮次收进一个专用 realm（批量入口）跑完，由 store 聚合。
+export const DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND = 'home-multi-round';
 
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
@@ -59,6 +61,22 @@ export function stopAdvisorWorkerRuns() {
 // 运行，在途任务以 code:'cancelled' 拒绝，搜索层据此收尾而非上报失败。
 export function stopTriggerOptimizerWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER);
+}
+
+// 用户点「停止」时由 store 调用：取消首页多轮模拟的专用批运行（整批以 code:'cancelled' 拒绝）。
+export function stopHomeMultiRoundWorkerRuns() {
+  cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND);
+}
+
+// 首页多轮批运行是否在途：startSimulation 的防重入检查使用——批运行不在共享运行句柄里，
+// 若不加这一项，多轮运行期间再点「开始」会并发启动第二个批运行。
+export function hasHomeMultiRoundWorkerRunInProgress() {
+  for (const workerRunHandle of dedicatedWorkerRuns) {
+    if (workerRunHandle.scope === DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function unregisterSharedWorkerRun(workerRunHandle) {
@@ -211,6 +229,21 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
     };
     registerDedicatedWorkerRun(workerRunHandle);
 
+    // 「单条已结算」可选回调：每条 payload 出结果/失败/中止时按 index 恰好触发一次
+    // （中止换 realm 续跑的形态下，在飞的那条先记为失败）。纯增量——既有调用方不传
+    // 就是零行为；回调抛错与 onProgress 同款处理（拒绝整批）。
+    const notifyItemSettled = (itemIndex, error) => {
+      const callback = options?.onItemSettled;
+      if (typeof callback !== 'function') {
+        return;
+      }
+      try {
+        callback(itemIndex, error);
+      } catch (callbackError) {
+        settle(reject, callbackError);
+      }
+    };
+
     const startRealmBatch = () => {
       if (settled) {
         return;
@@ -235,10 +268,12 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
         onResult: (simResult, offset) => {
           simResults[base + offset] = simResult;
           nextIndex = base + offset + 1;
+          notifyItemSettled(base + offset, null);
         },
         onError: (error, offset) => {
           errors[base + offset] = error;
           nextIndex = base + offset + 1;
+          notifyItemSettled(base + offset, error);
         },
         onAbort: (error, offset) => {
           // realm 级崩溃：在飞的那一条记失败，换一个新 realm 从下一条继续（见上方说明）。
@@ -248,6 +283,7 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
           const failedIndex = base + Math.max(0, Number(offset) || 0);
           errors[failedIndex] = error;
           nextIndex = failedIndex + 1;
+          notifyItemSettled(failedIndex, error);
 
           try {
             activeClient.stopSimulation();

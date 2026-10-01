@@ -290,6 +290,30 @@ describe('common locale resources', () => {
     expect(zhCommon?.vue?.queue?.upgradeCostComposition).toContain('升级成本');
   });
 
+  it('keeps the multi-round first-round note interpolating the real first successful round', () => {
+    // 首轮失败时明细来自第 2+ 个成功轮：两种语言的 firstRoundNote 都必须带 {{round}} 插值
+    // （store 的 firstSuccessfulRound 提供），否则页面会退回写死的「第 1 轮」误导解读。
+    // 该键同时用于时序图与结果详情标注，两处文案必须覆盖「timeline / result details」。
+    expect(enCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('{{round}}');
+    expect(enCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('{{rounds}}');
+    expect(zhCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('{{round}}');
+    expect(zhCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('{{rounds}}');
+    expect(enCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('result details');
+    expect(zhCommon?.vue?.results?.multiRound?.firstRoundNote).toContain('结果详情');
+  });
+
+  it('keeps the multi-round wipe-events empty note synchronized across locales', () => {
+    // 多轮运行逐轮关闭战斗事件日志（内存权衡）：Wipe 空态必须说明真实原因（未采集），
+    // 不能沿用单轮的「未检测到团灭事件」——两种语言都必须存在该说明键，且键集对齐。
+    expect(Object.keys(enCommon?.vue?.results?.multiRound || {}).sort()).toEqual(
+      Object.keys(zhCommon?.vue?.results?.multiRound || {}).sort(),
+    );
+    expect(enCommon?.vue?.results?.multiRound?.wipeEventsNotRecorded).toContain('combat event logs');
+    expect(enCommon?.vue?.results?.multiRound?.wipeEventsNotRecorded).toContain('single round');
+    expect(zhCommon?.vue?.results?.multiRound?.wipeEventsNotRecorded).toContain('战斗事件日志');
+    expect(zhCommon?.vue?.results?.multiRound?.wipeEventsNotRecorded).toContain('1 轮');
+  });
+
   it('keeps every t() fallback string in English across the UI source', () => {
     // t(key, fallback) 的 fallback 是键完全缺失时的最终兜底文案：与 fallbackLng: 'en'
     // 同口径统一为英文，避免中文兜底漏进英文界面（controls.cancel 双语言包缺键时，

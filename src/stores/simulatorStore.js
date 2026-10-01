@@ -180,7 +180,8 @@ function getLabyrinthOptions() {
  * @property {string} activePlayerId
  * @property {Object} simulationSettings
  * @property {{ isRunning: boolean, progress: number, error: string, startedAt: number, elapsedSeconds: number, workerMode: "single" | "multi" }} runtime
- * @property {{ simResult: any, simResults: Array<any>, summaryRows: Array<any>, batchRows: Array<any>, batchResultType: string, activeResultPlayerHrid: string, timeSeriesData: any }} results
+ * @property {{ simResult: any, simResults: Array<any>, summaryRows: Array<any>, batchRows: Array<any>, batchResultType: string, activeResultPlayerHrid: string, timeSeriesData: any, multiRound: any }} results
+ * @property {any} results.multiRound 首页多轮模拟的聚合与逐轮数据，运行后由多轮执行链路填充（未运行时为 null）
  */
 export const useSimulatorStore = defineStore('simulator', {
   state: () => {
@@ -224,6 +225,11 @@ export const useSimulatorStore = defineStore('simulator', {
         labyrinthHrid: labyrinths[0]?.hrid ?? '',
         roomLevel: LABYRINTH_ROOM_LEVEL_DEFAULT,
         simulationTimeHours: 24,
+        // 首页多轮模拟的重复次数（默认 1，有效范围 [1,100] 整数）：随 UI 设置持久化
+        // （mwi.simulation.ui.v1 白名单字段，刷新后保留上次选择；归一化走
+        // homeMultiRoundSimulation.clampSimulationRounds）；store 不做 clamp，
+        // 非法值由读取端（多轮执行链路）兜底。
+        simulationRounds: simulationUiSettings.simulationRounds,
         mooPass: simulationUiSettings.mooPass,
         combatScrollsEnabled: simulationUiSettings.combatScrollsEnabled,
         comExpEnabled: simulationUiSettings.comExpEnabled,
@@ -253,6 +259,8 @@ export const useSimulatorStore = defineStore('simulator', {
         batchResultType: '',
         activeResultPlayerHrid: 'player1',
         timeSeriesData: null,
+        // 首页多轮模拟的聚合与逐轮数据：运行后由多轮执行链路填充，未运行时为 null。
+        multiRound: null,
       },
       // advisor 仅恢复持久化配置（goalPreset/customWeights/ironcowWeights/filters），
       // 不恢复结果行（quickRows/refinedRows/topCards）与扫描运行时状态（scanned*/

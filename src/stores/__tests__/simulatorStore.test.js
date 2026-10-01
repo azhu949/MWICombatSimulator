@@ -13,6 +13,13 @@ import {
   createMainSiteShareProfileFixture,
 } from '../../services/__tests__/fixtures/mainSiteShareProfileFixture.js';
 import workerClient from '../../services/workerClient.js';
+import {
+  cancelDedicatedWorkerRuns,
+  runSimulationBatchWithDedicatedWorker,
+} from '../../services/simulatorWorkerRuns.js';
+import { HOME_MULTI_ROUND_SEED_BASE } from '../../services/homeMultiRoundSimulation.js';
+import { deriveSeedSet } from '../../services/seededRandom.js';
+import { summarizeSeries } from '../../services/robustStats.js';
 import marketHistoryService from '../../services/marketHistoryService.js';
 import {
   ASSET_SCORE_SOURCES,
@@ -2764,6 +2771,274 @@ describe('simulatorStore', () => {
       }),
       expect.any(Object),
     );
+  });
+
+  describe('home multi-round simulation', () => {
+    class HomeBatchWorkerClient {
+      static instances = [];
+
+      constructor() {
+        this.payloads = null;
+        this.batchHandlers = null;
+        this.stopSimulation = vi.fn();
+        HomeBatchWorkerClient.instances.push(this);
+      }
+
+      startSimulationBatch(payloads, handlers = {}) {
+        this.payloads = Array.isArray(payloads) ? payloads : [];
+        this.batchHandlers = handlers;
+      }
+
+      emitBatchResult(simResult, index) {
+        this.batchHandlers?.onResult?.(simResult, index);
+      }
+
+      emitBatchError(error, index) {
+        this.batchHandlers?.onError?.(error, index);
+      }
+
+      emitBatchComplete() {
+        this.batchHandlers?.onComplete?.();
+      }
+    }
+
+    // 覆盖 store 的批入口 action，走真实批量链路并注入 WorkerClientCtor 桩。
+    function buildBatchRunner() {
+      return vi.fn((payloads, onProgress, options) =>
+        runSimulationBatchWithDedicatedWorker(payloads, onProgress, {
+          ...options,
+          WorkerClientCtor: HomeBatchWorkerClient,
+        }),
+      );
+    }
+
+    afterEach(() => {
+      HomeBatchWorkerClient.instances = [];
+      cancelDedicatedWorkerRuns();
+    });
+
+    it('rounds = 1 保持共享单轮路径：批入口不被调用、payload 不带 seed', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 1;
+      const startSpy = vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+      const batchSpy = vi.fn();
+      simulator.runSimulationBatchPayloads = batchSpy;
+
+      await simulator.startSimulation();
+
+      expect(batchSpy).not.toHaveBeenCalled();
+      expect(startSpy).toHaveBeenCalledTimes(1);
+      const [payload] = startSpy.mock.calls[0];
+      expect(payload).toMatchObject({ type: 'start_simulation' });
+      expect(payload.seed).toBeUndefined();
+      // 单轮保持历史语义：不设置 logCombatEvents（worker 侧默认开启，团灭日志可用）。
+      expect(payload.logCombatEvents).toBeUndefined();
+    });
+
+    it('rounds = 1 单轮失败且 error 为 Error 实例：runtime.error 取 message 而非 "{}"', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 1;
+      let capturedHandlers = null;
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation((_payload, handlers) => {
+        capturedHandlers = handlers;
+      });
+
+      await simulator.startSimulation();
+      expect(capturedHandlers).not.toBeNull();
+
+      // 生产链路：worker.js 的 simulation_error 携带 new Error(...)，经结构化克隆
+      // 到达主线程仍是 Error 实例。JSON.stringify(Error) === '{}'，必须取 message。
+      capturedHandlers.onError(new Error('WASM combat engine unavailable (engine-missing)'));
+
+      expect(simulator.runtime.error).toBe('WASM combat engine unavailable (engine-missing)');
+      expect(simulator.runtime.error).not.toBe('{}');
+      expect(simulator.runtime.isRunning).toBe(false);
+    });
+
+    it('rounds = 3：一个 realm 跑 3 份 seeded payload，失败轮剔除后写聚合结果', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.activePlayer.levels.stamina = 10;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      const startSpy = vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      const client = HomeBatchWorkerClient.instances[0];
+      expect(simulator.runSimulationBatchPayloads).toHaveBeenCalledTimes(1);
+      expect(client.payloads).toHaveLength(3);
+      expect(client.payloads.map((payload) => payload.seed)).toEqual(deriveSeedSet(HOME_MULTI_ROUND_SEED_BASE, 3));
+      expect(client.payloads.every((payload) => payload.type === 'start_simulation')).toBe(true);
+      // 多轮逐轮关闭战斗事件日志：聚合只读数值字段，关日志不改变数值（golden 锁定），
+      // 却能把副本 full-result 的 wipeEvents 膨胀（>10x）挡在批驻留之外。
+      expect(client.payloads.every((payload) => payload.logCombatEvents === false)).toBe(true);
+      expect(startSpy).not.toHaveBeenCalled();
+
+      const first = createQueueSimulationResult({ staminaXp: 1000, encounters: 100 });
+      const second = createQueueSimulationResult({ staminaXp: 2000, encounters: 200 });
+      client.emitBatchResult(first, 0);
+      expect(simulator.runtime.progress).toBeCloseTo(1 / 3, 10);
+      client.emitBatchResult(second, 1);
+      expect(simulator.runtime.progress).toBeCloseTo(2 / 3, 10);
+      client.emitBatchError('round exploded', 2);
+      expect(simulator.runtime.progress).toBe(1);
+
+      client.emitBatchComplete();
+      await waitForCondition(() => simulator.results.multiRound !== null, 5000);
+
+      expect(simulator.runtime.isRunning).toBe(false);
+      // Pinia 会把写入的 simResult 变成响应式代理，引用比较用 toEqual + 值锚定。
+      expect(simulator.results.simResult).toEqual(first);
+      expect(simulator.results.simResult.encounters).toBe(100);
+      expect(simulator.results.multiRound.rounds).toBe(3);
+      expect(simulator.results.multiRound.firstSuccessfulRound).toBe(1);
+      expect(simulator.results.multiRound.seedBase).toBe(HOME_MULTI_ROUND_SEED_BASE);
+      expect(simulator.results.multiRound.seeds).toEqual(deriveSeedSet(HOME_MULTI_ROUND_SEED_BASE, 3));
+      expect(simulator.results.multiRound.successCount).toBe(2);
+      expect(simulator.results.multiRound.failedCount).toBe(1);
+      expect(simulator.results.multiRound.perRound).toHaveLength(3);
+      expect(simulator.results.multiRound.perRound[2]).toMatchObject({ round: 3, failed: true });
+      expect(simulator.results.multiRound.perRound[2].error).toContain('round exploded');
+      expect(simulator.results.multiRound.aggregation.metricSource).toBe('summarizeSeries.robustMean');
+
+      const summaryRow = simulator.results.summaryRows[0];
+      expect(summaryRow.playerHrid).toBe('player1');
+      expect(summaryRow.staminaXpPerHour).toBe(summarizeSeries([1000, 2000]).robustMean);
+      expect(summaryRow.encountersPerHour).toBe(summarizeSeries([100, 200]).robustMean);
+
+      const playerStats = simulator.results.multiRound.perPlayer[0];
+      expect(playerStats.playerHrid).toBe('player1');
+      expect(playerStats.metrics.staminaXpPerHour.values).toEqual([1000, 2000]);
+      expect(playerStats.metrics.staminaXpPerHour.rounds).toEqual([1, 2]);
+      expect(simulator.runtime.completionNoticeId).toBe(1);
+    });
+
+    it('rounds = 3 首轮失败：明细与 firstSuccessfulRound 指向第 2 个成功轮', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.activePlayer.levels.stamina = 10;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      const client = HomeBatchWorkerClient.instances[0];
+      // 首轮失败：明细/时序必须落到轮 2，页面「基于第 N 轮」标注读 firstSuccessfulRound。
+      client.emitBatchError('round exploded', 0);
+      const second = createQueueSimulationResult({ staminaXp: 2000, encounters: 200 });
+      const third = createQueueSimulationResult({ staminaXp: 3000, encounters: 300 });
+      client.emitBatchResult(second, 1);
+      client.emitBatchResult(third, 2);
+      client.emitBatchComplete();
+
+      await waitForCondition(() => simulator.results.multiRound !== null, 5000);
+
+      expect(simulator.results.simResult).toEqual(second);
+      expect(simulator.results.simResult.encounters).toBe(200);
+      expect(simulator.results.multiRound.rounds).toBe(3);
+      expect(simulator.results.multiRound.firstSuccessfulRound).toBe(2);
+      expect(simulator.results.multiRound.successCount).toBe(2);
+      expect(simulator.results.multiRound.failedCount).toBe(1);
+      expect(simulator.results.multiRound.perRound[0]).toMatchObject({ round: 1, failed: true });
+      expect(simulator.results.multiRound.perRound[0].error).toContain('round exploded');
+      const playerStats = simulator.results.multiRound.perPlayer[0];
+      expect(playerStats.metrics.encountersPerHour.values).toEqual([200, 300]);
+      expect(playerStats.metrics.encountersPerHour.rounds).toEqual([2, 3]);
+    });
+
+    it('三轮全部失败：走错误通道、不写聚合也不写明细', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      const client = HomeBatchWorkerClient.instances[0];
+      client.emitBatchError('boom-a', 0);
+      client.emitBatchError('boom-b', 1);
+      client.emitBatchError('boom-c', 2);
+      client.emitBatchComplete();
+
+      await waitForCondition(() => simulator.runtime.error === 'boom-a', 5000);
+
+      expect(simulator.runtime.isRunning).toBe(false);
+      expect(simulator.results.multiRound).toBeNull();
+      expect(simulator.results.summaryRows).toEqual([]);
+      expect(simulator.results.simResult).toBeNull();
+    });
+
+    it('三轮全部失败且 error 为 Error 实例：runtime.error 取 message 而非 "{}"', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      // 生产链路：worker.js 的 simulation_error 携带 new Error(...)，结构化克隆后
+      // 主线程收到 Error 实例（typeof object）。JSON.stringify(Error) === '{}'。
+      const client = HomeBatchWorkerClient.instances[0];
+      client.emitBatchError(new Error('WASM combat engine unavailable (engine-missing)'), 0);
+      client.emitBatchError(new Error('round 2 also failed'), 1);
+      client.emitBatchError(new Error('round 3 also failed'), 2);
+      client.emitBatchComplete();
+
+      await waitForCondition(() => simulator.runtime.error !== '', 5000);
+
+      expect(simulator.runtime.error).toBe('WASM combat engine unavailable (engine-missing)');
+      expect(simulator.runtime.error).not.toBe('{}');
+      expect(simulator.runtime.isRunning).toBe(false);
+      expect(simulator.results.multiRound).toBeNull();
+    });
+
+    it('停止按钮取消整批：批运行被取消收尾、无错误写入', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      const client = HomeBatchWorkerClient.instances[0];
+      simulator.stopSimulation();
+      await waitForCondition(() => client.stopSimulation.mock.calls.length > 0, 5000);
+
+      expect(simulator.runtime.isRunning).toBe(false);
+      expect(simulator.runtime.error).toBe('');
+      expect(simulator.results.multiRound).toBeNull();
+    });
+
+    it('多轮运行期间再次开始被并发锁拦截', async () => {
+      const simulator = useSimulatorStore();
+
+      simulator.simulationSettings.simulationRounds = 3;
+      simulator.runSimulationBatchPayloads = buildBatchRunner();
+      vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+
+      await simulator.startSimulation();
+      await waitForCondition(() => HomeBatchWorkerClient.instances.length === 1, 10000);
+
+      await simulator.startSimulation();
+
+      expect(simulator.runtime.error).toBe('common:simulation.errorAnotherRunInProgress');
+      expect(HomeBatchWorkerClient.instances).toHaveLength(1);
+      expect(simulator.runSimulationBatchPayloads).toHaveBeenCalledTimes(1);
+
+      simulator.stopSimulation();
+    });
   });
 
   it('accepts tea crates as active labyrinth crate options', () => {
@@ -7067,6 +7342,38 @@ describe('simulatorStore', () => {
       // toRaw 穿透代理后比较；action 返回值未经包装，可直接 toBe。
       expect(toRaw(simulator.options.equipmentBySlot.head)).toBe(equipmentOptionsBySlot.head);
       expect(simulator.getEquipmentComboboxOptions('head')).toBe(equipmentOptionsBySlot.head);
+    });
+  });
+
+  describe('simulationRounds multi-round settings', () => {
+    it('registers the default rounds and the empty multiRound result slot', () => {
+      const simulator = useSimulatorStore();
+
+      expect(simulator.simulationSettings.simulationRounds).toBe(1);
+      expect(simulator.results.multiRound).toBeNull();
+    });
+
+    it('stores integer rounds across the [1,100] range used by the Home control', () => {
+      const simulator = useSimulatorStore();
+
+      // store 不做 clamp（非法值由读取端兜底；与 simulationTimeHours 同口径）；
+      // 合法范围内（控件 min=1 / max=100）赋值原样保留。
+      simulator.simulationSettings.simulationRounds = 1;
+      expect(simulator.simulationSettings.simulationRounds).toBe(1);
+      simulator.simulationSettings.simulationRounds = 100;
+      expect(simulator.simulationSettings.simulationRounds).toBe(100);
+    });
+
+    it('restores persisted rounds across store restart (S2)', () => {
+      const simulator = useSimulatorStore();
+      simulator.simulationSettings.simulationRounds = 12;
+      simulator.persistSimulationUiSettings();
+      expect(JSON.parse(global.localStorage.getItem(SIMULATION_UI_STORAGE_KEY)).simulationRounds).toBe(12);
+
+      // 重启：新 pinia（新 store 实例），重复次数从 mwi.simulation.ui.v1 恢复而非回落默认 1。
+      setActivePinia(createPinia());
+      const restarted = useSimulatorStore();
+      expect(restarted.simulationSettings.simulationRounds).toBe(12);
     });
   });
 });

@@ -90,6 +90,18 @@ describe('HomeSimulationPanel UI settings persistence', () => {
     await vi.advanceTimersByTimeAsync(250);
     expect(persist).toHaveBeenCalledOnce();
   });
+
+  it('persists the multi-round count through the same trailing write', async () => {
+    const simulator = useSimulatorStore();
+    const wrapper = mountPanel();
+
+    await simulationRoundsInput(wrapper).setValue('12');
+    expect(simulator.simulationSettings.simulationRounds).toBe(12);
+
+    await vi.advanceTimersByTimeAsync(250);
+    expect(JSON.parse(localStorage.getItem('mwi.simulation.ui.v1'))).toMatchObject({ simulationRounds: 12 });
+    wrapper.unmount();
+  });
 });
 
 function pricingSelectByAriaLabel(wrapper, label) {
@@ -149,6 +161,39 @@ describe('HomeSimulationPanel pricing controls (migrated from SettingsPage, two 
     await nextTick();
     expect(pricingSelectByAriaLabel(wrapper, 'Non-tradable Valuation (Cowbells/Capes)').props('disabled')).toBe(false);
     expect(pricingSelectByAriaLabel(wrapper, 'Revenue Tax').props('disabled')).toBe(false);
+    wrapper.unmount();
+  });
+});
+
+function simulationRoundsInput(wrapper) {
+  return wrapper.findAll('input[type="number"]').find((input) => input.attributes('max') === '100');
+}
+
+describe('HomeSimulationPanel multi-round control', () => {
+  it('renders the rounds input in single scope and binds it to the store', async () => {
+    const simulator = useSimulatorStore();
+    const wrapper = mountPanel();
+
+    const input = simulationRoundsInput(wrapper);
+    expect(input).toBeTruthy();
+    expect(input.attributes('min')).toBe('1');
+    expect(input.element.value).toBe('1');
+    expect(wrapper.text()).toContain('(Multiple rounds with different seeds for robust statistics.)');
+
+    await input.setValue('12');
+    expect(simulator.simulationSettings.simulationRounds).toBe(12);
+
+    wrapper.unmount();
+  });
+
+  it('hides the rounds input for batch run scopes', async () => {
+    const simulator = useSimulatorStore();
+    const wrapper = mountPanel();
+
+    simulator.setRunScope('all_group_zones');
+    await nextTick();
+
+    expect(simulationRoundsInput(wrapper)).toBeUndefined();
     wrapper.unmount();
   });
 });

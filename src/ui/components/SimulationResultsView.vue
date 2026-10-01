@@ -130,10 +130,21 @@
         </Table>
       </div>
 
+      <HomeMultiRoundPanel
+        v-if="simulator.results.multiRound && simulator.results.multiRound.rounds >= 2"
+        :multi-round="simulator.results.multiRound"
+      />
+
       <div class="surface-panel">
         <h2 class="mb-3 font-heading text-lg font-semibold text-primary">
           {{ t('common:vue.results.detailsTitle', 'Result Details') }}
         </h2>
+        <p
+          v-if="simulator.results.multiRound && simulator.results.multiRound.rounds >= 2"
+          class="mb-3 text-xs text-muted-foreground"
+        >
+          {{ firstRoundNoteText }}
+        </p>
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div class="rounded-md border border-border bg-muted/50 p-3">
             <p class="text-xs uppercase text-muted-foreground">{{ t('common:player', 'Player') }}</p>
@@ -663,6 +674,12 @@
         v-if="simulator.simulationSettings.enableHpMpVisualization && simulator.results.timeSeriesData"
         class="space-y-3"
       >
+        <p
+          v-if="simulator.results.multiRound && simulator.results.multiRound.rounds >= 2"
+          class="text-xs text-muted-foreground"
+        >
+          {{ firstRoundNoteText }}
+        </p>
         <TimeSeriesChart :time-series-data="simulator.results.timeSeriesData" />
       </div>
 
@@ -671,7 +688,7 @@
           {{ t('common:WipeEvents', 'Wipe Events') }}
         </h2>
         <p v-if="!hasWipeEvents" class="text-sm text-muted-foreground">
-          {{ t('common:noWipeEventsDetected', 'No wipe events detected in this simulation.') }}
+          {{ wipeEventsEmptyText }}
         </p>
 
         <template v-else>
@@ -728,10 +745,10 @@
                   <TableCell class="px-2 py-2">{{ formatLogAbility(log) }}</TableCell>
                   <TableCell class="px-2 py-2">{{ log.target || '-' }}</TableCell>
                   <TableCell class="px-2 py-2" :class="log.isCrit ? 'font-semibold text-primary' : ''">{{
-                    formatNumber(log.damage)
+                    formatExactNumber(log.damage)
                   }}</TableCell>
                   <TableCell class="px-2 py-2"
-                    >{{ formatNumber(log.beforeHp) }} -> {{ formatNumber(log.afterHp) }}</TableCell
+                    >{{ formatExactNumber(log.beforeHp) }} -> {{ formatExactNumber(log.afterHp) }}</TableCell
                   >
                   <TableCell class="px-2 py-2">{{
                     log.isCrit ? t('common:simulationResults.Yes', 'Yes') : t('common:simulationResults.No', 'No')
@@ -755,15 +772,17 @@ import {
   monsterDetailIndex as combatMonsterDetailMap,
 } from '../../shared/gameDataIndex.js';
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from '../../services/profitEstimator.js';
+import { formatCompactAmountForLocale } from '../../services/amountFormatting.js';
 import DisclosurePanel from './DisclosurePanel.vue';
 import TimeSeriesChart from './TimeSeriesChart.vue';
+import HomeMultiRoundPanel from './home/HomeMultiRoundPanel.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select/index.js';
 import { useSimulatorStore } from '../../stores/simulatorStore.js';
 import { useGameDataText } from '../composables/useGameDataText.js';
 import { useI18nText } from '../composables/useI18nText.js';
 
 const simulator = useSimulatorStore();
-const { t } = useI18nText();
+const { t, language } = useI18nText();
 const {
   getAbilityName,
   getActionName,
@@ -924,6 +943,23 @@ const batchTableColumns = Object.freeze([
 ]);
 
 const hasBatchResult = computed(() => simulator.results.batchRows.length > 0);
+// 多轮运行时 summary 表与多轮统计面板为聚合口径，时序图与 Result Details 仍是
+// 首个成功轮的数据（首轮失败时轮号 > 1）：标注轮号取 multiRound.firstSuccessfulRound，
+// 与 store 写入明细的轮次保持同一事实来源，避免口径混淆。
+const firstRoundNoteText = computed(() => {
+  const multiRound = simulator.results.multiRound;
+  if (!multiRound || !(Number(multiRound.rounds) >= 2)) {
+    return '';
+  }
+  return t(
+    'common:vue.results.multiRound.firstRoundNote',
+    'The timeline and result details are based on round {{round}} of {{rounds}}',
+    {
+      rounds: multiRound.rounds,
+      round: Number(multiRound.firstSuccessfulRound) >= 1 ? multiRound.firstSuccessfulRound : 1,
+    },
+  );
+});
 const isBatchLabyrinth = computed(() => Boolean(simulator.results.simResults?.[0]?.isLabyrinth));
 const singleProtocolLabel = computed(() =>
   t('common:vue.results.protocolSingle', 'start_simulation / simulation_result'),
@@ -1267,7 +1303,7 @@ const killMetricRows = computed(() => {
     const encountersPerHour = encounterHours > 0 ? Number(simResult.encounters || 0) / encounterHours : 0;
     rows.push({
       label: t('common:simulationResults.encounters', 'Encounters'),
-      value: `${encountersPerHour.toFixed(1)}/h`,
+      value: `${formatNumber(encountersPerHour)}/h`,
     });
   }
 
@@ -1294,7 +1330,7 @@ const monsterKillRows = computed(() => {
     .map(([hrid, deaths]) => ({
       id: String(hrid || ''),
       label: formatMonsterName(hrid),
-      value: `${(Number(deaths || 0) / hours).toFixed(1)}/h`,
+      value: `${formatNumber(Number(deaths || 0) / hours)}/h`,
     }));
 
   rows.sort((a, b) => a.label.localeCompare(b.label));
@@ -1537,6 +1573,20 @@ const wipeEvents = computed(() => {
 
 const hasWipeEvents = computed(() => wipeEvents.value.length > 0);
 
+// 多轮运行逐轮关闭战斗事件日志（store 侧内存权衡，见 simulatorSimulationActions 多轮批次）：
+// Wipe Events 必然为空，空态沿用单轮的「未检测到团灭事件」会把「未采集」误述为「没有团灭」，
+// 按多轮场景切换为说明文案并指向单轮逐事件回放路径。
+const wipeEventsEmptyText = computed(() => {
+  const multiRound = simulator.results.multiRound;
+  if (multiRound && Number(multiRound.rounds) >= 2) {
+    return t(
+      'common:vue.results.multiRound.wipeEventsNotRecorded',
+      'Multi-round runs do not capture combat event logs; run a single round to replay combat events.',
+    );
+  }
+  return t('common:noWipeEventsDetected', 'No wipe events detected in this simulation.');
+});
+
 const activeWipeEvent = computed(() => {
   if (!wipeEvents.value.length) {
     return null;
@@ -1566,7 +1616,21 @@ function toFiniteNumber(value, fallback = 0) {
   return Number.isFinite(numeric) ? numeric : fallback;
 }
 
+// 大数缩写（k/m/b，小写）：与首页摘要/队列的 compact 口径一致（formatCompactAmountForLocale）；
+// 不足 1000 的数值保持本页原有格式（千分位与小数位不变），避免改动小数值显示。
+function shouldUseCompactAmount(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && Math.abs(numeric) >= 1000;
+}
+
+function formatCompactAmount(value) {
+  return formatCompactAmountForLocale(value, language.value === 'zh' ? 'zh-CN' : 'en-US');
+}
+
 function formatFixed(value, digits) {
+  if (shouldUseCompactAmount(value)) {
+    return formatCompactAmount(value);
+  }
   return toFiniteNumber(value).toLocaleString(undefined, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
@@ -1574,6 +1638,9 @@ function formatFixed(value, digits) {
 }
 
 function formatInteger(value) {
+  if (shouldUseCompactAmount(value)) {
+    return formatCompactAmount(value);
+  }
   return toFiniteNumber(value).toLocaleString(undefined, {
     maximumFractionDigits: 0,
   });
@@ -1657,7 +1724,16 @@ function getBatchCellClass(row, column) {
 }
 
 function formatNumber(value) {
+  if (shouldUseCompactAmount(value)) {
+    return formatCompactAmount(value);
+  }
   return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+// wipe 战斗日志是逐事件诊断视图：伤害与 HP 必须保留精确值（≥1000 不走 k/m/b 缩写），
+// 与 CSV 导出/时间/百分比同属精确口径；其余调用点保持页面 compact 口径不变。
+function formatExactNumber(value) {
+  return toFiniteNumber(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
 function formatPercent(value, digits = 1) {
@@ -1666,6 +1742,9 @@ function formatPercent(value, digits = 1) {
 }
 
 function formatAmount(value) {
+  if (shouldUseCompactAmount(value)) {
+    return formatCompactAmount(value);
+  }
   return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 3 });
 }
 
@@ -1975,6 +2054,9 @@ function combatStatAttackLabel(statKey, fallbackName) {
 }
 
 function formatCurrency(value) {
+  if (shouldUseCompactAmount(value)) {
+    return formatCompactAmount(value);
+  }
   return Number(value || 0).toLocaleString(undefined, {
     maximumFractionDigits: 0,
   });

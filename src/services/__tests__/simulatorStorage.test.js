@@ -270,6 +270,21 @@ describe('simulatorStorage', () => {
     expect(loadSimulationUiSettingsFromStorage().enableHpMpVisualization).toBe(false);
   });
 
+  it('persists simulation rounds with the [1,100] contract', () => {
+    expect(normalizeSimulationUiSettings({}).simulationRounds).toBe(1);
+    expect(normalizeSimulationUiSettings({ simulationRounds: 12 }).simulationRounds).toBe(12);
+    expect(normalizeSimulationUiSettings({ simulationRounds: 101 }).simulationRounds).toBe(100);
+    expect(normalizeSimulationUiSettings({ simulationRounds: 0 }).simulationRounds).toBe(1);
+
+    const storage = createMemoryStorage();
+    vi.stubGlobal('localStorage', storage);
+    expect(loadSimulationUiSettingsFromStorage().simulationRounds).toBe(1);
+
+    persistSimulationUiSettingsToStorage({ simulationRounds: 12 });
+    expect(JSON.parse(storage.data.get(SIMULATION_UI_STORAGE_KEY)).simulationRounds).toBe(12);
+    expect(loadSimulationUiSettingsFromStorage().simulationRounds).toBe(12);
+  });
+
   it('throws the existing unavailable-storage error when requested for writes', () => {
     expect(() =>
       setJsonStorage(

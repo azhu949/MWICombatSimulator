@@ -346,4 +346,36 @@ describe('simulatorWorkerRuns', () => {
     expect(isWorkerRunCancelledError(error)).toBe(true);
     expect(FakeWorkerClient.instances[0].stopSimulation).toHaveBeenCalledTimes(1);
   });
+
+  it('reports every settled item through the optional onItemSettled callback (§54)', async () => {
+    const settled = [];
+    const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], vi.fn(), {
+      scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
+      WorkerClientCtor: FakeWorkerClient,
+      onItemSettled: (index, error) => {
+        settled.push([index, error]);
+      },
+    });
+    const client = FakeWorkerClient.instances[0];
+    client.emitBatchResult({ encounters: 1 }, 0);
+    client.emitBatchAbort('realm exploded', 1);
+
+    // realm 级崩溃后换新 realm，只带剩下的 payload（全局 index 2、3）。
+    const second = FakeWorkerClient.instances[1];
+    expect(second.payloads).toEqual([{ id: 3 }, { id: 4 }]);
+    second.emitBatchResult({ encounters: 3 }, 0);
+    second.emitBatchError('boom', 1);
+    second.emitBatchComplete();
+
+    await expect(promise).resolves.toEqual({
+      simResults: [{ encounters: 1 }, null, { encounters: 3 }, null],
+      errors: [null, 'realm exploded', null, 'boom'],
+    });
+    expect(settled).toEqual([
+      [0, null],
+      [1, 'realm exploded'],
+      [2, null],
+      [3, 'boom'],
+    ]);
+  });
 });

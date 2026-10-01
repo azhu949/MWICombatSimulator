@@ -1039,6 +1039,8 @@
         "target": "目标"
       },
       "simulationHours": "模拟时长（小时）",
+      "simulationRounds": "重复次数",
+      "simulationRoundsHint": "（多轮以不同种子取稳健统计）",
       "labyrinthShopUpgrades": {
         "label": "迷宫商店升级（永久 BUFF · 仅迷宫内生效）",
         "damage": "伤害",
@@ -1258,7 +1260,22 @@
       "breakdownAmount": "数量",
       "breakdownUnitPrice": "单价",
       "breakdownTotal": "合计",
-      "breakdownTrimHint": "仅显示前部分条目。"
+      "breakdownTrimHint": "仅显示前部分条目。",
+      "multiRound": {
+        "title": "多轮统计",
+        "roundsLabel": "轮数",
+        "seedBaseLabel": "基种子",
+        "failedCount": "{{count}} 轮失败（已从统计中剔除）",
+        "median": "中位数",
+        "robustMean": "稳健值",
+        "mean": "均值",
+        "interval": "95% 区间",
+        "confidence": "置信度",
+        "perRoundTitle": "逐轮明细",
+        "seedColumn": "种子",
+        "firstRoundNote": "时序图与结果详情基于第 {{round}} 轮（共 {{rounds}} 轮）",
+        "wipeEventsNotRecorded": "多轮运行未采集战斗事件日志，如需逐事件回放请以 1 轮运行"
+      }
     },
     "settings": {
       "openMigrationNote": "打开迁移说明",

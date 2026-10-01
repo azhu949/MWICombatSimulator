@@ -61,3 +61,82 @@ export function computeConfidenceFromValues(values, centerValue, options = {}) {
   const sizeConfidence = 1 - Math.exp((-1 * (sampleCount - 1)) / sizeScale);
   return clamp(intervalConfidence * sizeConfidence, 0, 1);
 }
+
+// summarizeSeries 的默认参数与 queueScoring.js 的队列多轮统计常量对齐：
+// QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05、QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5、
+// QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE = 8。queueScoring 单向 import 本模块，反向 import
+// 会形成循环依赖，故此处复制数值；两侧任一改动时必须同步（由 robustStats.test.js 的交叉锚定
+// 用例把关）。
+const SERIES_DEFAULT_WINSORIZE_PCT = 0.05;
+const SERIES_DEFAULT_MEDIAN_BLEND = 0.5;
+const SERIES_DEFAULT_CONFIDENCE_SIZE_SCALE = 8;
+
+// 对一组模拟结果做稳健聚合（winsorize + 中位数融合 + 95% 置信区间），口径与队列评分
+// summarizeMetric（queueScoring.js）一致，供首页多轮模拟等通用场景复用：
+//   - mean：原始算术均值；
+//   - winsorizePct：双侧去极值比例（默认 0.05，内部再 clamp 到 [0, 0.49]）；
+//   - winsorizedMean / p50：去极值序列的均值与中位数；
+//   - robustMean = (1 - medianBlend) * winsorizedMean + medianBlend * p50（medianBlend 默认 0.5）；
+//   - min / max：去极值序列的最小值与最大值；
+//   - std：以 robustMean 为中心、按样本数（而非 n-1）求总体标准差，与队列口径一致；
+//   - ciHalfWidth95 = 1.96 * std / sqrt(n)，ciLow / ciHigh = robustMean 减/加该半宽；
+//   - confidence：复用 computeConfidenceFromValues（confidenceSizeScale 默认 8，与队列口径一致）。
+// 输入的非有限值按 0 计入（与 summarizeMetric 同口径）；空数组返回全零结构（sampleCount = 0），
+// n = 1 时 std 与 CI 半宽为 0。options 缺省或非法时回落到上述默认值。
+export function summarizeSeries(values, options = {}) {
+  const safeValues = (values ?? []).map((value) => toFiniteNumber(value, 0));
+  if (safeValues.length === 0) {
+    return {
+      sampleCount: 0,
+      mean: 0,
+      winsorizedMean: 0,
+      p50: 0,
+      robustMean: 0,
+      min: 0,
+      max: 0,
+      std: 0,
+      ciHalfWidth95: 0,
+      ciLow: 0,
+      ciHigh: 0,
+      confidence: 0,
+    };
+  }
+
+  const medianBlend = clamp(toFiniteNumber(options?.medianBlend, SERIES_DEFAULT_MEDIAN_BLEND), 0, 1);
+  const meanWeight = 1 - medianBlend;
+
+  const mean = computeArithmeticMean(safeValues, 0);
+  const winsorizedValues = winsorizeValues(
+    safeValues,
+    toFiniteNumber(options?.winsorizePct, SERIES_DEFAULT_WINSORIZE_PCT),
+  );
+  const winsorizedMean = computeArithmeticMean(winsorizedValues, mean);
+  const sortedValues = [...winsorizedValues].sort((a, b) => a - b);
+  const p50 = computePercentileFromSorted(sortedValues, 0.5);
+  const robustMean = meanWeight * winsorizedMean + medianBlend * p50;
+
+  const min = Math.min(...winsorizedValues);
+  const max = Math.max(...winsorizedValues);
+  const variance =
+    winsorizedValues.reduce((sum, value) => sum + (value - robustMean) ** 2, 0) / winsorizedValues.length;
+  const std = Math.sqrt(Math.max(0, variance));
+  const ciHalfWidth95 = (1.96 * std) / Math.sqrt(winsorizedValues.length);
+  const confidence = computeConfidenceFromValues(winsorizedValues, robustMean, {
+    confidenceSizeScale: toFiniteNumber(options?.confidenceSizeScale, SERIES_DEFAULT_CONFIDENCE_SIZE_SCALE),
+  });
+
+  return {
+    sampleCount: safeValues.length,
+    mean: toFiniteNumber(mean, 0),
+    winsorizedMean: toFiniteNumber(winsorizedMean, 0),
+    p50: toFiniteNumber(p50, 0),
+    robustMean: toFiniteNumber(robustMean, 0),
+    min: toFiniteNumber(min, 0),
+    max: toFiniteNumber(max, 0),
+    std: toFiniteNumber(std, 0),
+    ciHalfWidth95: toFiniteNumber(ciHalfWidth95, 0),
+    ciLow: toFiniteNumber(robustMean - ciHalfWidth95, 0),
+    ciHigh: toFiniteNumber(robustMean + ciHalfWidth95, 0),
+    confidence: toFiniteNumber(confidence, 0),
+  };
+}

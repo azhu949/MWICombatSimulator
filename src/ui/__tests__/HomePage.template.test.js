@@ -105,6 +105,13 @@ describe('Home workspace tabs', () => {
     expect(sources.page).not.toContain('completeResultsExpanded');
   });
 
+  it('keeps the workspace column shrinkable so wide result tables scroll inside their own panels', () => {
+    // results tab 的 grid 是无列定义的单列（auto 列）：item 必须带 min-w-0，
+    // 否则 Per-round Details 等 w-max 宽表格的 min-content 会把整列撑宽，
+    // 页面级出现横向滚动条（滚动条跑到页面底部而不是表格容器内）。
+    expect(sources.page).toContain('<div class="min-w-0 space-y-4">');
+  });
+
   it('routes summary and focus links to the results tab', () => {
     expect(sources.page).toContain("requestWorkspaceTabChange('results')");
     expect(sources.page).toContain("homeResultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })");
