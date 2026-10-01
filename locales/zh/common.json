@@ -644,6 +644,8 @@
     "meanProfit": "每日期望利润均值",
     "meanXp": "XP/h均值",
     "meanKills": "击杀/h均值",
+    "upgradedEph": "提升后EPH",
+    "upgradedEphHint": "该变体多轮模拟的每小时遭遇数均值（即击杀/h），也就是提升后的EPH。",
     "avgCostPerPoint01Pct": "四项全正时每0.01%所需金币",
     "compositeCostPerPoint01Pct": "综合每0.01%所需金币",
     "roundIndex": "轮次",

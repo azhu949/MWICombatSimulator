@@ -1,4 +1,24 @@
 {
+  "2026年10月1日（v3.0.3）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.3）",
+      "en": "October 1, 2026 (v3.0.3)"
+    },
+    "newFeatures": {
+      "zh": [
+        "多轮排名表新增「提升后EPH」列，括号内显示相比基准的增减。",
+        "排名表表头支持点击排序（降序/升序/默认序），排名与变体列横向拖动时固定在左侧。"
+      ],
+      "en": [
+        "The multi-round ranking table gains an \"EPH (Upgraded)\" column with the signed change versus baseline in parentheses.",
+        "Ranking table headers are now clickable to sort, and the Rank and Variant columns stay pinned while scrolling sideways."
+      ]
+    },
+    "improvements": {
+      "zh": ["导出 Excel 的行顺序与页面当前排序一致。"],
+      "en": ["Excel export now follows the on-screen sorting order."]
+    }
+  },
   "2026年10月1日（v3.0.2）": {
     "label": {
       "zh": "2026年10月1日（v3.0.2）",

@@ -191,30 +191,241 @@
         <Table class="min-w-[2180px] w-max text-sm">
           <TableHeader>
             <TableRow class="border-b border-border text-left text-xs uppercase text-muted-foreground">
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.rank', 'Rank') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:vue.queue.variant', 'Variant') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.simCount', 'Sim Count') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.finalScore', 'Final Score') }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:multiRound.performanceScore', 'Performance Score')
+              <TableHead
+                class="sticky left-0 z-20 w-[76px] min-w-[76px] bg-card px-2 py-2 shadow-[inset_-1px_0_0_var(--border)]"
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('rank')"
+                >
+                  <span>{{ t('common:multiRound.rank', 'Rank') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'rank' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('rank') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="sticky left-[76px] z-20 bg-card px-2 py-2">{{
+                t('common:vue.queue.variant', 'Variant')
               }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.stabilityScore', 'Stability Score') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ costScoreColumnHeader }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:queue.dailyNoRngProfit', 'Daily No RNG Profit') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:vue.queue.deltaProfitPerHour', 'Delta Profit/h') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.deltaProfitPct', 'Profit Delta%') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.deltaDpsPct', 'DPS Delta%') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.deltaXpPct', 'XP Delta%') }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t('common:multiRound.deltaKillsPct', 'Kills Delta%') }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:vue.queue.equipmentSaleValue', 'Replaced Equipment Sale Value')
-              }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:vue.queue.equipmentBuyPrice', 'Target Equipment Buy Price')
-              }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:vue.queue.equipmentNetCost', 'Equipment Net Cost')
-              }}</TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('rounds')"
+                >
+                  <span>{{ t('common:multiRound.simCount', 'Sim Count') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'rounds' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('rounds') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('finalScore')"
+                >
+                  <span>{{ t('common:multiRound.finalScore', 'Final Score') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'finalScore' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('finalScore') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('performanceScore')"
+                >
+                  <span>{{ t('common:multiRound.performanceScore', 'Performance Score') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'performanceScore' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('performanceScore') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('stabilityScore')"
+                >
+                  <span>{{ t('common:multiRound.stabilityScore', 'Stability Score') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'stabilityScore' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('stabilityScore') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('costScore')"
+                >
+                  <span>{{ costScoreColumnHeader }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'costScore' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('costScore') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('dailyNoRngProfitPerDay')"
+                >
+                  <span>{{ t('common:queue.dailyNoRngProfit', 'Daily No RNG Profit') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'dailyNoRngProfitPerDay' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('dailyNoRngProfitPerDay') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  :title="
+                    t(
+                      'common:multiRound.upgradedEphHint',
+                      'Mean encounters per hour across rounds (kills/h), i.e. the upgraded EPH.',
+                    )
+                  "
+                  @click="toggleRankingSort('killsPerHour')"
+                >
+                  <span>{{ t('common:multiRound.upgradedEph', 'EPH (Upgraded)') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'killsPerHour' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('killsPerHour') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('deltaProfitPerHour')"
+                >
+                  <span>{{ t('common:vue.queue.deltaProfitPerHour', 'Delta Profit/h') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'deltaProfitPerHour' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('deltaProfitPerHour') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('deltaProfitPct')"
+                >
+                  <span>{{ t('common:multiRound.deltaProfitPct', 'Profit Delta%') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'deltaProfitPct' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('deltaProfitPct') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('deltaDpsPct')"
+                >
+                  <span>{{ t('common:multiRound.deltaDpsPct', 'DPS Delta%') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'deltaDpsPct' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('deltaDpsPct') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('deltaXpPct')"
+                >
+                  <span>{{ t('common:multiRound.deltaXpPct', 'XP Delta%') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'deltaXpPct' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('deltaXpPct') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('deltaKillsPct')"
+                >
+                  <span>{{ t('common:multiRound.deltaKillsPct', 'Kills Delta%') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'deltaKillsPct' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('deltaKillsPct') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('equipmentSaleValue')"
+                >
+                  <span>{{ t('common:vue.queue.equipmentSaleValue', 'Replaced Equipment Sale Value') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'equipmentSaleValue' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('equipmentSaleValue') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('equipmentBuyPrice')"
+                >
+                  <span>{{ t('common:vue.queue.equipmentBuyPrice', 'Target Equipment Buy Price') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'equipmentBuyPrice' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('equipmentBuyPrice') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('equipmentNetCost')"
+                >
+                  <span>{{ t('common:vue.queue.equipmentNetCost', 'Equipment Net Cost') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'equipmentNetCost' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('equipmentNetCost') }}</span
+                  >
+                </button>
+              </TableHead>
               <TableHead
                 class="px-2 py-2"
                 :title="
@@ -223,15 +434,62 @@
                     'Upgrade Cost = equipment net cost + ability upgrade costs + house room upgrade costs.',
                   )
                 "
-                >{{ t('common:equipment.upgradeCost', 'Upgrade Cost') }}</TableHead
               >
-              <TableHead class="px-2 py-2">{{ t('common:queue.purchaseTime', 'Purchase Time') }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:multiRound.avgCostPerPoint01Pct', 'Gold per 0.01% (all four > 0)')
-              }}</TableHead>
-              <TableHead class="px-2 py-2">{{
-                t('common:multiRound.compositeCostPerPoint01Pct', 'Gold per 0.01% (composite)')
-              }}</TableHead>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('upgradeCost')"
+                >
+                  <span>{{ t('common:equipment.upgradeCost', 'Upgrade Cost') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'upgradeCost' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('upgradeCost') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('purchaseDays')"
+                >
+                  <span>{{ t('common:queue.purchaseTime', 'Purchase Time') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'purchaseDays' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('purchaseDays') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('goldPerPoint01PctAvg')"
+                >
+                  <span>{{ t('common:multiRound.avgCostPerPoint01Pct', 'Gold per 0.01% (all four > 0)') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'goldPerPoint01PctAvg' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('goldPerPoint01PctAvg') }}</span
+                  >
+                </button>
+              </TableHead>
+              <TableHead class="px-2 py-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-left uppercase transition hover:text-foreground"
+                  @click="toggleRankingSort('compositeGoldPerPoint01Pct')"
+                >
+                  <span>{{ t('common:multiRound.compositeCostPerPoint01Pct', 'Gold per 0.01% (composite)') }}</span>
+                  <span
+                    class="text-[10px]"
+                    :class="rankingSort.key === 'compositeGoldPerPoint01Pct' ? 'text-primary' : 'text-muted-foreground'"
+                    >{{ getRankingSortIndicator('compositeGoldPerPoint01Pct') }}</span
+                  >
+                </button>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -241,7 +499,10 @@
               class="border-b border-border text-foreground"
               :class="getRankRowClass(row)"
             >
-              <TableCell class="px-2 py-2 font-semibold">
+              <TableCell
+                class="sticky left-0 z-10 w-[76px] min-w-[76px] px-2 py-2 font-semibold shadow-[inset_-1px_0_0_var(--border)]"
+                :style="getRankStickyCellStyle(row)"
+              >
                 <span
                   class="inline-flex min-w-12 items-center justify-center rounded-md border px-2 py-0.5 text-xs font-bold"
                   :class="getRankBadgeClass(row.rank)"
@@ -249,7 +510,7 @@
                   #{{ row.rank }}
                 </span>
               </TableCell>
-              <TableCell class="px-2 py-2">
+              <TableCell class="sticky left-[76px] z-10 px-2 py-2" :style="getRankStickyCellStyle(row)">
                 <p>{{ formatQueueItemSummary(row) }}</p>
                 <p v-if="getHiddenChangeCount(row) > 0" class="mt-0.5 text-xs text-muted-foreground">
                   +{{ getHiddenChangeCount(row) }}
@@ -261,6 +522,20 @@
               <TableCell class="px-2 py-2">{{ formatNumber(row.stabilityScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatNumber(row.costScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.dailyNoRngProfitPerDay) }}</TableCell>
+              <TableCell
+                class="px-2 py-2"
+                :title="
+                  t(
+                    'common:multiRound.upgradedEphHint',
+                    'Mean encounters per hour across rounds (kills/h), i.e. the upgraded EPH.',
+                  )
+                "
+              >
+                {{ formatNumber(row.killsPerHour) }}
+                <span class="ml-0.5 text-xs" :class="profitDeltaClass(row.deltaKillsPerHour)"
+                  >({{ formatSignedNumber(row.deltaKillsPerHour) }})</span
+                >
+              </TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPerHour)">{{
                 formatCurrency(row.deltaProfitPerHour)
               }}</TableCell>
@@ -401,9 +676,108 @@ const queuePartyWarningText = computed(() =>
       )
     : '',
 );
+// 排序列定义：key 同时用于取值函数与 Excel 导出。costInsights 下的成本列单独走取值器。
+const RANKING_SORT_COLUMNS = [
+  'rank',
+  'rounds',
+  'finalScore',
+  'performanceScore',
+  'stabilityScore',
+  'costScore',
+  'dailyNoRngProfitPerDay',
+  'killsPerHour',
+  'deltaProfitPerHour',
+  'deltaProfitPct',
+  'deltaDpsPct',
+  'deltaXpPct',
+  'deltaKillsPct',
+  'equipmentSaleValue',
+  'equipmentBuyPrice',
+  'equipmentNetCost',
+  'upgradeCost',
+  'purchaseDays',
+  'goldPerPoint01PctAvg',
+  'compositeGoldPerPoint01Pct',
+];
+const rankingSort = ref({ key: '', direction: 'desc' });
+
+function resolveRankingSortValue(row, key) {
+  if (!row) {
+    return null;
+  }
+  switch (key) {
+    case 'equipmentSaleValue':
+      return row.costInsights?.equipmentSaleValue ?? null;
+    case 'equipmentBuyPrice':
+      return row.costInsights?.equipmentBuyPrice ?? null;
+    case 'equipmentNetCost':
+      return row.costInsights?.equipmentNetCost ?? null;
+    case 'upgradeCost':
+      return row.costInsights?.totalUpgradeCost ?? null;
+    case 'purchaseDays':
+      return row.costInsights?.purchaseDays ?? null;
+    case 'goldPerPoint01PctAvg':
+      return row.costInsights?.goldPerPoint01PctAvg ?? null;
+    case 'compositeGoldPerPoint01Pct':
+      return row.costInsights?.compositeGoldPerPoint01Pct ?? null;
+    default: {
+      const numeric = Number(row[key]);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+  }
+}
+
+function compareRankingRows(left, right, key, directionFactor) {
+  const leftValue = resolveRankingSortValue(left, key);
+  const rightValue = resolveRankingSortValue(right, key);
+  // null（N/A 成本项）无论升序降序都恒排末尾（Excel 风格），避免降序时 N/A 挡住真实最大值。
+  if (leftValue == null && rightValue == null) return 0;
+  if (leftValue == null) return 1;
+  if (rightValue == null) return -1;
+  if (leftValue === rightValue) return 0;
+  return leftValue < rightValue ? -directionFactor : directionFactor;
+}
+
+function sortRankingRows(rows) {
+  const sortKey = String(rankingSort.value.key || '');
+  if (!sortKey || !RANKING_SORT_COLUMNS.includes(sortKey)) {
+    return rows;
+  }
+  // 稳定排序：先按原始顺序（默认排名序）稳定分层，再按当前列比较。
+  const directionFactor = rankingSort.value.direction === 'asc' ? 1 : -1;
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => compareRankingRows(a.row, b.row, sortKey, directionFactor) || a.index - b.index)
+    .map((entry) => entry.row);
+}
+
+function toggleRankingSort(columnKey) {
+  if (!RANKING_SORT_COLUMNS.includes(columnKey)) {
+    return;
+  }
+  if (rankingSort.value.key === columnKey) {
+    if (rankingSort.value.direction === 'desc') {
+      rankingSort.value.direction = 'asc';
+      return;
+    }
+    // 再次点击同一列：恢复默认排名序。
+    rankingSort.value = { key: '', direction: 'desc' };
+    return;
+  }
+  rankingSort.value = { key: columnKey, direction: 'desc' };
+}
+
+function getRankingSortIndicator(columnKey) {
+  if (rankingSort.value.key !== columnKey) {
+    return '<>';
+  }
+  return rankingSort.value.direction === 'asc' ? '^' : 'v';
+}
+
 const rankingRowsForDisplay = computed(() => {
   const rows = Array.isArray(queueState.value?.ranking) ? queueState.value.ranking : [];
-  return rows.length > RANKING_ROWS_LIMIT ? rows.slice(0, RANKING_ROWS_LIMIT) : rows;
+  const limited = rows.length > RANKING_ROWS_LIMIT ? rows.slice(0, RANKING_ROWS_LIMIT) : rows;
+  return sortRankingRows(limited);
 });
 const rawRowsForDisplay = computed(() => {
   const rows = Array.isArray(queueState.value?.rawRuns) ? queueState.value.rawRuns : [];
@@ -713,6 +1087,18 @@ function formatSignedPercent(value) {
   const numeric = Number(value || 0);
   const prefix = numeric > 0 ? '+' : '';
   return `${prefix}${numeric.toFixed(2)}%`;
+}
+
+function formatSignedNumber(value) {
+  if (value == null || !Number.isFinite(Number(value))) {
+    return '-';
+  }
+  const numeric = Number(value || 0);
+  // -0.04 四舍五入到 -0.0 时显示成 0.0，避免出现 “(-0.0)” 这种别扭的样式。
+  const rounded = Math.round(numeric * 10) / 10;
+  const normalized = rounded === 0 ? 0 : rounded;
+  const prefix = normalized > 0 ? '+' : '';
+  return `${prefix}${normalized.toFixed(1)}`;
 }
 
 function formatPurchaseDuration(daysValue) {
@@ -1094,6 +1480,25 @@ function getRankRowClass(row) {
   return '';
 }
 
+// sticky 单元格必须不透明才能遮盖横向滚动内容。行高亮类（bg-primary/10 等）是半透明的，
+// 直接复用会透出滚动的数字，因此这里用 color-mix 把高亮色混入卡片底色，得到不透明等效色，
+// 视觉上与整行高亮一致。
+const RANK_ROW_HIGHLIGHT_MIX = {
+  1: 'color-mix(in oklab, var(--primary) 10%, var(--card))',
+  2: 'color-mix(in oklab, var(--muted) 50%, var(--card))',
+  3: 'color-mix(in oklab, var(--warning) 10%, var(--card))',
+  4: 'color-mix(in oklab, var(--success) 10%, var(--card))',
+  5: 'color-mix(in oklab, var(--info) 10%, var(--card))',
+};
+
+function getRankStickyCellStyle(row) {
+  const rank = Math.max(0, Math.floor(Number(row?.rank || 0)));
+  const highlight = RANK_ROW_HIGHLIGHT_MIX[rank];
+  return {
+    backgroundColor: highlight || 'var(--card)',
+  };
+}
+
 function getRankBadgeClass(rankValue) {
   const rank = Math.max(0, Math.floor(Number(rankValue || 0)));
   if (rank === 1) {
@@ -1137,17 +1542,18 @@ async function exportRankingRowsExcel() {
   if (isExportingRankingExcel.value) {
     return;
   }
-  const rows = (queueState.value?.ranking || []).slice();
-  if (rows.length === 0) {
-    return;
-  }
-
   isExportingRankingExcel.value = true;
   try {
     const { Workbook } = await import('exceljs');
     const workbook = new Workbook();
     workbook.creator = 'MWI Combat Simulator';
     workbook.created = new Date();
+
+    // 导出跟随屏幕上的当前排序（含截断），保证所见即所得。
+    const rows = rankingRowsForDisplay.value.slice();
+    if (rows.length === 0) {
+      return;
+    }
 
     const worksheet = workbook.addWorksheet('Ranking', {
       views: [{ state: 'frozen', ySplit: 1 }],
@@ -1161,6 +1567,7 @@ async function exportRankingRowsExcel() {
       { header: t('common:multiRound.stabilityScore', 'Stability Score'), key: 'stabilityScore', width: 14 },
       { header: costScoreColumnHeader.value, key: 'costScore', width: 18 },
       { header: t('common:queue.dailyNoRngProfit', 'Daily No RNG Profit'), key: 'dailyNoRngProfitPerDay', width: 18 },
+      { header: t('common:multiRound.upgradedEph', 'EPH (Upgraded)'), key: 'killsPerHour', width: 14 },
       { header: t('common:vue.queue.deltaProfitPerHour', 'Delta Profit/h'), key: 'deltaProfitPerHour', width: 14 },
       { header: t('common:multiRound.deltaProfitPct', 'Profit Delta%'), key: 'deltaProfitPct', width: 12 },
       { header: t('common:multiRound.deltaDpsPct', 'DPS Delta%'), key: 'deltaDpsPct', width: 10 },
@@ -1231,6 +1638,7 @@ async function exportRankingRowsExcel() {
         stabilityScore: toFiniteForExport(row?.stabilityScore, 2),
         costScore: toFiniteForExport(row?.costScore, 2),
         dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay),
+        killsPerHour: `${toFiniteForExport(row?.killsPerHour, 2) ?? '-'} (${formatSignedNumber(row?.deltaKillsPerHour)})`,
         deltaProfitPerHour: formatCompactCurrency(row?.deltaProfitPerHour),
         deltaProfitPct: toFiniteForExport(row?.deltaProfitPct, 2),
         deltaDpsPct: toFiniteForExport(row?.deltaDpsPct, 2),
@@ -1294,6 +1702,7 @@ async function exportRankingRowsExcel() {
       'stabilityScore',
       'costScore',
       'dailyNoRngProfitPerDay',
+      'killsPerHour',
       'deltaProfitPerHour',
       'deltaProfitPct',
       'deltaDpsPct',

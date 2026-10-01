@@ -644,6 +644,8 @@
     "meanProfit": "Mean No RNG Profit/day",
     "meanXp": "Mean XP/h",
     "meanKills": "Mean Kills/h",
+    "upgradedEph": "EPH (Upgraded)",
+    "upgradedEphHint": "Mean encounters per hour across this variant's rounds (kills/h), i.e. the upgraded EPH.",
     "avgCostPerPoint01Pct": "Gold per 0.01% (all four > 0)",
     "compositeCostPerPoint01Pct": "Gold per 0.01% (composite)",
     "roundIndex": "Round",
