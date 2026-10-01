@@ -148,6 +148,71 @@ describe('food optimizer page', () => {
     expect(start.element.disabled).toBe(false);
   });
 
+  it('keeps a stale report applicable and confirms before force-applying or restarting', async () => {
+    let candidate;
+    const { wrapper, store } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      const input = snapshotFoodOptimizerInput(current);
+      const request = {
+        ...input,
+        inputSignature: current.foodOptimizerInputSignature,
+        payload: { ...input.simulation, players: [{ hrid: 'player1', food: [null, null, null] }] },
+      };
+      const food = getFoodOptimizerItems({ maxHp: 110, maxMp: 110, thresholdStepPercent: 10 })[0];
+      candidate = buildFoodCandidate([{ ...food, threshold: 40 }]);
+      const report = createFoodOptimizerReport(request, [food], 1);
+      Object.assign(report, {
+        complete: true,
+        status: 'completed',
+        baseline: { foodUsed: {}, costPerHour: 0, deaths: 0, ranOutOfMana: false },
+        topResults: [
+          {
+            ...candidate,
+            feasible: true,
+            roundsCompleted: request.rounds,
+            foodUsed: {},
+            costPerHour: 0,
+            savingsPerHour: 0,
+            deaths: 0,
+          },
+        ],
+      });
+      current.foodOptimizer.report = report;
+    });
+    // 改设置让报告过期：按钮不再置灰，点击后弹确认框。
+    expect(store.setFoodOptimizerSettings({ rounds: 2 })).toBe(true);
+    await flushPromises();
+    expect(store.foodOptimizerReportStale).toBe(true);
+    const apply = wrapper.findAll('button').find((button) => button.text().includes('应用方案'));
+    expect(apply.element.disabled).toBe(false);
+
+    const dialog = () => wrapper.find('[data-food-optimizer-stale-apply]');
+    await apply.trigger('click');
+    expect(dialog().exists()).toBe(true);
+    expect(wrapper.text()).toContain('报告已过期');
+    expect(store.foodOptimizer.report.appliedSignature).toBeNull();
+
+    // 取消：关闭弹窗且不应用。
+    await wrapper.get('[data-food-optimizer-stale-cancel]').trigger('click');
+    expect(dialog().exists()).toBe(false);
+    expect(store.foodOptimizer.report.appliedSignature).toBeNull();
+
+    // 重新搜索：关闭弹窗并触发一次新搜索。
+    const startSpy = vi.spyOn(store, 'startFoodOptimizer').mockImplementation(async () => {});
+    await apply.trigger('click');
+    await wrapper.get('[data-food-optimizer-stale-restart]').trigger('click');
+    expect(startSpy).toHaveBeenCalledOnce();
+    expect(dialog().exists()).toBe(false);
+
+    // 仍要应用：以 force 应用过期报告。
+    startSpy.mockRestore();
+    await apply.trigger('click');
+    await wrapper.get('[data-food-optimizer-stale-apply]').trigger('click');
+    expect(dialog().exists()).toBe(false);
+    expect(store.foodOptimizer.report.appliedSignature).toBe(candidate.signature);
+    expect(store.activePlayer.food[0]).toBe(candidate.food[0]);
+  });
+
   it('shows shared food usage only once when the baseline repeats an item in multiple slots', () => {
     const slots = [0, 2].map((slotIndex) => ({ hrid: '/items/donut', slotIndex, price: 5, triggers: [] }));
     const wrapper = mount(FoodOptimizerDetails, { props: { slots, usage: { '/items/donut': 4 }, hours: 2 } });

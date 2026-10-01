@@ -697,6 +697,28 @@ describe('food optimizer store', () => {
     expect(store.applyFoodOptimizerResult(candidate.signature)).toBe(false);
   });
 
+  it('force-applies a stale report but never bypasses the labyrinth guard', () => {
+    const store = importedStore();
+    const candidate = attachReport(store);
+    store.activePlayer.levels.stamina += 1;
+    expect(store.foodOptimizerReportStale).toBe(true);
+
+    // 默认仍拒绝（store 层防线保留），force 走「仍要应用」路径。
+    expect(store.applyFoodOptimizerResult(candidate.signature)).toBe(false);
+    expect(store.applyFoodOptimizerResult(candidate.signature, { force: true })).toBe(true);
+    expect(store.activePlayer.food).toEqual([candidate.food[0], '', '']);
+    expect(store.activePlayer.triggerMap[candidate.food[0]]).toEqual(candidate.triggerMap[candidate.food[0]]);
+    expect(store.foodOptimizer.report.appliedSignature).toBe(candidate.signature);
+
+    // force 只绕过「输入已变化」门禁，迷宫守卫不受影响。
+    const labyrinthStore = importedStore();
+    const labyrinthCandidate = attachReport(labyrinthStore);
+    labyrinthStore.setSimulationMode('labyrinth');
+    expect(labyrinthStore.applyFoodOptimizerResult(labyrinthCandidate.signature, { force: true })).toBe(false);
+    expect(labyrinthStore.foodOptimizer.runtime.error).toBe(FOOD_OPTIMIZER_LABYRINTH_ERROR);
+    expect(labyrinthStore.foodOptimizer.report.appliedSignature).toBeNull();
+  });
+
   it('disables starts without an import or with batch mode, and cleans preparation errors', async () => {
     const store = useSimulatorStore();
     await store.startFoodOptimizer();

@@ -305,14 +305,9 @@
             size="sm"
             variant="outline"
             :disabled="
-              running ||
-              busy ||
-              stale ||
-              labyrinthTarget ||
-              labyrinthReport ||
-              report.appliedSignature === result.signature
+              running || busy || labyrinthTarget || labyrinthReport || report.appliedSignature === result.signature
             "
-            @click="simulator.applyFoodOptimizerResult(result.signature)"
+            @click="requestApplyResult(result.signature)"
             ><Check />{{
               t(
                 report.appliedSignature === result.signature
@@ -329,6 +324,30 @@
         />
       </article>
     </section>
+
+    <BaseModal
+      :open="staleApplySignature !== null"
+      :title="t('common:foodOptimizer.staleDialogTitle')"
+      @close="staleApplySignature = null"
+    >
+      <p>{{ t('common:foodOptimizer.staleDialogHint') }}</p>
+      <div class="flex flex-wrap justify-end gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          data-food-optimizer-stale-cancel
+          @click="staleApplySignature = null"
+          >{{ t('common:foodOptimizer.cancel') }}</Button
+        >
+        <Button type="button" size="sm" variant="outline" data-food-optimizer-stale-restart @click="restartStaleSearch">
+          <Play />{{ t('common:foodOptimizer.staleRestart') }}
+        </Button>
+        <Button type="button" size="sm" data-food-optimizer-stale-apply @click="confirmStaleApply">
+          <Check />{{ t('common:foodOptimizer.staleApplyAnyway') }}
+        </Button>
+      </div>
+    </BaseModal>
 
     <FoodOptimizerFoodScopeModal
       :open="scopeOpen"
@@ -368,6 +387,7 @@ import { ONE_HOUR } from '../../services/simulationDomain.js';
 import { Button } from '../components/ui/button/index.js';
 import FoodOptimizerDetails from '../components/FoodOptimizerDetails.vue';
 import FoodOptimizerFoodScopeModal from '../components/FoodOptimizerFoodScopeModal.vue';
+import BaseModal from '../components/BaseModal.vue';
 import { useI18nText } from '../composables/useI18nText.js';
 import { useGameDataText } from '../composables/useGameDataText.js';
 
@@ -515,6 +535,26 @@ function openScope() {
 function confirmScope(hrids) {
   if (!simulator.setFoodOptimizerSettings({ foodHrids: hrids })) return;
   scopeOpen.value = false;
+  simulator.startFoodOptimizer();
+}
+// stale 报告的应用不再置灰按钮，改为点击时弹确认框：「重新搜索」走 startFoodOptimizer，
+// 「仍要应用」以 force 绕过 store 的过期门禁（迷宫守卫仍拦）。取消即关闭弹窗。
+const staleApplySignature = ref(null);
+function requestApplyResult(signature) {
+  if (stale.value) {
+    staleApplySignature.value = signature;
+    return;
+  }
+  simulator.applyFoodOptimizerResult(signature);
+}
+function confirmStaleApply() {
+  const signature = staleApplySignature.value;
+  staleApplySignature.value = null;
+  if (signature === null) return;
+  simulator.applyFoodOptimizerResult(signature, { force: true });
+}
+function restartStaleSearch() {
+  staleApplySignature.value = null;
   simulator.startFoodOptimizer();
 }
 const baselineSlots = computed(() => {

@@ -304,7 +304,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
         this.foodOptimizer.runtime.phase = 'cancelled';
       }
     },
-    applyFoodOptimizerResult(signature) {
+    applyFoodOptimizerResult(signature, { force = false } = {}) {
       trackReportChanges(this);
       const report = this.foodOptimizer.report;
       if (!report || this.foodOptimizer.runtime.isRunning || foodOptimizerBusy(this)) return false;
@@ -312,7 +312,9 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
         this.foodOptimizer.runtime.error = FOOD_OPTIMIZER_LABYRINTH_ERROR;
         return false;
       }
-      if (this.foodOptimizerReportStale) {
+      // 「输入已变化」默认拒绝仍是 store 层防线；页面在 stale 时先弹确认框，
+      // 用户选择「仍要应用」后以 force 绕过本门禁（迷宫守卫不受 force 影响）。
+      if (!force && this.foodOptimizerReportStale) {
         this.foodOptimizer.runtime.error = 'common:foodOptimizer.stale';
         return false;
       }

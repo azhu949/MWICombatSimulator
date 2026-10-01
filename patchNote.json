@@ -1,4 +1,16 @@
 {
+  "2026年10月1日（v3.0.2）": {
+    "label": {
+      "zh": "2026年10月1日（v3.0.2）",
+      "en": "October 1, 2026 (v3.0.2)"
+    },
+    "improvements": {
+      "zh": ["食物优化：报告过期后「应用方案」不再置灰，改为弹窗确认，可选择重新搜索或直接应用。"],
+      "en": [
+        "Food Optimizer: applying a stale report now opens a confirmation dialog instead of disabling the button; re-run the search or apply anyway."
+      ]
+    }
+  },
   "2026年10月1日（v3.0.1）": {
     "label": {
       "zh": "2026年10月1日（v3.0.1）",
