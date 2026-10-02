@@ -786,7 +786,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '../components/
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
-const { getItemCategoryName, getItemName, getOfficialGameText } = useGameDataText();
+const { getItemCategoryName, getItemName, getItemNameEn, getOfficialGameText } = useGameDataText();
 
 const equipmentSetName = ref('');
 const activeSettingsTab = ref('queue');
@@ -930,6 +930,9 @@ function formatPriceItemName(itemHrid, fallbackName = '') {
 
 function formatOfficialItemName(itemHrid, targetLanguage) {
   const hrid = String(itemHrid || '');
+  if (targetLanguage === 'en') {
+    return getItemNameEn(hrid);
+  }
   return getOfficialGameText('itemNames', hrid, hrid, { language: targetLanguage });
 }
 

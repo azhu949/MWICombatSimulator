@@ -133,4 +133,12 @@ describe('useGameDataText', () => {
     expect(getOfficialGameText('itemNames', '/items/gatherer_cape', '', { language: 'zh' })).toBe('采集者披风');
     expect(getOfficialGameText('itemNames', '/items/gatherer_cape', '', { language: 'en' })).toBe('Gatherer Cape');
   });
+
+  it('resolves the official English item name from the shared index without i18next', () => {
+    const { getItemNameEn } = useGameDataText();
+
+    expect(getItemNameEn('/items/gatherer_cape')).toBe('Gatherer Cape');
+    expect(getItemNameEn('')).toBe('');
+    expect(getItemNameEn('/items/__no_such_item_for_test__')).toBe('/items/__no_such_item_for_test__');
+  });
 });

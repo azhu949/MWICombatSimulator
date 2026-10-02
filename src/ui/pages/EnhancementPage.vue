@@ -1324,6 +1324,7 @@ const {
   getEquipmentTypeName,
   getHouseRoomName,
   getItemName: getGameItemName,
+  getItemNameEn,
   getOfficialGameText,
   getSkillName,
 } = useGameDataText();
@@ -1430,6 +1431,9 @@ const itemOptions = computed(() => (Array.isArray(enhancement.itemOptions) ? enh
 const favoriteItemOptions = computed(() => itemOptions.value.filter((item) => isFavorite(item.hrid)));
 function officialItemName(item, targetLanguage) {
   const hrid = String(item?.hrid || item?.itemHrid || '');
+  if (targetLanguage === 'en') {
+    return getItemNameEn(hrid);
+  }
   return getOfficialGameText('itemNames', hrid, hrid, { language: targetLanguage });
 }
 const filteredItemOptions = computed(() => {

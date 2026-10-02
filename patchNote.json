@@ -1,4 +1,32 @@
 {
+  "2026年10月3日（v3.0.7）": {
+    "label": {
+      "zh": "2026年10月3日（v3.0.7）",
+      "en": "October 3, 2026 (v3.0.7)"
+    },
+    "improvements": {
+      "zh": [
+        "英文语言包改为按需加载：默认中文界面不再预先下载整份英文翻译数据，首屏更轻、加载更快；首次切换到英文时自动下载并缓存。",
+        "英文物品名检索改读官方英文索引：在中文界面下搜索或显示英文物品名不再退化成物品 ID。",
+        "优化语言切换体验：切换过程中切换按钮自动禁用避免重复点击，切换失败会给出明确错误提示。"
+      ],
+      "en": [
+        "The English locale bundle is now loaded on demand, so the default Chinese UI no longer preloads the full English translation and the first page is lighter; the first switch to English downloads and caches it automatically.",
+        "English item names now resolve through the official English index, so searching or listing them in the Chinese UI no longer degrades to raw item IDs.",
+        "Improved language switching: the switch button is disabled while a switch is in progress, and failures surface a clear error instead of a blank page."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复目标语言包未就绪就切换语言、导致整页文案显示成键名的问题。",
+        "修复上次选择英文但英文语言包加载失败时应用无法启动（白屏）的问题，现自动降级为中文，下次启动仍会重试。"
+      ],
+      "en": [
+        "Fixed switching languages before the target bundle was ready, which could render the whole page as raw translation keys.",
+        "Fixed the app failing to start (blank page) when English was the saved language but its bundle failed to load; it now falls back to Chinese and retries on the next start."
+      ]
+    }
+  },
   "2026年10月2日（v3.0.6）": {
     "label": {
       "zh": "2026年10月2日（v3.0.6）",

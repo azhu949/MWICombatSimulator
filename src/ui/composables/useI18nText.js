@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted, ref } from 'vue';
-import i18next, { resolveInitialLanguage } from '../i18n/i18n.js';
+import i18next, { ensureLanguageBundle, resolveInitialLanguage } from '../i18n/i18n.js';
 
 const language = ref(resolveInitialLanguage());
 
@@ -33,6 +33,9 @@ export function useI18nText() {
 
   async function setLanguage(nextLanguage) {
     const languageToUse = nextLanguage === 'zh' ? 'zh' : 'en';
+    // 先确保目标语言资源可用（zh 内联在主入口，en 首次切到时才拉取语言包）：
+    // i18next 的 changeLanguage 只切当前语言、不会加载资源，资源缺席时整页会回退成 key。
+    await ensureLanguageBundle(languageToUse);
     await i18next.changeLanguage(languageToUse);
     localStorage.setItem('i18nextLng', languageToUse);
   }

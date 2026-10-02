@@ -45,6 +45,7 @@
             type="button"
             variant="ghost"
             size="sm"
+            :disabled="languageSwitchPending"
             :aria-label="languageToggleAriaLabel"
             :title="languageToggleAriaLabel"
             @click="switchLanguage(languageToggleTarget)"
@@ -779,6 +780,8 @@ const globalErrorText = ref('');
 const errorCopyStatus = ref('');
 const feedbackModalOpen = ref(false);
 const feedbackCopyStatus = ref('');
+// 语言切换进行中标记：用于禁用切换按钮，避免重复点击触发并发的语言包拉取。
+const languageSwitchPending = ref(false);
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
 const baselineReminderModalOpen = ref(false);
@@ -2387,7 +2390,17 @@ watch(
 );
 
 async function switchLanguage(nextLanguage) {
-  await setLanguage(nextLanguage);
-  simulator.setLanguage(nextLanguage);
+  if (languageSwitchPending.value) {
+    return;
+  }
+  languageSwitchPending.value = true;
+  try {
+    await setLanguage(nextLanguage);
+    simulator.setLanguage(nextLanguage);
+  } catch (error) {
+    openGlobalError('i18n', error);
+  } finally {
+    languageSwitchPending.value = false;
+  }
 }
 </script>

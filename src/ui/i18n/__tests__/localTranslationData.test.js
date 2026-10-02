@@ -7,6 +7,7 @@ import {
   normalizeZhPunctuation,
   validateTranslationResources,
 } from '../../../../scripts/official-translation-sync.mjs';
+import { itemDetailIndex } from '../../../shared/gameDataIndex.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '../../../..');
@@ -156,5 +157,28 @@ describe('official translation snapshots', () => {
     }
     expect(enCommon?.vue?.home?.searchTarget).toBeTypeOf('string');
     expect(zhCommon?.vue?.home?.searchTarget).toBeTypeOf('string');
+  });
+
+  // 英文检索词与 en 会话显示名来自两条独立生成管线：itemDetailIndex 由
+  // scripts/build-game-data-index.mjs 从 src/combatsimulator/data 快照生成，
+  // en.itemNames 由 scripts/official-translation-sync.mjs 从官方站点语言包生成。
+  // 本用例锁定两者键集与逐项名称一致，防止单侧更新漏同步导致英文搜索命中与显示名漂移。
+  it('keeps the shared item index names aligned with the official English dictionary', () => {
+    const enTranslation = readJson(enTranslationPath);
+    const indexKeys = Object.keys(itemDetailIndex).sort();
+    const dictionaryKeys = Object.keys(enTranslation.itemNames).sort();
+
+    expect(dictionaryKeys).toEqual(indexKeys);
+
+    const mismatches = [];
+    for (const hrid of indexKeys) {
+      const indexedName = itemDetailIndex[hrid]?.name;
+      const dictionaryName = enTranslation.itemNames[hrid];
+      if (indexedName !== dictionaryName) {
+        mismatches.push(`${hrid}: index=${indexedName} en=${dictionaryName}`);
+      }
+    }
+
+    expect(mismatches).toEqual([]);
   });
 });

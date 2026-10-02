@@ -768,7 +768,7 @@ import { buildAdvisorRuntimePhaseText } from '../advisorRuntimePresentation.js';
 const simulator = useSimulatorStore();
 const router = useRouter();
 const { t } = useI18nText();
-const { getActionName, getItemName, getOfficialGameText } = useGameDataText();
+const { getActionName, getItemName, getItemNameEn, getOfficialGameText } = useGameDataText();
 const applyStatus = ref('');
 
 const metricValueClass = 'inline-flex items-center rounded-md border border-transparent px-2.5 py-1 tabular-nums';
@@ -999,7 +999,7 @@ const dropItemEntries = computed(() =>
     itemHrid,
     name: getItemName(itemHrid, itemHrid),
     nameZh: getOfficialGameText('itemNames', itemHrid, itemHrid, { language: 'zh' }),
-    nameEn: getOfficialGameText('itemNames', itemHrid, itemHrid, { language: 'en' }),
+    nameEn: getItemNameEn(itemHrid),
   })),
 );
 
