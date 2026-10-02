@@ -3,6 +3,14 @@
 > 本文档是「技能触发器优化」功能的完整技术契约。后续 5 个实现节点只需读本文档即可动手，
 > 不必重新读源码猜语义。所有行号基于截至 2026-09-17 的源码。
 
+> **装置删除注（2026-10-02 标注）**：本文 §30.8–§63.6 引用的研究装置
+> `scripts/trigger-optimizer-racing-study.mjs`（及 `trigger-optimizer-racing-study.engine.mjs`）
+> 已于 2026-09-30 随切片 21B「JS 引擎物理删除」一并删除（同批 6 个 JS 基准/研究脚本与
+> 孤儿桥接模块；删除记录见 `docs/wasm-engine-performance.md` §21.5）。因此**本文中所有形如
+> `node scripts/trigger-optimizer-racing-study.mjs …` 的复现命令均已失效**（约 44 处，
+> 自 §30.8 起至文末），原命令保留仅作沿革。各节实测数值与结论仍以本文档存档为准；
+> 如需复跑，须按各节对装置行为 / 参数 / 断言的描述重建装置。
+
 ## 0. 功能定位
 
 独立菜单页（路由 `/trigger-optimizer`）：用导入的玩家数据，在**当前战斗区域**（首页 simulationSettings
@@ -3528,6 +3536,9 @@ options = { targetTier, rounds?, WorkerClientCtor?, onProgress? }
 
 ### 30.8 有效性实证：真实引擎 bootstrap 对照（2026-09-24，`scripts/trigger-optimizer-racing-study.mjs`）
 
+> 装置注（2026-10-02）：本节的 `scripts/trigger-optimizer-racing-study.mjs` 装置已于 2026-09-30
+> 随切片 21B 删除——本节及此后各节（至 §63.6）的所有对应复现命令均已失效，详见文首「装置删除注」。
+
 单测锁定的是**机制正确性**（粗筛不进判据、锚点保送、成本记账）；「结果更准」是实证命题，
 另跑了一组对照实验回答（只读生产代码：采样/聚合/打分/闸门/筛选全部调用生产实现，判据零重写）：
 
@@ -6438,3 +6449,6 @@ S4 = 跨运行样本复用：`createTriggerOptimizerSeedSet` 的种子键刻意*
   注释 / 断言随动 + 6 个测试文件同步；口径见 §49 修订条）。对本节的意义：再跑装置时 `F${CAP}` 参照臂 =
   F16、「现状 A′」的计划上限随之为 16（预期落到补偿曲线的 99.0% 档）；A / B 日志按 12 轮口径的实测保持
   历史记录（表格不改）。
+
+> 装置注（2026-10-02）：§30.8 起全部「装置 / 复现」命令引用的
+> `scripts/trigger-optimizer-racing-study.mjs` 已随切片 21B 删除而失效——详见文首「装置删除注」。

@@ -31,6 +31,14 @@ export default defineConfig({
       input: resolve(process.cwd(), 'index.html'),
       output: {
         manualChunks(id) {
+          // commonjs helpers（globalThis 垫片 / CJS interop）拆为独立小 chunk：
+          // 它们被多个 chunk 共享时会被并入其中一个（实测曾落入懒加载的
+          // exceljs chunk），使入口对 exceljs 产生静态依赖并被 modulepreload
+          //（首屏 +271KB gzip）。独立拆分后入口只依赖数百字节的 cjsHelpers。
+          if (id.includes('commonjsHelpers')) {
+            return 'cjsHelpers';
+          }
+
           if (id.includes('exceljs')) {
             return 'exceljs';
           }
