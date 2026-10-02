@@ -7,3 +7,5 @@ public/engine/pkg/
 # golden 快照（切片 21B）：由 GOLDEN_UPDATE=1 生成，固定 JSON.stringify(2) 输出；
 # 比较按 parse 后对象进行，prettier 重排无语义价值且会与再生成器输出冲突
 src/services/__tests__/fixtures/golden/
+# Cloudflare Pages 响应头配置（2026-10-01）：非代码文件、无 parser 可推断
+public/_headers

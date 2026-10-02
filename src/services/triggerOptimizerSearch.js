@@ -83,6 +83,7 @@ import {
 } from './triggerOptimizerSimulation.js';
 import {
   createWorkerRunCancellationError,
+  hasHomeMultiRoundWorkerRunInProgress,
   hasSharedWorkerRunInProgress,
   isWorkerRunCancelledError,
 } from './simulatorWorkerRuns.js';
@@ -101,6 +102,17 @@ const TRIGGER_OPTIMIZER_BUSY_ERROR = 'Trigger optimizer is already running.';
 const SHARED_RUN_BUSY_ERROR = 'Another simulation is in progress.';
 const MISSING_PLAYER_ERROR = 'Player configuration is required.';
 const MISSING_TRIGGER_MAP_ERROR = 'Both the search-start and the best trigger maps are required.';
+
+// 服务层入口闸门（4 个公开入口共用）：触发器运行注册表 + 共享 realm 句柄 + 首页多轮批
+// 句柄三查——模块级句柄与 isSimulationBusy 的清单保持同集（新增模块级运行标志时在这里
+// 同步，store 侧清单见 simulatorRunConflicts.js）。store 层 triggerOptimizerBusy 是主
+// 闸门；本函数覆盖服务层可见的模块级事实，防止绕过 store 的直接调用穿透纵深防线
+//（首页多轮批只注册专用句柄，漏查会与它在共享保活单例上互相 supersede、多轮批被静默取消）。
+function assertTriggerOptimizerEntranceClear() {
+  if (hasTriggerOptimizerRunInProgress()) throw new Error(TRIGGER_OPTIMIZER_BUSY_ERROR);
+  if (hasSharedWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+  if (hasHomeMultiRoundWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+}
 
 // 自适应阈值精炼的级数上限（B2，2026-09-19）：步长序列 ±10 → ±5 → ±5 …
 // 网格间隔 25 个百分点 ⇒ 内部最优最多偏离「最佳格点」±12.5pp；第 1 级覆盖 10pp、之后每级
@@ -260,8 +272,7 @@ export function pickRacingSurvivors(entries) {
 // 每采纳一条；含相对轮起参考的统计量与相对当前工作配置的边际均值）——单槽增量证据不足、
 // 但一对配置相对轮起参考显著时，两槽一起落地。
 export async function optimizeTriggers(input = {}, callbacks = {}) {
-  if (hasTriggerOptimizerRunInProgress()) throw new Error(TRIGGER_OPTIMIZER_BUSY_ERROR);
-  if (hasSharedWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+  assertTriggerOptimizerEntranceClear();
 
   const playerConfig = isPlainObject(input.playerConfig) ? input.playerConfig : null;
   if (!playerConfig) throw new Error(MISSING_PLAYER_ERROR);
@@ -1157,8 +1168,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
 //   { difficultyTier, zoneHrid, rounds, plan?, seeds, baselineMetrics, bestMetrics, paired, verdict,
 //     scoreDelta, profitDelta, evaluations, simulations, elapsedSeconds, cancelled, error }
 export async function verifyTriggerOptimizerRobustness(input = {}, options = {}) {
-  if (hasTriggerOptimizerRunInProgress()) throw new Error(TRIGGER_OPTIMIZER_BUSY_ERROR);
-  if (hasSharedWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+  assertTriggerOptimizerEntranceClear();
 
   const playerConfig = isPlainObject(input.playerConfig) ? input.playerConfig : null;
   if (!playerConfig) throw new Error(MISSING_PLAYER_ERROR);
@@ -1333,8 +1343,7 @@ const MISSING_VERIFICATION_ERROR =
 // limitedBy）—— 字段的白名单与校验在 domain 的 normalizeTriggerOptimizerAppendPlan，服务层不感知
 // 具体字段，只负责「净化通过才留档」。
 export async function appendTriggerOptimizerVerification(input = {}, options = {}) {
-  if (hasTriggerOptimizerRunInProgress()) throw new Error(TRIGGER_OPTIMIZER_BUSY_ERROR);
-  if (hasSharedWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+  assertTriggerOptimizerEntranceClear();
 
   const playerConfig = isPlainObject(input.playerConfig) ? input.playerConfig : null;
   if (!playerConfig) throw new Error(MISSING_PLAYER_ERROR);
@@ -1534,8 +1543,7 @@ const MISSING_ROBUSTNESS_ERROR =
 // 不重算（口径的事实源只有 scoring 的 planTriggerOptimizerRobustnessAppend；字段白名单与校验在
 // domain 的 normalizeTriggerOptimizerRobustnessPlan）。
 export async function appendTriggerOptimizerRobustness(input = {}, options = {}) {
-  if (hasTriggerOptimizerRunInProgress()) throw new Error(TRIGGER_OPTIMIZER_BUSY_ERROR);
-  if (hasSharedWorkerRunInProgress()) throw new Error(SHARED_RUN_BUSY_ERROR);
+  assertTriggerOptimizerEntranceClear();
 
   const playerConfig = isPlainObject(input.playerConfig) ? input.playerConfig : null;
   if (!playerConfig) throw new Error(MISSING_PLAYER_ERROR);

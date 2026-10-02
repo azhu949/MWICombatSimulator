@@ -297,6 +297,12 @@ vi.mock('../../services/workerClient.js', () => {
     }
 
     stopSimulation() {}
+
+    // 池复用判定（simulatorWorkerRuns 的单场保活池会调用）：测试桩无 realm 概念，
+    // 恒不可复用（弹出即弃），语义与「每次 new 专用实例」一致。
+    canReuseRealm() {
+      return false;
+    }
   }
 
   return {

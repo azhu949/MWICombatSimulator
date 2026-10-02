@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadWasmEngine } from '../wasmEngineLoader.js';
+import { getGlueUrlCandidates, loadWasmEngine } from '../wasmEngineLoader.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const pkgDir = resolve(root, 'engine', 'pkg');
@@ -25,5 +25,27 @@ describe('wasmEngineLoader', () => {
     });
     expect(engine).not.toBeNull();
     expect(engine.bridge_probe(2, 3)).toContain('2+3=5');
+  });
+
+  it('dev 布局：两级上跳候选在前（胜出候选优先，省掉落空 404）', () => {
+    const urls = getGlueUrlCandidates({
+      dev: true,
+      moduleUrl: 'http://localhost:5173/src/services/wasmEngineLoader.js',
+    });
+    expect(urls).toEqual([
+      'http://localhost:5173/engine/pkg/mwi_combat_engine.js',
+      'http://localhost:5173/src/engine/pkg/mwi_combat_engine.js',
+    ]);
+  });
+
+  it('打包布局（含 GitHub Pages 子路径）：一级上跳候选在前，另一条作为兜底保留', () => {
+    const urls = getGlueUrlCandidates({
+      dev: false,
+      moduleUrl: 'https://user.github.io/mwisim/assets/worker-abc123.js',
+    });
+    expect(urls).toEqual([
+      'https://user.github.io/mwisim/engine/pkg/mwi_combat_engine.js',
+      'https://user.github.io/engine/pkg/mwi_combat_engine.js',
+    ]);
   });
 });

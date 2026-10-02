@@ -732,6 +732,7 @@ import { Button } from './components/ui/button/index.js';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar/index.js';
 import { useSimulatorStore } from '../stores/simulatorStore.js';
 import { formatCompactAmountForLocale } from '../services/amountFormatting.js';
+import { isReactiveSimulationBusy } from '../services/simulatorRunConflicts.js';
 import { useGameDataText } from './composables/useGameDataText.js';
 import { useI18nText } from './composables/useI18nText.js';
 import { useTheme } from './composables/useTheme.js';
@@ -871,15 +872,7 @@ const activeQueuePartyWarningText = computed(() =>
       )
     : '',
 );
-const queueActionsDisabled = computed(() =>
-  Boolean(
-    simulator.runtime?.isRunning ||
-    activeQueueState.value?.isRunning ||
-    simulator.advisor.runtime?.isRunning ||
-    simulator.foodOptimizer.runtime.isRunning ||
-    queueAdditionPending.value,
-  ),
-);
+const queueActionsDisabled = computed(() => Boolean(isReactiveSimulationBusy(simulator) || queueAdditionPending.value));
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
 const activeQueueItemCount = computed(() =>
   Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0,

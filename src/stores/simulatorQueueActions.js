@@ -34,6 +34,7 @@ import {
 } from '../services/queueVariants.js';
 import { buildChangedEquipmentKeys, buildSelectionKey } from '../services/queuePriceSelection.js';
 import { executeActiveQueueRun } from '../services/queueRunExecution.js';
+import { isSimulationBusy } from '../services/simulatorRunConflicts.js';
 import { runParallelWorkerPool } from '../services/workerPool.js';
 import {
   buildQueueCostWarnings,
@@ -394,13 +395,7 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         throw new Error('common:queue.requireImportBeforeBaseline');
       }
 
-      if (
-        this.runtime.isRunning ||
-        this.isAnyQueueRunning ||
-        this.advisor.runtime?.isRunning ||
-        this.foodOptimizer?.runtime.isRunning ||
-        this.triggerOptimizer?.runtime.isRunning
-      ) {
+      if (isSimulationBusy(this)) {
         throw new Error('common:queue.errorBusy');
       }
 
@@ -445,12 +440,8 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       }
 
       const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
-      if (
-        this.foodOptimizer?.runtime.isRunning ||
-        this.triggerOptimizer?.runtime.isRunning ||
-        this.advisor.runtime?.isRunning ||
-        this.isAnyQueueRunning
-      ) {
+      // 与第一处对齐：覆盖动态导入窗口内手动模拟已置位 runtime.isRunning 的启动窗口，防止后到者抢占共享 realm。
+      if (isSimulationBusy(this)) {
         throw new Error('common:queue.errorBusy');
       }
       const pricingOptions = createProfitPricingOptions(this.pricing);
@@ -630,7 +621,9 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         queueState.cancelRequested = false;
         this.runtime.isRunning = false;
         this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-        workerClient.stopSimulation();
+        // 收尾边界（§reuse）：不得终止共享 realm —— 基线串行复用共享保活 realm（正常完成留给
+        // 下次复用）；失败/取消的弃置已由取消链与 workerClient 内部失败域覆盖。此前无条件
+        // stopSimulation 会误杀不属于本次运行的共享 realm（并行模式从未使用该 client）。
         stopQueueWorkerClients();
       }
     },

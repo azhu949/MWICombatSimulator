@@ -15,6 +15,7 @@ import {
 import workerClient from '../../services/workerClient.js';
 import {
   cancelDedicatedWorkerRuns,
+  cancelSharedWorkerRun,
   runSimulationBatchWithDedicatedWorker,
 } from '../../services/simulatorWorkerRuns.js';
 import { HOME_MULTI_ROUND_SEED_BASE } from '../../services/homeMultiRoundSimulation.js';
@@ -395,6 +396,10 @@ describe('simulatorStore', () => {
     delete global.window;
     delete global.jigsLevelExperienceTable;
     delete global.jigsSpellBookXpByName;
+    // 跨用例清理共享句柄：手动单轮/multi 路径现在注册共享句柄，部分用例的
+    // spy mock 不回调（promise 不结算），句柄会残留并让后续用例在
+    // hasSharedWorkerRunInProgress() 防重入清单处被误拦截。
+    cancelSharedWorkerRun();
     vi.restoreAllMocks();
   });
 
@@ -1762,6 +1767,37 @@ describe('simulatorStore', () => {
     expect(simulator.activeQueueState.error).toBe('common:queue.errorBusy');
   });
 
+  it('rejects queue run while advisor scan is starting (scanInFlight window)', async () => {
+    const simulator = useSimulatorStore();
+
+    await simulator.setQueueBaselineForActivePlayer();
+    simulator.activePlayer.levels.stamina = 2;
+    simulator.addActivePlayerToQueue();
+    simulator.advisor.runtime.isRunning = false;
+    simulator.advisor.runtime.scanInFlight = true;
+
+    const rows = await simulator.runActiveQueue();
+
+    expect(rows).toEqual([]);
+    expect(simulator.activeQueueState.error).toBe('common:queue.errorBusy');
+    simulator.advisor.runtime.scanInFlight = false;
+  });
+
+  it('rejects queue run while trigger optimizer is active', async () => {
+    const simulator = useSimulatorStore();
+
+    await simulator.setQueueBaselineForActivePlayer();
+    simulator.activePlayer.levels.stamina = 2;
+    simulator.addActivePlayerToQueue();
+    simulator.triggerOptimizer.runtime.isRunning = true;
+
+    const rows = await simulator.runActiveQueue();
+
+    expect(rows).toEqual([]);
+    expect(simulator.activeQueueState.error).toBe('common:queue.errorBusy');
+    simulator.triggerOptimizer.runtime.isRunning = false;
+  });
+
   it('runs queue with multiple rounds and builds ranking output', async () => {
     const simulator = useSimulatorStore();
     const pricedItemHrid = findFirstPricedItem();
@@ -2851,8 +2887,12 @@ describe('simulatorStore', () => {
       // 生产链路：worker.js 的 simulation_error 携带 new Error(...)，经结构化克隆
       // 到达主线程仍是 Error 实例。JSON.stringify(Error) === '{}'，必须取 message。
       capturedHandlers.onError(new Error('WASM combat engine unavailable (engine-missing)'));
+      // 单轮路径经共享句柄包装（promise 化）投递：onError 的传播隔若干跳微任务，
+      // 等待 promise 链排空后再断言。
+      await vi.waitFor(() => {
+        expect(simulator.runtime.error).toBe('WASM combat engine unavailable (engine-missing)');
+      });
 
-      expect(simulator.runtime.error).toBe('WASM combat engine unavailable (engine-missing)');
       expect(simulator.runtime.error).not.toBe('{}');
       expect(simulator.runtime.isRunning).toBe(false);
     });
@@ -3111,6 +3151,19 @@ describe('simulatorStore', () => {
     await expect(runPromise).rejects.toMatchObject({ code: 'cancelled' });
   });
 
+  it('blocks manual simulation while advisor scan is starting (scanInFlight window)', async () => {
+    const simulator = useSimulatorStore();
+    const startSpy = vi.spyOn(workerClient, 'startSimulation').mockImplementation(() => {});
+    simulator.advisor.runtime.isRunning = false;
+    simulator.advisor.runtime.scanInFlight = true;
+
+    await simulator.startSimulation();
+
+    expect(simulator.runtime.error).toBe('common:simulation.errorAdvisorInProgress');
+    expect(startSpy).not.toHaveBeenCalled();
+    simulator.advisor.runtime.scanInFlight = false;
+  });
+
   it('does not treat cancelled parallel queue runs as errors', async () => {
     const simulator = useSimulatorStore();
 
@@ -3244,6 +3297,54 @@ describe('simulatorStore', () => {
     expect(simulator.activeQueueState.lastRunStatus).toBe('cancelled');
     expect(simulator.activeQueueState.isRunning).toBe(false);
     expect(simulator.runtime.isRunning).toBe(false);
+  });
+
+  it('does not terminate the shared keep-alive realm when a parallel queue run completes (§reuse)', async () => {
+    const simulator = useSimulatorStore();
+
+    await simulator.setQueueBaselineForActivePlayer();
+    simulator.activePlayer.levels.stamina = 10;
+    const addedItems = simulator.addActivePlayerToQueue();
+    expect(addedItems).toHaveLength(1);
+    simulator.queueRuntime.parallelWorkerLimit = 2;
+    simulator.updateActiveQueueSettings({
+      rounds: 1,
+      executionMode: 'parallel',
+      medianBlend: 0.5,
+      weightProfit: 1,
+      weightXp: 0,
+      weightDeathSafety: 0,
+    });
+    simulator.runSingleSimulationPayloadWithDedicatedWorker = vi.fn(async (_payload, onProgress) => {
+      onProgress?.({ progress: 1 });
+      return createQueueSimulationResult();
+    });
+    const stopSpy = vi.spyOn(workerClient, 'stopSimulation');
+
+    const rows = await simulator.runActiveQueue();
+
+    expect(rows).toHaveLength(1);
+    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(1);
+    expect(simulator.activeQueueState.lastRunStatus).toBe('completed');
+    expect(stopSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not terminate the shared keep-alive realm when a baseline simulation completes (§reuse)', async () => {
+    const simulator = useSimulatorStore();
+    simulator.setImportedProfileState('1', true);
+    simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: 'serial' });
+    simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+      onProgress?.({ progress: 1 });
+      return createQueueSimulationResult();
+    });
+    const stopSpy = vi.spyOn(workerClient, 'stopSimulation');
+
+    const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
+    expect(baseline?.completedRounds).toBe(1);
+    expect(simulator.activeQueueState.isRunning).toBe(false);
+    expect(stopSpy).not.toHaveBeenCalled();
   });
 
   it('does not load ability upgrade references when returning partial queue results after cancellation', async () => {

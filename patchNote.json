@@ -1,4 +1,36 @@
 {
+  "2026年10月2日（v3.0.6）": {
+    "label": {
+      "zh": "2026年10月2日（v3.0.6）",
+      "en": "October 2, 2026 (v3.0.6)"
+    },
+    "improvements": {
+      "zh": [
+        "模拟运行环境改为跨次复用：连续模拟不再重复初始化引擎，开始模拟的等待明显缩短。",
+        "运行环境闲置数分钟后自动回收，长时间不使用时不再占用内存。",
+        "优化引擎资源加载与静态资源缓存：去掉一次无效的引擎请求，构建产物可长期缓存，重复访问加载更快。"
+      ],
+      "en": [
+        "Simulation runtimes are now reused across runs, so consecutive simulations skip engine re-initialization and start noticeably faster.",
+        "Idle runtimes are released automatically after a few minutes instead of being held in memory.",
+        "Optimized engine resource loading and static asset caching: a redundant engine request is gone and build assets can be cached long term, so repeat visits load faster."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复手动「全迷宫 / 全区域」模拟与其他功能缺少互斥判定的问题，避免两处运行互相抢占、结果被静默取消。",
+        "修复运行被新任务抢占后旧运行状态残留、界面可能一直停留在运行中的问题。",
+        "修复队列 / 基线运行收尾时误清除其他功能运行环境的问题。",
+        "修复运行环境被浏览器回收后，批量模拟可能永久卡住的问题。"
+      ],
+      "en": [
+        "Fixed missing mutual-exclusion checks for manual all-labyrinth / all-zone runs, which could let two runs supersede each other and silently drop results.",
+        "Fixed stale state left behind after a run was superseded, which could keep the UI stuck on \"running\".",
+        "Fixed queue / baseline runs clearing runtimes that belonged to other features when they finished.",
+        "Fixed batch simulations hanging forever when a dormant runtime had been reclaimed by the browser."
+      ]
+    }
+  },
   "2026年10月1日（v3.0.5）": {
     "label": {
       "zh": "2026年10月1日（v3.0.5）",

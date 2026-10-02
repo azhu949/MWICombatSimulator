@@ -23,6 +23,7 @@ import {
   runMultiSimulationPayloadWithDedicatedWorker,
   runSingleSimulationPayloadWithDedicatedWorker,
 } from './simulatorWorkerRuns.js';
+import { isSimulationBusy } from './simulatorRunConflicts.js';
 import { createProfitPricingOptions } from './simulatorStorage.js';
 import { clamp } from './utils.js';
 import { runParallelWorkerPool } from './workerPool.js';
@@ -467,13 +468,7 @@ function handleAdvisorScanEntryError(error, store) {
 
 export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
   store.advisor.error = '';
-  if (
-    store.runtime.isRunning ||
-    store.isAnyQueueRunning ||
-    store.advisor.runtime?.isRunning ||
-    store.foodOptimizer?.runtime.isRunning ||
-    store.triggerOptimizer?.runtime.isRunning
-  ) {
+  if (isSimulationBusy(store, { ignoreAdvisorScanInFlight: true })) {
     store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
     return [];
   }
@@ -508,7 +503,7 @@ export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
   let context = null;
   try {
     const { buildPlayersForSimulation } = await loadPlayerMapperModule();
-    if (store.foodOptimizer?.runtime.isRunning || store.triggerOptimizer?.runtime.isRunning) {
+    if (isSimulationBusy(store, { ignoreAdvisorScanInFlight: true })) {
       store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
       return [];
     }

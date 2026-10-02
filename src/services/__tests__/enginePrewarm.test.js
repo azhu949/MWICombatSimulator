@@ -6,6 +6,7 @@ import {
   scheduleEnginePrewarm,
   resetEnginePrewarmForTests,
 } from '../enginePrewarm.js';
+import { getGlueUrlCandidates } from '../wasmEngineLoader.js';
 
 const RESPONSE = { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(8) };
 
@@ -33,6 +34,35 @@ describe('buildEnginePrewarmUrls', () => {
     });
     expect(urls.glueUrl).toBe('https://user.github.io/mwisim/engine/pkg/mwi_combat_engine.js');
     expect(urls.wasmUrl).toBe('https://user.github.io/mwisim/engine/pkg/mwi_combat_engine_bg.wasm');
+  });
+});
+
+// 缓存键一致性（2026-10-01）：预热 URL 必须与 worker 侧 wasmEngineLoader 的
+// **胜出候选**同一 URL —— 否则预热的 HTTP 缓存 / 代码缓存对 realm 内加载无效。
+// 两模块各自以「dev ? '../..' : '..'」判定布局，此套断言把双方的胜出 URL 锁在一起。
+describe('loader 与 prewarm 的胜出 URL 一致性', () => {
+  it('dev：两模块同目录，两级上跳命中同一 glue URL', () => {
+    const loaderCandidates = getGlueUrlCandidates({
+      dev: true,
+      moduleUrl: 'http://localhost:5173/src/services/wasmEngineLoader.js',
+    });
+    const prewarmUrls = buildEnginePrewarmUrls({
+      moduleUrl: 'http://localhost:5173/src/services/enginePrewarm.js',
+      dev: true,
+    });
+    expect(loaderCandidates[0]).toBe(prewarmUrls.glueUrl);
+  });
+
+  it('打包：worker bundle 与主 chunk 同处 assets/，一级上跳命中同一 glue URL', () => {
+    const loaderCandidates = getGlueUrlCandidates({
+      dev: false,
+      moduleUrl: 'https://user.github.io/mwisim/assets/worker-abc123.js',
+    });
+    const prewarmUrls = buildEnginePrewarmUrls({
+      moduleUrl: 'https://user.github.io/mwisim/assets/index-B123.js',
+      dev: false,
+    });
+    expect(loaderCandidates[0]).toBe(prewarmUrls.glueUrl);
   });
 });
 

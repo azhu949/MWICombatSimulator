@@ -26,9 +26,8 @@ import { createProfitPricingOptions, persistSimulationUiSettingsToStorage } from
 import {
   cancelSharedWorkerRun,
   DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
-  hasHomeMultiRoundWorkerRunInProgress,
-  hasSharedWorkerRunInProgress,
   isWorkerRunCancelledError,
+  runSharedMultiSimulationPayload,
   runSharedSingleSimulationPayload,
   runSimulationBatchWithDedicatedWorker,
   runSingleSimulationPayloadWithDedicatedWorker,
@@ -36,6 +35,7 @@ import {
   stopQueueWorkerClients,
   stopTriggerOptimizerWorkerRuns,
 } from '../services/simulatorWorkerRuns.js';
+import { isSimulationBusy } from '../services/simulatorRunConflicts.js';
 import { clamp, toFiniteNumber } from '../services/utils.js';
 
 // 运行期失败上报的 error 可能是 worker 结构化克隆传回的 Error 实例（worker.js 的
@@ -74,6 +74,12 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
     },
     runSingleSimulationPayload(payload, onProgress = () => {}, options = {}) {
       return runSharedSingleSimulationPayload(payload, onProgress, options);
+    },
+    // 手动 multi 路径（全迷宫 / 全区域）的共享句柄包装入口：与上方 single 包装
+    // 同款，让 hasSharedWorkerRunInProgress() 对所有查询方可见（触发器优化器
+    // 服务层闸门等纵深防线不再对手动运行全盲）；取代语义由共享句柄天然提供。
+    runMultiSimulationPayload(payload, onProgress = () => {}, options = {}) {
+      return runSharedMultiSimulationPayload(payload, onProgress, options);
     },
     runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
       return runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress, options);
@@ -261,17 +267,12 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
-      if (this.advisor.runtime?.isRunning) {
+      if (this.advisor.runtime?.isRunning || this.advisor.runtime?.scanInFlight) {
         this.runtime.error = 'common:simulation.errorAdvisorInProgress';
         return;
       }
 
-      if (
-        hasSharedWorkerRunInProgress() ||
-        hasHomeMultiRoundWorkerRunInProgress() ||
-        this.foodOptimizer?.runtime.isRunning ||
-        this.triggerOptimizer?.runtime.isRunning
-      ) {
+      if (isSimulationBusy(this)) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }
@@ -322,12 +323,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       const startedAt = Date.now();
 
       // 在上面的 await 之后重新检查：共享运行可能在此期间已经开始。
-      if (
-        hasSharedWorkerRunInProgress() ||
-        hasHomeMultiRoundWorkerRunInProgress() ||
-        this.foodOptimizer?.runtime.isRunning ||
-        this.triggerOptimizer?.runtime.isRunning
-      ) {
+      if (isSimulationBusy(this)) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }
@@ -348,6 +344,13 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       };
 
       const onError = (error) => {
+        if (isWorkerRunCancelledError(error)) {
+          // 被新运行抢占（supersede）：cancelled 仅由共享 realm 抢占语义产生（用户「停止」
+          // 走 store 的 stopSimulation 直接 terminate + 手动复位，不经此处）。此时运行时状态
+          // 归新运行所有：不写 runtime.error（避免触发全局错误弹窗），也不复位 isRunning
+          //（避免打掉新运行刚置位的状态）。旧运行就此静默收尾。
+          return;
+        }
         this.runtime.isRunning = false;
         this.runtime.error = formatSimulationRunError(error);
       };
@@ -357,9 +360,15 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
 
         // 红线：rounds <= 1 完全保持既有单轮语义（共享 worker、不传 seed、单场随机流）。
         if (rounds <= 1) {
-          workerClient.startSimulation(this.buildSingleSimulationPayload(playersToSim), {
-            onProgress,
-            onResult: (simResult) => {
+          // 经共享句柄包装路径投递：手动运行注册共享句柄后，hasSharedWorkerRunInProgress
+          // 对所有查询方可见（触发器优化器服务层闸门等纵深防线不再对手动运行全盲）；
+          // 用户「停止」经 cancelSharedWorkerRun 以 cancelled 错误收尾，onError 的取消
+          // 特判静默处理。包装内部仍是 workerClient.startSimulation(payload,
+          // { onProgress, onResult, onError })，对注入桩透明。
+          this.runSingleSimulationPayload(this.buildSingleSimulationPayload(playersToSim), onProgress, {
+            workerClient,
+          })
+            .then((simResult) => {
               this.runtime.progress = 1;
               this.runtime.isRunning = false;
               this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
@@ -368,9 +377,10 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
               this.results.summaryRows = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions);
               this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
               this.runtime.completionNoticeId += 1;
-            },
-            onError,
-          });
+            })
+            .catch((error) => {
+              onError(error);
+            });
 
           return;
         }
@@ -473,11 +483,8 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             this.runtime.completionNoticeId += 1;
           })
           .catch((error) => {
-            if (isWorkerRunCancelledError(error)) {
-              // 用户点「停止」：stopSimulation 已复位运行时状态；这里只保证失败路径不挂起。
-              this.runtime.isRunning = false;
-              return;
-            }
+            // 取消（supersede / 停止）与失败统一走 onError：cancelled 静默收尾，
+            // 不复位 isRunning（运行态归抢占者 / stopSimulation 所有）——与单轮路径同口径。
             onError(error);
           });
 
@@ -492,7 +499,12 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
           return;
         }
 
-        workerClient.startMultiSimulation(
+        // 经共享句柄包装路径投递：手动运行注册共享句柄后，hasSharedWorkerRunInProgress
+        // 对所有查询方可见（触发器优化器服务层闸门等纵深防线不再对手动运行全盲）；
+        // 用户「停止」经 cancelSharedWorkerRun 以 cancelled 错误收尾，onError 的取消
+        // 特判静默处理。包装内部仍是 workerClient.startMultiSimulation(payload,
+        // { onProgress, onBatchResult, onError })，对注入桩透明。
+        this.runMultiSimulationPayload(
           {
             type: 'start_simulation_all_labyrinths',
             players: playersToSim,
@@ -501,20 +513,21 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             simulationTimeLimit,
             extra,
           },
-          {
-            onProgress,
-            onBatchResult: (simResults, batchResultType) => {
-              this.runtime.progress = 1;
-              this.runtime.isRunning = false;
-              this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-              this.results.simResults = simResults;
-              this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
-              this.results.batchResultType = batchResultType || 'simulation_result_allLabyrinths';
-              this.runtime.completionNoticeId += 1;
-            },
-            onError,
-          },
-        );
+          onProgress,
+          { workerClient },
+        )
+          .then(({ simResults, batchResultType }) => {
+            this.runtime.progress = 1;
+            this.runtime.isRunning = false;
+            this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+            this.results.simResults = simResults;
+            this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
+            this.results.batchResultType = batchResultType || 'simulation_result_allLabyrinths';
+            this.runtime.completionNoticeId += 1;
+          })
+          .catch((error) => {
+            onError(error);
+          });
 
         return;
       }
@@ -530,7 +543,12 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
-      workerClient.startMultiSimulation(
+      // 经共享句柄包装路径投递：手动运行注册共享句柄后，hasSharedWorkerRunInProgress
+      // 对所有查询方可见（触发器优化器服务层闸门等纵深防线不再对手动运行全盲）；
+      // 用户「停止」经 cancelSharedWorkerRun 以 cancelled 错误收尾，onError 的取消
+      // 特判静默处理。包装内部仍是 workerClient.startMultiSimulation(payload,
+      // { onProgress, onBatchResult, onError })，对注入桩透明。
+      this.runMultiSimulationPayload(
         {
           type: 'start_simulation_all_zones',
           players: playersToSim,
@@ -539,20 +557,21 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
           simulationTimeLimit,
           extra,
         },
-        {
-          onProgress,
-          onBatchResult: (simResults, batchResultType) => {
-            this.runtime.progress = 1;
-            this.runtime.isRunning = false;
-            this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-            this.results.simResults = simResults;
-            this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
-            this.results.batchResultType = batchResultType || 'simulation_result_allZones';
-            this.runtime.completionNoticeId += 1;
-          },
-          onError,
-        },
-      );
+        onProgress,
+        { workerClient },
+      )
+        .then(({ simResults, batchResultType }) => {
+          this.runtime.progress = 1;
+          this.runtime.isRunning = false;
+          this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+          this.results.simResults = simResults;
+          this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
+          this.results.batchResultType = batchResultType || 'simulation_result_allZones';
+          this.runtime.completionNoticeId += 1;
+        })
+        .catch((error) => {
+          onError(error);
+        });
     },
   };
 }

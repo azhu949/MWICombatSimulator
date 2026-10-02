@@ -146,9 +146,16 @@ self.onmessage = async function (event) {
 
       const reason = getWasmProductionDiagnostics().lastFallbackReason || 'unknown';
       console.error(`[worker] WASM engine unavailable (reason: ${reason}); no JS fallback exists (slice 21A).`);
+      // simulation_error 按 errorCode 分两类（消费端 workerClient 据此分流批量路径）：
+      // - engine_unavailable：wasm 引擎加载失败已被本 realm 的模块级缓存记住，本 realm 内
+      //   不可恢复（realm 级 sticky 失败），复用只会立刻再次失败；
+      // - round_error：仅本场运行失败（配置不支持 / 快照构造 / 运行时抛错），同一 realm 的
+      //   后续运行仍可能成功（单场级失败）。
+      const errorCode = reason === 'engine_unavailable' ? 'engine_unavailable' : 'round_error';
       this.postMessage({
         type: 'simulation_error',
         error: new Error(`WASM combat engine unavailable (${reason}); the JS engine fallback was removed.`),
+        errorCode,
       });
       break;
     }

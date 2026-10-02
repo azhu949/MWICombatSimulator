@@ -20,6 +20,7 @@ import {
   isWorkerRunCancelledError,
   stopQueueWorkerClients,
 } from './simulatorWorkerRuns.js';
+import { isSimulationBusy } from './simulatorRunConflicts.js';
 import { clamp, deepClone, isPlainObject } from './utils.js';
 import { runParallelWorkerPool } from './workerPool.js';
 
@@ -273,12 +274,7 @@ export async function executeActiveQueueRun({
   const queueState = store.ensureQueueState(store.activePlayerId);
   queueState.error = '';
 
-  if (
-    store.runtime.isRunning ||
-    store.isAnyQueueRunning ||
-    store.advisor.runtime?.isRunning ||
-    store.foodOptimizer?.runtime.isRunning
-  ) {
+  if (isSimulationBusy(store)) {
     queueState.error = 'common:queue.errorBusy';
     return [];
   }
@@ -440,7 +436,11 @@ export async function executeActiveQueueRun({
     }
     store.runtime.isRunning = false;
     store.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-    workerClient.stopSimulation();
+    // 收尾边界（§reuse）：不得终止共享 realm —— 队列串行复用共享保活 realm（正常完成留给
+    // 下次复用）；失败/取消的弃置已由取消链（cancelSharedWorkerRun / stopQueueWorkerClients）
+    // 与 workerClient 内部失败域（simulation_error / onerror）覆盖。此前无条件
+    // stopSimulation 会误杀不属于本次运行的共享 realm（队列并行模式每场都走专用 worker，
+    // 从未使用该 client，收尾却会清掉其他功能留下的空闲保活 realm）。
     stopQueueWorkerClients();
   }
 }

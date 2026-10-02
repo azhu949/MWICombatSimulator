@@ -1,0 +1,5 @@
+# Cloudflare Pages 响应头配置（GitHub Pages 会忽略此文件，无副作用）。
+# 构建产物 dist/assets/* 带内容哈希：内容变化必换名，可放心长缓存 + immutable。
+# index.html 与其余无哈希资源保持 Pages 默认（每次重验证），发版即生效。
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

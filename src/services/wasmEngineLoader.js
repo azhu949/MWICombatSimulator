@@ -7,12 +7,7 @@
 // - 产物路径用变量拼接，避免 Vite 在构建期静态解析 new URL(...) 字面量，
 //   导致「pkg 不存在就无法构建」。
 export async function loadWasmEngine({ glueUrl, moduleOrPath } = {}) {
-  // 候选按序尝试（每 realm 首次加载各命中其一；落空的候选只 404 一次）：
-  // 源码布局（dev / Node：模块位于 src/services/ 或 src/，两级上跳 = 站点根）、
-  // 打包布局（构建后 worker bundle 位于 assets/，一级上跳 = 站点根）。
-  const urls = glueUrl
-    ? [glueUrl]
-    : GLUE_URL_SEGMENTS.map((segments) => new URL(segments.join('/'), import.meta.url).href);
+  const urls = glueUrl ? [glueUrl] : getGlueUrlCandidates();
   for (const url of urls) {
     try {
       const glue = await import(/* @vite-ignore */ url);
@@ -29,9 +24,24 @@ export async function loadWasmEngine({ glueUrl, moduleOrPath } = {}) {
 
 // 引擎产物的部署位是 public/engine/pkg（切片 18）：dev 下 vite 把 public 映射到
 // 站点根、构建时原样拷进 dist/engine/pkg，CI 无 Rust 工具链也能产出带 wasm 的
-// dist（产物随仓库提交）。此前固定两级上跳在 GitHub Pages 子路径
-// （user.github.io/<repo>/）会越出 <repo>/ 前缀导致 404。
-const GLUE_URL_SEGMENTS = [
-  ['..', '..', 'engine', 'pkg', 'mwi_combat_engine.js'],
-  ['..', 'engine', 'pkg', 'mwi_combat_engine.js'],
-];
+// dist（产物随仓库提交）。两个候选对应两种布局（上跳级数不同）；此前固定把两级
+// 上跳排前，在 GitHub Pages 子路径（user.github.io/<repo>/）下每次新建 realm 都先
+// 打一条 404（越出 <repo>/ 前缀），2026-10-01 起改为**胜出候选优先**。
+const GLUE_URL_SEGMENTS_SOURCE = ['..', '..', 'engine', 'pkg', 'mwi_combat_engine.js'];
+const GLUE_URL_SEGMENTS_BUNDLE = ['..', 'engine', 'pkg', 'mwi_combat_engine.js'];
+
+/**
+ * 候选 URL 按序尝试（每 realm 首次加载各命中其一；落空的候选只 404 一次）。
+ * 顺序 = 胜出候选排首位：
+ * - dev / Node（源码布局：本模块位于 src/services/，两级上跳 = 站点根）：`../..` 优先；
+ * - 构建产物（打包布局：worker bundle 位于 assets/，一级上跳 = 站点根）：`..` 优先。
+ * 兜底保留另一条：判定失准时（import.meta.env 缺失等）仍能加载（只付一次 404）。
+ * 判定与 enginePrewarm.buildEnginePrewarmUrls 的 `dev ? '../..' : '..'` 同款 ——
+ * 预热 URL 必须与这里胜出候选一致（HTTP 缓存 / 代码缓存按 URL 为键）。
+ */
+export function getGlueUrlCandidates({ dev = Boolean(import.meta.env?.DEV), moduleUrl = import.meta.url } = {}) {
+  const ordered = dev
+    ? [GLUE_URL_SEGMENTS_SOURCE, GLUE_URL_SEGMENTS_BUNDLE]
+    : [GLUE_URL_SEGMENTS_BUNDLE, GLUE_URL_SEGMENTS_SOURCE];
+  return ordered.map((segments) => new URL(segments.join('/'), moduleUrl).href);
+}

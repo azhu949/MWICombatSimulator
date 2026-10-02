@@ -512,7 +512,8 @@ describe('triggerOptimizerSimulation', () => {
       expect(metrics.deathsPerHour).toBeCloseTo(0.5, 6);
       expect(metrics.rounds).toBe(2);
       expect(metrics.failed).toBeUndefined();
-      expect(client.stopSimulation).toHaveBeenCalledTimes(1);
+      // 正常完成：批量 realm 保活复用（§reuse，2026-10-01），不再收尾弃置。
+      expect(client.stopSimulation).not.toHaveBeenCalled();
     });
 
     it('§54 批量路径：单场失败退化为失败样本（与逐场路径同款）', async () => {
