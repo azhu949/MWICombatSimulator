@@ -146,7 +146,7 @@ function resolveEquipmentSlotName(equipmentType, equipmentTypeDetailMap) {
 // （levelRequirements[0].skillHrid → skillDetailMap.isSkilling）：当前官方数据 102 条
 // 护符中两者 100% 等价，但该代理依赖 levelRequirements 的位置假设——官方改成多需求、
 // 把 total_level 放到第 0 位或出现「双专精」护符时会静默与语义脱节。现在它只作为
-// 数据形态哨兵（背离即 console.warn；shared/__tests__/gameDataIndex.charmOptions.test.js
+// 数据形态哨兵（背离即 console.warn；shared/__tests__/gameDataIndexOptions.test.js
 // 硬性失败），不再参与判定。
 //
 // 缺数据（combatStats 缺失或非对象）回退为 true：引擎读取 combatStats 时是直接取属性

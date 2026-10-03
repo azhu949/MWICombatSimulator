@@ -84,6 +84,8 @@
 | 7        | `npx vitest run src/ui/__tests__/SettingsPage.template.test.js src/ui/__tests__/GuidePage.template.test.js --reporter=verbose`                                                          | Settings tabs and Guide anchors/Accordion in dark/light and English core checks                             | Passed; tab switching, anchor navigation, accordion states, figures, and focus behavior verified                            |
 | 8        | `npm test`; `npm run build`; `npm run verify-pages-build`                                                                                                                               | All routes and states below; final console/overflow/overlap scan plus Select/Combobox audit                 | Passed: 64 files / 588 tests; CSS 67.47 kB (12.26 kB gzip); entry JS 1,281.39 kB (419.13 kB gzip); page verification passed |
 
+> Historical note: the phase 5-6 commands above are preserved as the original acceptance log; `multiResultsPresentation.test.js` and `skillingDrinkPresentation.test.js` were later merged into `src/ui/__tests__/presentationHelpers.test.js`.
+
 ### Final browser acceptance
 
 - Routes: `home`, `advisor`, `enhancement`, `skilling`, `queue`, `multi-results`, `settings`, and `guide`.

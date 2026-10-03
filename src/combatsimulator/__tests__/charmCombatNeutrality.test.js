@@ -11,7 +11,7 @@ import itemDetailMap from '../data/itemDetailMap.json';
 // 本测试用真实护符数据锁定该前提——若引擎改成从别处读取战斗属性，这里必须失败。
 // 另外先断言输入形态（每条护符都声明 combatStats 对象）：字段缺失时引擎读取会抛错，那属于
 // 构建期哨兵与 shared 侧测试负责暴露的形态变化，不应以 TypeError 的形式混进这里的断言。
-// 「哪些护符被标记」由 shared/__tests__/gameDataIndex.charmOptions.test.js 锁定，
+// 「哪些护符被标记」由 shared/__tests__/gameDataIndexOptions.test.js 锁定，
 // 本文件只回答「被标记 = 对战斗零贡献」这件事在引擎里确实成立。
 const CHARM_LOCATION_HRID = '/item_locations/charm';
 

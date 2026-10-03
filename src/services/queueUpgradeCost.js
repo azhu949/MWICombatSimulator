@@ -64,7 +64,7 @@ export function normalizeQueuePriceMethod(value) {
 // （旧键一律丢弃重建），否则旧的槽位锚定键会变成「用户手填的覆盖静默失效」。
 // 参数形状：JS 无类型检查 ⇒ 漏改的调用点不会报错，只会静默生成永远查不到的键（手工覆盖被无声丢弃、
 // 回落自动算值，正是本次改动要消灭的静默降级）。因此这里把「两端必然同键」的前提写成开发期断言（见下），
-// 并由 queueUpgradeCost.keyContract.test.js 静态巡检全仓调用点实参个数。
+// 并由 serviceUtilsContracts.test.js 静态巡检全仓调用点实参个数。
 export function getAbilityUpgradeCostKey(abilityHrid, fromLevel, toLevel) {
   // 开发期契约断言：任何「两端不可能同键」的入参都立即 throw，让 CI（vitest 里 import.meta.env.DEV 恒为
   // true）而不是用户的成本表来发现回归。具体拒绝：数字槽位号（旧 4 参写法的首个实参）、空 hrid、含 '|'

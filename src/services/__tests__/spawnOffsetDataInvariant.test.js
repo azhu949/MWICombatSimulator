@@ -56,7 +56,7 @@ describe('spawn difficulty offset data invariant', () => {
 // 选项缺失、候选被错误过滤（数据缺失型错误，运行时无任何告警）。
 // 与 spawn 偏移前提同理采用双端守护：① raw actionDetailMap 端拦截上游数据
 // 增长；② gameDataIndex.generated.json 生成索引端拦截构建投影漂移/文件陈旧
-// （spawn 偏移前提的生成端由 gameDataIndex.zoneMonsterSpawn.test.js 的
+// （spawn 偏移前提的生成端由 gameDataIndexOptions.test.js 的
 // raw↔生成同步断言守护，maxDifficulty 前提的生成端守护在此补齐）。
 // 断言直接引用导出常量，上调上限后无需改测试。
 describe('advisor drop gate zone tier data invariant', () => {
@@ -89,7 +89,7 @@ describe('advisor drop gate zone tier data invariant', () => {
   it('keeps the generated actionDetailIndex maxDifficulty within the cap for every indexed zone', () => {
     // 生成索引是运行时实际消费的数据：buildZoneDropAvailabilityIndex 以
     // zoneMonsterSpawnIndex 的键为区域集合（该键集与 actionDetailIndex 的非地牢
-    // 战斗区域完全一致已由 gameDataIndex.zoneMonsterSpawn.test.js 锁定），候选
+    // 战斗区域完全一致已由 gameDataIndexOptions.test.js 锁定），候选
     // 难度档上界来自 actionDetailIndex 的 maxDifficulty。本断言锁定运行时前提，
     // 拦截生成文件陈旧或构建投影漂移。
     const spawnIndex = gameDataIndex.zoneMonsterSpawnIndex || {};
