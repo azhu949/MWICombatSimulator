@@ -411,7 +411,7 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.enableHpMpVisualization).toBe(true);
   });
 
-  it('并行默认自适应（§55）：无存储值 ⇒ 按机型推荐并直接作为 queueRuntime 初始值', () => {
+  it('并行默认自适应：无存储值 ⇒ 按机型推荐并直接作为 queueRuntime 初始值', () => {
     withStubbedNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => {
       const simulator = useSimulatorStore();
 
@@ -422,7 +422,7 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('并行默认自适应（§55）：小机型与无核数环境均回退到历史行为', () => {
+  it('并行默认自适应：小机型与无核数环境均回退到历史行为', () => {
     withStubbedNavigator({ hardwareConcurrency: 2 }, () => {
       const small = useSimulatorStore();
       expect(small.queueParallelWorkerRecommended).toBe(2);
@@ -438,7 +438,7 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('并行默认自适应（§55）：已存值优先，不被推荐值覆盖', () => {
+  it('并行默认自适应：已存值优先，不被推荐值覆盖', () => {
     global.localStorage.setItem(
       'mwi.queue.settings.v1',
       JSON.stringify({

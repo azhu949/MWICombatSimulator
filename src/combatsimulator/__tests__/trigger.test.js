@@ -28,7 +28,7 @@ describe('Trigger invincible condition', () => {
   });
 });
 
-// 条件「侧别」（2026-09-21 新增，设计 §23）：同一个 buff 条件配 self 与 targeted_enemy
+// 条件「侧别」（2026-09-21 新增）：同一个 buff 条件配 self 与 targeted_enemy
 // 读的是**不同单位**的 combatBuffs —— self 读施法者自己（trigger.js 28-29），
 // targeted_enemy 读当前目标（trigger.js 31-35，target 为空直接返回 false）。
 // 敌人减益（puncture / fracturing_impact 等，技能定义 targetType = enemy / allEnemies，

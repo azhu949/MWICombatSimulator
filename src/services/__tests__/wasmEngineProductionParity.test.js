@@ -1,4 +1,4 @@
-// 切片 5 生产 parity → 切片 21B（定案 D2）golden 快照：
+// 生产 parity golden 快照（定案 D2）：
 // Rust `run_production_simulation` 在真实夹具 + 真实区域上的输出与
 // `fixtures/golden/*.json` 的固定期望对账（JS 引擎已删除，oracle 语义由
 // cargo test 的 128+ 用例承载，本套锁「wasm 输出字节不漂移」）。
@@ -37,7 +37,7 @@ const wasmPackageBuilt = existsSync(gluePath) && existsSync(wasmPath);
 
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
 const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
-// 切片 16：迷宫（labyrinth）——第一只迷宫怪 + 一个真实补给箱 + 已购满/中档商店升级。
+// 迷宫（labyrinth）——第一只迷宫怪 + 一个真实补给箱 + 已购满/中档商店升级。
 const FIXTURE_LABYRINTH_HRID = '/monsters/cyclops';
 const FIXTURE_LABYRINTH_CRATE = '/items/basic_coffee_crate';
 const FIXTURE_LABYRINTH_UPGRADES = {
@@ -47,7 +47,7 @@ const FIXTURE_LABYRINTH_UPGRADES = {
   critical_rate: 7,
   experience: 7,
 };
-// 切片 17：战斗卷轴——真实卷轴物品（无限库存；1h 天然跨 2 个 30 分钟窗口）。
+// 战斗卷轴——真实卷轴物品（无限库存；1h 天然跨 2 个 30 分钟窗口）。
 const FIXTURE_SCROLL_ITEM = '/items/seal_of_damage';
 
 let enginePromise = null;
@@ -98,7 +98,7 @@ function buildPayload(hours, seed) {
 }
 
 /**
- * 切片 15：副本（dungeon）payload —— 与 `buildPayload` 同构，只把目标切到副本区域。
+ * 副本（dungeon）payload —— 与 `buildPayload` 同构，只把目标切到副本区域。
  */
 function buildDungeonPayload(hours, seed) {
   const settings = { ...createSettings(hours), useDungeon: true, dungeonHrid: FIXTURE_DUNGEON_HRID };
@@ -114,7 +114,7 @@ function buildDungeonPayload(hours, seed) {
 }
 
 /**
- * 切片 16：迷宫（labyrinth）payload —— `mode: 'labyrinth'`（zone 为 null）、真实迷宫怪 +
+ * 迷宫（labyrinth）payload —— `mode: 'labyrinth'`（zone 为 null）、真实迷宫怪 +
  * 一个真实补给箱 + 5 项已购商店升级（升级 buff 只在迷宫内生效，类型全在引擎槽表内）。
  */
 function buildLabyrinthPayload(hours, seed) {
@@ -137,7 +137,7 @@ function buildLabyrinthPayload(hours, seed) {
 }
 
 /**
- * 切片 17：战斗卷轴 payload —— 与 `buildPayload` 同构，额外打开卷轴开关并给玩家配置一个
+ * 战斗卷轴 payload —— 与 `buildPayload` 同构，额外打开卷轴开关并给玩家配置一个
  * 真实卷轴（无限库存）。`createSettings` 的时长决定跨过的 30 分钟窗口数。
  */
 function buildScrollPayload(hours, seed) {
@@ -167,7 +167,7 @@ function buildLivePieces(payload) {
   return { zone, players };
 }
 
-/** 切片 16：迷宫活单位装配——与 `worker.js` 的迷宫分支一致（zone 为 null、buff 取 labyrinth.buffs）。 */
+/** 迷宫活单位装配——与 `worker.js` 的迷宫分支一致（zone 为 null、buff 取 labyrinth.buffs）。 */
 function buildLabyrinthLivePieces(payload) {
   const extraBuffs = buildSimulationExtraBuffs(payload.extra || {});
   const labyrinth = new Labyrinth(
@@ -224,7 +224,7 @@ function runRustFullResultSimulation(engine, payload, extraOptions = {}) {
   return runWasmProductionSimulation(engine, request).simResult;
 }
 
-/** 切片 16：Rust 侧迷宫单轮（请求带 labyrinth 三字段、无 zone）。 */
+/** Rust 侧迷宫单轮（请求带 labyrinth 三字段、无 zone）。 */
 function runRustLabyrinthSimulation(engine, payload, extraOptions = {}) {
   const { labyrinth, players } = buildLabyrinthLivePieces(payload);
   const request = buildProductionRequest({
@@ -245,7 +245,7 @@ function runRustLabyrinthSimulation(engine, payload, extraOptions = {}) {
   return runWasmProductionSimulation(engine, request).simResult;
 }
 
-/** 切片 17：卷轴 Rust 侧单轮（请求带 `combatScrollDefinitions` + 玩家 `combatScrolls` 配置）。 */
+/** 卷轴 Rust 侧单轮（请求带 `combatScrollDefinitions` + 玩家 `combatScrolls` 配置）。 */
 function runRustScrollSimulation(engine, payload, extraOptions = {}) {
   const { zone, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
@@ -287,7 +287,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     }
   });
 
-  // 切片 12：提前停止轮（候选轮 shouldStop → Rust earlyStop）。watchHrid 用怪物 hrid
+  // 提前停止轮（候选轮 shouldStop → Rust earlyStop）。watchHrid 用怪物 hrid
   // 构造确定性死亡预算触发。
   it('matches the golden early-stop round (death budget) on the real fixture zone', async () => {
     const engine = await getEngine();
@@ -318,7 +318,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.stoppedEarly).toBe(false);
   });
 
-  // 切片 13：观察器——真实夹具 + 玩家 food 槽塞 missing_hp/mp 触发器的消耗品（模拟候选轮），
+  // 观察器——真实夹具 + 玩家 food 槽塞 missing_hp/mp 触发器的消耗品（模拟候选轮），
   // 与 WASM `observers` 输出（thresholdRanges / inactiveMinimum）golden 对账。
   it('matches the golden threshold and inactive observers on the real fixture zone', async () => {
     const engine = await getEngine();
@@ -375,7 +375,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(observers.thresholdRanges).toHaveLength(2);
   });
 
-  // 切片 13-3：生产默认时长（24h）的长时长回归——上方用例只覆盖 1h。
+  // 生产默认时长（24h）的长时长回归——上方用例只覆盖 1h。
   // 走生产单轮函数 `simulateFoodOptimizerRound`（食物优化器真实 fixture，fly 区域），
   // 对照 baseline 轮（无早停）与候选轮（空蓝早停 + 阈值观察器）两条路径。
   it('matches the golden food-optimizer rounds at the production 24h horizon', async () => {
@@ -405,7 +405,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(wasmCandidate.equivalentThresholds).toHaveLength(1);
   });
 
-  // 切片 20：成本上界观察器——真实夹具 + top10 轮内成本剪枝（cutoff=0 → 首次真实食物
+  // 成本上界观察器——真实夹具 + top10 轮内成本剪枝（cutoff=0 → 首次真实食物
   // 消费后的检查点立即剪枝），Rust costBound 观察器承接。
   it('matches the golden cost-bound pruning round on the real fixture zone', async () => {
     const engine = await getEngine();
@@ -434,7 +434,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(wasmSample.costPerHour).toBe(0);
   });
 
-  // 切片 20：安装条件不满足（cutoff 非有限 → 不携带 costBound）时跑满整轮。
+  // 安装条件不满足（cutoff 非有限 → 不携带 costBound）时跑满整轮。
   it('matches when the cost-bound install guards reject the observer', async () => {
     const engine = await getEngine();
     setWasmProductionEngineForTests(engine);
@@ -458,7 +458,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(wasmSample).not.toHaveProperty('pruned');
   });
 
-  // 切片 14：full-result（完整 SimResult 字段面）——经验记账（击杀快照 → 遭遇战提交的
+  // full-result（完整 SimResult 字段面）——经验记账（击杀快照 → 遭遇战提交的
   // 时序）、掉落上下文桶（含怪物实例难度档）与激怒层数。
   it('matches the golden full-result pipeline on the real fixture zone', async () => {
     const engine = await getEngine();
@@ -485,7 +485,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.wipeEvents).toEqual([]);
   });
 
-  // 切片 14：可视化开启 → 1000-tick 时序快照随 simResult 一次性返回。
+  // 可视化开启 → 1000-tick 时序快照随 simResult 一次性返回。
   it('matches the golden time-series snapshots when visualization is enabled', async () => {
     const engine = await getEngine();
     const payload = buildPayload(1, 101);
@@ -497,7 +497,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(Object.keys(rustSimResult.timeSeriesData.players).length).toBeGreaterThan(0);
   });
 
-  // 切片 14：生产 24h 长时长 full-result 回归（掉落桶跨增益窗口的合并/拆分与经验累加）。
+  // 生产 24h 长时长 full-result 回归（掉落桶跨增益窗口的合并/拆分与经验累加）。
   it('matches the golden full-result pipeline at the production 24h horizon', async () => {
     const engine = await getEngine();
     const payload = buildPayload(24, 101);
@@ -509,7 +509,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(Object.values(rustSimResult.experienceGained.player1).some((value) => value > 0)).toBe(true);
   });
 
-  // 切片 15：副本（dungeon）波次机制 —— 逐波存活时间 / bossSpawns 清单 / maxWaveReached
+  // 副本（dungeon）波次机制 —— 逐波存活时间 / bossSpawns 清单 / maxWaveReached
   //（1h 未完成整副本 → 逐波计数分支）/ 团灭重开与失败波次计数全字段对账。
   it('matches the golden full-result dungeon pipeline on the real dungeon zone', async () => {
     const engine = await getEngine();
@@ -530,7 +530,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.wipeEvents).toEqual([]);
   });
 
-  // 切片 19：副本 + full-result + logCombatEvents —— 团灭日志由引擎生成，timestamp 是
+  // 副本 + full-result + logCombatEvents —— 团灭日志由引擎生成，timestamp 是
   // 确定性字符串 `t+{simulationTime}`（UI 只用作 v-for key，不显示），一并进 golden。
   it('matches the golden full-result dungeon pipeline with combat-event logging (wipeEvents)', async () => {
     const engine = await getEngine();
@@ -545,7 +545,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.wipeEvents.every((event) => event.timestamp.startsWith('t+'))).toBe(true);
   });
 
-  // 切片 15：副本 + minimal（优化器轮次形状：logCombatEvents=false + 时间线钩子为空操作）。
+  // 副本 + minimal（优化器轮次形状：logCombatEvents=false + 时间线钩子为空操作）。
   it('matches the golden minimal-result dungeon pipeline (optimizer shape)', async () => {
     const engine = await getEngine();
     const payload = buildDungeonPayload(1, 101);
@@ -560,7 +560,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.bossSpawns).toHaveLength(10);
   });
 
-  // 切片 15：副本 24h 长时段回归 —— 大量团灭/重开循环下副本计数与聚合仍逐字段一致。
+  // 副本 24h 长时段回归 —— 大量团灭/重开循环下副本计数与聚合仍逐字段一致。
   it('matches the golden full-result dungeon pipeline at the 24h horizon', async () => {
     const engine = await getEngine();
     const payload = buildDungeonPayload(24, 101);
@@ -571,7 +571,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.dungeonsFailed).toBeGreaterThan(100);
   });
 
-  // 切片 16：迷宫（labyrinth）——无 zone 的单怪循环 + 120s 超时重启 + 补给箱/商店升级 buff。
+  // 迷宫（labyrinth）——无 zone 的单怪循环 + 120s 超时重启 + 补给箱/商店升级 buff。
   it('matches the golden labyrinth pipeline on the real labyrinth monster', async () => {
     const engine = await getEngine();
     const payload = buildLabyrinthPayload(1, 101);
@@ -594,7 +594,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(monsterEntry.count > 0 || monsterEntry.spawnedAt > 0).toBe(true);
   });
 
-  // 切片 16：迷宫 24h 长时段回归——大量团灭/超时重开循环下逐字段仍一致。
+  // 迷宫 24h 长时段回归——大量团灭/超时重开循环下逐字段仍一致。
   it('matches the golden labyrinth pipeline at the 24h horizon', async () => {
     const engine = await getEngine();
     const payload = buildLabyrinthPayload(24, 101);
@@ -606,7 +606,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(totalDeaths).toBeGreaterThan(0);
   });
 
-  // 切片 17：战斗卷轴（1h ≥ 2 个 30 分钟窗口）——窗口开启/续期/关闭、按源移除与
+  // 战斗卷轴（1h ≥ 2 个 30 分钟窗口）——窗口开启/续期/关闭、按源移除与
   // 逐击杀经验/掉落桶（buff 影响面）全字段对账。
   it('matches the golden combat-scroll pipeline on the real fixture zone', async () => {
     const engine = await getEngine();
@@ -624,7 +624,7 @@ describe.runIf(wasmPackageBuilt)('wasm engine production golden (minimal + full 
     expect(rustSimResult.scrollUsage.disabled).toBe(false);
   });
 
-  // 切片 17：卷轴 24h 长时段回归——48 个窗口的续期/记账与跨窗口增益切换逐字段一致。
+  // 卷轴 24h 长时段回归——48 个窗口的续期/记账与跨窗口增益切换逐字段一致。
   it('matches the golden combat-scroll pipeline at the 24h horizon', async () => {
     const engine = await getEngine();
     const payload = buildScrollPayload(24, 101);

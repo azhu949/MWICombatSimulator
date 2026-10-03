@@ -121,7 +121,7 @@ describe('food optimizer complete-round cache', () => {
     const equivalent = buildFoodCandidate([{ ...food, threshold: 2 }]);
     const cached = cache.match(request.seeds[0], equivalent);
     expect(cached).not.toBeNull();
-    // 等价阈值复用必须给出与重新模拟完全一致的物理结果（切片 21B：JS 引擎已删除，
+    // 等价阈值复用必须给出与重新模拟完全一致的物理结果（JS 引擎已删除，
     // 参照改为同一 wasm 引擎重跑同一轮次——确定性下两者必须逐字段相等；阈值观测
     // 字段属于轮次缓存簿记，比较前两边剥离）。
     const resimulated = await simulateFoodOptimizerRound(request, equivalent, request.seeds[0]);

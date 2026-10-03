@@ -1,7 +1,7 @@
 //! SimResult 聚合结果：`src/combatsimulator/simResult.js`（684 行）与
 //! `src/combatsimulator/foodOptimizerSimResult.js`（minimal 变体）的逐方法移植。
 //!
-//! 覆盖范围（切片 5）：构造字段集合、攻击/死亡/消耗品/血蓝/经验/掉落桶/空蓝计时/卷轴记账/
+//! 覆盖范围：构造字段集合、攻击/死亡/消耗品/血蓝/经验/掉落桶/空蓝计时/卷轴记账/
 //! 存活时间与副本计时/团灭事件/时序快照/收尾汇总，以及 `to_value()` 的 JS JSON 形状。
 //!
 //! 对应 JS 的两条构造分支：
@@ -57,7 +57,7 @@ const JS_EXPONENTIAL_UPPER: f64 = 1e21;
 /// JS `Number.prototype.toString` 的指数写法下界：`|v| < 1e-6` 起用指数。
 const JS_EXPONENTIAL_LOWER: f64 = 1e-6;
 
-/// 命中键 → 次数（攻击表最内层，切片 28）。
+/// 命中键 → 次数（攻击表最内层）。
 ///
 /// 键数随「不同伤害值」增长（实测 golden：1h 满结果 36 表 / 2521 键、单表最大 267；
 /// 24h 最大 1068），而线性扫描在每次 `add_attack` 上是 O(n)（调用加权平均扫描长度：
@@ -152,7 +152,7 @@ impl std::hash::Hasher for U64Hasher {
 }
 
 /// 攻击表：源 hrid → 目标 hrid → 能力 hrid → 命中键（数字串 / `"miss"`，保持 String）→ 次数。
-/// 最内层用 [`HitCountMap`]（切片 28：命中键数可达数百，线性扫描曾是热路径主要成本）。
+/// 最内层用 [`HitCountMap`]（命中键数可达数百，线性扫描曾是热路径主要成本）。
 type AttackTable = OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<Hrid, HitCountMap>>>;
 /// 两层记账表（血/蓝获得、消耗、消耗品、空蓝计时、蓝耗），键为 hrid 句柄，键序按插入序。
 type TwoLevelTable = OrderedMap<Hrid, OrderedMap<Hrid, f64>>;
@@ -161,9 +161,9 @@ type ExperienceTable = OrderedMap<Hrid, OrderedMap<String, f64>>;
 
 /// `map[key] ??= V::default()`（JS 对象/Map 的「缺失即插入默认值」语义）。
 ///
-/// 切片 25：泛化到 `Hrid`（Copy）与 `String`（仅在插入缺失键时克隆）两种键。
+/// 泛化到 `Hrid`（Copy）与 `String`（仅在插入缺失键时克隆）两种键。
 fn ensure_child<'a, K: PartialEq + Clone, V: Default>(map: &'a mut OrderedMap<K, V>, key: &K) -> &'a mut V {
-    // 切片 27：单趟查找（原实现 contains_key + get_mut 两次线性扫描；命中热路径每轮数千次）。
+    // 单趟查找（原实现 contains_key + get_mut 两次线性扫描；命中热路径每轮数千次）。
     map.entry_or_default_mut(key)
 }
 
@@ -196,7 +196,7 @@ fn js_number_key(value: f64) -> String {
     out
 }
 
-/// 写入版 `js_number_key`（切片 27）：先清空 `out` 再写入结果，供 `add_attack` 的命中键
+/// 写入版 `js_number_key`：先清空 `out` 再写入结果，供 `add_attack` 的命中键
 /// 复用缓冲使用（每命中一次省一次 `String` 分配）；输出与 `js_number_key` 逐字一致。
 fn write_js_number_key(out: &mut String, value: f64) {
     use std::fmt::Write;
@@ -228,7 +228,7 @@ fn write_js_number_key(out: &mut String, value: f64) {
 }
 
 /// JS `JSON.stringify` 的数字表示：整数值不带小数点、非有限值写成 `null`。
-/// 切片 19 起 `pub`：simulator.rs 的团灭日志条目（wave/time/damage/HP 快照）复用同一口径。
+/// 已 `pub`：simulator.rs 的团灭日志条目（wave/time/damage/HP 快照）复用同一口径。
 pub fn js_number_value(value: f64) -> Value {
     if !value.is_finite() {
         return Value::Null;
@@ -387,7 +387,7 @@ pub struct SimResultState {
     experience_gained: ExperienceTable,
     encounters: f64,
     attacks: AttackTable,
-    /// 切片 27：`add_attack` 数字键复用缓冲（不参与序列化）。
+    /// `add_attack` 数字键复用缓冲（不参与序列化）。
     hit_key_scratch: String,
     hitpoints_gained: TwoLevelTable,
     manapoints_gained: TwoLevelTable,
@@ -423,7 +423,7 @@ impl SimResultState {
         let is_labyrinth = labyrinth_name.is_some();
         let mut player_ran_out_of_mana = OrderedMap::new();
         // JS 构造函数里写死的 5 个键（true 会落到真实 hrid 上，见 add_ran_out_of_mana_count）。
-        // 切片 25：`player1..player5` 是这里独有的键，动态注册即可（不进 well-known 常量表）。
+        // `player1..player5` 是这里独有的键，动态注册即可（不进 well-known 常量表）。
         for index in 1..=5 {
             player_ran_out_of_mana.set(intern_hrid(&format!("player{index}")), false);
         }
@@ -487,17 +487,17 @@ impl SimResultState {
         *ensure_child(&mut self.deaths, &hrid) += 1.0;
     }
 
-    /// 切片 12：提前停止谓词的只读视图（JS `deaths[hrid] || 0` 的归一语义）。
+    /// 提前停止谓词的只读视图（JS `deaths[hrid] || 0` 的归一语义）。
     pub fn deaths_value(&self, hrid: Hrid) -> f64 {
         self.deaths.get(&hrid).copied().unwrap_or(0.0)
     }
 
-    /// 切片 12：`playerRanOutOfMana[hrid] === true`（缺键为 false）。
+    /// `playerRanOutOfMana[hrid] === true`（缺键为 false）。
     pub fn player_ran_out_of_mana_value(&self, hrid: Hrid) -> bool {
         self.player_ran_out_of_mana.get(&hrid).copied().unwrap_or(false)
     }
 
-    /// 切片 20：成本上界观察器的只读视图（JS `consumablesUsed[unitHrid]?.[itemHrid] || 0`）。
+    /// 成本上界观察器的只读视图（JS `consumablesUsed[unitHrid]?.[itemHrid] || 0`）。
     /// minimal 分支同样记账（`addConsumableUse` 未被覆写），优化器轮次可直接消费。
     pub fn consumables_used_value(&self, unit_hrid: Hrid, item_hrid: Hrid) -> f64 {
         self.consumables_used
@@ -583,7 +583,7 @@ impl SimResultState {
         if self.minimal {
             return;
         }
-        // 切片 27：命中键改为「复用缓冲 + 单趟查表」——原实现每次命中都 `format!` 一个新
+        // 命中键改为「复用缓冲 + 单趟查表」——原实现每次命中都 `format!` 一个新
         // String，且每层 ensure_child 要两趟线性扫描（命中层键为数字串，可达数十项）。
         // 键内容、插入序与聚合语义逐位不变。
         let mut scratch = std::mem::take(&mut self.hit_key_scratch);
@@ -768,7 +768,7 @@ impl SimResultState {
         }
     }
 
-    /// 切片 14：JS `addExperienceGainValues(unit, gains)` 的定向变体——模拟器把
+    /// JS `addExperienceGainValues(unit, gains)` 的定向变体——模拟器把
     /// pending 收益按玩家提交时逐技能累加（键必须已存在于该玩家的 7 技能模板，
     /// 与 JS `hasOwnProperty` 语义一致；模板外的键静默丢弃）。玩家首次出现时
     /// 先建零值模板（等价 `ensureExperienceGainEntry`）。
@@ -783,7 +783,7 @@ impl SimResultState {
         }
     }
 
-    /// 切片 14：JS `ensureExperienceGainEntry(unit)`——按需建 7 技能零值模板。
+    /// JS `ensureExperienceGainEntry(unit)`——按需建 7 技能零值模板。
     /// `CombatSimulator.commitPendingExperience` 对每个挂起玩家先调用一次，
     /// 因此「本轮增益为空对象」的玩家同样会得到零值条目（JS 语义）。
     pub fn ensure_experience_gain_entry(&mut self, hrid: Hrid) {
@@ -889,7 +889,7 @@ impl SimResultState {
         }
     }
 
-    /// 切片 17：JS `finalizeScrollUsage` 最后一步的 `entry.exhausted = ...` 直写——仅当条目
+    /// JS `finalizeScrollUsage` 最后一步的 `entry.exhausted = ...` 直写——仅当条目
     /// 已存在（`?.` 链，缺失不创建）；键不做 trim（JS 用未归一的 state 键直读，正常路径两者相同）。
     pub fn finalize_scroll_exhausted(
         &mut self,
@@ -1002,7 +1002,7 @@ impl SimResultState {
         self.max_wave_reached = max_wave_reached;
     }
 
-    /// 切片 15：JS 收尾的 `maxWaveReached` 计算（在 `dungeonsCompleted` 赋值之后执行）。
+    /// JS 收尾的 `maxWaveReached` 计算（在 `dungeonsCompleted` 赋值之后执行）。
     ///
     /// `dungeonsCompleted >= 1` 时直接取 `maxWaves`；否则从 `#1` 起逐波在 `timeSpentAlive`
     /// 里找同名条目，缺条目或 `count == 0`（该波从未完整结束）即停。
@@ -1029,7 +1029,7 @@ impl SimResultState {
         self.max_enrage_stack = value;
     }
 
-    /// 切片 14：JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
+    /// JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
     /// ——保留 `Math.max` 的 NaN 传播（任一操作数为 NaN 时结果即 NaN）。
     pub fn bump_max_enrage_stack(&mut self, value: f64) {
         self.max_enrage_stack = if self.max_enrage_stack.is_nan() || value.is_nan() {

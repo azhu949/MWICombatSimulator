@@ -17,7 +17,7 @@ import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
 import { setWasmProductionEngineForTests } from '../wasmProductionSimulation.js';
 
-// 切片 21A：优化器轮次 wasm-only。真轮次用例注入真实 wasm 引擎（engine/pkg 已随
+// 优化器轮次 wasm-only。真轮次用例注入真实 wasm 引擎（engine/pkg 已随
 // 仓库提交构建）；产物缺失时（本地未构建）这些用例跳过。
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const gluePath = resolve(root, 'engine', 'pkg', 'mwi_combat_engine.js');
@@ -50,7 +50,7 @@ const sample = (deaths, ranOutOfMana = false, costPerHour = 10) => ({
 });
 
 describe('food optimizer engine execution', () => {
-  // 切片 21A：注入真实 wasm 引擎（一次性加载，用例共享）。
+  // 注入真实 wasm 引擎（一次性加载，用例共享）。
   beforeEach(async () => {
     if (!wasmPackageBuilt) return;
     setWasmProductionEngineForTests(
@@ -82,14 +82,14 @@ describe('food optimizer engine execution', () => {
     },
   );
 
-  // 切片 21B：'refuses a request without the WASM engine switch' 用例已删除——
+  // 'refuses a request without the WASM engine switch' 用例已删除——
   // shouldUseWasmOptimizerRound 判据随开关一起清理，任何请求都直接走 wasm；
   // 「引擎不可用硬失败」的防线由上方 'reproduces engine results' 用例的 broken
   // payload 拒绝路径与 wiring 测试的 engine_unavailable 断言承载。
 
   it('uses initialized attributes in zone and dungeon contexts', () => {
     const input = request();
-    // 切片 21B：JS 引擎工厂已删除——用 getFoodOptimizerResources 的改道路径
+    // JS 引擎工厂已删除——用 getFoodOptimizerResources 的改道路径
     // （等价「reset + initializeCombatPlayers(0)」的玩家初始化链）直接断言。
     for (const target of [
       { zone: input.payload.zone, labyrinth: null },
@@ -104,7 +104,7 @@ describe('food optimizer engine execution', () => {
   });
 
   it('returns a compact result object for optimizer rounds on the wasm engine', async () => {
-    // 切片 21B：compact 结果形状由 wasm 引擎的 minimalResult 承接——断言 wasm 轮
+    // compact 结果形状由 wasm 引擎的 minimalResult 承接——断言 wasm 轮
     // 输出的 simResult 字段面（无 attacks/experienceGained/hitpointsGained）。
     const input = request();
     const round = await simulateFoodOptimizerRound(input, null, 1, undefined, Infinity, {
@@ -232,7 +232,7 @@ describe('food optimizer engine execution', () => {
     freeze(input);
     const food = getFoodOptimizerItems({ ...getFoodOptimizerResources(input), thresholdStepPercent: 25 })[0];
     const candidate = buildFoodDefaultCandidate([food]);
-    // 切片 21B：装配隔离断言改走生产装配器（buildFoodOptimizerPieces 经 wasm 轮调用）；
+    // 装配隔离断言改走生产装配器（buildFoodOptimizerPieces 经 wasm 轮调用）；
     // 两次真实 wasm 轮后冻结载荷必须保持原样。
     await simulateFoodOptimizerRound(input, candidate, 1);
     await simulateFoodOptimizerRound(input, null, 2);

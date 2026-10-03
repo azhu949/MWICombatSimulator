@@ -1,6 +1,6 @@
 //! 战斗主循环：`src/combatsimulator/combatSimulator.js` 的逐方法移植。
 //!
-//! 覆盖范围（切片 4）：全部 18 种事件的处理、遭遇战切换/重生、CC/诅咒/虚弱/狂暴/
+//! 覆盖范围：全部 18 种事件的处理、遭遇战切换/重生、CC/诅咒/虚弱/狂暴/
 //! 激怒、技能四类效果（增益/伤害/治疗/复活/献祭/晋升）、消耗品使用与 tick、
 //! 触发器轮询（`checkTriggers`）、攻击排程（`addNextAttackEvent`）。
 //!
@@ -16,8 +16,8 @@
 //!   选择只在「非玩家 + targetType == 'enemy'」时触发；
 //! - `Math.min` 的 NaN 传播、`ability.lastUsed` 的 JS 真值语义（0 与 NaN 为假）。
 //!
-//! 切片 4 的边界：无 zone / 无 labyrinth / 无卷轴（`combatScrollsEnabled` 恒 false），
-//! `minimalResult` 语义（跳过经验/掉落记账）；这些在切片 5 接入生产路径时补齐。
+//! 早期实现的边界：无 zone / 无 labyrinth / 无卷轴（`combatScrollsEnabled` 恒 false），
+//! `minimalResult` 语义（跳过经验/掉落记账）；这些已在接入生产路径时补齐。
 
 use crate::ability::{Ability, AbilityEffect};
 use crate::buff::{get_ability_buff_source_policy, BuffSourcePolicy};
@@ -60,7 +60,7 @@ const FURY_EXPIRE_TIME: f64 = 15_000_000_000.0;
 const WEAKEN_EXPIRE_TIME: f64 = 15_000_000_000.0;
 const MAX_FURY_STACK: f64 = 5.0;
 const MAX_ENRAGE_STACK: f64 = 10.0;
-/// 切片 26：迷宫槽位池的 tier 标签（键 `"<hrid>|lab"`）——迷宫怪恒 tier 0，
+/// 迷宫槽位池的 tier 标签（键 `"<hrid>|lab"`）——迷宫怪恒 tier 0，
 /// 与普通区域的 `"<hrid>|0"` 键隔离，避免同 hrid 跨模式误复用。
 const POOL_LABYRINTH_TIER_LABEL: &str = "lab";
 
@@ -103,12 +103,12 @@ fn normalize_time_limit(value: f64) -> f64 {
     }
 }
 
-/// JS `scroll:${itemHrid}` 源键（切片 25：驻留为句柄；构造点均为低频路径）。
+/// JS `scroll:${itemHrid}` 源键（驻留为句柄；构造点均为低频路径）。
 fn scroll_source_key(item_hrid: Hrid) -> Hrid {
     intern_hrid(&format!("scroll:{}", hrid_to_string(item_hrid)))
 }
 
-/// 切片 15：`zone.dungeonSpawnInfo.maxWaves`（缺失时为 NaN —— JS `undefined` 参与
+/// `zone.dungeonSpawnInfo.maxWaves`（缺失时为 NaN —— JS `undefined` 参与
 /// 比较恒为假，与 `getNextWave` 的守卫语义一致）。
 fn dungeon_max_waves(zone: &crate::zone::Zone) -> f64 {
     zone.dungeon_spawn_info()
@@ -140,9 +140,9 @@ pub struct ResultCall {
     pub args: Vec<Value>,
 }
 
-/// 最小 simResult：切片 4 只记录调用序列（等价 JS `minimalResult` 语义）。
+/// 最小 simResult：只记录调用序列（等价 JS `minimalResult` 语义）。
 ///
-/// 切片 5 起该结构同时充当「记账门面」：探针模式（`real == None`）记录调用流水；
+/// 该结构同时充当「记账门面」：探针模式（`real == None`）记录调用流水；
 /// 生产模式（`real == Some(...)`）把同样的调用转发给真实 `SimResultState`，
 /// 不再保留调用流水。所有调用点因此无需分支。
 #[derive(Clone, Debug, Default)]
@@ -253,7 +253,7 @@ impl SimResultTally {
         self.push("updateTimeSpentAlive", vec![json!(hrid), json!(alive), json!(time)]);
     }
 
-    /// 切片 12：提前停止谓词的只读视图（`hrid` 未记账时等价 JS 的 `undefined` 归一）。
+    /// 提前停止谓词的只读视图（`hrid` 未记账时等价 JS 的 `undefined` 归一）。
     pub fn deaths_for(&self, hrid: Hrid) -> f64 {
         match self.real.as_ref() {
             Some(real) => real.deaths_value(hrid),
@@ -269,7 +269,7 @@ impl SimResultTally {
         }
     }
 
-    /// 切片 20：`consumablesUsed[unitHrid]?.[itemHrid] || 0`（探针模式恒 0）。
+    /// `consumablesUsed[unitHrid]?.[itemHrid] || 0`（探针模式恒 0）。
     pub fn consumables_used_for(&self, unit_hrid: Hrid, item_hrid: Hrid) -> f64 {
         match self.real.as_ref() {
             Some(real) => real.consumables_used_value(unit_hrid, item_hrid),
@@ -326,7 +326,7 @@ impl SimResultTally {
         self.push("setScrollUsageDisabled", vec![json!(disabled)]);
     }
 
-    /// 切片 17：生产模式专用：JS `simResult.setScrollConfiguration(playerHrid, itemHrid, finiteQuantity)`。
+    /// 生产模式专用：JS `simResult.setScrollConfiguration(playerHrid, itemHrid, finiteQuantity)`。
     pub fn set_scroll_configuration(&mut self, player_hrid: Hrid, item_hrid: Hrid, configured_quantity: Option<f64>) {
         if let Some(real) = self.real.as_mut() {
             real.set_scroll_configuration(player_hrid, item_hrid, configured_quantity);
@@ -335,7 +335,7 @@ impl SimResultTally {
         self.push("setScrollConfiguration", vec![json!(player_hrid), json!(item_hrid)]);
     }
 
-    /// 切片 17：生产模式专用：JS `simResult.recordScrollOpen(playerHrid, itemHrid, details)`。
+    /// 生产模式专用：JS `simResult.recordScrollOpen(playerHrid, itemHrid, details)`。
     pub fn record_scroll_open(
         &mut self,
         player_hrid: Hrid,
@@ -351,7 +351,7 @@ impl SimResultTally {
         self.push("recordScrollOpen", vec![json!(player_hrid), json!(item_hrid)]);
     }
 
-    /// 切片 17：生产模式专用：JS `simResult.recordScrollWindow(playerHrid, itemHrid, duration)`。
+    /// 生产模式专用：JS `simResult.recordScrollWindow(playerHrid, itemHrid, duration)`。
     pub fn record_scroll_window(&mut self, player_hrid: Hrid, item_hrid: Hrid, active_duration_ns: f64) {
         if let Some(real) = self.real.as_mut() {
             real.record_scroll_window(player_hrid, item_hrid, active_duration_ns);
@@ -360,7 +360,7 @@ impl SimResultTally {
         self.push("recordScrollWindow", vec![json!(player_hrid), json!(item_hrid)]);
     }
 
-    /// 切片 17：生产模式专用：JS `finalizeScrollUsage` 的 `entry.exhausted = ...` 直写。
+    /// 生产模式专用：JS `finalizeScrollUsage` 的 `entry.exhausted = ...` 直写。
     pub fn finalize_scroll_exhausted(&mut self, player_hrid: Hrid, item_hrid: Hrid, configured_quantity: Option<f64>) {
         if let Some(real) = self.real.as_mut() {
             real.finalize_scroll_exhausted(player_hrid, item_hrid, configured_quantity);
@@ -376,7 +376,7 @@ impl SimResultTally {
         }
     }
 
-    /// 切片 19：生产模式专用：JS `simResult.addWipeEvent(logs, simulationTime, wave)`。
+    /// 生产模式专用：JS `simResult.addWipeEvent(logs, simulationTime, wave)`。
     /// 探针分支不消费（minimal 恒空），仅记名。
     pub fn add_wipe_event(&mut self, logs: Value, simulation_time: f64, wave: f64, timestamp: String) {
         if let Some(real) = self.real.as_mut() {
@@ -384,21 +384,21 @@ impl SimResultTally {
         }
     }
 
-    /// 切片 15：生产模式专用：JS `simResult.updateDungenonFinish(beginFlag, finishTime)`。
+    /// 生产模式专用：JS `simResult.updateDungenonFinish(beginFlag, finishTime)`。
     pub fn update_dungenon_finish(&mut self, begin_flag: &str, finish_time: f64) {
         if let Some(real) = self.real.as_mut() {
             real.update_dungenon_finish(begin_flag, finish_time);
         }
     }
 
-    /// 切片 15：生产模式专用：JS `simResult.lastDungeonFinishTime = time` 的直接属性写入。
+    /// 生产模式专用：JS `simResult.lastDungeonFinishTime = time` 的直接属性写入。
     pub fn set_last_dungeon_finish_time(&mut self, value: f64) {
         if let Some(real) = self.real.as_mut() {
             real.set_last_dungeon_finish_time(value);
         }
     }
 
-    /// 切片 15：生产模式专用：JS `simResult.bossSpawns.push(...)`（minimal 变体也照常写）。
+    /// 生产模式专用：JS `simResult.bossSpawns.push(...)`（minimal 变体也照常写）。
     pub fn push_boss_spawn(&mut self, label: String) {
         if let Some(real) = self.real.as_mut() {
             real.push_boss_spawn(label);
@@ -503,7 +503,7 @@ pub struct UnitSpec {
     #[serde(default)]
     pub experience: f64,
     /// JS 玩家 DTO 顶层 `debuffOnLevelGap`（怪物缺省 0）：影响经验收益与掉落
-    /// 上下文桶。切片 14 前桥不序列化（默认 0 恰好等于怪物/普通玩家值）。
+    /// 上下文桶。此前桥不序列化（默认 0 恰好等于怪物/普通玩家值）。
     #[serde(default)]
     pub debuff_on_level_gap: f64,
     #[serde(default)]
@@ -527,7 +527,7 @@ pub struct UnitSpec {
     pub food: Vec<Option<Consumable>>,
     #[serde(default)]
     pub drinks: Vec<Option<Consumable>>,
-    /// 切片 17：玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
+    /// 玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
     #[serde(default)]
     pub combat_scrolls: Vec<CombatScrollConfig>,
     /// 该单位在 JS 侧是否由 `Player` / `Monster` 构建（类覆写会重写「类自有」面板字段）。
@@ -536,7 +536,7 @@ pub struct UnitSpec {
     pub class_owned_stats: bool,
 }
 
-/// 切片 31：模板 spec 应用计划的单条指令。
+/// 模板 spec 应用计划的单条指令。
 ///
 /// 构造期（`CombatSimulator::new`）完成字段名解析 / 字符串值驻留；应用期只做一次
 /// 函数指针调用（免去每次刷怪重复的 `match name.as_str()` 字符串分派与 `intern_hrid`）。
@@ -549,7 +549,7 @@ enum CompiledStatOp {
     Error(String),
 }
 
-/// 切片 31：单个模板的预编译应用计划（`encounter_templates` 下标对齐）。
+/// 单个模板的预编译应用计划（`encounter_templates` 下标对齐）。
 struct CompiledSpecPlan {
     hrid: Hrid,
     two_hand_hrid: Option<Hrid>,
@@ -631,7 +631,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     build_unit_from_spec_with_plan(spec, None)
 }
 
-/// 切片 31：模板计划版 `build_unit_from_spec`（免逐项字符串解析；语义逐位一致）。
+/// 模板计划版 `build_unit_from_spec`（免逐项字符串解析；语义逐位一致）。
 fn build_unit_from_spec_with_plan(
     spec: &UnitSpec,
     plan: Option<&CompiledSpecPlan>,
@@ -643,10 +643,10 @@ fn build_unit_from_spec_with_plan(
 }
 
 /// `build_unit_from_spec` 的公共主体：把 spec 写入一个处于 **default 形态** 的单位
-/// （`is_player` 由调用方预设）。切片 26 的 `restore_for_respawn` 走同一路径——
+/// （`is_player` 由调用方预设）。`restore_for_respawn` 走同一路径——
 /// 「复用槽位」与「新建单位」因此逐字段一致（等价性由双跑测试锁定）。
 ///
-/// 切片 31：`plan` 为构造期预编译的模板计划（`None` = 逐项字符串解析路径，供
+/// `plan` 为构造期预编译的模板计划（`None` = 逐项字符串解析路径，供
 /// 玩家 / 探针 / 非模板调用方使用）；loadout 槽位按目标长度归位并同形态覆盖
 /// （复用路径经 `clone_from_reuse` 保留内层 Vec 缓冲）。
 fn apply_unit_spec_with_plan(
@@ -666,7 +666,7 @@ fn apply_unit_spec_with_plan(
 
     match plan {
         Some(plan) => {
-            // 切片 31：正常路径整块赋值快照（~600B memcpy）；错误路径逐步重放，
+            // 正常路径整块赋值快照（~600B memcpy）；错误路径逐步重放，
             // 保持「先写错误点之前的字段、再返回错误」的原文语义。
             match &plan.stats_snapshot {
                 Some(snapshot) => unit.combat_details.combat_stats = snapshot.clone(),
@@ -706,7 +706,7 @@ fn apply_unit_spec_with_plan(
         Some(plan) => plan.two_hand_hrid,
         None => spec.two_hand_hrid.as_deref().map(intern_hrid),
     };
-    // 切片 31：clone_from 复用已分配缓冲（复用路径经 keep-loadout 重置保留了这些 Vec）。
+    // clone_from 复用已分配缓冲（复用路径经 keep-loadout 重置保留了这些 Vec）。
     unit.house_rooms.clone_from(&spec.house_rooms);
     unit.guild_buffs.clone_from(&spec.guild_buffs);
     unit.achievements.clone_from(&spec.achievements);
@@ -727,7 +727,7 @@ fn apply_unit_spec_with_plan(
     unit.update_combat_details();
 
     let _prof_spec_loadout = crate::prof::start("unit.spec_loadout");
-    // 切片 31：槽位长度归位到 max(默认槽位数, spec 槽位数)——与 `build_unit_from_spec`
+    // 槽位长度归位到 max(默认槽位数, spec 槽位数)——与 `build_unit_from_spec`
     // 的「Default 形态（4/3/3）+ 按需扩展」逐位一致；同形态槽位经 `clone_from_reuse`
     // 覆盖复用内层缓冲，超出 spec 的槽位清空。
     unit.abilities.resize(spec.abilities.len().max(4), None);
@@ -769,11 +769,11 @@ fn apply_unit_spec_with_plan(
 }
 
 impl CombatUnit {
-    /// 切片 26：重生槽位复用——把本槽位**原地**重建为 spec 对应的新单位。
+    /// 重生槽位复用——把本槽位**原地**重建为 spec 对应的新单位。
     ///
     /// 步骤与 `build_unit_from_spec` 完全同序：先恢复 default 形态
     /// （`reset_to_default_keep_loadout`，保留 Vec 容量与 loadout 槽位内容），再走
-    /// `apply_unit_spec_with_plan`（切片 31：预编译计划 + 同形态覆盖），最后写入实例
+    /// `apply_unit_spec_with_plan`（预编译计划 + 同形态覆盖），最后写入实例
     /// 难度档与重生池键（等价 `instantiate_templates` 对新建单位的收尾）。
     fn restore_for_respawn(
         &mut self,
@@ -798,7 +798,7 @@ impl CombatUnit {
     }
 }
 
-/// 怪物模板（切片 5 生产模式）：按 `(hrid, difficultyTier)` 预生成，遭遇战开始时按需实例化。
+/// 怪物模板（生产模式）：按 `(hrid, difficultyTier)` 预生成，遭遇战开始时按需实例化。
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TemplateSpec {
@@ -822,10 +822,10 @@ pub struct SimulatorOptions {
     /// JS 侧存在 zone（普通区域，非地下城）时敌人重生/玩家复活才会排程。
     #[serde(default)]
     pub zone_present: bool,
-    /// 切片 4 不支持地下城（`zone.isDungeon === true` 的分支未移植）。
+    /// 探针模式不支持地下城（`zone.isDungeon === true` 的分支未移植）。
     #[serde(default)]
     pub zone_is_dungeon: bool,
-    /// 切片 4 不支持迷宫。
+    /// 探针模式不支持迷宫。
     #[serde(default)]
     pub labyrinth_present: bool,
     #[serde(default)]
@@ -837,7 +837,7 @@ pub struct SimulatorOptions {
     #[serde(default)]
     pub bloom_ability: Option<Ability>,
     // ------------------------------------------------------------------
-    // 切片 5：生产模式（真实区域 + 真实聚合结果）
+    // 生产模式（真实区域 + 真实聚合结果）
     // ------------------------------------------------------------------
     /// `true` 时使用真实 `SimResult`/`FoodOptimizerSimResult` 聚合（`minimal_result` 同时选择
     /// 结果类），而不是探针的调用流水。
@@ -863,24 +863,24 @@ pub struct SimulatorOptions {
     /// `combatStyleDetailMap[styleHrid].skillExpMap` 的键序快照（经验计算用）。
     #[serde(default)]
     pub combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
-    /// JS `logCombatEvents`（切片 14 起不再限制：仅控制台输出，不产生结果数据）。
+    /// JS `logCombatEvents`（不再限制：仅控制台输出，不产生结果数据）。
     #[serde(default)]
     pub log_combat_events: bool,
-    /// JS `enableHpMpVisualization`（切片 14 起支持：每 1000 个事件采集一次时序快照，
+    /// JS `enableHpMpVisualization`（已支持：每 1000 个事件采集一次时序快照，
     /// 随 simResult 的 `timeSeriesData` 一次性返回）。
     #[serde(default)]
     pub enable_hp_mp_visualization: bool,
-    /// JS `combatScrollsEnabled`（切片 17 起引擎侧完整支持：窗口开启/续期/关闭与记账）。
+    /// JS `combatScrollsEnabled`（引擎侧完整支持：窗口开启/续期/关闭与记账）。
     #[serde(default)]
     pub combat_scrolls_enabled: bool,
     /// JS `isGuildTrial`（为 true 时 `scrollsAllowed` 为假、卷轴上下文为 'guild_trial'）。
     #[serde(default)]
     pub is_guild_trial: bool,
-    /// 切片 17：战斗卷轴定义表（桥侧对 `getCombatScrollDefinition(itemHrid)` 的快照：
+    /// 战斗卷轴定义表（桥侧对 `getCombatScrollDefinition(itemHrid)` 的快照：
     /// `durationNs` + `buff` 模板）。Rust 不持有游戏数据，缺定义的配置项在初始化时跳过。
     #[serde(default)]
     pub combat_scroll_definitions: Vec<CombatScrollDefinition>,
-    /// 切片 12：提前停止谓词（等价 JS `simulate(limit, { shouldStop })` 回调）。
+    /// 提前停止谓词（等价 JS `simulate(limit, { shouldStop })` 回调）。
     ///
     /// 生产调用方只用一种谓词（食物优化器候选轮）：`playerRanOutOfMana[watchHrid] ===
     /// true || (deaths[watchHrid] || 0) > deathLimit`——两个状态都单调（空蓝粘滞、
@@ -889,18 +889,18 @@ pub struct SimulatorOptions {
     /// 通用 JS 回调（任意谓词）不在 WASM 契约内，仍由 JS 引擎承接。
     #[serde(default)]
     pub early_stop: Option<EarlyStopSpec>,
-    /// 切片 13：观察器（等价 JS `observeFoodOptimizerThresholds` /
+    /// 观察器（等价 JS `observeFoodOptimizerThresholds` /
     /// `observeInactiveFoodThresholds`）。`None` = 不观察（基线轮）。
     #[serde(default)]
     pub observers: Option<ObserverSpec>,
-    /// 切片 20：成本上界观察器（等价 JS `observeFoodOptimizerCostBound`）。`None` =
+    /// 成本上界观察器（等价 JS `observeFoodOptimizerCostBound`）。`None` =
     /// 不安装（非 top-ten 剪枝轮）。与 `earlyStop` 组合成 JS `shouldStop` 的完整语义
     ///（失败谓词优先、成本其次——`||` 短路顺序一致）。
     #[serde(default)]
     pub cost_bound: Option<CostBoundSpec>,
 }
 
-/// 提前停止谓词参数（切片 12）。
+/// 提前停止谓词参数。
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EarlyStopSpec {
@@ -910,7 +910,7 @@ pub struct EarlyStopSpec {
     pub death_limit: Option<f64>,
 }
 
-/// 切片 13：观察器参数（等价 JS 侧 `observeFoodOptimizerThresholds` +
+/// 观察器参数（等价 JS 侧 `observeFoodOptimizerThresholds` +
 /// `observeInactiveFoodThresholds` 包装）。两者都是**纯读窥视**：不改 RNG、不改
 /// 事件流、不改比较结果——只在既有代码路径旁同步记录。
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -920,7 +920,7 @@ pub struct ObserverSpec {
     pub watch_hrid: Hrid,
 }
 
-/// 切片 20：成本上界观察器参数（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
+/// 成本上界观察器参数（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
 ///
 /// 价格由桥侧预解析成 `[hrid, price]` 快照：键序 = 监视玩家 food 槽序（`filter(Boolean)`
 /// 去重——与 JS `foodUsed` 的求和序逐字一致），且只含 food 类目条目（等价
@@ -951,7 +951,7 @@ pub struct ThresholdRange {
     pub max: f64,
 }
 
-/// 观察器运行时状态（切片 13）。
+/// 观察器运行时状态。
 #[derive(Debug)]
 pub struct ObserverState {
     /// 阈值观察（None = 形态不匹配或观察到非有限值，等价 JS `() => null`）。
@@ -1054,7 +1054,7 @@ impl ObserverState {
     }
 }
 
-/// 切片 13：`should_trigger` 快速路径的阈值窥视句柄（等价 JS
+/// `should_trigger` 快速路径的阈值窥视句柄（等价 JS
 /// `observeFoodOptimizerThresholds` 包装的 compareValue）——借用 `ObserverState`，
 /// 在 compare_value 被真正调用的那一刻转发 (value, active)。具体 struct 而非
 /// `dyn FnMut`：零虚调用开销，food 循环用 take/put 绕开借用冲突时也能整体移动。
@@ -1075,7 +1075,7 @@ fn is_safe_integer(value: f64) -> bool {
     value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INTEGER_F64
 }
 
-/// 切片 20：成本上界观察器运行时状态（等价 JS `observeFoodOptimizerCostBound` 闭包）。
+/// 成本上界观察器运行时状态（等价 JS `observeFoodOptimizerCostBound` 闭包）。
 ///
 /// 与阈值/闲置观察器不同，本观察器**会停止模拟**（等价 JS `shouldStop` 谓词的成本
 /// 分支），但不改 RNG、不改事件流、不改 simResult——停止结论与下界只走独立输出字段。
@@ -1200,37 +1200,37 @@ pub struct CombatSimulator {
     promotion_specs: OrderedMap<String, UnitSpec>,
     blaze_ability: Option<Ability>,
     bloom_ability: Option<Ability>,
-    // 切片 5 生产模式字段
+    // 生产模式字段
     real_result: bool,
     minimal_result: bool,
     zone: Option<crate::zone::Zone>,
     encounter_templates: Vec<TemplateSpec>,
-    /// 切片 30：`encounter_templates` 的池键预计算（下标对齐：`"<hrid>|<JS 数字键>"`）。
+    /// `encounter_templates` 的池键预计算（下标对齐：`"<hrid>|<JS 数字键>"`）。
     /// 模板表构造后不再变更，故在 `new` 里一次性算出；刷怪路径只做 `String` 克隆。
     template_pool_keys: Vec<String>,
-    /// 切片 31：`encounter_templates` 的应用计划预编译（下标对齐；字段名 → setter、
+    /// `encounter_templates` 的应用计划预编译（下标对齐；字段名 → setter、
     /// 字符串值 → 驻留句柄）。模板表构造后不再变更，故在 `new` 里一次性算出。
     template_spec_plans: Vec<CompiledSpecPlan>,
     labyrinth_name: Option<String>,
     labyrinth_room_level: f64,
-    /// 切片 16：JS `labyrinth.updateEnconterStartTime(simulationTime)`——迷宫每轮遭遇的
+    /// JS `labyrinth.updateEnconterStartTime(simulationTime)`——迷宫每轮遭遇的
     /// 起始时间（120s 超时判定用；`checkTimeout` 读它）。
     labyrinth_encounter_start_time: f64,
     combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
-    /// JS `logCombatEvents`：切片 19 起驱动副本团灭日志（wipeEvents）。仅副本
+    /// JS `logCombatEvents`：驱动副本团灭日志（wipeEvents）。仅副本
     /// （`zone_is_dungeon`）消费它——7 个结算点写环形缓冲，团灭时快照进 simResult。
     /// 构造后条件已编码进 `wipe_logs`（Some = 启用），字段本身不再保留。
     wipe_logs: Option<WipeLogBuffer>,
     enable_hp_mp_visualization: bool,
     combat_scrolls_enabled: bool,
-    /// 切片 17：战斗卷轴定义表（桥侧快照）与运行时状态。`scroll_runtime` 顺序 =
+    /// 战斗卷轴定义表（桥侧快照）与运行时状态。`scroll_runtime` 顺序 =
     /// 玩家序 × 配置序；`next_scroll_renewal_time` 等价 JS `nextScrollRenewalTime`。
     scroll_definitions: Vec<CombatScrollDefinition>,
     scroll_runtime: Vec<ScrollState>,
     next_scroll_renewal_time: f64,
     player_count: usize,
-    // 切片 14 full-result 经验簿记（JS pendingExperienceGains / enemyDeathSnapshots /
-    // experienceAwardedEnemies）；切片 26 起改为**按槽位下标**索引（下标 = UnitId），
+    // full-result 经验簿记（JS pendingExperienceGains / enemyDeathSnapshots /
+    // experienceAwardedEnemies）；后改为**按槽位下标**索引（下标 = UnitId），
     // 槽位释放入池时清空对应项——复用后新兵不会误读旧快照/旧颁奖状态
     //（JS 侧 WeakMap/WeakSet 的键是每次实例化的全新对象身份，槽位复用必须显式清账）。
     // `pending_experience_gains` 键恒为玩家（玩家槽位不回收），保持线性查找。
@@ -1238,20 +1238,20 @@ pub struct CombatSimulator {
     enemy_death_snapshots: Vec<Option<(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)>>,
     experience_awarded: Vec<bool>,
     is_guild_trial: bool,
-    /// 切片 12：提前停止谓词参数（`None` = 无提前停止）。
+    /// 提前停止谓词参数（`None` = 无提前停止）。
     early_stop: Option<EarlyStopSpec>,
-    /// 切片 13：观察器参数与运行时状态（`None` = 不观察；state 在匹配玩家入池时初始化，
+    /// 观察器参数与运行时状态（`None` = 不观察；state 在匹配玩家入池时初始化，
     /// reset 重建——等价 JS 每轮模拟前新装观察器）。
     observer_spec: Option<ObserverSpec>,
     observer_state: Option<ObserverState>,
     observer_unit: Option<UnitId>,
-    /// 切片 20：成本上界观察器（spec 常驻；state 在匹配玩家入池时初始化、reset 重建，
+    /// 成本上界观察器（spec 常驻；state 在匹配玩家入池时初始化、reset 重建，
     /// 等价 JS 每轮模拟前新装观察器闭包）。
     cost_bound_spec: Option<CostBoundSpec>,
     cost_bound_state: Option<CostBoundState>,
     cost_bound_unit: Option<UnitId>,
     // ------------------------------------------------------------------
-    // 切片 26：重生路径死槽复用
+    // 重生路径死槽复用
     // ------------------------------------------------------------------
     /// 池化槽位：`"<hrid>|<tier 键>"`（迷宫为 `"<hrid>|lab"`）→ 已死敌人的竞技场下标栈。
     /// 遭遇战结束时按死亡单位的 `respawn_pool_key` 收池；重生时同键命中则**原地重写**
@@ -1263,7 +1263,7 @@ pub struct CombatSimulator {
     /// 关闭后完全退化为旧行为（不进池 / 不复用）——等价性双跑测试与问题定位用；
     /// 生产路径构造后恒为 `true`（无外部写入口）。
     respawn_reuse_enabled: bool,
-    /// 切片 29：热路径暂存（容量复用；见 `SimScratch`——非语义状态，不进任何输出）。
+    /// 热路径暂存（容量复用；见 `SimScratch`——非语义状态，不进任何输出）。
     scratch: SimScratch,
 }
 
@@ -1275,7 +1275,7 @@ fn first_alive_in(arena: &UnitArena, ids: Option<&[UnitId]>) -> Option<UnitId> {
         .find(|id| arena.get(*id).combat_details.current_hitpoints > 0.0)
 }
 
-/// 切片 26：`UnitArena::release`（swap_remove）后的槽位映射——末位单位 `moved` 被换入
+/// `UnitArena::release`（swap_remove）后的槽位映射——末位单位 `moved` 被换入
 /// 被移除的下标 `removed`，**其余下标一律不变**（swap 语义，不做 `-1` 平移）。
 fn remap_slot_after_release(id: UnitId, removed: UnitId, moved: UnitId) -> UnitId {
     if id == moved {
@@ -1285,7 +1285,7 @@ fn remap_slot_after_release(id: UnitId, removed: UnitId, moved: UnitId) -> UnitI
     }
 }
 
-/// 切片 19：JS `wipeLogs` 环形缓冲（`new Array(200)` + index/count）。
+/// JS `wipeLogs` 环形缓冲（`new Array(200)` + index/count）。
 #[derive(Default)]
 struct WipeLogBuffer {
     buffer: VecDeque<Value>,
@@ -1314,7 +1314,7 @@ impl WipeLogBuffer {
     }
 }
 
-/// 切片 29：模拟器热路径暂存表——各热函数以 `std::mem::take → clear → 重填 → 使用 →
+/// 模拟器热路径暂存表——各热函数以 `std::mem::take → clear → 重填 → 使用 →
 /// restore` 模式复用 Vec 容量，消除每次调用的小表分配/释放。**非语义状态**：
 /// 使用方恒先 `clear` 再填充，绝不在重填前读取旧内容；`take` 期间发生重入时，内层
 /// 拿到空表独立分配（仅放弃复用），外层的表在函数返回前原样放回。错误路径的提前
@@ -1359,7 +1359,7 @@ impl CombatSimulator {
                 options.zone_is_dungeon,
             )
         });
-        // 切片 30：模板池键预计算——产物与 `instantiate_templates` 原先的即时
+        // 模板池键预计算——产物与 `instantiate_templates` 原先的即时
         // `format!("{hrid}|{}", js_number_key(*tier))` 逐字符一致（`js_number_key` 语义未变；
         // 查表命中即 entry 的 (hrid, tier) 与模板逐位相等）。迷宫分支仍走现算键
         // （`tier_label_override`，每次遭遇一条，非热路径）。
@@ -1374,7 +1374,7 @@ impl CombatSimulator {
                 )
             })
             .collect();
-        // 切片 31：模板 spec 应用计划预编译——把 `combatStats` 字段名解析为 setter、
+        // 模板 spec 应用计划预编译——把 `combatStats` 字段名解析为 setter、
         // `combatStatsStrings` 的值驻留为句柄；刷怪路径免去逐项字符串分派与驻留。
         let template_spec_plans: Vec<CompiledSpecPlan> = options
             .encounter_templates
@@ -1435,7 +1435,7 @@ impl CombatSimulator {
             observer_spec: options.observers,
             observer_state: None,
             observer_unit: None,
-            // 切片 20：JS 安装守卫要求 `Number.isFinite(limit) && limit > 0`（成本以全额
+            // JS 安装守卫要求 `Number.isFinite(limit) && limit > 0`（成本以全额
             // 时长为除数）；不满足时不激活（等价 JS 不装观察器）。
             cost_bound_spec: match &options.cost_bound {
                 Some(spec) if options.simulation_time_limit.is_finite() && options.simulation_time_limit > 0.0 => {
@@ -1458,14 +1458,14 @@ impl CombatSimulator {
         let id = self.arena.push(unit);
         self.players.push(id);
         self.player_count += 1;
-        // 切片 13：观察器跟随匹配玩家初始化（JS 在轮次开始前对找到的 player 装观察器）。
+        // 观察器跟随匹配玩家初始化（JS 在轮次开始前对找到的 player 装观察器）。
         if let Some(spec_observer) = self.observer_spec.as_ref() {
             if with_hrid(spec_observer.watch_hrid, |hrid| hrid == spec.hrid) && self.observer_state.is_none() {
                 self.observer_state = Some(ObserverState::new(spec_observer, &self.arena.get(id).food));
                 self.observer_unit = Some(id);
             }
         }
-        // 切片 20：成本观察器同样跟随匹配玩家初始化（等价 JS `simulateFoodOptimizerRound`
+        // 成本观察器同样跟随匹配玩家初始化（等价 JS `simulateFoodOptimizerRound`
         // 找到 player 后装观察器；安装校验不过 → 恒不激活——unit 不写入，reset 守卫随之跳过）。
         if let Some(spec_cost) = self.cost_bound_spec.as_ref() {
             if with_hrid(spec_cost.watch_hrid, |hrid| hrid == spec.hrid) && self.cost_bound_state.is_none() {
@@ -1480,16 +1480,16 @@ impl CombatSimulator {
 
     /// 生产模式支持边界（其余情形由 JS 侧回退）。
     ///
-    /// 切片 14：full-result 全量覆盖（经验记账 / 掉落上下文桶 / 1000-tick 时序快照 /
+    /// full-result 全量覆盖（经验记账 / 掉落上下文桶 / 1000-tick 时序快照 /
     /// 激怒层数），因此 `minimalResult`、`logCombatEvents`（仅控制台输出，无数据）
     /// 与 `enableHpMpVisualization`（时序随 simResult 一次性返回）三条闸门已解除。
     ///
-    /// 切片 15：副本（dungeon）波次机制纳入引擎。唯一仍留 JS 的副本组合是
+    /// 副本（dungeon）波次机制纳入引擎。唯一仍留 JS 的副本组合是
     /// full-result + `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含
     /// `new Date().toISOString()` 墙钟时间戳，天然不可复现），本引擎不生成该日志。
     /// minimal 变体把 `addWipeEvent` 覆写为空操作、也不序列化 `wipeEvents`，不受影响。
-    /// 切片 16：迷宫（labyrinth）模式纳入引擎（无 zone 的单怪循环 + 120s 超时重启）。
-    /// 切片 17：战斗卷轴窗口语义纳入引擎（定义表随请求传入；窗口开启/续期/关闭与记账，
+    /// 迷宫（labyrinth）模式纳入引擎（无 zone 的单怪循环 + 120s 超时重启）。
+    /// 战斗卷轴窗口语义纳入引擎（定义表随请求传入；窗口开启/续期/关闭与记账，
     /// 迷宫/公会试炼按下文 `scrollsAllowed` 规则忽略）。
     /// 仍留 JS 的还有公会试炼与无区域。
     fn validate_production_support(&self) -> Result<(), UnitError> {
@@ -1526,7 +1526,7 @@ impl CombatSimulator {
         id
     }
 
-    /// 注（切片 25）：返回 `Hrid` 句柄（Copy 无克隆）；句柄由构造期驻留，恒有效。
+    /// 注：返回 `Hrid` 句柄（Copy 无克隆）；句柄由构造期驻留，恒有效。
     fn unit_hrid(&self, id: UnitId) -> Hrid {
         let _prof = crate::prof::start("unit_hrid");
         self.arena.get(id).hrid
@@ -1566,7 +1566,7 @@ impl CombatSimulator {
         });
     }
 
-    /// 切片 26：尽力清掉引用该槽位的队列事件（`clear_matching` 单趟 retain，**不会 panic**）。
+    /// 尽力清掉引用该槽位的队列事件（`clear_matching` 单趟 retain，**不会 panic**）。
     /// 返回是否有事件被清除——槽位入池/移除前的防御性清场（死亡点已清，此处兜底）。
     fn try_clear_events_for_unit(&mut self, id: UnitId) -> bool {
         self.queue
@@ -1576,7 +1576,7 @@ impl CombatSimulator {
     fn record_unit_death(&mut self, unit: UnitId) {
         let hrid = self.unit_hrid(unit);
         self.tally.add_death(hrid);
-        // 切片 14 full-result：JS `recordUnitDeath` 的 minimal 之后分支——只有
+        // full-result：JS `recordUnitDeath` 的 minimal 之后分支——只有
         // 遭遇战成员的经验快照 + 每玩家掉落上下文桶。real 分支以外（探针流水）跳过。
         if !self.real_result || self.minimal_result {
             return;
@@ -1693,7 +1693,7 @@ impl CombatSimulator {
         self.arena.get(monster).difficulty_tier
     }
 
-    /// 切片 26：槽位记账访问器（下标 = UnitId；越界 = 无条目）。槽位复用前必须
+    /// 槽位记账访问器（下标 = UnitId；越界 = 无条目）。槽位复用前必须
     /// 由 `clear_slot_bookkeeping` 清空，否则新兵会误命中原槽位的旧快照/旧颁奖状态。
     fn enemy_death_snapshot_of(&self, enemy: UnitId) -> Option<&(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)> {
         self.enemy_death_snapshots.get(enemy).and_then(|entry| entry.as_ref())
@@ -1785,7 +1785,7 @@ impl CombatSimulator {
         }
     }
 
-    /// 切片 12：提前停止谓词（等价食物优化器候选轮的 JS `shouldStop`）。
+    /// 提前停止谓词（等价食物优化器候选轮的 JS `shouldStop`）。
     ///
     /// `playerRanOutOfMana[watch_hrid] === true || (deaths[watch_hrid] || 0) > death_limit`。
     fn early_stop_hit(&self) -> bool {
@@ -1801,7 +1801,7 @@ impl CombatSimulator {
         }
     }
 
-    /// 切片 20：成本上界停止谓词（等价 JS `costObserver.shouldStop()`——仅在 dirty 时
+    /// 成本上界停止谓词（等价 JS `costObserver.shouldStop()`——仅在 dirty 时
     /// 重算，返回最新 `aboveCutoff`）。调用方必须把它放在 `early_stop_hit()` 之后求值
     ///（`||` 短路 = JS `hasFailed(instance) || costObserver.shouldStop()` 的失败优先序）。
     fn cost_stop_hit(&mut self) -> bool {
@@ -1826,10 +1826,10 @@ impl CombatSimulator {
             self.validate_production_support()?;
         } else {
             if self.zone_is_dungeon {
-                return Err(UnitError::error("dungeon zones are not supported by the slice-4 simulator"));
+                return Err(UnitError::error("dungeon zones are not supported by the probe simulator"));
             }
             if self.labyrinth_present {
-                return Err(UnitError::error("labyrinth runs are not supported by the slice-4 simulator"));
+                return Err(UnitError::error("labyrinth runs are not supported by the probe simulator"));
             }
         }
 
@@ -1858,9 +1858,9 @@ impl CombatSimulator {
             let event = self.queue.get_next_event().expect("peeked event exists");
             self.process_event(event)?;
 
-            // 切片 12：JS 在每个事件处理后调用 `shouldStop(this)`；谓词单调
+            // JS 在每个事件处理后调用 `shouldStop(this)`；谓词单调
             //（空蓝粘滞、死亡只增），与 JS 检查点一致地逐事件求值。
-            // 切片 20：`failed || cost_stop` = JS `hasFailed(instance) ||
+            // `failed || cost_stop` = JS `hasFailed(instance) ||
             // costObserver.shouldStop()` 的短路求值序（真实失败优先于成本停止）；
             // `stopped_for_cost` 仅在成本分支真的被求值时写入（等价 JS 的赋值语义）。
             let failed = self.early_stop_hit();
@@ -1876,7 +1876,7 @@ impl CombatSimulator {
             ticks += 1;
             if ticks == 1000 {
                 ticks = 0;
-                // 切片 14：JS 每 1000 个事件采集一次 HP/MP 时序快照（开启可视化时）。
+                // JS 每 1000 个事件采集一次 HP/MP 时序快照（开启可视化时）。
                 // 进度派发是 UI 流式通知，wasm 侧不复制（结果一次性返回）。
                 if self.enable_hp_mp_visualization {
                     let snapshot: Vec<(Hrid, f64, f64, f64, f64)> = self
@@ -1908,7 +1908,7 @@ impl CombatSimulator {
         self.pending_experience_gains.clear();
         self.tally.simulated_time = effective_simulation_time;
         self.tally.stopped_early = stopped_early;
-        // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（切片 15 起副本可到达）。
+        // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（副本路径可到达）。
         let zone_is_dungeon = self.zone.as_ref().map(|zone| zone.is_dungeon()).unwrap_or(false);
         if let Some(real) = self.tally.real.as_mut() {
             real.set_is_dungeon(zone_is_dungeon);
@@ -1941,7 +1941,7 @@ impl CombatSimulator {
                 .iter()
                 .map(|(key, value)| (*key, *value))
                 .collect();
-            // 切片 14：JS `setDropRateMultipliers(unit)` 读 `unit.debuffOnLevelGap`
+            // JS `setDropRateMultipliers(unit)` 读 `unit.debuffOnLevelGap`
             //（下拉难度的等级差惩罚；怪物恒 0，仅玩家有值）。
             let debuff_on_level_gap = self.arena.get(player).debuff_on_level_gap;
             self.tally.set_drop_rate_multipliers(hrid, drop_rate, rare_find, drop_quantity, debuff_on_level_gap);
@@ -1999,12 +1999,12 @@ impl CombatSimulator {
         // JS：`this.scrollRuntimeByPlayer = {}; … this.initializeScrollRuntime();`——从玩家配置
         // 重建运行时库存并注册 `scrollUsage.byPlayer` 条目（tally.real 已在上方重建）。
         self.initialize_scroll_runtime();
-        // 切片 13：每轮模拟前重建观察器状态（等价 JS 每轮新装；food 列表结构在战斗中
+        // 每轮模拟前重建观察器状态（等价 JS 每轮新装；food 列表结构在战斗中
         // 不变，只有 last_used 会动，而形态校验只看 triggers）。
         if let (Some(spec), Some(unit)) = (self.observer_spec.as_ref(), self.observer_unit) {
             self.observer_state = Some(ObserverState::new(spec, &self.arena.get(unit).food));
         }
-        // 切片 20：成本观察器同样每轮重建（等价 JS 每轮新装闭包；dirty/下界回到初值）。
+        // 成本观察器同样每轮重建（等价 JS 每轮新装闭包；dirty/下界回到初值）。
         // 与 observer 同守卫：仅当监视单位已入池（state 存在）时重建——单位未出场/非法
         // spec 恒不激活（输出保持 null）。
         if let (Some(spec), Some(_)) = (self.cost_bound_spec.as_ref(), self.cost_bound_unit) {
@@ -2012,7 +2012,7 @@ impl CombatSimulator {
         }
     }
 
-    /// 切片 13：观察器导出（`observer_state` 为私有字段；无观察器或观察单位未出场时
+    /// 观察器导出（`observer_state` 为私有字段；无观察器或观察单位未出场时
     /// 为 null）。**不并入 simResult**——生产 parity 对账对象必须逐字节不变，观察数据
     /// 走独立输出字段。
     pub fn observers_output(&self) -> Value {
@@ -2022,7 +2022,7 @@ impl CombatSimulator {
             .unwrap_or(Value::Null)
     }
 
-    /// 切片 20：成本上界观察器导出（未安装/未激活/监视单位未出场时为 null）。**不并入
+    /// 成本上界观察器导出（未安装/未激活/监视单位未出场时为 null）。**不并入
     /// simResult**——与 `observers` 同一独立输出字段纪律（生产 parity 对账对象逐字节不变）。
     pub fn cost_bound_output(&self) -> Value {
         self.cost_bound_state
@@ -2201,7 +2201,7 @@ impl CombatSimulator {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 17：战斗卷轴窗口状态机（JS 215-438 / 745-861 / 413-438 行）
+    // 战斗卷轴窗口状态机（JS 215-438 / 745-861 / 413-438 行）
     // -----------------------------------------------------------------------
 
     /// JS `this.scrollsAllowed`（构造期固定：`!labyrinth && !isGuildTrial`）。
@@ -2528,7 +2528,7 @@ impl CombatSimulator {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 19：副本团灭日志（JS wipeLogs / wipeEvents）。
+    // 副本团灭日志（JS wipeLogs / wipeEvents）。
     // -----------------------------------------------------------------------
 
     /// JS `buildCombatLog`（不带 isCrit 的条目：thorn / retaliation / damageOverTime）。
@@ -2615,7 +2615,7 @@ impl CombatSimulator {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 17：战斗卷轴窗口语义。
+    // 战斗卷轴窗口语义。
     // -----------------------------------------------------------------------
 
     fn initialize_combat_players(&mut self, time: f64) -> Result<(), UnitError> {
@@ -2623,7 +2623,7 @@ impl CombatSimulator {
             if time == 0.0 {
                 self.arena.get_mut(player).generate_permanent_buffs();
             }
-            // 切片 16：JS 迷宫分支用 `player.reset()`（缺省 `currentTime = 0` → 完全重置、
+            // JS 迷宫分支用 `player.reset()`（缺省 `currentTime = 0` → 完全重置、
             // 清空战斗增益并复位 CD）；普通区域 / 副本沿用当前模拟时间。
             let reset_time = if self.labyrinth_present { 0.0 } else { self.simulation_time };
             self.arena.get_mut(player).reset(reset_time, &mut self.rng);
@@ -2686,7 +2686,7 @@ impl CombatSimulator {
         if self.zone.is_some() {
             let is_dungeon = self.zone.as_ref().map(|zone| zone.is_dungeon()).unwrap_or(false);
             if is_dungeon {
-                // 切片 15：副本波次（JS `getNextWave()`）。波次名用自增后的
+                // 副本波次（JS `getNextWave()`）。波次名用自增后的
                 // `encountersKilled - 1`（固定波次先自增再返回、随机波次先选取再自增，
                 // 两条路径在返回前都已自增，故与 JS 命名一致）。
                 let (entries, wave_name, current_dungeon_count) = {
@@ -2720,7 +2720,7 @@ impl CombatSimulator {
         }
 
         if self.labyrinth_present {
-            // 切片 16：JS `if (this.labyrinth) { this.enemies = this.labyrinth.getMonster();
+            // JS `if (this.labyrinth) { this.enemies = this.labyrinth.getMonster();
             // this.labyrinth.updateEnconterStartTime(this.simulationTime); }`——每次遭遇生成
             // 一只全新怪物（模板由桥按 roomLevel 缩放后快照，difficultyTier 恒 0）。
             let hrid = self
@@ -2732,7 +2732,7 @@ impl CombatSimulator {
             self.labyrinth_encounter_start_time = self.simulation_time;
         }
 
-        // 切片 28：免克隆——按下标遍历（循环体只读 enemies，写 arena/tally）。
+        // 免克隆——按下标遍历（循环体只读 enemies，写 arena/tally）。
         let prof_reset_loop = crate::prof::start("respawn.reset_loop");
         let enemies_len = self.enemies.as_ref().map_or(0, |enemies| enemies.len());
         for index in 0..enemies_len {
@@ -2747,7 +2747,7 @@ impl CombatSimulator {
         drop(prof_reset_loop);
 
         let prof_enrage = crate::prof::start("respawn.enrage_block");
-        // 切片 30：原先连续两次 `clearEventsOfType`（ENRAGE_TICK、ABILITY_CAST_END）各做一趟
+        // 原先连续两次 `clearEventsOfType`（ENRAGE_TICK、ABILITY_CAST_END）各做一趟
         // 全队列 retain，合并为单趟；清除集合与保留元素相对序不变（EnrageTick 仍在清场之后
         // 入队，其类型只可能被第一次清场匹配，而清场先于入队，故与逐次清场等价）。
         self.queue
@@ -2785,7 +2785,7 @@ impl CombatSimulator {
         }
     }
 
-    /// 切片 15（收尾）：副本时把 `dungeonSpawnInfo.fixedSpawnsMap` 的每个波次拼成
+    /// 副本收尾：把 `dungeonSpawnInfo.fixedSpawnsMap` 的每个波次拼成
     /// `#<wave>,<monster1>,<monster2>,...` 追加到 `bossSpawns`，随后追加
     /// `monsterSpawnInfo.bossSpawns` 的 `combatMonsterHrid`。
     ///
@@ -2866,7 +2866,7 @@ impl CombatSimulator {
 
     /// 生产路径：按 `(hrid, difficultyTier)` 查模板并实例化单位（等价 JS 每次 `new Monster(...)`）。
     ///
-    /// 切片 26：优先复用重生池中**同键**的死槽位（原地重建，见 `restore_for_respawn`）；
+    /// 优先复用重生池中**同键**的死槽位（原地重建，见 `restore_for_respawn`）；
     /// 池中无同键槽位（或复用被禁用、形态不符被丢弃）时才新建。
     /// `tier_label_override`：迷宫传 `Some(POOL_LABYRINTH_TIER_LABEL)`（键与普通区域隔离）。
     fn instantiate_templates(
@@ -2887,7 +2887,7 @@ impl CombatSimulator {
                 })?;
             let pool_key = match tier_label_override {
                 Some(label) => format!("{hrid}|{label}"),
-                // 切片 30：命中下标即 (hrid, tier) 与模板逐位相等，直接用构造期预计算的键。
+                // 命中下标即 (hrid, tier) 与模板逐位相等，直接用构造期预计算的键。
                 None => self.template_pool_keys[index].clone(),
             };
             drop(prof_lookup);
@@ -2918,7 +2918,7 @@ impl CombatSimulator {
         }
         self.pool_build_misses += 1;
         // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
-        // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。切片 31：走预编译计划。
+        // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。现走预编译计划。
         let mut unit = build_unit_from_spec_with_plan(
             &self.encounter_templates[template_index].spec,
             Some(&self.template_spec_plans[template_index]),
@@ -2941,7 +2941,7 @@ impl CombatSimulator {
         Some(slot)
     }
 
-    /// 切片 26：遭遇战结束丢弃敌人列表时，把「已死 + 有池键」的槽位收回重生池。
+    /// 遭遇战结束丢弃敌人列表时，把「已死 + 有池键」的槽位收回重生池。
     ///
     /// 前提链（复用安全性）：槽位在死亡点已被 `clear_events_for_unit` 清场、快照/颁奖
     /// 记账已被 `finalize` / `commit` 消费；此处再清一次记账（槽位下标化后 O(1)）并
@@ -2968,7 +2968,7 @@ impl CombatSimulator {
         }
     }
 
-    /// 切片 26：从竞技场移除一个槽位（池中槽位形态不符时的丢弃路径）。
+    /// 从竞技场移除一个槽位（池中槽位形态不符时的丢弃路径）。
     ///
     /// 返回 `false` = **降级**（槽位保留在竞技场、不再入池）：调用方照常新建单位即可，
     /// 输出不受影响——这是任一前置条件不满足时的保底，**不得 panic 中断模拟**。
@@ -3052,7 +3052,7 @@ impl CombatSimulator {
     }
 
     fn start_attacks(&mut self) -> Result<(), UnitError> {
-        // 切片 29：单位表复用暂存（take → 清空 → 重填 → 末尾 restore）。
+        // 单位表复用暂存（take → 清空 → 重填 → 末尾 restore）。
         let mut units = std::mem::take(&mut self.scratch.start_units);
         units.clear();
         units.extend_from_slice(&self.players);
@@ -3186,7 +3186,7 @@ impl CombatSimulator {
 
     fn pick_threat_target(&mut self, alive_targets: &[UnitId]) -> Result<UnitId, UnitError> {
         let mut cumulative_threat = 0.0;
-        // 切片 29：区间表复用暂存（take → 清空 → 重填 → restore）。
+        // 区间表复用暂存（take → 清空 → 重填 → restore）。
         let mut ranges = std::mem::take(&mut self.scratch.threat_ranges);
         ranges.clear();
         ranges.reserve(alive_targets.len());
@@ -3210,10 +3210,10 @@ impl CombatSimulator {
 
     fn process_auto_attack_event(&mut self, event_source: UnitId) -> Result<(), UnitError> {
         let is_player = self.arena.get(event_source).is_player;
-        // 切片 28：免克隆——原先克隆整个对侧列表再过滤出存活表（每次调用两次分配），
+        // 免克隆——原先克隆整个对侧列表再过滤出存活表（每次调用两次分配），
         // 现在按下标直读源列表一次成形。`check_parry` 的候选过滤（存活 ∧ parry>0）对
         // 「全集」与「存活子集」结果恒等（已死者不可能成为候选），故直接传存活表。
-        // 切片 29：存活表改为复用模拟器暂存（take → 清空 → 重填；循环后 restore），
+        // 存活表改为复用模拟器暂存（take → 清空 → 重填；循环后 restore），
         // 消除每次调用的分配/释放；提前返回仅丢失容量、不影响输出。
         let mut alive_targets = std::mem::take(&mut self.scratch.alive);
         alive_targets.clear();
@@ -3263,7 +3263,7 @@ impl CombatSimulator {
             };
             let _prof_body = crate::prof::start("autoAttack.body");
 
-            // 切片 19：JS :1017-1027——副本日志（普攻直击玩家且造成伤害）。
+            // JS :1017-1027——副本日志（普攻直击玩家且造成伤害）。
             if self.wipe_logs.is_some()
                 && self.arena.get(target).is_player
                 && attack_result.did_hit
@@ -3320,7 +3320,7 @@ impl CombatSimulator {
                     AttackOutcome::Damage(attack_result.thorn_damage_done),
                 );
             }
-            // 切片 19：JS :1146-1149——反伤日志（thorn 打到玩家）。
+            // JS :1146-1149——反伤日志（thorn 打到玩家）。
             if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(current_source).is_player {
                 let entry = with_hrid(target_hrid, |target_name| {
                     self.build_wipe_log_entry(
@@ -3341,7 +3341,7 @@ impl CombatSimulator {
                 self.tally
                     .add_attack(target_hrid, source_hrid, intern_hrid("retaliation"), outcome);
             }
-            // 切片 19：JS :1159-1162——反击日志（retaliation 打到玩家）。
+            // JS :1159-1162——反击日志（retaliation 打到玩家）。
             if self.wipe_logs.is_some()
                 && attack_result.retaliation_damage_done > 0.0
                 && self.arena.get(current_source).is_player
@@ -3528,14 +3528,14 @@ impl CombatSimulator {
 
     fn check_encounter_end(&mut self) -> Result<bool, UnitError> {
         let _prof = crate::prof::start("encounter.check_end");
-        // 切片 27：enemies 的两次 `clone()` 与 players 的一次 `clone()` 改为 take/restore
+        // enemies 的两次 `clone()` 与 players 的一次 `clone()` 改为 take/restore
         // 与下标遍历——本函数每轮约 3700 次调用，克隆开销在 prof 中显著。语义不变：
         // 非清场路径把 enemies 原样放回；清场路径维持 None。
         let mut encounter_ended = false;
         let mut encounter_cleared = false;
 
         if let Some(enemies) = self.enemies.take() {
-            // 切片 14：JS 先给「已死但未颁奖」的敌人补发经验（正常事件路径已记录精确时间戳，
+            // JS 先给「已死但未颁奖」的敌人补发经验（正常事件路径已记录精确时间戳，
             // 只有直接改血量的调用才走这里的兜底现快照）。minimal 结果不参与经验记账。
             if !self.minimal_result {
                 for enemy in &enemies {
@@ -3556,13 +3556,13 @@ impl CombatSimulator {
                 let id = self.take_event_id();
                 self.queue.add_event(SimEvent::EnemyRespawn { time, id });
 
-                // 切片 14：只有在遭遇战中所有怪物都已死亡后才提交击杀快照
+                // 只有在遭遇战中所有怪物都已死亡后才提交击杀快照
                 // （JS `commitPendingExperience()`；之后的副本团灭不得保留它们）。
                 self.commit_pending_experience();
-                // 切片 26：清场后把已死敌人的槽位收回重生池（本遭遇战不再引用它们）。
+                // 清场后把已死敌人的槽位收回重生池（本遭遇战不再引用它们）。
                 self.release_dead_enemy_slots(&enemies);
                 self.enemies = None;
-                // 切片 15：副本清波按波次名结算存活时间；整个副本打完
+                // 副本清波按波次名结算存活时间；整个副本打完
                 //（`encountersKilled > maxWaves`）时记一次副本耗时。
                 if self.zone_present && self.zone_is_dungeon {
                     let (wave_name, dungeon_finished) = {
@@ -3586,7 +3586,7 @@ impl CombatSimulator {
                 encounter_cleared = true;
                 encounter_ended = true;
             } else {
-                // 未清场：把 enemies 原样放回（切片 27 的 take/restore 配对）。
+                // 未清场：把 enemies 原样放回（take/restore 配对）。
                 self.enemies = Some(enemies);
             }
         }
@@ -3615,10 +3615,10 @@ impl CombatSimulator {
             .any(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0);
         if !any_alive {
             if self.zone_present && self.zone_is_dungeon {
-                // 切片 15：副本团灭（JS :1268-1315）——只清战斗相关事件（保留增益过期与
+                // 副本团灭（JS :1268-1315）——只清战斗相关事件（保留增益过期与
                 // CD 事件），丢弃挂起经验并让 enemies 失效；RESTART_INTERVAL 后以
                 // CombatStart 重开（`start_new_encounter` 的 allPlayersDead 分支随后记一次
-                // failWave）。切片 19：`logCombatEvents` 为真时先快照团灭日志进 simResult
+                // failWave）。`logCombatEvents` 为真时先快照团灭日志进 simResult
                 // （JS saveWipeLogsToSimResult + 缓冲清零；console 输出无数据、不移植）。
                 if self.wipe_logs.is_some() {
                     self.save_wipe_logs_to_result();
@@ -3635,7 +3635,7 @@ impl CombatSimulator {
                 self.queue.clear_events_of_type(Hrid::EVENT_AWAIT_COOLDOWN);
                 self.pending_experience_gains.clear();
                 if let Some(enemies) = self.enemies.take() {
-                    // 切片 26：只收回已死敌人的槽位（活怪事件未清、复用会误伤下波单位）。
+                    // 只收回已死敌人的槽位（活怪事件未清、复用会误伤下波单位）。
                     self.release_dead_enemy_slots(&enemies);
                 }
                 self.enemies = None;
@@ -3651,7 +3651,7 @@ impl CombatSimulator {
         }
 
         if self.labyrinth_present {
-            // 切片 16：JS :1318-1330——迷宫无「清波」概念：怪物死亡（encounterEnded）或
+            // JS :1318-1330——迷宫无「清波」概念：怪物死亡（encounterEnded）或
             // 单轮遭遇超过 120s（`checkTimeout`）都立刻整队重启：清空事件队列并在**当前
             // 时间**排入 CombatStart（新怪物由 `start_new_encounter` 生成）；未清场时丢弃
             // 挂起经验。JS 的 `eventQueue.clear()` 会连带丢弃刚排入的 EnemyRespawn。
@@ -3742,7 +3742,7 @@ impl CombatSimulator {
         self.tally
             .add_attack(source_hrid, target_hrid, intern_hrid("damageOverTime"), AttackOutcome::Damage(applied));
 
-        // 切片 19：JS :1453-1456——副本日志（DoT tick，无 isPlayer/伤害门控——JS 原样记录）。
+        // JS :1453-1456——副本日志（DoT tick，无 isPlayer/伤害门控——JS 原样记录）。
         if self.wipe_logs.is_some() {
             let entry = self.build_wipe_log_entry("", "damageOverTime", target, applied);
             self.wipe_logs.as_mut().expect("checked").push(entry);
@@ -3899,7 +3899,7 @@ impl CombatSimulator {
             let time = self.simulation_time;
             self.arena.get_mut(enemy).add_buff(&damage_buff, time, None, None)?;
             self.arena.get_mut(enemy).add_buff(&accuracy_buff, time, None, None)?;
-            // 切片 14：JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
+            // JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
             //（minimal 结果同样记录该字段——FoodOptimizerSimResult 继承它）。
             if let Some(real) = self.tally.real.as_mut() {
                 real.bump_max_enrage_stack(now_stack);
@@ -3957,7 +3957,7 @@ impl CombatSimulator {
         Ok(())
     }
 
-    /// 切片 13：闲置食物观察（等价 JS observeInactiveFoodThresholds 的 observe(unit)：
+    /// 闲置食物观察（等价 JS observeInactiveFoodThresholds 的 observe(unit)：
     /// 监视单位存活且未眩晕时更新 hp/mp 缺口下界）。两个调用点——check_triggers_for_unit
     /// 入口与 try_use_consumable 使用成功后，与 JS 的两处方法包装一一对应。
     fn observe_inactive_for(&mut self, unit: UnitId) {
@@ -3974,7 +3974,7 @@ impl CombatSimulator {
         observer.observe_inactive(hp, mp);
     }
 
-    /// 切片 13：food 槽位的**过滤序**索引（等价 JS `observeFoodOptimizerThresholds`
+    /// food 槽位的**过滤序**索引（等价 JS `observeFoodOptimizerThresholds`
     /// 按 `player.food.filter(Boolean)` 的下标——阈值区间按非空槽位排列，而引擎循环
     /// 按原始下标遍历）。仅当阈值观察生效（观察单位匹配且槽位非空）时返回 Some。
     fn observer_food_slot_index(&self, unit: UnitId, slot: usize) -> Option<usize> {
@@ -3996,7 +3996,7 @@ impl CombatSimulator {
             return Err(UnitError::error("Checking triggers for a dead unit"));
         }
 
-        // 切片 13：闲置食物观察（等价 JS observeInactiveFoodThresholds 包装
+        // 闲置食物观察（等价 JS observeInactiveFoodThresholds 包装
         // checkTriggersForUnit：监视单位存活且未眩晕时更新缺口下界）。
         self.observe_inactive_for(unit);
 
@@ -4011,7 +4011,7 @@ impl CombatSimulator {
         };
 
         let food_len = self.arena.get(unit).food.len();
-        // 切片 30：观察器只在食物优化器轮次安装（生产路径恒无）。`observer_unit` 在槽位循环
+        // 观察器只在食物优化器轮次安装（生产路径恒无）。`observer_unit` 在槽位循环
         // 内不会被改写（try_use_consumable / should_trigger 都不改它），提到循环外判定一次。
         let observer_active = self.observer_unit == Some(unit);
         for slot in 0..food_len {
@@ -4020,7 +4020,7 @@ impl CombatSimulator {
             let slot_consumable = consumable_slot_ref(self.arena.get(unit), true, slot);
             if !observer_active {
                 // 无观察器（生产路径）：probe 恒 None，与原实现 take 出 None 的分支逐位等价；
-                // 免去每槽位两次 ~48B 观察状态的 take/放回搬移（切片 30）。
+                // 免去每槽位两次 ~48B 观察状态的 take/放回搬移。
                 let should = match slot_consumable {
                     Some(consumable) => consumable.should_trigger(
                         &self.arena,
@@ -4038,7 +4038,7 @@ impl CombatSimulator {
                 }
                 continue;
             }
-            // 切片 13：开启阈值观察时把观察句柄一并传入——`should_trigger` 在快速路径真正
+            // 开启阈值观察时把观察句柄一并传入——`should_trigger` 在快速路径真正
             // 调用 compare_value 的那一刻同步记录 (value, active)（等价 JS 包装 compareValue；
             // 门控早退则不记录，与 JS 观察点一致）。观察状态临时 take 出来构造句柄以绕开
             // 与 `&self.arena` 的借用冲突，**任何路径**（含空槽位 continue）都先放回——
@@ -4079,7 +4079,7 @@ impl CombatSimulator {
                     if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
                     if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
-                    // 切片 13：JS 观察器只包 food 槽（compareValue/闲置观察都不含 drinks）。
+                    // JS 观察器只包 food 槽（compareValue/闲置观察都不含 drinks）。
                     None,
                 )?,
                 None => continue,
@@ -4112,7 +4112,7 @@ impl CombatSimulator {
             let stats = &self.arena.get(source).combat_details.combat_stats;
             (stats.drink_concentration, stats.food_haste)
         };
-        // 切片 31：仅当饮料浓度 > 0 时才解析类别（下方两处消费点均以 `drinkConcentration > 0`
+        // 仅当饮料浓度 > 0 时才解析类别（下方两处消费点均以 `drinkConcentration > 0`
         // 为前置；为 0 时 is_drink 恒假，解析结果不可观察）。
         let is_drink =
             drink_concentration > 0.0 && with_hrid(consumable.category_hrid, |category| category.contains("drink"));
@@ -4186,12 +4186,12 @@ impl CombatSimulator {
             });
         }
 
-        // 切片 13：闲置食物观察第②钩子（等价 JS observeInactiveFoodThresholds 包装
+        // 闲置食物观察第②钩子（等价 JS observeInactiveFoodThresholds 包装
         // tryUseConsumable：使用成功后——即时恢复/buff 已生效——再观察一次缺口下界；
         // JS 包装按 `unit.food.includes(consumable)` 只观察 food 槽，drink 槽不观察）。
         if is_food {
             self.observe_inactive_for(source);
-            // 切片 20：成本观察 dirty 钩子（等价 JS 包装 tryUseConsumable 的
+            // 成本观察 dirty 钩子（等价 JS 包装 tryUseConsumable 的
             // `consumed && source === player && foods.has(consumable)`——成功使用监视
             // 玩家 food 槽物品才置位；失败路径/其他单位/drink 槽不影响）。
             if let Some(cost_unit) = self.cost_bound_unit {
@@ -4520,12 +4520,12 @@ impl CombatSimulator {
         let _prof = crate::prof::start("ability.damage");
         let prof_setup = crate::prof::start("ability.damage.setup");
         let is_player = self.arena.get(source).is_player;
-        // 切片 28：免克隆——原先把对侧全集克隆成 `targets`，它只被三处消费：
+        // 免克隆——原先把对侧全集克隆成 `targets`，它只被三处消费：
         // ① 存活表构造；② `check_parry`（候选过滤「存活 ∧ parry>0」对全集与存活子集
         // 恒等）；③ 逐轮候选重过滤（存活 ∧ 未被 avoid——死单位只减不增、avoid 单调增长，
         // 故其当前态与「存活表重过滤」恒等）。现在直接构造存活表，候选表由 retain 原地
         // 维护（省掉整表克隆与逐轮重分配）。
-        // 切片 29：存活表 / 候选表改为复用模拟器暂存（take → 清空 → 重填；末尾 restore）。
+        // 存活表 / 候选表改为复用模拟器暂存（take → 清空 → 重填；末尾 restore）。
         let mut alive_targets = std::mem::take(&mut self.scratch.alive);
         alive_targets.clear();
         match effect.target_type {
@@ -4561,7 +4561,7 @@ impl CombatSimulator {
 
         let mut avoid_target: Vec<Hrid> = Vec::new();
         let mut is_skip_parry = false;
-        // 切片 29：候选表仅在非玩家路径参与判定（玩家路径 avoid 集恒空、候选集 ≡ 存活集，
+        // 候选表仅在非玩家路径参与判定（玩家路径 avoid 集恒空、候选集 ≡ 存活集，
         // 见循环内的等价替换），复用暂存槽位；非玩家路径初始 = 存活表，随后单调收缩。
         let mut candidates = std::mem::take(&mut self.scratch.candidates);
         candidates.clear();
@@ -4650,7 +4650,7 @@ impl CombatSimulator {
                     }
                 }
             } else {
-                // 切片 29：玩家源免候选表——`avoid_target` 只由下方非玩家分支写入（玩家恒空），
+                // 玩家源免候选表——`avoid_target` 只由下方非玩家分支写入（玩家恒空），
                 // 且目标只死不回生，故「候选表逐轮收缩后为空」⇔「存活表已无存活目标」。
                 // 直接判存活表，省去候选表分配与逐轮 retain；非玩家路径保持原语义（原地收缩）。
                 if is_player {
@@ -4693,7 +4693,7 @@ impl CombatSimulator {
 
                 let _prof_body = crate::prof::start("ability.damage.body");
 
-                // 切片 19：JS :2023-2032——副本日志（技能直击玩家且造成伤害）。
+                // JS :2023-2032——副本日志（技能直击玩家且造成伤害）。
                 if self.wipe_logs.is_some()
                     && self.arena.get(target).is_player
                     && attack_result.did_hit
@@ -4863,7 +4863,7 @@ impl CombatSimulator {
                         AttackOutcome::Damage(attack_result.thorn_damage_done),
                     );
                 }
-                // 切片 19：JS :2216-2219——技能反伤日志（thorn 打到玩家攻击者）。
+                // JS :2216-2219——技能反伤日志（thorn 打到玩家攻击者）。
                 if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(source).is_player {
                     let entry = with_hrid(target_hrid, |target_name| {
                         self.build_wipe_log_entry(
@@ -4885,7 +4885,7 @@ impl CombatSimulator {
                     self.tally
                         .add_attack(target_hrid, source_hrid, intern_hrid("retaliation"), outcome);
                 }
-                // 切片 19：JS :2229-2232——技能反击日志（retaliation 打到玩家攻击者）。
+                // JS :2229-2232——技能反击日志（retaliation 打到玩家攻击者）。
                 if self.wipe_logs.is_some()
                     && attack_result.retaliation_damage_done > 0.0
                     && self.arena.get(source).is_player
@@ -5089,7 +5089,7 @@ impl CombatSimulator {
         };
         let mut unit = build_unit_from_spec(&spec)?;
         unit.difficulty_tier = self.arena.get(source).difficulty_tier;
-        // 切片 26：升变产物同样入池——键 = 升变 hrid + 继承的难度档（命中模板时原地重建，
+        // 升变产物同样入池——键 = 升变 hrid + 继承的难度档（命中模板时原地重建，
         // 与它来自哪条路径无关）；难度档缺失（探针合成来源）时保持 None、不入池。
         unit.respawn_pool_key = unit
             .difficulty_tier
@@ -5213,7 +5213,7 @@ mod tests {
         assert_eq!(normalize_time_limit(12.5), 12.5);
     }
 
-    /// 切片 12：真实区域 + 模板的小型生产场景（无需 JS 侧夹具）。
+    /// 真实区域 + 模板的小型生产场景（无需 JS 侧夹具）。
     fn early_stop_production_options(early_stop: Option<EarlyStopSpec>) -> (SimulatorOptions, UnitSpec) {
         let player = UnitSpec {
             hrid: "player1".to_string(),
@@ -5311,7 +5311,7 @@ mod tests {
         assert!(result["deaths"].get("/monsters/dummy").is_some());
     }
 
-    /// 切片 13：带单一 missing_hp/mp 触发器的测试食物（cooldown 0 → 门控恒过，
+    /// 带单一 missing_hp/mp 触发器的测试食物（cooldown 0 → 门控恒过，
     /// 每次触发检查都会走到 compare_value，观察点充分暴露）。
     fn observer_trigger_food(hrid: &str, condition: &str, value: f64) -> Consumable {
         Consumable {
@@ -5333,7 +5333,7 @@ mod tests {
         }
     }
 
-    /// 切片 20：打不死的高体力怪模板（同切片 19 团灭日志用例的调参）。
+    /// 打不死的高体力怪模板（同团灭日志用例的调参）。
     /// `early_stop_production_options` 的默认怪 defense_level 1，会被玩家
     /// 1ms 攻速在首击前秒杀 → 玩家 HP 永不下降 → 食物永不消费。换此强怪：
     /// attack_level 1000 → 命中率 ≈99.8%，攻速 1s/1.5≈667ms；melee_level
@@ -5451,7 +5451,7 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 20：成本上界观察器（等价 JS observeFoodOptimizerCostBound）
+    // 成本上界观察器（等价 JS observeFoodOptimizerCostBound）
     // -----------------------------------------------------------------------
 
     #[test]
@@ -5613,11 +5613,11 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 14：full-result 生产路径（经验记账 / 掉落上下文桶 / 时序快照 / 激怒层数）
+    // full-result 生产路径（经验记账 / 掉落上下文桶 / 时序快照 / 激怒层数）
     // -----------------------------------------------------------------------
 
     /// full-result 生产场景：`minimal_result=false`，并刻意把战斗日志与可视化两条
-    /// 旧闸门打开（切片 14 已解除，必须能直接跑通）。玩家带经验/掉落面板与等级差惩罚。
+    /// 旧闸门打开（已解除，必须能直接跑通）。玩家带经验/掉落面板与等级差惩罚。
     fn full_result_production_options() -> (SimulatorOptions, UnitSpec) {
         let player = UnitSpec {
             hrid: "player1".to_string(),
@@ -5766,7 +5766,7 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 15：副本（dungeon）波次 / 团灭 / 收尾聚合
+    // 副本（dungeon）波次 / 团灭 / 收尾聚合
     // -----------------------------------------------------------------------
 
     /// 小副本生产场景：maxWaves=3、波次 1..3 全为固定怪（固定分支不消耗随机数），
@@ -6238,7 +6238,7 @@ mod tests {
         );
     }
 
-    /// 切片 19：副本 + full-result + logCombatEvents 不再被拒绝——团灭日志由引擎生成
+    /// 副本 + full-result + logCombatEvents 不再被拒绝——团灭日志由引擎生成
     /// （7 个结算点写环形缓冲，团灭时快照进 `wipeEvents`；timestamp 为确定性字符串）。
     /// 怪物体力拉到极高（打不死）→ 持续普攻玩家留痕；再手动置零玩家血量制造团灭。
     #[test]
@@ -6334,7 +6334,7 @@ mod tests {
         assert_eq!(simulator.wipe_logs.as_ref().expect("buffer").buffer.len(), 0, "团灭后缓冲清空");
     }
 
-    /// 切片 19：非副本（普通区域）不启用日志缓冲——`zone?.isDungeon` 门控。
+    /// 非副本（普通区域）不启用日志缓冲——`zone?.isDungeon` 门控。
     #[test]
     fn regular_zone_with_logging_keeps_wipe_events_empty() {
         let (mut options, player) = dungeon_production_options();
@@ -6369,7 +6369,7 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 16：迷宫（labyrinth）单怪循环 / 120s 超时重启 / 身份字段
+    // 迷宫（labyrinth）单怪循环 / 120s 超时重启 / 身份字段
     // -----------------------------------------------------------------------
 
     /// 迷宫生产场景：无 zone、单怪模板（difficultyTier 恒 0）、120s 超时重启。
@@ -6475,7 +6475,7 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
-    // 切片 17：战斗卷轴（窗口开/续期/关闭、有限库存耗尽、迷宫忽略、开关禁用）
+    // 战斗卷轴（窗口开/续期/关闭、有限库存耗尽、迷宫忽略、开关禁用）
     // -----------------------------------------------------------------------
 
     const SCROLL_ITEM_HRID: &str = "/items/test_scroll";
@@ -6494,7 +6494,7 @@ mod tests {
         }
     }
 
-    /// 切片 17：普通区域 + 单怪模板 + 卷轴定义/配置（合成数据，不依赖游戏数据）。
+    /// 普通区域 + 单怪模板 + 卷轴定义/配置（合成数据，不依赖游戏数据）。
     /// `quantity` 为 `None` 表示无限库存；模拟时长由调用方给定。
     fn scroll_production_options(
         duration_ns: f64,
@@ -6654,7 +6654,7 @@ mod tests {
     }
 
     // ------------------------------------------------------------------
-    // 切片 26：重生路径死槽位复用
+    // 重生路径死槽位复用
     // ------------------------------------------------------------------
 
     /// `Vec::swap_remove` 重映射的纯函数契约：只有末位换入者被改写下标（无 -1 平移）。

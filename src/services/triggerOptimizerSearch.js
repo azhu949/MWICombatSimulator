@@ -11,9 +11,9 @@
 //      所以它的指标就是「新工作配置」的指标，**零额外模拟**即可保持配对链不断。
 //      注意 winner.score 是相对**当时** reference 的增量分：它既不是「相对基线的总分」
 //      （报告总分由 buildImprovement 按基线参考系现算），也不能当后续槽的门槛 ——
-//      跨参考系比较会把每个槽的门槛抬高，系统性压制多槽叠加（实测缺陷 + 修正：设计 §16.9）。
+//      跨参考系比较会把每个槽的门槛抬高，系统性压制多槽叠加（实测缺陷 + 修正）。
 //   4. 一轮无改进 → 固定点；否则继续，最多 maxRounds 轮
-//   4b. 跨槽联合探针（设计 §19.11）：每轮槽循环结束后，对合格槽对各评估一次**联合配置**
+//   4b. 跨槽联合探针：每轮槽循环结束后，对合格槽对各评估一次**联合配置**
 //      （两个候选同时应用，相对轮起参考比较）——单槽增量的证据在低轮数下功效不足
 //      （实测 AB vs 已采纳的 B p=0.107），联合比较把一对配置的收益并进同一分子后能过闸；
 //      采纳时两槽一起写回（已落地的成员幂等）。
@@ -25,14 +25,14 @@
 // 未播种时「候选 vs 基线」的差异里随机噪声占主导，优化器实际在挑「哪次抽样运气好」，
 // 这既让结论不可复现，也正是「应用后与预期不符」的根因。
 //
-// 取消（设计 §4.3）：模块级单运行标志 + cancelTriggerOptimizerRun()，
+// 取消：模块级单运行标志 + cancelTriggerOptimizerRun()，
 // 取消时置标志并 stopTriggerOptimizerWorkerRuns()，在途任务以 code:'cancelled'
 // 拒绝；optimizeTriggers 每个任务预留前都调 ensureActive，取消抛
 // createWorkerRunCancellationError，搜索层捕获后按 cancelled 语义收尾，不把它当失败。
 //
 // 并发互斥：自身重入与共享 worker 运行冲突时直接报短理由拒绝（对齐
 // simulatorSimulationActions.startSimulation 的互斥校验风格），不硬冲。
-// 队列/顾问/食物优化器的互斥由 store 层的 busy 闸门负责（设计 §4.2）。
+// 队列/顾问/食物优化器的互斥由 store 层的 busy 闸门负责。
 
 import { runParallelWorkerPool } from './workerPool.js';
 import { normalizeParallelWorkerLimit, QUEUE_PARALLEL_WORKER_LIMIT_MAX } from './queueScoring.js';
@@ -95,7 +95,7 @@ import {
 } from './triggerOptimizerRunRegistry.js';
 import { deepClone, isPlainObject, toFiniteNumber } from './utils.js';
 
-// 进度上报节流（设计 §10：150ms，仿 foodOptimizerSearch 的 publish）。
+// 进度上报节流（150ms，仿 foodOptimizerSearch 的 publish）。
 const PROGRESS_THROTTLE_MS = 150;
 
 const TRIGGER_OPTIMIZER_BUSY_ERROR = 'Trigger optimizer is already running.';
@@ -117,10 +117,10 @@ function assertTriggerOptimizerEntranceClear() {
 // 自适应阈值精炼的级数上限（B2，2026-09-19）：步长序列 ±10 → ±5 → ±5 …
 // 网格间隔 25 个百分点 ⇒ 内部最优最多偏离「最佳格点」±12.5pp；第 1 级覆盖 10pp、之后每级
 // 5pp，4 级累计可行走 25pp（整个网格跨度）。同时是成本护栏：每级 2 次评估，每槽每次
-// 采纳最多 8 次（典型 1~2 级）。步长下限 5pp 的实证（2026-09-24 二分对照无提升）见 §32。
+// 采纳最多 8 次（典型 1~2 级）。步长下限 5pp 的实证（2026-09-24 二分对照无提升）。
 export const TRIGGER_OPTIMIZER_REFINEMENT_MAX_LEVELS = 4;
 
-// 槽优先级（设计 §7.3）：特殊技能槽（index 0）最先，然后按角色预期影响排序。
+// 槽优先级：特殊技能槽（index 0）最先，然后按角色预期影响排序。
 const ROLE_PRIORITY = {
   damage: 0,
   buff: 1,
@@ -193,13 +193,13 @@ function configWithTriggerMap(playerConfig, triggerMap) {
   return config;
 }
 
-// ── racing 分级采样（2026-09-24，设计 §30；§20.1 路线③）────────────────────────
+// ── racing 分级采样（2026-09-24，路线③）────────────────────────
 // 大候选池先粗筛（SCREEN_ROUNDS 场、独立盐）、幸存者再精测（settings.rounds 场、search 盐）。
 // 粗筛必须换盐：「谁进精测」正是用粗筛样本选出来的（select on A），精测的采纳统计若混入
-// 粗筛样本就是可选停时（§21 的教训）——两组样本天然分割，精测的 t 检验才有效。
-// 安全性依据（§20.1 自助实测）：n=2 粗筛保留 top-3 时真最优 100% 不被淘汰；残余风险是
+// 粗筛样本就是可选停时（早期教训）——两组样本天然分割，精测的 t 检验才有效。
+// 安全性依据（自助实测）：n=2 粗筛保留 top-3 时真最优 100% 不被淘汰；残余风险是
 // 漏采、不是误采（无提升槽的假采纳 ≈ 0%）。
-// 队伍载荷（2026-09-27，设计 §59）：input.teammates = **冻结队友配置**数组（口径 A：整队模拟、
+// 队伍载荷（2026-09-27）：input.teammates = **冻结队友配置**数组（口径 A：整队模拟、
 // 只改主角触发器）。搜索 / 复核 / 追加复验四条链路共用本解析器，保证「复核用的载荷与搜索时逐字段
 // 一致」—— 否则复核结论会在另一个载荷上得出，与报告自证的适用范围不符。空数组 = 单人载荷。
 function resolveSearchTeammates(input) {
@@ -259,16 +259,16 @@ export function pickRacingSurvivors(entries) {
 //     resourcesAvailable, evidenceBlocked, roundLimitReached, evaluations, simulations,
 //     evaluationRounds, maxConcurrentWorkers, workerLimit, elapsedSeconds, error,
 //     baselineTriggerMap, evaluationScope }
-// baselineTriggerMap（2026-09-23，设计 §29）：**搜索起点配置**的 triggerMap 快照。搜索过程中
+// baselineTriggerMap（2026-09-23）：**搜索起点配置**的 triggerMap 快照。搜索过程中
 // workingConfig 是克隆体、bestTriggerMap 原地改写，报告里原本没有任何字段能复原「起点长什么样」，
 // 而换难度复核要的正是「最优 vs 起点」这一对配置。键缺失 = 该技能用游戏默认触发器。
 // evaluationScope：本报告的适用范围（实际目标 hrid + 难度 + 时长）—— 触发器是全局技能配置，
 // 而搜索只在单目标上评估，UI 与应用者都必须知道结论是在哪个区域/难度上得出的。
-// deepDives（2026-09-19 设计 §18.1；2026-09-20 改独立种子，设计 §21）：被噪声地板拦下的
+// deepDives（2026-09-19 引入；2026-09-20 改独立种子）：被噪声地板拦下的
 // 槽级最优候选的加密复核记录（每槽最多一条）——用独立盐的 6 轮新样本重判，通过则采纳
 // （记录 adopted=true，并带上本次用的 seeds）；仍不足则 adopted=false，报告据此说明
 // 「不是没找到，是证据不够」。
-// jointAdoptions（2026-09-19，设计 §19.11）：被**联合采纳**的槽对记录（只含采纳成功的，
+// jointAdoptions（2026-09-19）：被**联合采纳**的槽对记录（只含采纳成功的，
 // 每采纳一条；含相对轮起参考的统计量与相对当前工作配置的边际均值）——单槽增量证据不足、
 // 但一对配置相对轮起参考显著时，两槽一起落地。
 export async function optimizeTriggers(input = {}, callbacks = {}) {
@@ -295,7 +295,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     input.parallelWorkerHardMax ?? settings.parallelWorkerHardMax ?? QUEUE_PARALLEL_WORKER_LIMIT_MAX,
   );
 
-  // 三套种子：粗筛 lane（racing，设计 §30）、精测 lane（配对参考链）与复验期（独立随机流）。
+  // 三套种子：粗筛 lane（racing）、精测 lane（配对参考链）与复验期（独立随机流）。
   // 见 seededRandom.js 与 triggerOptimizerDomain 的种子集说明（各盐必须互不相同）。
   const seedContext = { playerId: preferredPlayerId, playerConfig, simulationSettings };
   const screenSeeds = createTriggerOptimizerSeedSet({
@@ -326,9 +326,9 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   const metricsByCandidate = {};
   const roundSummaries = [];
   const perAbilityChoices = [];
-  // 深挖记录（设计 §18.1）：每个被噪声地板拦下的槽最多一条，随报告上抛。
+  // 深挖记录：每个被噪声地板拦下的槽最多一条，随报告上抛。
   const deepDives = [];
-  // 跨槽联合采纳记录（设计 §19.11）：只记**真正被采纳**的联合对（每次采纳一条），形如
+  // 跨槽联合采纳记录：只记**真正被采纳**的联合对（每次采纳一条），形如
   // { round, slots, abilityHrids, rounds, score, mean, stdError, pValue, verdict,
   //   marginalMean, adoptedSlots }。数组原地累积，finally 不需要快照（与 deepDives 同款；
   //   adoptedSlots 是 Set 且被整体读走，才有快照问题）。
@@ -340,7 +340,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   // 复用外部基线的门槛见 resolveReusableBaselineMetrics：必须带等长逐轮样本（配对前提）。
   let baselineMetrics = resolveReusableBaselineMetrics(input.baselineMetrics, settings.rounds);
   let referenceMetrics = baselineMetrics;
-  // 粗筛参考（racing，设计 §30）：当前工作配置在粗筛种子下的测量。lazy —— 只有真正
+  // 粗筛参考（racing）：当前工作配置在粗筛种子下的测量。lazy —— 只有真正
   // 启用粗筛的槽需要它，小候选池路径一次都不付这两场模拟的成本；采纳后由 winner 的
   // 粗筛测量接续（零额外模拟），精炼/联合采纳改写配置时置空、由下一个粗筛槽按需补测。
   let referenceScreenMetrics = null;
@@ -349,7 +349,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   let best = null;
   let choices = [];
   let evaluations = 0;
-  // 实际模拟场次 = 评估次数 × 重复次数（进度与结果都按它展示，见设计 §5.3）。
+  // 实际模拟场次 = 评估次数 × 重复次数（进度与结果都按它展示）。
   let simulations = 0;
   let activeTasks = 0;
   let maxConcurrentWorkers = 0;
@@ -359,7 +359,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   // 「真的没有更优配置」与「样本不足没敢采纳」（两者文案不同，见 evidenceBlocked）。
   let evidenceBlocked = false;
 
-  // 「轮数上限截断」标记（2026-09-19，设计 §19.8）：搜索跑满 maxRounds 且**最后一轮仍有
+  // 「轮数上限截断」标记（2026-09-19）：搜索跑满 maxRounds 且**最后一轮仍有
   // 采纳**时置位 —— 循环的早停口径是「一整轮零采纳」，因上限退出意味着固定点还没到、
   // 结果可能没搜完。报告把这一条上抛给 UI，用户才知道「还能再搜」。
   // ⚠️ 必须定义在函数体级（而非 try 内）：finally 里的报告组装要用它，而 catch/finally
@@ -369,7 +369,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   // 核对采样口径。⚠️ 同样必须函数体级声明。
   let racingUsed = false;
 
-  // 最优分口径（2026-09-18 修正，设计 §16.9）：`best.score` 是**增量分**（相对它当时那个
+  // 最优分口径（2026-09-18 修正）：`best.score` 是**增量分**（相对它当时那个
   // reference），不是「最优配置相对基线」的总分 —— 旧实现把它直接当总分上抛，采纳多槽时
   // UI 的「最优得分」只显示最后一笔增量（实测：两次采纳 0.0189 + 0.0247 后仍只显示 0.0247），
   // 且与同屏展示的指标差值（deltas = best − baseline）不同源。
@@ -390,7 +390,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     );
   };
 
-  // 结论适用范围（2026-09-23，设计 §29）：报告自证「这份结论是在哪个目标、哪个难度上得出的」。
+  // 结论适用范围（2026-09-23）：报告自证「这份结论是在哪个目标、哪个难度上得出的」。
   // 触发器写的是全局技能配置，而搜索只在**单一目标**上评估 —— 换难度复核（verifyTriggerOptimizerRobustness）
   // 与 UI 的适用范围标注都读这里，取代「拿当前首页设置去猜当时跑的是什么」。zoneHrid 已按 useDungeon
   // 解析成实际目标 hrid（不再是 zone/dungeon 两个候选键），仿真设置可直接由它重建。
@@ -401,7 +401,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     useDungeon: Boolean(simulationSettings.useDungeon),
     difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simulationSettings.difficultyTier, 0))),
     simulationHours: Math.max(0, Number(simulationSettings.simulationTimeHours) || 0),
-    // 队伍载荷（2026-09-27，设计 §59）：报告自证「这份结论是在单人还是整队（哪些队友）上得出的」。
+    // 队伍载荷（2026-09-27）：报告自证「这份结论是在单人还是整队（哪些队友）上得出的」。
     // 只留 id / name 快照（名字取运行时刻的，玩家后来改名不会改写历史报告）。
     party: resolveSearchTeammates(input)
       .map((mate) => ({ id: String(mate.id ?? ''), name: String(mate.name ?? '') }))
@@ -415,7 +415,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     metricsByCandidate,
     // 深挖记录：{ slotIndex, abilityHrid, rounds, score, mean, stdError, pValue, verdict, adopted }[]。
     deepDives,
-    // 跨槽联合采纳记录（设计 §19.11）：只含被采纳的联合对；骨架为空，原地累积（无需 finally 快照）。
+    // 跨槽联合采纳记录：只含被采纳的联合对；骨架为空，原地累积（无需 finally 快照）。
     jointAdoptions,
     // 真正被采纳过的槽位（UI 用它决定是否挂「推荐」；chosen 里可能含未被采纳的槽内最优）。
     // ⚠️ 这里只是骨架，真正的值在 finally 里取快照（对象创建时集合还是空的）。
@@ -432,13 +432,13 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     resourcesAvailable: false,
     // 存在「分数足够高但配对证据不足 → 未采纳」的候选（UI 用不同文案说明原因）。
     evidenceBlocked: false,
-    // 「轮数上限截断」（2026-09-19，设计 §19.8）：骨架值 false，真正的值在 finally 里回填。
+    // 「轮数上限截断」（2026-09-19）：骨架值 false，真正的值在 finally 里回填。
     roundLimitReached: false,
     lockedAbilityHrids: settings.lockedAbilityHrids,
     evaluations: 0,
     simulations: 0,
     // 每次精测评估的抽样轮数（重复次数）：结果里带上它，报告才能自证口径。
-    // racing（设计 §30）后另有粗筛 lane：screenRounds 场、只决定「谁进精测」。
+    // racing 后另有粗筛 lane：screenRounds 场、只决定「谁进精测」。
     evaluationRounds: settings.rounds,
     screenRounds: TRIGGER_OPTIMIZER_SCREEN_ROUNDS,
     racingKeep: TRIGGER_OPTIMIZER_RACING_KEEP,
@@ -454,7 +454,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     if (run.cancelRequested) throw createWorkerRunCancellationError();
   };
 
-  // lane='decide'（精测，settings.rounds 场）/ 'screen'（粗筛，SCREEN_ROUNDS 场，设计 §30）。
+  // lane='decide'（精测，settings.rounds 场）/ 'screen'（粗筛，SCREEN_ROUNDS 场）。
   // 覆盖口径：精测记录**总是**顶掉粗筛记录（决定性证据上屏）；同 lane 只在分数更高时覆盖
   // —— 后续轮次的「自己 vs 自己」0 分复核点不得抹掉已采纳候选的正分记录（既有口径）。
   const recordMetrics = (choice, candidate, metrics, score, paired, lane = 'decide') => {
@@ -518,7 +518,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     // 复用外部传入的基线指标时不额外跑模拟，但仍按一次评估计入进度（既有口径）。
     simulations += settings.rounds;
 
-    // 数值类候选的绝对值换算需要基线模拟的真实战斗属性（设计 §6.3）。
+    // 数值类候选的绝对值换算需要基线模拟的真实战斗属性。
     // 失败时降级为 null：候选生成器跳过需要绝对值的候选，只保留锚点与
     // 「无需绝对值」的组合候选（不会退化成只有两个锚点）。resourcesAvailable 会随
     // 报告上抛，UI 据此提示「数值类候选本次不可用」——静默降级是最难排查的一类问题。
@@ -541,7 +541,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     const searchableChoices = perAbilityChoices.filter((choice) => choice.locked !== true);
     // 槽位 → 报告用的最终选择（见下方采纳分支的「不要覆盖」说明）。
     const chosenBySlot = new Map();
-    // 深挖资格（设计 §18.1）：只有「搜索轮数 < 深挖轮数」时才值得扩轮——用户手填的更大
+    // 深挖资格：只有「搜索轮数 < 深挖轮数」时才值得扩轮——用户手填的更大
     // 轮数已经把样本覆盖到位，再扩一次没有增量意义。集合按槽位记账，每个槽每次运行最多
     // 深挖一次（在真正触发时才从集合里删除，见下方采纳分支）。
     const deepDiveSlots =
@@ -551,7 +551,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
 
     // 预估评估总数（基线 + 每轮每槽候选数之和 + 精炼 + 深挖 + 复验 2 次），仅作进度分母；
     // 提前停止时进度不会到 1，最终强制发布时置 1。
-    // racing（设计 §30）后每槽每轮分两段评估：大候选池 = 全池粗筛 1 次 + 幸存者（top-K ∪
+    // racing 后每槽每轮分两段评估：大候选池 = 全池粗筛 1 次 + 幸存者（top-K ∪
     // 锚点保送，≤ KEEP+2 条）精测 1 次；小池 = 全池精测（原口径，零行为变化）。
     const candidatesPerRound = searchableChoices.reduce((total, choice) => {
       const count = choice.candidates.length;
@@ -572,7 +572,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     const estimatedRefinements = TRIGGER_OPTIMIZER_REFINEMENT_MAX_LEVELS * refinableSlotCount * settings.maxRounds;
     // 深挖是「每槽最多一次 × 2 次评估（参考 + 候选）」，按上界计入分母（同上，偏大安全）。
     const estimatedDeepDives = deepDiveSlots.size * 2;
-    // 跨槽联合探针（设计 §19.11）：每轮最多 C(可搜槽数, 2) 次评估（单槽输入天然为 0）。
+    // 跨槽联合探针：每轮最多 C(可搜槽数, 2) 次评估（单槽输入天然为 0）。
     // 实际只在「存在未落地且增量为正的成员」时才探（多数轮次为 0 次），这里按上界计入分母，
     // 与精炼/深挖的估算同款（偏大安全：提前到 1 只会让进度条钳制，实际计数器仍是精确值）。
     const jointPairCount = (searchableChoices.length * (searchableChoices.length - 1)) / 2;
@@ -587,7 +587,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
       2;
     // 复验的 2 次评估各跑 TRIGGER_OPTIMIZER_VERIFY_ROUNDS 场（与 settings.rounds 无关）；
     // 深挖的 2 次评估各跑 TRIGGER_OPTIMIZER_DEEP_DIVE_ROUNDS 场（同样与 settings.rounds 无关）。
-    // 场次估算同理分段（设计 §30）：粗筛段每条 SCREEN_ROUNDS 场、精测段每条 settings.rounds 场。
+    // 场次估算同理分段：粗筛段每条 SCREEN_ROUNDS 场、精测段每条 settings.rounds 场。
     const simulationsPerRound = searchableChoices.reduce((total, choice) => {
       const count = choice.candidates.length;
       return (
@@ -626,7 +626,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
         bestScore: cumulativeScore(best),
       });
 
-    // ── 深挖（2026-09-19 新增 §18.1；2026-09-20 改独立种子，设计 §21）────────────
+    // ── 深挖（2026-09-19 新增；2026-09-20 改独立种子）────────────
     // 触发条件：某个槽的最优候选「增量分 ≥ 最小效应量、但配对证据没过噪声地板」
     // （isAdoptionBlockedByEvidence）。这类候选在旧实现里只有一个结局——报告写
     // 「有候选更高分，但证据不足」，用户既不知道该不该信，也不知道能不能再测准。
@@ -673,7 +673,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
         role: choice.role,
         rounds: TRIGGER_OPTIMIZER_DEEP_DIVE_ROUNDS,
         // 本次复核实际使用的种子（独立盐派生）：报告自证「判据用的是新样本」，
-        // 测试据此断言与搜索期/复验种子互不相同（设计 §21）。
+        // 测试据此断言与搜索期/复验种子互不相同。
         seeds: [...seeds],
         score,
         mean: paired?.score?.mean ?? null,
@@ -686,7 +686,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     };
 
     // ── coordinate descent（配对参考链）──────────────────────────────
-    // racing 分级采样辅助（设计 §30）：粗筛 lane 与精测 lane 共用，供下方槽循环调用。
+    // racing 分级采样辅助：粗筛 lane 与精测 lane 共用，供下方槽循环调用。
     //
     // 粗筛参考（lazy）：粗筛比较同样要配对 —— 「当前工作配置」在**粗筛种子**下的测量。
     // 槽级采纳后直接接续 winner 的粗筛测量（零额外模拟）；精炼/联合采纳改写配置后置空，
@@ -748,7 +748,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
       publishSearch(round, null);
 
       const improvedSlots = [];
-      // 跨槽联合探针（设计 §19.11）的本轮簿记：联合比较与单槽比较共用**轮起参考系**；
+      // 跨槽联合探针的本轮簿记：联合比较与单槽比较共用**轮起参考系**；
       // 成员候选取本轮各槽 top-1；adoptedThisRound 记本轮已落地的槽（成员幂等 / 防重复记账）。
       const roundStartReference = referenceMetrics;
       const roundWinnerBySlot = new Map();
@@ -759,7 +759,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
         // 参考指标：本槽开跑时的「当前工作配置」指标（= 上一轮/上一槽采纳后的 winner 指标）。
         // 与候选共享同一组种子，因此 comparison 是配对的。
         const reference = referenceMetrics;
-        // racing 分级采样（设计 §30）：候选池大时先粗筛（独立盐、SCREEN_ROUNDS 场，只决定
+        // racing 分级采样：候选池大时先粗筛（独立盐、SCREEN_ROUNDS 场，只决定
         // 「谁进精测」）→ 幸存者（top-K ∪ 锚点保送）再精测（search 盐、settings.rounds 场，
         // 采纳判据只看这段 —— 粗筛样本不进判据，select on A / test on B）；小池直接全池精测
         //（原口径，零行为变化）。
@@ -814,7 +814,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
         // ⚠️ 槽级采纳**不传** best：winner.score 是「相对当前工作配置」的增量分，而
         // best.score 是上一个被采纳候选在它自己参考系里的分，两者不同源（跨参考系比较
         // 会把每个槽的门槛抬高 best.score + MIN_ADOPT_SCORE，实测压制多槽叠加，
-        // 见 triggerOptimizerScoring.shouldAdoptCandidate 与设计 §16.9）。
+        // 见 triggerOptimizerScoring.shouldAdoptCandidate）。
         let deepDive = null;
         if (winner && isAdoptionBlockedByEvidence(winner) && deepDiveSlots.has(choice.slotIndex)) {
           deepDiveSlots.delete(choice.slotIndex);
@@ -835,7 +835,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
           // 就是「采纳后的工作配置」在同一组种子下的指标 —— 下一槽直接拿它当参考，
           // **零额外模拟**，且配对性完整保留。
           referenceMetrics = winner.metrics;
-          // 粗筛参考同步接续（设计 §30）：winner 的粗筛测量就是「采纳后的工作配置」在粗筛种子
+          // 粗筛参考同步接续：winner 的粗筛测量就是「采纳后的工作配置」在粗筛种子
           // 下的指标（同一份配置、换随机流）—— 零额外模拟。非 racing 路径没有粗筛测量 → 置空，
           // 由下一个粗筛槽按需补测。
           referenceScreenMetrics = screenMetricsBySignature.get(String(winner.signature)) ?? null;
@@ -844,7 +844,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
           // 采纳者的分数是相对**当时**参考算出来的（有意义的正提升），必须记下来。
           chosenBySlot.set(choice.slotIndex, winner);
 
-          // ── 自适应阈值精炼（设计 §6.3；多级迭代 B2，2026-09-19）──────────────
+          // ── 自适应阈值精炼（多级迭代 B2，2026-09-19）──────────────
           // 固定阈值网格粒度粗（25 个百分点），最优阈值常落在格点之间。这里对「刚被采纳的
           // 单条件数值类候选」做**多级**邻域搜索：第 1 级 ±10、之后 ±5（下限），每级只在
           // 上一级被证明更优（严格采纳）后才继续 —— 成本只花在还在改进的槽上；签名去重让
@@ -895,7 +895,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
             // 下一级精炼的基准（同参考系比较的第二个参数）。
             referenceMetrics = refineWinner.metrics;
             // 精炼采纳改写了本槽阈值：旧的粗筛测量对不上这份配置了 → 置空，由下一个粗筛槽
-            // 按需补测（SCREEN_ROUNDS 场，设计 §30）。
+            // 按需补测（SCREEN_ROUNDS 场）。
             referenceScreenMetrics = null;
             chosenBySlot.set(choice.slotIndex, refineWinner);
             adoptedSlots.add(choice.slotIndex);
@@ -910,8 +910,8 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
         // 让用户看到「优化了但每项都是 0.0000」——这正是「效果不佳」的观感来源之一。
       }
 
-      // ── 跨槽联合探针（C，2026-09-19，设计 §19.11）────────────────────────
-      // 动机（§19.10 熊图 2×2 实测）：两槽交互真实但温和且**次可加**（近似交互项 −0.038）；
+      // ── 跨槽联合探针（C，2026-09-19）────────────────────────
+      // 动机（熊图 2×2 实测）：两槽交互真实但温和且**次可加**（近似交互项 −0.038）；
       // 漏掉联合提升的根因不是没有协同，而是**增量证据的统计功效**——AB vs 已采纳的 B 在
       // 10 轮下仍 p=0.107，而同一对配置相对现状的联合提升显著（p=0.0118）。逐槽增量判据
       // 永远等不到那一步；联合评估把一对配置的收益并进同一个分子，功效就够了。
@@ -989,7 +989,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
           // 联合配置就是采纳后的工作配置：指标直接沿用（零额外模拟延续配对链）。
           referenceMetrics = jointMetrics;
           // 联合采纳同时改写了两槽触发器：旧的粗筛测量对不上这份配置 → 置空，下一个粗筛槽
-          // 按需补测（SCREEN_ROUNDS 场，设计 §30）。
+          // 按需补测（SCREEN_ROUNDS 场）。
           referenceScreenMetrics = null;
           best = {
             metrics: jointMetrics,
@@ -1024,10 +1024,10 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
       publishSearch(round, null);
 
       // 走满上限：最后一轮仍在采纳 → 固定点还没到（早停口径是「一整轮零采纳」），结果可能
-      // 没搜完。报告据此上抛（设计 §19.8），UI 给出「提高上限 / 换精细档再跑」的下一步。
+      // 没搜完。报告据此上抛，UI 给出「提高上限 / 换精细档再跑」的下一步。
       if (round === settings.maxRounds && improvedSlots.length > 0) roundLimitReached = true;
 
-      // 固定点：一轮内没有任何槽被改进 → 停止（设计 §7.2）。
+      // 固定点：一轮内没有任何槽被改进 → 停止。
       if (improvedSlots.length === 0) break;
     }
 
@@ -1106,19 +1106,19 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     unregisterTriggerOptimizerRun(run);
     result.evaluations = evaluations;
     result.simulations = simulations;
-    // racing 回填（设计 §30）：骨架值 false，真正的值在这里取（racingUsed 是函数体级 let，
+    // racing 回填：骨架值 false，真正的值在这里取（racingUsed 是函数体级 let，
     // 与 adoptedSlots 的 finally 快照同款）。
     result.racingUsed = racingUsed;
     result.maxConcurrentWorkers = maxConcurrentWorkers;
     result.bestTriggerMap = bestTriggerMap;
-    // 搜索起点配置（2026-09-23，设计 §29）：换难度复核要拿它当对照。这里也走**快照**语义
+    // 搜索起点配置（2026-09-23）：换难度复核要拿它当对照。这里也走**快照**语义
     // （deepClone）：playerConfig 是调用方的对象，报告不该与它共享引用（深挖/精炼路径都会
     // 写 workingConfig 的克隆体，但报告持有原件仍然危险——调用方后续复用同一对象就会被串改）。
     result.baselineTriggerMap = deepClone(isPlainObject(playerConfig.triggerMap) ? playerConfig.triggerMap : {});
     result.referenceMetrics = referenceMetrics;
     result.resourcesAvailable = resourcesAvailable;
     result.evidenceBlocked = evidenceBlocked;
-    // 「轮数上限截断」标记（设计 §19.8）：搜索跑满 maxRounds 且最后一轮仍有采纳（赋值点见
+    // 「轮数上限截断」标记：搜索跑满 maxRounds 且最后一轮仍有采纳（赋值点见
     // 轮次循环收尾）。报告是唯一数据源：store/UI 都从 result 读，不另设运行期状态。
     result.roundLimitReached = roundLimitReached;
     // ⚠️ 必须在这里再取一次快照：result 对象在搜索**开始前**创建，那时 adoptedSlots 还是
@@ -1147,9 +1147,9 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
   return result;
 }
 
-// ── 换难度稳健性复核（2026-09-23，设计 §29）────────────────────────────────────
+// ── 换难度稳健性复核（2026-09-23）────────────────────────────────────
 // 触发器写的是**全局技能配置**（store 的 applyTriggerOptimizerResult 直接改 activePlayer.triggerMap），
-// 而搜索只在「一个区域 + 一个难度」上评估过 —— 结论完全可能只在那一个难度成立（设计 §19.5 实测：
+// 而搜索只在「一个区域 + 一个难度」上评估过 —— 结论完全可能只在那一个难度成立（实测：
 // 同一角色的区域间噪声差 20 倍）。本函数把「最优配置 vs 搜索起点配置」搬到另一个难度上，用**独立盐**
 // 的种子重跑一组新样本做配对评估，回答「换个难度，这笔提升还成立吗」。
 //
@@ -1158,7 +1158,7 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
 //   · 指标提取、打分与显著性全部走 evaluatePayload + computePairedStats（同一实现）；
 //   · 种子由「目标难度 + 独立盐」派生 ⇒ 与搜索期/复验期样本完全不重叠（样本分割，p 值有效）。
 // 成本：2 次评估 × rounds（缺省 TRIGGER_OPTIMIZER_ROBUSTNESS_ROUNDS = 6；调用方按需反解到
-// TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS = 16，见设计 §49 / §63）= 6~32 场模拟。
+// TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS = 16）= 6~32 场模拟。
 // 已知边界（勿过度解读）：只复核**相邻一个难度**，且不回答「结论对其它区域是否成立」。
 //
 // input = { playerConfig, simulationSettings, extra, settings?, weights?, pricing?,
@@ -1195,11 +1195,11 @@ export async function verifyTriggerOptimizerRobustness(input = {}, options = {})
   // ⚠️ 必须用**复核口径**的归一化：搜索口径（normalizeTriggerOptimizerRounds）管的是「每候选的抽样
   // 重复次数」，与复核的「新现场从零跑几轮」不同语义；混用会把「反解说这次要 16 轮」静默钳成
   // 搜索上限 12 轮（历史上搜索上限 10 时曾把 12 钳成 10），与装置里验证过的 A′ 口径不符
-  // （设计 §49；§47 同款教训）。
+  // （既有口径同款教训）。
   const rounds = normalizeTriggerOptimizerRobustnessRounds(
     Number.isFinite(Number(options.rounds)) ? options.rounds : TRIGGER_OPTIMIZER_ROBUSTNESS_ROUNDS,
   );
-  // 本次复核的执行计划快照（2026-09-25，设计 §49）：净化后随 result.plan 留档；调用方没带或
+  // 本次复核的执行计划快照（2026-09-25）：净化后随 result.plan 留档；调用方没带或
   // 不自洽时为 null —— 不留档，也不影响本次复核本身。
   const planSnapshot = normalizeTriggerOptimizerRobustnessPlan(options.plan, rounds);
   const source = isPlainObject(input.simulationSettings) ? input.simulationSettings : {};
@@ -1229,7 +1229,7 @@ export async function verifyTriggerOptimizerRobustness(input = {}, options = {})
       (simulationSettings.useDungeon ? simulationSettings.dungeonHrid : simulationSettings.zoneHrid) || '',
     ),
     rounds,
-    // 复核计划快照（2026-09-25，设计 §49）：轮数已从固定 6 轮变成按需反解，报告要能回答「这次
+    // 复核计划快照（2026-09-25）：轮数已从固定 6 轮变成按需反解，报告要能回答「这次
     // 跑了几轮、上限/成本护栏有没有咬住」。净化失败（缺项/不自洽）时不留档。
     ...(planSnapshot ? { plan: planSnapshot } : {}),
     // 本次复核实际使用的种子：报告自证「判据用的是新样本」（与深挖/复验同款）。
@@ -1312,17 +1312,17 @@ export async function verifyTriggerOptimizerRobustness(input = {}, options = {})
 const MISSING_VERIFICATION_ERROR =
   'The report is missing verification samples, so no further verification can be appended.';
 
-// ── 追加复验（2026-09-24，设计 §31）──────────────────────────────────────────
+// ── 追加复验（2026-09-24）──────────────────────────────────────────
 // 首轮复验判 inconclusive ≠「没有提升」，只是「这几轮样本不足以判定」。旧口径到此为止，
 // 用户既看不出结论悬着、也没有下一步。本函数提供「再采一组独立样本，与首轮合并后重新检验」：
 //   · **不换难度**（与换难度稳健性复核的区别）：回答的是「这批证据够不够」，不是「换个难度
 //     还成立吗」—— simulationSettings 原样使用，唯一变量是样本量；
 //   · 种子 = verify-append 盐 + `.v${attempt}`：追加样本与 search/screen/verify/deep-dive/
 //     robustness 全不相交，且每次追加互不相交 —— 「要不要追加」是拿上一轮结论做的决定
-//     （select on A），追加样本必须独立于那个决定，否则就是可选停时（§21 的教训）；
+//     （select on A），追加样本必须独立于那个决定，否则就是可选停时（早期教训）；
 //   · 判据是**合并重检**（首轮 + 本次样本一起进 computePairedStats，自由度 5 → 11），
 //     不是只看新增样本：合并才有更高功效把 inconclusive 追成明确结论。合并重检相当于
-//     「最多追加 N 次」的序贯检验，其假阳性率是否仍达标由 §31 的 bootstrap 实证把关
+//     「最多追加 N 次」的序贯检验，其假阳性率是否仍达标由 bootstrap 实证把关
 //     （判据：真提升的确认率上升且假阳性率不升，否则本特性整体撤下）。
 // 成本：2 次评估 × rounds（缺省 TRIGGER_OPTIMIZER_VERIFY_ROUNDS = 6 → 12 场模拟；调用方按
 // planTriggerOptimizerVerificationAppend 的自适应计划传更大值，上限 TRIGGER_OPTIMIZER_VERIFY_MAX_ROUNDS）。
@@ -1335,11 +1335,11 @@ const MISSING_VERIFICATION_ERROR =
 //     evaluations, simulations, elapsedSeconds, cancelled, error }
 // attempts 逐次追加 { attempt, rounds, seeds, paired, verdict, mergedRounds, mergedVerdict, plan? }：
 // 前几项是**本次追加样本自身**的统计、后两项是合并后的总轮数与结论 —— 两条口径都留档，
-// 读者能分清「新增样本说了什么」与「合并后说了什么」；plan 是**本轮执行计划快照**（2026-09-25，
-// 设计 §48）：轮数自适应（§47）之后，「这次补了几轮、上限/护栏有没有咬住」必须进报告才能事后
+// 读者能分清「新增样本说了什么」与「合并后说了什么」；plan 是**本轮执行计划快照**（2026-09-25）：
+// 轮数自适应之后，「这次补了几轮、上限/护栏有没有咬住」必须进报告才能事后
 // 复盘 —— 计划由调用方（store）算好后从 options.plan 传入，服务层只净化不重算（口径的事实源
 // 只有 scoring 的 planTriggerOptimizerVerificationAppend，服务层重算会把口径分叉成两套）。
-// §50（2026-09-26）之后快照还含累计预算与累计已花（spentSimulations / cumulativeBudgetSimulations /
+// 2026-09-26 之后快照还含累计预算与累计已花（spentSimulations / cumulativeBudgetSimulations /
 // limitedBy）—— 字段的白名单与校验在 domain 的 normalizeTriggerOptimizerAppendPlan，服务层不感知
 // 具体字段，只负责「净化通过才留档」。
 export async function appendTriggerOptimizerVerification(input = {}, options = {}) {
@@ -1388,12 +1388,12 @@ export async function appendTriggerOptimizerVerification(input = {}, options = {
   // ⚠️ 必须用**复验口径**的归一化：搜索口径（normalizeTriggerOptimizerRounds）管的是「每候选的抽样
   // 重复次数」，与追加复验的「补几轮」不同语义；它的上限（10 轮，2026-09-27 起 12）远小于复验上限
   // （TRIGGER_OPTIMIZER_VERIFY_MAX_ROUNDS = 24）—— 混用会把「反解说这次要 18 轮」静默钳成小值，
-  // 与装置里验证过的 A′ 口径不符（设计 §47）。
+  // 与装置里验证过的 A′ 口径不符。
   const rounds = normalizeTriggerOptimizerVerifyRounds(
     Number.isFinite(Number(options.rounds)) ? options.rounds : TRIGGER_OPTIMIZER_VERIFY_ROUNDS,
   );
   const attempt = Math.max(1, Math.floor(toFiniteNumber(options.attempt, 1)));
-  // 本轮执行计划快照（2026-09-25，设计 §48）：净化后随 attempts 条目留档；不自洽（或调用方
+  // 本轮执行计划快照（2026-09-25）：净化后随 attempts 条目留档；不自洽（或调用方
   // 没带）时为 null —— 不留档，也不影响本次追加本身。
   const planSnapshot = normalizeTriggerOptimizerAppendPlan(options.plan, rounds);
   // 不换难度：simulationSettings 原样（换难度是 verifyTriggerOptimizerRobustness 回答的问题）。
@@ -1486,7 +1486,7 @@ export async function appendTriggerOptimizerVerification(input = {}, options = {
         verdict: String(attemptPaired?.score?.verdict ?? 'unknown'),
         mergedRounds,
         mergedVerdict,
-        // 计划快照（§48）：只有净化通过（字段齐全、类型对、plannedRounds === rounds）才写。
+        // 计划快照：只有净化通过（字段齐全、类型对、plannedRounds === rounds）才写。
         ...(planSnapshot ? { plan: planSnapshot } : {}),
       },
     ];
@@ -1510,21 +1510,21 @@ export async function appendTriggerOptimizerVerification(input = {}, options = {
 const MISSING_ROBUSTNESS_ERROR =
   'The report is missing robustness samples, so no further robustness check can be appended.';
 
-// ── 复核追加（2026-09-26，设计 §51）──────────────────────────────────────────
-// 复核（§29/§49）每次都是「换难度 + 独立盐 + 2 次评估 × 自适应 6~12 轮」的一次性评估；旧口径下
-// 「再点一次复核」= 同盐复跑 ⇒ 逐值相同的样本（§51 实测：同盐两次派生逐值相同，成本 2 × 首跑
+// ── 复核追加（2026-09-26）──────────────────────────────────────────
+// 复核每次都是「换难度 + 独立盐 + 2 次评估 × 自适应 6~12 轮」的一次性评估；旧口径下
+// 「再点一次复核」= 同盐复跑 ⇒ 逐值相同的样本（实测：同盐两次派生逐值相同，成本 2 × 首跑
 // 轮数、信息增量 0 —— 纯白烧）。本函数改为**换盐追加**：新样本与首跑样本合并重检，把「换个难度
-// 这笔提升还成立吗」的结论继续加固（装置 §51 S2 臂实测：首跑未达显著 → 合并后明确 = 97.6%；
+// 这笔提升还成立吗」的结论继续加固（装置 S2 臂实测：首跑未达显著 → 合并后明确 = 97.6%；
 // 按需只补 n* 的 S1 臂 = 89.4% ⇒ 生产取「补到上限」口径，见 planTriggerOptimizerRobustnessAppend）。
 //   · 不换难度：沿用首跑复核的目标难度（options.targetTier / input.targetTier /
 //     simulationSettings.difficultyTier 依次解析，与首跑同款口径；调用方必须传与首跑相同的难度，
 //     否则新旧样本不同源、合并无意义 —— store 传的就是复核记录里的 difficultyTier）；
 //   · 种子盐 = robustness 盐 + `.r${attempt}`：追加样本与首跑、与其它各阶段全不相交，且每次追加
 //     互不相交 —— 「要不要追加」是拿已合并结论做的决定（select on A），新样本必须独立于那个决定，
-//     否则就是可选停时（§21 的教训）；
+//     否则就是可选停时（早期教训）；
 //   · 判据是**合并重检**：首跑 + 本次样本一起进 computePairedStats（6 轮 → 上限 16 轮，自由度
 //     5 → 15），不是只看新增样本；合并重检相当于「最多追加 N 次」的序贯检验，其假阳性率是否仍
-//     达标由 §31 的 bootstrap 口径把关（§51 实测：三臂假阳性率均 0.0%，未升高）。
+//     达标由 bootstrap 口径把关（实测：三臂假阳性率均 0.0%，未升高）。
 // 成本：2 次评估 × rounds（调用方按 planTriggerOptimizerRobustnessAppend 传 1..16 轮）。
 //
 // input = { playerConfig, simulationSettings, extra, settings?, weights?, pricing?,
@@ -1538,7 +1538,7 @@ const MISSING_ROBUSTNESS_ERROR =
 //     error }
 // attempts 逐次追加 { attempt, rounds, seeds, paired, verdict, mergedRounds, mergedVerdict, plan? }：
 // 前几项是**本次追加样本自身**的统计、后两项是合并后的总轮数与结论 —— 两条口径都留档，读者能分清
-// 「新增样本说了什么」与「合并后说了什么」；plan 是**本轮执行计划快照**（§51：zeroDiff / atCap /
+// 「新增样本说了什么」与「合并后说了什么」；plan 是**本轮执行计划快照**（zeroDiff / atCap /
 // limitedBy / 累计预算与已花）—— 计划由调用方（store）算好后从 options.plan 传入，服务层只净化
 // 不重算（口径的事实源只有 scoring 的 planTriggerOptimizerRobustnessAppend；字段白名单与校验在
 // domain 的 normalizeTriggerOptimizerRobustnessPlan）。
@@ -1587,12 +1587,12 @@ export async function appendTriggerOptimizerRobustness(input = {}, options = {})
   const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
   // ⚠️ 必须用**复核追加口径**的归一化：搜索口径（normalizeTriggerOptimizerRounds）管的是「每候选的
   // 抽样重复次数」，与「这一次补几轮」不同语义；混用会把「补到上限 16 轮」静默钳成搜索上限
-  // 12 轮（历史上搜索上限 10 时曾把 12 钳成 10），与装置里验证过的 S2 口径不符（§49 / §47 同款教训）。
+  // 12 轮（历史上搜索上限 10 时曾把 12 钳成 10），与装置里验证过的 S2 口径不符（既有口径同款教训）。
   const rounds = normalizeTriggerOptimizerRobustnessAppendRounds(
     Number.isFinite(Number(options.rounds)) ? options.rounds : TRIGGER_OPTIMIZER_ROBUSTNESS_ROUNDS,
   );
   const attempt = Math.max(1, Math.floor(toFiniteNumber(options.attempt, 1)));
-  // 本轮执行计划快照（§51）：净化后随 attempts 条目留档；不自洽（或调用方没带）时为 null ——
+  // 本轮执行计划快照：净化后随 attempts 条目留档；不自洽（或调用方没带）时为 null ——
   // 不留档，也不影响本次追加本身。
   const planSnapshot = normalizeTriggerOptimizerRobustnessPlan(options.plan, rounds);
   const source = isPlainObject(input.simulationSettings) ? input.simulationSettings : {};
@@ -1613,7 +1613,7 @@ export async function appendTriggerOptimizerRobustness(input = {}, options = {})
   const simulationSettings = { ...source, difficultyTier };
 
   const seedContext = { playerId: preferredPlayerId, playerConfig, simulationSettings };
-  // 换盐追加（§51）：`.r${attempt}` 与首跑（robustness 盐）、复验追加（.v）、搜索/复验/深挖全不相交。
+  // 换盐追加：`.r${attempt}` 与首跑（robustness 盐）、复验追加（.v）、搜索/复验/深挖全不相交。
   const seeds = createTriggerOptimizerSeedSet({
     ...seedContext,
     salt: `${TRIGGER_OPTIMIZER_SEED_SALT_ROBUSTNESS}.r${attempt}`,
@@ -1712,7 +1712,7 @@ export async function appendTriggerOptimizerRobustness(input = {}, options = {})
         verdict: String(attemptPaired?.score?.verdict ?? 'unknown'),
         mergedRounds,
         mergedVerdict,
-        // 计划快照（§51）：只有净化通过（字段齐全、类型对、plannedRounds === rounds）才写。
+        // 计划快照：只有净化通过（字段齐全、类型对、plannedRounds === rounds）才写。
         ...(planSnapshot ? { plan: planSnapshot } : {}),
       },
     ];

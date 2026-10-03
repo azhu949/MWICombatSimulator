@@ -1,8 +1,8 @@
-// wasm 引擎时代的 realm 复用 parity 防线（§54 回归锚，2026-10-01 重建）。
+// wasm 引擎时代的 realm 复用 parity 防线（回归锚，2026-10-01 重建）。
 //
 // 背景：本文件原是 JS 引擎时代的「同 realm 连跑 vs 每场全新 realm」对照测试，
-// 切片 21B 随 JS 引擎物理删除（理由「前提消失」，见 docs/wasm-engine-performance.md
-// §21.1）。wasm 引擎同为有状态实例：worker realm 复用（runSimulationBatchWithDedicatedWorker
+// 随 JS 引擎物理删除（理由「前提消失」）。
+// wasm 引擎同为有状态实例：worker realm 复用（runSimulationBatchWithDedicatedWorker
 // 的批量路径、realm 保活计划）的正确性前提是「引擎在同一实例连续两次 simulate 之间
 // 没有会改变结果的状态残留」（Rust 侧状态、桥侧模块级缓存、共享对象就地改写等）。
 // 本文件把该前提重新固化为常规流水线断言：

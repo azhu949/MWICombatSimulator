@@ -1,4 +1,4 @@
-// 切片 21B（定案 D2）：golden 快照比较助手。
+// golden 快照比较助手（定案 D2）。
 //
 // JS 引擎删除后，parity 测试从「JS vs Rust 双引擎对账」改为「固定输入 → 固定期望 JSON」：
 // 期望值以当前 wasm 引擎输出生成并提交进仓库（fixtures/golden/*.json），之后任何

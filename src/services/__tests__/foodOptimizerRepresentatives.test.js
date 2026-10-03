@@ -8,7 +8,7 @@ import { evaluateFoodOptimizerCandidate } from '../foodOptimizerSimulation.js';
 // 2026-10-03 合并：原 3 个 foodOptimizer 契约测试文件（foodOptimizerRepresentatives /
 // foodOptimizerDeathBudget / foodOptimizerZeroDeaths）。用例、断言与注释逐字保留，
 // 仅把各文件的模块级辅助常量/函数收进各自 describe 作用域（避免同名声明冲突），
-// 目的是减少测试文件数——全量墙钟瓶颈在文件数与 fork 启停，见 docs/trigger-optimizer-design.md §42。
+// 目的是减少测试文件数——全量墙钟瓶颈在文件数与 fork 启停。
 const food = (hrid, kind, thresholds, restore = 40, price = 1) => ({ hrid, kind, thresholds, restore, price });
 const bySignature = (a, b) => (a.signature < b.signature ? -1 : a.signature > b.signature ? 1 : 0);
 

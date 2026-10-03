@@ -40,7 +40,7 @@ describe('Buff source policy', () => {
     });
   });
 
-  // 切片 21B：'matches the legacy-engine golden results' 用例已删除——JS 引擎
+  // 'matches the legacy-engine golden results' 用例已删除——JS 引擎
   // （CombatSimulator）不复存在，普通战斗的输出漂移防线由 wasm golden 快照
   // （wasmEngineProductionParity.test.js）+ cargo 单测承载；B 层增益源仲裁语义
   // 由下方 CombatUnit 级用例继续锁定。
@@ -134,7 +134,7 @@ describe('Buff source policy', () => {
   // 运行时公式分别按 `curse * stacks`、
   // `-weaken * stacks` 和 `fury * stacks` 应用这些装备属性。这些是
   // 仲裁测试的官方代表性输入，而非通用的
-  // 硬编码 Buff 数值。公式请参阅 combatActions.js（21A 自 combatSimulator 逐字搬移）。
+  // 硬编码 Buff 数值。公式请参阅 combatActions.js（自 combatSimulator 逐字搬移）。
   it('keeps curse, weaken, and fury on the legacy last-write path', () => {
     const ordinaryBuffs = [
       {

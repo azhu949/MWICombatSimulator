@@ -52,7 +52,7 @@ export function pruningScenariosFor(names) {
 
 export async function runPruningScenario(scenario) {
   const { request, items, foodSlots } = createFoodOptimizerFixture(scenario);
-  // 切片 21B：JS 引擎 oracle 已删除。参照臂改走生产 evaluator 默认 wasm 轮（与
+  // JS 引擎 oracle 已删除。参照臂改走生产 evaluator 默认 wasm 轮（与
   // 搜索臂同引擎同种子，确定性保证逐候选一致；引擎语义漂移防线在 fixtures/golden
   // 快照 + cargo test）。不再传 simulateRound 覆盖参数。
   const baseline = await evaluateFoodOptimizerCandidate(request, null);

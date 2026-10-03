@@ -1,9 +1,9 @@
-// 切片 21A：战斗预览上下文（playerMapper 专用）。
+// 战斗预览上下文（playerMapper 专用）。
 //
 // 预览路径（buildCombatPreviewData / buildPartyAuraPreviewResult / buildDrinkPreviewCard）
 // 此前 `new CombatSimulator(...)` 只为借它的单步动作方法（tryUseAbility /
 // tryUseConsumable / processAbilityBuffEffect / canUseAbility / checkTriggersForUnit …），
-// 从不调用 simulate()。21B 删除 JS 模拟执行层（combatSimulator.js / events/ / simResult）
+// 从不调用 simulate()。JS 模拟执行层删除（combatSimulator.js / events/ / simResult）
 // 之前，先把动作语义收拢到 CombatActionsCore（与真实引擎共享同一份实现），
 // 本类只补齐基类构造契约所需的「轻量容器」：
 // - 数组版事件队列：只支持 addEvent / clear / getMatching / clearMatching /

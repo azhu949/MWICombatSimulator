@@ -1,4 +1,4 @@
-// 场景构造与请求序列化（切片 4 parity → 切片 21B golden 化后保留的部分）：
+// 场景构造与请求序列化（golden 化后保留的部分）：
 // - 合成单位 / 技能 / 消耗品按 B 层类（CombatUnit/Ability/Consumable/Trigger）构建，
 //   序列化成 Rust `run_simulator_operations` 请求 JSON——scenario 定义本身是确定性
 //   输入，golden 快照锁 Rust 探针的轨迹输出。
@@ -247,7 +247,7 @@ export function buildScenarioRequest(scenario) {
 }
 
 // ---------------------------------------------------------------------------
-// JS 侧运行段已随切片 21B（定案 D2）删除：JS 模拟执行层（CombatSimulator）不复
+// JS 侧运行段已随引擎删除（定案 D2）：JS 模拟执行层（CombatSimulator）不复
 // 存在，Rust 探针（`engine/src/sim_probe.rs`）的轨迹输出改为与 golden 快照对账
 // （`wasmEngineSimulatorParity.test.js`）。场景构造与请求序列化保留如下。
 // ---------------------------------------------------------------------------

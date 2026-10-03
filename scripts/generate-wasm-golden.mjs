@@ -1,4 +1,4 @@
-// 切片 21B（定案 D2）：再生成 wasm golden 快照。
+// 定案 D2：再生成 wasm golden 快照。
 //
 // 用法：node scripts/generate-wasm-golden.mjs [vitest 过滤参数...]
 // 不带参数时跑全部 golden 套件；以 GOLDEN_UPDATE=1 运行，缺失/过期的期望 JSON

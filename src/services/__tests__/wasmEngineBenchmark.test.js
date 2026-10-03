@@ -1,4 +1,4 @@
-// 切片 6 性能对照基准（默认跳过，用 `npm run benchmark:wasm-engine` 运行）。
+// 性能对照基准（默认跳过，用 `npm run benchmark:wasm-engine` 运行）。
 //
 // 对账口径：**真实夹具 + 真实区域 + minimal 结果**（食物优化器生产路径），两侧各跑 N 轮，
 // 比较「引擎单轮耗时」中位数；wasm 侧计入请求快照 + JSON 往返（应用真实要付的开销）。
@@ -7,8 +7,8 @@
 // 环境变量：WASM_BENCH_ROUNDS（默认 5）、WASM_BENCH_HOURS（默认 1）、WASM_BENCH_SEED（默认 101）。
 //
 // 五个口径：minimal（食物优化器）、full-result（首页单轮 + 可视化）、
-// 副本 full-result（切片 15，chimerical_den）、迷宫 full-result（切片 16，/monsters/cyclops）、
-// 卷轴 full-result（切片 17，/items/seal_of_damage）。
+// 副本 full-result（chimerical_den）、迷宫 full-result（/monsters/cyclops）、
+// 卷轴 full-result（/items/seal_of_damage）。
 import { existsSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -35,10 +35,10 @@ const ROUNDS = Number(process.env.WASM_BENCH_ROUNDS ?? 5);
 const HOURS = Number(process.env.WASM_BENCH_HOURS ?? 1);
 const SEED = Number(process.env.WASM_BENCH_SEED ?? 101);
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
-// 切片 15：副本口径。fixture 玩家在 chimerical_den 反复团灭（打不完整副本），基准覆盖
+// 副本口径。fixture 玩家在 chimerical_den 反复团灭（打不完整副本），基准覆盖
 // 团灭重开 + 逐波计数路径；完整副本完成分支由 Rust 单测覆盖（见 simulator.rs 测试模块）。
 const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
-// 切片 16：迷宫口径（第一只迷宫怪 + 真实补给箱 + 5 项商店升级）。
+// 迷宫口径（第一只迷宫怪 + 真实补给箱 + 5 项商店升级）。
 const FIXTURE_LABYRINTH_HRID = '/monsters/cyclops';
 const FIXTURE_LABYRINTH_CRATE = '/items/basic_coffee_crate';
 const FIXTURE_LABYRINTH_UPGRADES = {
@@ -48,7 +48,7 @@ const FIXTURE_LABYRINTH_UPGRADES = {
   critical_rate: 7,
   experience: 7,
 };
-// 切片 17：卷轴口径（真实卷轴：30 分钟窗口、无限库存）。
+// 卷轴口径（真实卷轴：30 分钟窗口、无限库存）。
 const FIXTURE_SCROLL_ITEM = '/items/seal_of_damage';
 
 function buildPayload({ dungeon = false, labyrinth = false, scrolls = false } = {}) {
@@ -72,7 +72,7 @@ function buildPayload({ dungeon = false, labyrinth = false, scrolls = false } = 
     ...(scrolls ? { combatScrollsEnabled: true } : {}),
   };
   const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
-  // 切片 17：夹具本身无 combatScrolls 字段，卷轴配置由测试注入（无限库存）。
+  // 夹具本身无 combatScrolls 字段，卷轴配置由测试注入（无限库存）。
   if (scrolls) imported.player.combatScrolls = { [FIXTURE_SCROLL_ITEM]: { quantity: null } };
   const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
   const payload = buildSingleSimulationPayload(playersDto, settings, labyrinth ? [FIXTURE_LABYRINTH_CRATE] : [], {
@@ -105,7 +105,7 @@ function buildLivePieces(payload) {
 }
 
 async function runJsRound(payload, { minimal, enableHpMpVisualization, scrolls = false }) {
-  // 切片 21B：JS 引擎已删除——"JS 侧"计时口径改为**重复跑 wasm 轮**的对照臂
+  // JS 引擎已删除——"JS 侧"计时口径改为**重复跑 wasm 轮**的对照臂
   // （同一载荷、同一种子）：报告中的 "JS" 列是 wasm 第二臂读数，保留报告形状
   // 以便与历史基准数据对照；两侧一致性断言恒真（同引擎确定性）。
   return runWasmRound(await loadBenchEngine(), payload, { minimal, enableHpMpVisualization, scrolls });
@@ -260,7 +260,7 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 
-  // 切片 14：首页单轮口径（full-result + HP/MP 可视化开启）——经验记账、掉落上下文桶
+  // 首页单轮口径（full-result + HP/MP 可视化开启）——经验记账、掉落上下文桶
   // 与每 1000 事件的时序快照全部计入两侧引擎耗时。
   it('compares JS and WASM on the full-result workload', async () => {
     const engine = await loadBenchEngine();
@@ -279,7 +279,7 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 
-  // 切片 15：副本口径（chimerical_den，full-result）——波次生成 / 团灭重开 / 逐波存活时间
+  // 副本口径（chimerical_den，full-result）——波次生成 / 团灭重开 / 逐波存活时间
   // 与失败计数全在计时范围内。fixture 玩家在该副本反复团灭（打不完整副本），因此本口径
   // 覆盖团灭路径；完整副本完成分支由 Rust 单测覆盖（见 simulator.rs 的副本单测）。
   it('compares JS and WASM on the real dungeon workload', async () => {
@@ -303,7 +303,7 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 
-  // 切片 16：迷宫口径（cyclops + 真实补给箱 + 5 项商店升级）——无 zone 的单怪循环 +
+  // 迷宫口径（cyclops + 真实补给箱 + 5 项商店升级）——无 zone 的单怪循环 +
   // 120s 超时重启；两侧结果逐字段一致后再比较耗时。
   it('compares JS and WASM on the real labyrinth workload', async () => {
     const engine = await loadBenchEngine();
@@ -328,7 +328,7 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 
-  // 切片 17：卷轴口径（/items/seal_of_damage，full-result）——卷轴窗口开启/续期/关闭、
+  // 卷轴口径（/items/seal_of_damage，full-result）——卷轴窗口开启/续期/关闭、
   // 库存记账与 buff 影响面全在计时范围内；两侧结果逐字段一致后再比较耗时。
   it('compares JS and WASM on the real combat-scroll workload', async () => {
     const engine = await loadBenchEngine();

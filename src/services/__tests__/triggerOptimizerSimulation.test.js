@@ -94,7 +94,7 @@ class FakeWorkerClient {
   }
 }
 
-// §54 批量路径的桩：只有生产 WorkerClient 才有 startSimulationBatch，supportsSimulationBatch
+// 批量路径的桩：只有生产 WorkerClient 才有 startSimulationBatch，supportsSimulationBatch
 // 据此把 evaluatePayload 分流到批量入口；这里只记录「一次评估建了几个 realm、发了哪些 payload」。
 class BatchWorkerClient {
   static instances = [];
@@ -215,7 +215,7 @@ describe('triggerOptimizerSimulation', () => {
       expect(payload.extra).toMatchObject({ mooPass: true });
     });
 
-    // 队伍载荷（2026-09-27，设计 §59）：队友按**冻结配置**一起进模拟，候选只改主角。
+    // 队伍载荷（2026-09-27）：队友按**冻结配置**一起进模拟，候选只改主角。
     it('队伍载荷：队友按冻结配置进模拟，候选只改主角', () => {
       const config = buildPlayerConfig({});
       const teammate = { ...buildPlayerConfig({}), id: '2', name: 'Mate' };
@@ -243,7 +243,7 @@ describe('triggerOptimizerSimulation', () => {
       // 250 亿血量的 BOSS 与小怪不能共用一个阈值尺度 —— 这正是旧版「玩家 maxHp × 百分比」
       // 近似目标血量的毛病（对 500 血小怪写出 439 的斩杀线 ≈ 恒真）。
       // waveSize = 一波怪的**上限**人数（maxSpawnCount），2026-09-20 起随尺度一起给出：
-      // 「已死怪数」类候选的阈值合法区间由它决定（≥ waveSize 恒假、≤ waveSize−1 恒真，§22.2）。
+      // 「已死怪数」类候选的阈值合法区间由它决定（≥ waveSize 恒假、≤ waveSize−1 恒真）。
       expect(resolveEnemyHpScale(zonePayload(0))).toEqual({ min: 500, max: 4400, group: 3200, waveSize: 4 });
     });
 
@@ -488,7 +488,7 @@ describe('triggerOptimizerSimulation', () => {
       expect(isWorkerRunCancelledError(error)).toBe(true);
     });
 
-    it('§54 批量路径：一次评估只建一个 realm，逐场结果按序聚合', async () => {
+    it('批量路径：一次评估只建一个 realm，逐场结果按序聚合', async () => {
       const promise = evaluatePayload(
         { type: 'start_simulation', workerId: 'trigger-optimizer' },
         { WorkerClientCtor: BatchWorkerClient, preferredPlayerId: '1', seeds: [11, 22] },
@@ -516,7 +516,7 @@ describe('triggerOptimizerSimulation', () => {
       expect(client.stopSimulation).not.toHaveBeenCalled();
     });
 
-    it('§54 批量路径：单场失败退化为失败样本（与逐场路径同款）', async () => {
+    it('批量路径：单场失败退化为失败样本（与逐场路径同款）', async () => {
       const promise = evaluatePayload(
         { type: 'start_simulation' },
         { WorkerClientCtor: BatchWorkerClient, preferredPlayerId: '1', seeds: [11, 22] },
@@ -529,7 +529,7 @@ describe('triggerOptimizerSimulation', () => {
       await expect(promise).resolves.toMatchObject({ failed: true, error: 'worker crashed' });
     });
 
-    it('§54 批量路径：取消以 code cancelled 拒绝整批', async () => {
+    it('批量路径：取消以 code cancelled 拒绝整批', async () => {
       const promise = evaluatePayload(
         { type: 'start_simulation' },
         { WorkerClientCtor: BatchWorkerClient, preferredPlayerId: '1', seeds: [11, 22] },

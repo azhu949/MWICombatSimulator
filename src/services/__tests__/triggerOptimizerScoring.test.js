@@ -376,7 +376,7 @@ describe('triggerOptimizerScoring', () => {
     });
 
     it('同参考系回归：槽级采纳不传参照分 → 只按增量分判，不受其它槽已采纳分数影响', () => {
-      // 实测缺陷（2026-09-18，设计 §16.9）：采纳 flame_blast-800(+0.0189) 后，
+      // 实测缺陷（2026-09-18）：采纳 flame_blast-800(+0.0189) 后，
       // firestorm-800 的 +0.02474（SE 0.00097、p=0.00155，全轮证据最强）被
       // 「0.0189 + MIN_ADOPT_SCORE」拦掉 —— 那是上一个被采纳候选在**另一个参考系**里的分。
       // 槽级采纳的参照恒为「当前工作配置」（增量分 0 分），所以下面两条都必须通过。
@@ -476,14 +476,14 @@ describe('triggerOptimizerScoring', () => {
       buffInactive: 'common:triggerOptimizer.candidate.buffInactive',
       debuffInactive: 'common:triggerOptimizer.candidate.debuffInactive',
       manyEnemies: 'common:triggerOptimizer.candidate.manyEnemies',
-      // 波内进度（2026-09-20，设计 §22）：all_enemies + number_of_dead_units，
+      // 波内进度（2026-09-20）：all_enemies + number_of_dead_units，
       // 阈值取自区域一波怪的**上限**人数（enemyHp.waveSize）。
       deadUnitsAtLeast: 'common:triggerOptimizer.candidate.deadUnitsAtLeast',
       deadUnitsAtMost: 'common:triggerOptimizer.candidate.deadUnitsAtMost',
       allyLowHp: 'common:triggerOptimizer.candidate.allyLowHp',
-      // 跨技能增益门（2026-09-19，设计 §18.3）：条件来自**其他已佩戴技能**挂给自身的增益。
+      // 跨技能增益门（2026-09-19）：条件来自**其他已佩戴技能**挂给自身的增益。
       buffWindow: 'common:triggerOptimizer.candidate.buffWindow',
-      // 跨技能减益窗口（2026-09-21，设计 §23）：条件来自**其他已佩戴技能**挂在目标身上的
+      // 跨技能减益窗口（2026-09-21）：条件来自**其他已佩戴技能**挂在目标身上的
       // 减益（self 侧减益恒假，只能配 targeted_enemy，故与 buffWindow 分成两条标签）。
       debuffWindow: 'common:triggerOptimizer.candidate.debuffWindow',
       compositeExecuteGuard: 'common:triggerOptimizer.candidate.compositeExecuteGuard',
@@ -500,7 +500,7 @@ describe('triggerOptimizerScoring', () => {
     });
   });
 
-  // 可检测下限（2026-09-20，设计 §20.2）：地板 = 2×SE，显著门槛 = t(n−1)×SE，并把地板
+  // 可检测下限（2026-09-20）：地板 = 2×SE，显著门槛 = t(n−1)×SE，并把地板
   // 换算成「利润百分比」（默认利润权重 0.5 时 score = 0.5·log2(1+相对变化)）。
   describe('detection floor', () => {
     const pairedAt = (rounds, stdError) => ({
@@ -552,7 +552,7 @@ describe('triggerOptimizerScoring', () => {
       expect(projectTriggerOptimizerDetectionFloor(null, 10)).toBeNull();
     });
 
-    // 反解（2026-09-25，设计 §45）：回答「要把采纳门槛量级（0.01 分）过闸（被采纳）需要多少轮」。
+    // 反解（2026-09-25）：回答「要把采纳门槛量级（0.01 分）过闸（被采纳）需要多少轮」。
     // 口径 = 轮数 × (2×SE/effect)²（SE ∝ 1/√n）；漏掉 √轮数 会少算一个量级。
     it('solves the minimal round count for a target effect', () => {
       // SE(5) = 0.006 ⇒ 0.01 分需要 n ≥ 5 × (0.012/0.01)² = 7.2 ⇒ 8 轮；7 轮还差一点。
@@ -611,10 +611,10 @@ describe('triggerOptimizerScoring', () => {
     });
   });
 
-  // 判定口径反解（2026-09-26，设计 §52）：两把尺子里的第二把 —— 「把给定效应量判成 p<0.05 的
-  // 明确结论要多少轮」。与 §47/§49 的 t×SE 尺子同源；与上面 §45 的采纳口径（2×SE）在全部可达
+  // 判定口径反解（2026-09-26）：两把尺子里的第二把 —— 「把给定效应量判成 p<0.05 的
+  // 明确结论要多少轮」。与前述 t×SE 尺子同源；与上面的采纳口径（2×SE）在全部可达
   // 轮数内不可能给出同一个答案（t(n−1) > 2 ⇒ 显著门槛恒高于噪声地板）。
-  describe('significance rounds（§52 判定口径反解）', () => {
+  describe('significance rounds（判定口径反解）', () => {
     // 与「detection floor」组同款的最小配对统计构造器（各组自负其辅助函数，互不依赖）。
     const pairedAt = (rounds, stdError) => ({
       rounds,
@@ -622,7 +622,7 @@ describe('triggerOptimizerScoring', () => {
     });
 
     it('solves the minimal round count on the t×SE ruler and disagrees with the 2×SE ruler', () => {
-      // 同一组输入：采纳口径说 8 轮（上面的 §45 用例），判定口径说 10 轮 —— 差的这 2 轮就是两把尺子。
+      // 同一组输入：采纳口径说 8 轮（上面的用例），判定口径说 10 轮 —— 差的这 2 轮就是两把尺子。
       const floor = resolveTriggerOptimizerDetectionFloor(pairedAt(5, 0.006), {}, { rounds: 5 });
       const plan = resolveTriggerOptimizerRoundsForSignificance(floor, 0.01, 10);
       expect(plan.satisfied).toBe(false);
@@ -679,9 +679,9 @@ describe('triggerOptimizerScoring', () => {
     });
   });
 
-  // 复验轮数自适应（2026-09-25，设计 §47）：反解「把已观测到的效应量判成明确结论要多少轮」
+  // 复验轮数自适应（2026-09-25）：反解「把已观测到的效应量判成明确结论要多少轮」
   // （口径 |mean| > t(n−1) × SE，与结论卡同一把尺子），再按实测胜出的 A′ 口径折成执行计划。
-  describe('verification rounds（§47 自适应追加）', () => {
+  describe('verification rounds（自适应追加）', () => {
     const CAP = 24;
     // 三个样本点手算自证（SE ∝ 1/√n，t 随自由度下降 ⇒ t(n−1)√(6/n) 单调下降，试到第一个即可）：
     //   mean 0.025 / SE(6) 0.02 ⇒ n ≥ 18（17 轮差一点：t(16) 2.1199 × 0.02√(6/17) ≈ 0.025186 > 0.025）
@@ -709,7 +709,7 @@ describe('triggerOptimizerScoring', () => {
       expect(capped.capped).toBe(true);
       expect(capped.requiredRounds).toBeNull();
       expect(capped.targetRounds).toBe(CAP);
-      // 零差是**合法退化**、不是非法输入（2026-09-26，设计 §50 B-1）：逐轮差恒 0（stdError = 0）⇒
+      // 零差是**合法退化**、不是非法输入（2026-09-26）：逐轮差恒 0（stdError = 0）⇒
       // 标准误永远是 0、t×SE 恒为 0，再加多少轮都判不出 —— 这正是 capped 的定义：与上面的「上限也
       // 不够」同出口（补到上限），而不是回落调用方的「每次 +6 轮」兜底（那条路没有上限，能无限追加）。
       const zeroDiff = resolveTriggerOptimizerVerificationRounds(summary(0.025, 0), CAP);
@@ -735,7 +735,7 @@ describe('triggerOptimizerScoring', () => {
         capRounds: CAP,
         capped: false,
         budgetLimited: false,
-        // 不给整轮场次 ⇒ 两级护栏与瓶颈都不存在（§50 B-2 的新字段；spent 只数追加部分）。
+        // 不给整轮场次 ⇒ 两级护栏与瓶颈都不存在（新字段；spent 只数追加部分）。
         budgetSimulations: null,
         cumulativeBudgetSimulations: null,
         spentSimulations: 0,
@@ -793,7 +793,7 @@ describe('triggerOptimizerScoring', () => {
       // 单次 20% = 1 场 ⇒ 允许 0 轮（累计 40% = 3 场允许 1 轮，不是最终瓶颈）。
       expect(starved.limitedBy).toBe('single');
       expect(starved.plannedRounds).toBe(0);
-      // 累计护栏是两级里的**第二级**（2026-09-26，设计 §50 B-2）：整轮 100 场 → 累计预算 40 场，
+      // 累计护栏是两级里的**第二级**（2026-09-26）：整轮 100 场 → 累计预算 40 场，
       // 已经追加过 30 场（spent）⇒ 本次只剩 10 场 = 5 轮 —— 比单次允许的 10 轮更紧，最终瓶颈是
       // 累计（limitedBy 记的是**最终**钳住的那一级）。
       const cumulative = planTriggerOptimizerVerificationAppend(summary(0.025, 0.02), {
@@ -832,12 +832,12 @@ describe('triggerOptimizerScoring', () => {
     });
   });
 
-  // 复核轮数自适应（2026-09-25，设计 §49）：拿报告已有的复验统计反解「换到相邻难度重测要多少
-  // 轮」（同 §47 的 t×SE 尺子，但语义是「新现场从零要多少轮」——先验已判明确也要给数），
+  // 复核轮数自适应（2026-09-25）：拿报告已有的复验统计反解「换到相邻难度重测要多少
+  // 轮」（同一把 t×SE 尺子，但语义是「新现场从零要多少轮」——先验已判明确也要给数），
   // 再按 A′ 口径折成执行计划（保底 6 / 上限 16 / 增量护栏 20%）。
-  describe('robustness rounds（§49 自适应复核）', () => {
+  describe('robustness rounds（自适应复核）', () => {
     const CAP = TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS;
-    // 同一把尺子的手算自证（与 §47 组共用）：0.04 / SE(6) 0.02 ⇒ 9 轮；0.025 / SE(6) 0.02 ⇒ 18 轮。
+    // 同一把尺子的手算自证（与上面的组共用）：0.04 / SE(6) 0.02 ⇒ 9 轮；0.025 / SE(6) 0.02 ⇒ 18 轮。
     const summary = (mean, stdError, extra = {}) => ({ rounds: 6, mean, stdError, verdict: 'inconclusive', ...extra });
 
     it('reverse-solves the minimum sufficient rounds for a fresh difficulty', () => {
@@ -917,10 +917,10 @@ describe('triggerOptimizerScoring', () => {
     });
   });
 
-  // 复核**追加**的执行计划（2026-09-26，设计 §51）：复跑 = 换盐补到上限（不是同盐重跑、也不是
+  // 复核**追加**的执行计划（2026-09-26）：复跑 = 换盐补到上限（不是同盐重跑、也不是
   // 按需反解 —— 装置 S2 臂实测「补到上限」解析率 97.6% vs 按需 89.4%），并带零差出口与两级
   // 护栏（与追加复验共用同一组比例常量，单一事实源：单次 20% / 累计 40%）。
-  describe('robustness append plan（§51 复核追加）', () => {
+  describe('robustness append plan（复核追加）', () => {
     const CAP = TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS;
     const summary = (stdError, rounds = 6, extra = {}) => ({
       rounds,
@@ -935,7 +935,7 @@ describe('triggerOptimizerScoring', () => {
       expect(plan).toMatchObject({
         zeroDiff: false,
         atCap: false,
-        // capped 恒为 true：追加的目标就是上限（与 §49 的 capped「反解无解」语义同款——
+        // capped 恒为 true：追加的目标就是上限（与复核口径的 capped「反解无解」语义同款——
         // requiredRounds 恒 null，追加不做反解）。
         capped: true,
         budgetLimited: false,

@@ -66,8 +66,8 @@ export function snapshotFoodOptimizerInput(store) {
     imported: store.queue.importedProfileByPlayer?.[activePlayerId] === true,
     players,
     runScope: settings.runScope,
-    // 切片 18 引入的引擎开关标记；切片 21B 起生产载荷已不再需要它，但该字段
-    // **进输入签名**——保留它使 21B 之前生成的存量缓存报告保持过期语义不变
+    // 引擎开关标记（生产载荷已不再需要它，但该字段
+    // **进输入签名**——保留它使旧存量缓存报告保持过期语义不变
     // （删除字段会让旧签名复活，属隐性行为变化）。
     useWasmEngine: true,
     simulation: { zone, labyrinth, simulationTimeLimit, extra },

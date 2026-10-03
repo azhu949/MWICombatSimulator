@@ -34,7 +34,7 @@ function buildPlayersWithDrinks(drinks) {
 // playerMapper 映射守卫是引擎侧的最后防线（第一道防线在
 // importExportMapper 的导入归一化，见 nonCombatDrinkSanitize.test.js）。
 //
-// 切片 21B：JS 引擎已删除——「不发生 checkTriggers 死循环」的运行时防线由 wasm
+// JS 引擎已删除——「不发生 checkTriggers 死循环」的运行时防线由 wasm
 // 侧同一映射守卫（buildPlayersForSimulation 在 dumpUnitSpec 快照之前）承接。
 describe('战斗不可用饮品残留的引擎防御', () => {
   it('playerMapper 映射时跳过战斗不可用饮品，合法饮品正常保留', () => {

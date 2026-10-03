@@ -68,7 +68,7 @@ function buildMultiSimulationConfig(eventData = {}) {
         zone,
         extra: eventData.extra,
         simulationTimeLimit: eventData.simulationTimeLimit,
-        // 切片 18：主线程批量消息的 wasm 开关原样透传给每个子 worker。
+        // 主线程批量消息的 wasm 开关原样透传给每个子 worker。
         ...(eventData.useWasmEngine === true ? { useWasmEngine: true } : {}),
         ...(eventData.simulationContext && typeof eventData.simulationContext === 'object'
           ? { simulationContext: eventData.simulationContext }
@@ -96,7 +96,7 @@ function buildMultiSimulationConfig(eventData = {}) {
         labyrinth,
         extra: eventData.extra,
         simulationTimeLimit: eventData.simulationTimeLimit,
-        // 切片 18：主线程批量消息的 wasm 开关原样透传给每个子 worker。
+        // 主线程批量消息的 wasm 开关原样透传给每个子 worker。
         ...(eventData.useWasmEngine === true ? { useWasmEngine: true } : {}),
         ...(eventData.simulationContext && typeof eventData.simulationContext === 'object'
           ? { simulationContext: eventData.simulationContext }

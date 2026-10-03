@@ -542,7 +542,7 @@ describe('queueScoring', () => {
   });
 });
 
-describe('queueScoring 并行默认自适应（§55）', () => {
+describe('queueScoring 并行默认自适应', () => {
   it('核数矩阵：≤4 核与历史 min(4, 核数) 逐位一致，>4 核留一核，且受上限收口', () => {
     expect(resolveAdaptiveParallelWorkerDefault(undefined, undefined)).toBe(4);
     expect(resolveAdaptiveParallelWorkerDefault(0, 8)).toBe(4);

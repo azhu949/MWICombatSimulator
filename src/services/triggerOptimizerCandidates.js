@@ -2,7 +2,7 @@
 //
 // 为每个已装备技能（player.abilities 的 5 个槽，含特殊技能槽 0）生成候选触发器
 // 配置列表。候选是「该技能 triggerMap 条目的候选值」：
-//   ① 保持默认（删键）   ② 立即释放（[] —— 冷却好了就放，不是禁用，见设计 §1.1）
+//   ① 保持默认（删键）   ② 立即释放（[] —— 冷却好了就放，不是禁用）
 //   ③ 当前配置（若已是自定义，作为锚点保留）  ④ 按技能角色启发式生成的常用配置
 //
 // 合法性由三个 combatTrigger*DetailMap.json 保证：每条候选都先过
@@ -11,7 +11,7 @@
 // sanitize 会静默丢弃非法条目，不自查会让候选退化成「与默认等价」，白跑模拟。
 //
 // 角色启发式依据 resolveAbilityDefinition(hrid).abilityEffects 的
-// effectType / targetType / buffs 把技能分桶（设计 §6.2）。数值类触发器的 value
+// effectType / targetType / buffs 把技能分桶。数值类触发器的 value
 // 是绝对值，百分比候选必须由调用方（node-3 的模拟层，走 getFoodOptimizerResources
 // 同款路径）通过 settings.resources 传入 maxHp/maxMp；缺失时跳过数值类候选，
 // 不用 playerConfig 估算（装备/成就/公会增益会影响最终血量）。
@@ -94,18 +94,18 @@ export const TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS = {
   buffInactive: 'common:triggerOptimizer.candidate.buffInactive',
   debuffInactive: 'common:triggerOptimizer.candidate.debuffInactive',
   manyEnemies: 'common:triggerOptimizer.candidate.manyEnemies',
-  // 波内进度类候选（2026-09-20 新增，设计 §22）：all_enemies + number_of_dead_units，
+  // 波内进度类候选（2026-09-20 新增）：all_enemies + number_of_dead_units，
   // 阈值取自区域一波怪的**上限**人数（enemyHp.waveSize = maxSpawnCount）。
   //   deadUnitsAtLeast：≥ N → 只在清场期放（残波才用爆发）
   //   deadUnitsAtMost ：≤ N → 只在开波期放（满波才用 AOE，与敌方总血量同向）
   deadUnitsAtLeast: 'common:triggerOptimizer.candidate.deadUnitsAtLeast',
   deadUnitsAtMost: 'common:triggerOptimizer.candidate.deadUnitsAtMost',
   allyLowHp: 'common:triggerOptimizer.candidate.allyLowHp',
-  // 跨技能增益门（2026-09-19 新增，设计 §18.3）：只在**其他已佩戴技能**挂给自身的增益
+  // 跨技能增益门（2026-09-19 新增）：只在**其他已佩戴技能**挂给自身的增益
   // 覆盖期间释放（引擎只读 buff 是否存在，不区分「谁挂的」，见 trigger.js 88-140）。
   // 依赖固定为 self：条件来自自身侧（targetType self / allAllies）的 buff。
   buffWindow: 'common:triggerOptimizer.candidate.buffWindow',
-  // 跨技能减益窗口（2026-09-21 新增，设计 §23）：只在**当前目标**带有其他已佩戴技能
+  // 跨技能减益窗口（2026-09-21 新增）：只在**当前目标**带有其他已佩戴技能
   // 挂的减益期间释放（爆发对齐增伤窗口）。依赖固定为 targeted_enemy：条件来自目标侧
   // （targetType enemy / allEnemies）的 buff —— 与 buffWindow 是同一件事的两侧，
   // 合成一条会产出恒假候选（施法者身上没有敌人减益）。
@@ -121,14 +121,14 @@ export const TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS = {
   compositeDebuffMultiple: 'common:triggerOptimizer.candidate.compositeDebuffMultiple',
   compositeAllyLowHpGuard: 'common:triggerOptimizer.candidate.compositeAllyLowHpGuard',
   compositeMissingHpGuard: 'common:triggerOptimizer.candidate.compositeMissingHpGuard',
-  // 跨技能增益门 × AOE 窗口（组合候选）：增益在且这一波怪够厚才放（设计 §18.3）。
+  // 跨技能增益门 × AOE 窗口（组合候选）：增益在且这一波怪够厚才放。
   compositeBuffWindowGroupHp: 'common:triggerOptimizer.candidate.compositeBuffWindowGroupHp',
 };
 
-// 「立即释放」候选的澄清文案 key（空列表 ≠ 禁用，见设计 §1.1 / §9.2）。
+// 「立即释放」候选的澄清文案 key（空列表 ≠ 禁用）。
 export const TRIGGER_OPTIMIZER_CANDIDATE_DISABLED_HINT_KEY = 'common:triggerOptimizer.candidate.disabledHint';
 
-// 阈值网格默认值（设计 §6.3：HP/MP 百分比 25/50/75/90，number_of_active_units 2/3，斩杀 30）。
+// 阈值网格默认值（HP/MP 百分比 25/50/75/90，number_of_active_units 2/3，斩杀 30）。
 // 全量可配：settings.thresholds 整体或逐项覆盖。
 export const TRIGGER_OPTIMIZER_DEFAULT_THRESHOLDS = Object.freeze({
   damageHpPercent: [50, 75],
@@ -145,7 +145,7 @@ export const TRIGGER_OPTIMIZER_DEFAULT_THRESHOLDS = Object.freeze({
   // 输出技能的蓝量台阶：法力 ≥ X% maxMp（上一版只有「复合候选」里带蓝量门槛）。
   minMpPercent: [30],
   activeUnits: [2, 3],
-  // 波内进度（2026-09-20 新增，设计 §22）：见 damageCandidates ③ 的说明。
+  // 波内进度（2026-09-20 新增）：见 damageCandidates ③ 的说明。
   // 阈值会被区域一波怪的上限人数（enemyHp.waveSize）二次过滤：≥ waveSize 恒假、
   // ≤ waveSize − 1 恒真，两种都不生成（与敌方血量类的 isMeaningfulEnemyHpThreshold 同款）。
   deadUnitsAtLeast: [1, 2],
@@ -231,7 +231,7 @@ export function isAbilitySlotActive(player, slotIndex) {
   );
 }
 
-// 角色分类：按 effectType / targetType / buffs 分桶（设计 §6.2）。
+// 角色分类：按 effectType / targetType / buffs 分桶。
 // 优先级：治疗 > 光环（全队增益）> Debuff（给敌人挂的 buff）> 自身增益 > 伤害 > 未知。
 export function classifyAbilityRole(abilityHrid) {
   const definition = resolveAbilityDefinition(abilityHrid);
@@ -268,16 +268,16 @@ function classifyAbilityDefinition(definition) {
   return TRIGGER_OPTIMIZER_ROLE_UNKNOWN;
 }
 
-// ── 条件侧别（2026-09-21 新增，设计 §23）────────────────────────────────────
+// ── 条件侧别（2026-09-21 新增）────────────────────────────────────
 // buff 条件在引擎里读的是**某个单位身上**的 combatBuffs（trigger.js 25-42）：
 //   · self           → source.combatBuffs（施法者自己）
 //   · targeted_enemy → target.combatBuffs（当前目标；target 为空时直接返回 false）
 // 而 buff 挂在谁身上由技能定义的 abilityEffects[].targetType 决定：
 //   · self / allAllies   → 施法者身上一定有这份 buff（allAllies 的增益施加给
-//     this.players，其中含施法者自己，combatActions.js 21A 自 combatSimulator 逐字搬移）
-//   · enemy / allEnemies → buff 只挂在被命中的敌人身上（combatActions.js 21A 同源
+//     this.players，其中含施法者自己，combatActions.js 自 combatSimulator 逐字搬移）
+//   · enemy / allEnemies → buff 只挂在被命中的敌人身上（combatActions.js 同源
 //     搬移：伤害类效果的 buff 加给 target）；施法者身上永远没有
-// ⇒ 「条件配哪个依赖」不是风格问题：把敌人减益配到 self 上恒假（§13 的教训），
+// ⇒ 「条件配哪个依赖」不是风格问题：把敌人减益配到 self 上恒假（早期教训），
 //   每轮白跑一场模拟，精细档还占名额。分类只看 targetType，不靠 buff 名字猜。
 const CONDITION_SIDE_SELF = 'self';
 const CONDITION_SIDE_TARGET = 'target';
@@ -301,7 +301,7 @@ function resolveOwnBuffConditions(definition) {
   const sides = { [CONDITION_SIDE_SELF]: [], [CONDITION_SIDE_TARGET]: [] };
   const seen = new Set();
   const register = (hrid, side) => {
-    if (!side) return; // 队友侧：单目标依赖读不到（多目标侧已被 §22 扫完），不进候选
+    if (!side) return; // 队友侧：单目标依赖读不到（多目标侧已被扫完），不进候选
     const detail = combatTriggerConditionDetailMap[hrid];
     if (!detail || !detail.isSingleTarget) return;
     const key = `${side}\u0000${hrid}`;
@@ -335,20 +335,20 @@ function firstOwnCondition(definition, side) {
   return conditions.length ? conditions[0] : null;
 }
 
-// ── 跨技能窗口条件（2026-09-19 新增 §18.3；2026-09-21 按侧别拆分 §23）──────────
+// ── 跨技能窗口条件（2026-09-19 新增；2026-09-21 按侧别拆分）──────────
 // 「AOE/爆发只在某个增益/减益覆盖期间释放」是游戏的常见玩法，也是用户手工配置里的
 // 写法，但旧生成器只会用**本技能自己**的 buff 条件（resolveOwnBuffConditions），
 // 跨技能的一条都不产。引擎侧是支持的：trigger.js 88-140 读的是施法者
 // `source.combatBuffs` 里的同名字段，**不区分这个增益是谁挂的**；而 allAllies 类光环
-// 的增益会施加到 `this.players`（= 含施法者自己，combatActions.js 21A 自
+// 的增益会施加到 `this.players`（= 含施法者自己，combatActions.js 自
 // combatSimulator 逐字搬移）——所以「自身吃到队友/光环技能的增益」在 self 依赖下
 // 可读、可写、有意义。
 // 目标侧同理：伤害类技能的减益挂在被命中的敌人身上（同源搬移），
 // `targeted_enemy + is_active` 读的正是 target.combatBuffs（trigger.js 31-35）。
 //
 // 候选只从**其他已佩戴技能**的 buff 条件里取：
-//   · 保证该增益在当前配置中真的存在（不会产出恒定假的候选，见 §13 关于暴走的教训）；
-//   · 按侧别筛选（2026-09-21 §23）：自身侧条件只配 self、目标侧条件只配 targeted_enemy
+//   · 保证该增益在当前配置中真的存在（不会产出恒定假的候选——暴走的教训）；
+//   · 按侧别筛选（2026-09-21）：自身侧条件只配 self、目标侧条件只配 targeted_enemy
 //     —— 旧实现不筛侧别，把别人挂在敌人身上的减益也塞进 self 增益门，产出一条恒假候选；
 //   · 优先取该侧的「窗口来源」角色（增益侧 aura/buff、减益侧 debuff），再按槽位序补齐；
 //   · 每侧上限 CROSS_SKILL_CONDITION_LIMIT 条，避免候选空间爆炸（每条候选都是一场真实模拟）。
@@ -437,11 +437,11 @@ function isMeaningfulEnemyHpThreshold(comparatorHrid, value, ceiling) {
   return comparatorHrid === COMPARATOR_GTE ? numeric <= upper : numeric < upper;
 }
 
-// 「敌人数 ≥ N」的结构性自守（2026-09-21 新增，设计 §25）：一波怪的**上限**人数
+// 「敌人数 ≥ N」的结构性自守（2026-09-21 新增）：一波怪的**上限**人数
 // （enemyHp.waveSize = maxSpawnCount）同时是 N 的硬上界 —— 一波最多刷 waveSize 只怪，
 // N > waveSize 时该触发器恒假（单怪图里「敌人数 ≥ 2」永远不成立），每轮白跑一场模拟、
 // 精细档还占名额。读不到 waveSize（资源降级 = 0）时**不过滤**：没有证据就不改既有行为
-// （与 §22「不无据过滤」同口径）。
+// （与「不无据过滤」同口径）。
 function isMeaningfulActiveUnitThreshold(count, waveSize) {
   const numeric = Math.floor(toFiniteNumber(count, 0));
   if (!(numeric >= 1)) return false;
@@ -493,7 +493,7 @@ function damageCandidates(ctx) {
   // 一波怪的上限人数（enemyHp.waveSize = maxSpawnCount）：②「敌人数」与 ③「波内进度」
   // 共用同一条硬上界。读不到（资源降级）= 0 → 两族各自降级（② 不过滤、③ 整族跳过）。
   const waveSize = Math.floor(toFiniteNumber(enemyHp?.waveSize, 0));
-  // ② 敌人数（AOE 场合）：多目标才放。阈值同样过波上限自守（2026-09-21 新增，设计 §25）：
+  // ② 敌人数（AOE 场合）：多目标才放。阈值同样过波上限自守（2026-09-21 新增）：
   // 单怪图（waveSize = 1，全游戏 44 个区域）里「敌人数 ≥ 2/3」结构性恒假 —— 与 ③ 的
   // 已死怪数自守同一套理由，不产白跑一场的候选。
   for (const count of ctx.thresholds.activeUnits) {
@@ -507,7 +507,7 @@ function damageCandidates(ctx) {
       { count },
     );
   }
-  // ③ 波内进度（2026-09-20 新增，设计 §22）：引擎的 number_of_dead_units 只在多目标依赖
+  // ③ 波内进度（2026-09-20 新增）：引擎的 number_of_dead_units 只在多目标依赖
   // （all_enemies / all_allies）下求值，数的是**当前这一波**里 hp ≤ 0 的怪（换波时整个
   // enemies 数组被替换，所以它是波内进度而非累计击杀）。它给出 ①② 表达不了的窗口：
   //   ≤ N（deadUnitsAtMost）：只在开波期放 —— 「别把技能丢在残波上」的更精确版本；
@@ -541,11 +541,11 @@ function damageCandidates(ctx) {
       );
     }
   }
-  // ④ 跨技能增益门（2026-09-19 新增，设计 §18.3）：只在**其他已佩戴技能**挂给自身的
+  // ④ 跨技能增益门（2026-09-19 新增）：只在**其他已佩戴技能**挂给自身的
   // 增益覆盖期间释放 —— 与增益窗口对齐（旧生成器一条都不产，见 resolveCrossSkillConditions）。
   // 排在「敌方血量/敌人数」之后、「单体目标血量」之前：与窗口对齐对爆发技能的期望收益
   // 高于防过量伤害，但低于 AOE 时机（实测唯一被反复采纳的方向）。
-  // 条件只取自身侧（2026-09-21 §23）：目标侧减益配 self 恒假，改由 ⑤ 用 targeted_enemy 生成。
+  // 条件只取自身侧（2026-09-21）：目标侧减益配 self 恒假，改由 ⑤ 用 targeted_enemy 生成。
   for (const conditionHrid of ctx.otherBuffConditions || []) {
     const trigger = buildTriggerDto(DEPENDENCY_SELF, conditionHrid, COMPARATOR_IS_ACTIVE);
     if (!trigger) continue;
@@ -555,14 +555,14 @@ function damageCandidates(ctx) {
       labelParams: { conditionHrid },
     });
   }
-  // ⑤ 跨技能减益窗口（2026-09-21 新增，设计 §23）：只在**当前目标**带着其他已佩戴技能
+  // ⑤ 跨技能减益窗口（2026-09-21 新增）：只在**当前目标**带着其他已佩戴技能
   // 挂的减益时释放。减益里收益最直接的一类是「受到伤害提高」（破甲弹 fracturing_impact
   // +5% 受伤、致残 maim +8% 受伤），其次是破甲（puncture −20% 护甲）与降攻速
   // （ice_spear −25% 攻速）——把爆发放进这个窗口是实打实的乘区对齐。
   // 依赖必须是 targeted_enemy：引擎读 target.combatBuffs（trigger.js 31-35，target 为空
   // 直接返回 false）；配 self 会读施法者自己身上的 buff，而减益挂在敌人身上 → 恒假。
-  // 排在 ④ 之后：同一档「窗口对齐」，但窗口先由 ④ 的自身增益给出（该侧已被 §18.3 实测
-  // 采纳过），减益窗口的收益方向尚未实测（见设计 §23.4 的边界说明）。
+  // 排在 ④ 之后：同一档「窗口对齐」，但窗口先由 ④ 的自身增益给出（该侧已被实测
+  // 采纳过），减益窗口的收益方向尚未实测。
   for (const conditionHrid of ctx.otherDebuffConditions || []) {
     const trigger = buildTriggerDto(DEPENDENCY_TARGETED_ENEMY, conditionHrid, COMPARATOR_IS_ACTIVE);
     if (!trigger) continue;
@@ -629,7 +629,7 @@ function damageCandidates(ctx) {
 function buffCandidates(ctx) {
   const descriptors = [];
   // 自身增益 → 自身侧条件（targetType self / allAllies）：buff 挂在施法者身上，
-  // self 依赖读得到（resolveOwnBuffConditions 的侧别分类，设计 §23）。
+  // self 依赖读得到（resolveOwnBuffConditions 的侧别分类）。
   const condition = firstOwnCondition(ctx.definition, CONDITION_SIDE_SELF);
   if (condition) {
     const trigger = buildTriggerDto(DEPENDENCY_SELF, condition, COMPARATOR_IS_INACTIVE);
@@ -671,7 +671,7 @@ function buffCandidates(ctx) {
 function debuffCandidates(ctx) {
   const descriptors = [];
   // 本技能挂给敌人的减益 → 目标侧条件（targetType enemy / allEnemies）：buff 挂在被
-  // 命中的敌人身上，只有 targeted_enemy 依赖读得到（设计 §23）。配 self 恒假。
+  // 命中的敌人身上，只有 targeted_enemy 依赖读得到。配 self 恒假。
   const condition = firstOwnCondition(ctx.definition, CONDITION_SIDE_TARGET);
   if (condition) {
     const trigger = buildTriggerDto(DEPENDENCY_TARGETED_ENEMY, condition, COMPARATOR_IS_INACTIVE);
@@ -683,7 +683,7 @@ function debuffCandidates(ctx) {
       });
     }
   }
-  // 敌人数阈值同样过波上限自守（2026-09-21 §25）：与 damageCandidates ② 同口径 ——
+  // 敌人数阈值同样过波上限自守（2026-09-21）：与 damageCandidates ② 同口径 ——
   // 单怪图里「敌人数 ≥ 2/3」恒假，不产白跑一场的候选。
   const debuffWaveSize = Math.floor(toFiniteNumber(isPlainObject(ctx.enemyHp) ? ctx.enemyHp.waveSize : 0, 0));
   for (const count of ctx.thresholds.activeUnits) {
@@ -766,7 +766,7 @@ function healingCandidates(ctx) {
 // 通常就是最优；原先唯一的角色候选 `self + enrage is_active` 恒假（暴走只挂在怪物
 // 身上，见 damageCandidates 上方的说明），会让光环永不释放，已移除。
 //
-// 为什么**不**补「光环未生效时释放」这条单条件（2026-09-21 §25 复核）：光环类技能的
+// 为什么**不**补「光环未生效时释放」这条单条件（2026-09-21 复核）：光环类技能的
 // `defaultCombatTriggers` 本身就是 `self + 〈自身光环〉 + is_inactive`
 // （mystic_aura / guardian_aura / elemental_affinity / fierce_aura / speed_aura 实测都是这一条，
 // 见 abilityDetailMap），而 generateAbilityCandidates 会做「与游戏默认行为等价」的去重
@@ -785,7 +785,7 @@ function auraCandidates() {
 //   }
 //   return shouldTrigger;
 //   ⇒ **多条触发器之间是 AND**（全部满足才释放），不是 OR。这是本轮实现前才确认的
-//     契约，设计文档此前只记录了四态语义、从未提到 AND/OR。
+//     契约，此前只记录了四态语义、从未提到 AND/OR。
 //
 // 所以组合候选只能表达「既要…又要…」，而这恰好覆盖了单条件候选表达不了的、收益最
 // 明显的一类时机控制：
@@ -812,10 +812,10 @@ function buildManaGuard(ctx) {
 function compositeCandidates(ctx) {
   const descriptors = [];
   const mpGuard = buildManaGuard(ctx);
-  // 「敌人数 ≥ N」腿的波上限自守（2026-09-21 §25）：单怪图里恒假 → 返回 null，
+  // 「敌人数 ≥ N」腿的波上限自守（2026-09-21）：单怪图里恒假 → 返回 null，
   // 由 push 的 null 判定整条组合候选被丢弃（push 要求两条腿都非空）。
   const compositeWaveSize = Math.floor(toFiniteNumber(isPlainObject(ctx.enemyHp) ? ctx.enemyHp.waveSize : 0, 0));
-  // 「本技能的 buff 失效」组合项：依赖与条件侧别必须一致（设计 §23）——
+  // 「本技能的 buff 失效」组合项：依赖与条件侧别必须一致——
   // self 配自身侧（BUFF/AURA 角色）、targeted_enemy 配目标侧（DEBUFF 角色）。
   // 侧别错配（例如给敌人挂减益的技能用 self）读的是施法者身上不存在的 buff，恒假。
   const ownBuffInactive = (dependencyHrid, side) => {
@@ -888,7 +888,7 @@ function compositeCandidates(ctx) {
           ...guardParams,
         },
       );
-      // 跨技能增益门 × AOE 窗口（2026-09-19 新增，设计 §18.3）：增益在且这一波怪够厚才放。
+      // 跨技能增益门 × AOE 窗口（2026-09-19 新增）：增益在且这一波怪够厚才放。
       // 两个前提缺一不可（增益来自其他已佩戴技能、能读到敌方血量尺度），任一缺失整条跳过 ——
       // 与上方三条「不硬凑」的口径一致：凑出来的组合要么与单条件候选重复，要么落到恒真/恒假上。
       const buffWindowCondition = (ctx.otherBuffConditions || [])[0];
@@ -982,7 +982,7 @@ function compositeCandidates(ctx) {
           percent: ctx.thresholds.buffHpPercent[0],
         },
       );
-      // 「光环失效且蓝量充足」（2026-09-21 新增，设计 §25）：与 BUFF 角色的同名组合对齐。
+      // 「光环失效且蓝量充足」（2026-09-21 新增）：与 BUFF 角色的同名组合对齐。
       // 光环是长 CD 常驻增益，「掉了就补、但别把蓝榨干」是用户手工配置里的常见写法
       // （丛林夹具的 mystic_aura 当前配置正是 `光环失效 且 蓝量 ≥ 500`），而生成器此前只给
       // BUFF 角色产这条 —— 光环槽真正缺的守卫维度就是它（见 auraCandidates 上方的说明）。
@@ -1052,10 +1052,10 @@ function materializeCandidates(ctx, descriptors, seen) {
   return candidates;
 }
 
-// 家族交错（2026-09-24，设计 §39-A）：candidateLimit 的截断保留规则从「纯价值顺序丢尾部」
+// 家族交错（2026-09-24）：candidateLimit 的截断保留规则从「纯价值顺序丢尾部」
 // 改为「按 labelKey 家族 round-robin 取代表」——每族首条优先进 top-N（轮 1），同族第 2 条排在
 // 所有族首条之后（轮 2），以此类推；族内保持生成序（= 价值顺序），族间顺序 = 各族首条的生成顺序。
-// 动机（§34 / §39 实测）：熊熊星球 T0 的 firestorm 真最优 deadUnitsAtMost{0} 按旧规则排生成第
+// 动机（此前实测）：熊熊星球 T0 的 firestorm 真最优 deadUnitsAtMost{0} 按旧规则排生成第
 // 12 条，默认上限 10 整族被截断（Δ = −0.03236）——「价值顺序」先验在真实场景并不总成立；家族
 // 交错以零评估成本保住每族的入场券。锚点（default/current/alwaysFire）是各自家族的首条且生成序
 // 在最前，天然保留原位。
@@ -1081,12 +1081,12 @@ function interleaveCandidatesByFamily(candidates) {
   return ordered;
 }
 
-// 候选去重（按签名）+ 上限：锚点优先保留，超出的候选按**家族交错**顺序截断（§39-A，
+// 候选去重（按签名）+ 上限：锚点优先保留，超出的候选按**家族交错**顺序截断（
 // 保证 top-N 覆盖每个候选家族的代表，而不是把整族尾部静默丢掉）。
 // existingSignatures 用于「已物化候选」的去重预填（精炼路径复用本函数时传入）。
 //
-// 统计版（2026-09-23，设计 §28）：把「物化去重后有多少条」与「上限」一起回传 —— 截断是
-// 静默丢候选（§22.3/§23.4 实测过「新族挤掉旧族」），UI 必须能说出「本槽另有 N 条未评估」，
+// 统计版（2026-09-23）：把「物化去重后有多少条」与「上限」一起回传 —— 截断是
+// 静默丢候选（实测过「新族挤掉旧族」），UI 必须能说出「本槽另有 N 条未评估」，
 // 否则用户看到「8 个候选」会以为搜索试遍了所有可能。generated 是**过上限之前**的条数。
 function finalizeCandidatesWithStats(ctx, descriptors, existingSignatures = []) {
   const seen = new Set(
@@ -1103,9 +1103,9 @@ function finalizeCandidates(ctx, descriptors, existingSignatures = []) {
   return finalizeCandidatesWithStats(ctx, descriptors, existingSignatures).candidates;
 }
 
-// 单技能槽候选生成（设计 §8.1 的 generateAbilityCandidates）。
+// 单技能槽候选生成（generateAbilityCandidates）。
 //
-// 统计版（2026-09-23，设计 §28）：返回 { candidates, generated, limit } —— generated 是
+// 统计版（2026-09-23）：返回 { candidates, generated, limit } —— generated 是
 // **过 candidateLimit 之前**的候选条数（已过 sanitize 自查 + 签名去重），limit 是本次生效的
 // 每槽候选上限。截断数 = generated − candidates.length，报告把它带给 UI 明示
 // 「本槽另有 N 条未评估」。对外契约不变：generateAbilityCandidates 仍只返回数组。
@@ -1129,7 +1129,7 @@ export function generateAbilityCandidatesDetailed(player, slotIndex, settings = 
     definition,
     role,
     currentList,
-    // 跨技能窗口条件（设计 §18.3 / §23）：其他已佩戴技能的 buff 条件，按 buff 落点分侧。
+    // 跨技能窗口条件：其他已佩戴技能的 buff 条件，按 buff 落点分侧。
     //   otherBuffConditions → 自身侧（self / allAllies），配 self 依赖（增益门）
     //   otherDebuffConditions → 目标侧（enemy / allEnemies），配 targeted_enemy 依赖（减益窗口）
     otherBuffConditions: resolveCrossSkillConditions(player, slotIndex, CONDITION_SIDE_SELF),
@@ -1204,7 +1204,7 @@ export function buildCandidateConfigs(player, settings = {}) {
     const definition = resolveAbilityDefinition(abilityHrid);
     if (!definition) continue;
     const role = classifyAbilityRole(abilityHrid);
-    // 用带统计的版本：报告要能说出「本槽另有 N 条因每槽候选上限未评估」（设计 §28）。
+    // 用带统计的版本：报告要能说出「本槽另有 N 条因每槽候选上限未评估」。
     const { candidates, generated, limit } = generateAbilityCandidatesDetailed(source, slotIndex, resolved);
     if (!candidates.length) continue;
     choices.push({
@@ -1242,14 +1242,14 @@ export function buildCandidateConfigs(player, settings = {}) {
 //   · lowest_hp_percentage：本身即百分比，不需要资源换算；
 //   · number_of_active_units：计数 ±1，clamp 到 [2, min(8, waveSize)]（下界 2 是因为
 //     GTE 1 恒真 = 立即释放，与 [] 候选等价，属于退化配置；上界随区域波上限收紧，
-//     2026-09-21 §25 —— ≥ waveSize + 1 恒假，与生成阶段同一套自守。上界低于 2
+//     2026-09-21 —— ≥ waveSize + 1 恒假，与生成阶段同一套自守。上界低于 2
 //     （单怪图 waveSize = 1）→ 该族没有合法邻域，不产出）；
-//   · number_of_dead_units（波内进度，2026-09-20 新增 §22.4）：计数 ±1，但合法区间由
+//   · number_of_dead_units（波内进度，2026-09-20 新增）：计数 ±1，但合法区间由
 //     **区域一波怪的上限人数**（enemyHp.waveSize）决定 —— ≥ 类 [1, waveSize−1]、
 //     ≤ 类 [0, waveSize−2]（≥ waveSize 恒假、≤ waveSize−1 恒真，都是退化配置，与
 //     生成阶段的同一套自守规则）。读不到 waveSize（资源降级）时不精炼：不能凭空造出
 //     越界阈值。
-//   · executeHp / enemyGroupHp / enemyTargetHp（敌方血量类，2026-09-21 新增 §24）：阈值
+//   · executeHp / enemyGroupHp / enemyTargetHp（敌方血量类，2026-09-21 新增）：阈值
 //     本身就是「百分比 × 敌方血量尺度」，步长 = 同一把「百分点」尺子（±10 / level≥1
 //     ±5），尺度由标签决定（group vs min）；同样过生成阶段的自守
 //     isMeaningfulEnemyHpThreshold。这些标签的插值是绝对值 {{value}}（没有 percent），
@@ -1260,7 +1260,7 @@ export function buildCandidateConfigs(player, settings = {}) {
 // 「~5」是目标粒度 —— 再细的阈值差异已低于逐轮抽样噪声，成本却不会少（每次评估 =
 // rounds 场模拟）。计数类不随层级变化：±1 已是最细的整数粒度。
 //
-// 2026-09-24 实测（设计 §32）：把下限放开成二分（10 → 5 → 2 → 1）**没有提升**，故不改口径 ——
+// 2026-09-24 实测：把下限放开成二分（10 → 5 → 2 → 1）**没有提升**，故不改口径 ——
 // 现实起点（家族真实网格候选）上两条步长序列的终值逐样本完全一致（1000 样本配对差 0.00000），
 // 全起点样本上 5 次决策样本时也完全一致、2 次时二分反而略差（t = −9.8 / −11.3）。根因是
 // **行走很少启动**（走到 level ≥2 的比例 ≤ 8%，而步长差异只在 level ≥2 才生效），不是下限的问题。
@@ -1284,7 +1284,7 @@ function refinementPercentStep(level) {
   return Math.max(REFINEMENT_PERCENT_STEP_FLOOR, REFINEMENT_PERCENT_STEP / 2 ** normalized);
 }
 
-// 「敌人数」精炼的上界（2026-09-21 新增，设计 §25）：读数可用时取 min(8, waveSize) ——
+// 「敌人数」精炼的上界（2026-09-21 新增）：读数可用时取 min(8, waveSize) ——
 // ≥ waveSize + 1 恒假（一波最多刷 waveSize 只怪），与生成阶段 isMeaningfulActiveUnitThreshold
 // 同一套自守；读不到（资源降级）时保持网格边界 8（无据不过滤）。
 function refinementActiveUnitUpperBound(resources) {
@@ -1303,7 +1303,7 @@ const REFINE_PERCENT_SPECS = {
   [TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS.missingMp]: { resourceKey: 'maxMp', rounding: Math.ceil },
 };
 
-// 敌方血量类标签 → 尺度与自守上界（2026-09-21 新增，设计 §24）。
+// 敌方血量类标签 → 尺度与自守上界（2026-09-21 新增）。
 // 「阈值步长 = 怪物血量的百分之几」这一步长口径就落在这里：阈值 = 百分比 × 尺度，
 // 与生成器的 enemyHpThreshold(percent, scale) 同源（取整方式也一致：Math.round + 下限 1）。
 //   · scaleKey   ：换算用的血量尺度 —— enemyGroupHp 是**一整波怪的总血量**（group，
@@ -1387,7 +1387,7 @@ export function buildRefinementCandidates(winner, resources = {}, options = {}) 
       }
     }
   } else if (labelKey === TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS.manyEnemies && Number.isFinite(Number(params.count))) {
-    // 计数 ±1，上界随区域一波怪的上限人数收紧（2026-09-21 §25）：≥ waveSize + 1 恒假
+    // 计数 ±1，上界随区域一波怪的上限人数收紧（2026-09-21）：≥ waveSize + 1 恒假
     // （与生成阶段同口径）；上界低于网格下界（单怪图 waveSize = 1 < 2）→ 该族没有合法邻域。
     const upper = refinementActiveUnitUpperBound(resources);
     const count = Math.round(Number(params.count));
@@ -1413,7 +1413,7 @@ export function buildRefinementCandidates(winner, resources = {}, options = {}) 
       if (refined) descriptors.push({ triggers: [refined], labelKey, labelParams: { count: next } });
     }
   } else if (REFINE_ENEMY_HP_SPECS[labelKey] && Number.isFinite(Number(params.value))) {
-    // 敌方血量类（2026-09-21 新增，设计 §24）：阈值 = 百分比 × 敌方血量尺度，步长复用同一把
+    // 敌方血量类（2026-09-21 新增）：阈值 = 百分比 × 敌方血量尺度，步长复用同一把
     // 「百分点」尺子（level 0 → ±10pp、level ≥1 → ±5pp）；clamp [5,95] 后经生成器的
     // enemyHpThreshold 换算（Math.round + 下限 1），再过 isMeaningfulEnemyHpThreshold 自守
     // ——与「敌方血量类」候选生成阶段完全同一套口径，精炼不可能造出网格生成器不会产的值。

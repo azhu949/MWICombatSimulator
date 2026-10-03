@@ -309,7 +309,7 @@ describe('triggerOptimizerSearch', () => {
     const result = await optimizeTriggers(createTwoSlotInput());
 
     // 两笔改进都落地。旧实现只落地第一笔：第二个槽的 +20% 被「前一笔的增量分（≈0.237）
-    // + MIN_ADOPT_SCORE」拦住 —— 那是另一个参考系的分（实测缺陷与修正：设计 §16.9）。
+    // + MIN_ADOPT_SCORE」拦住 —— 那是另一个参考系的分（实测缺陷与修正）。
     expect(result.bestTriggerMap[ABILITY_HRID]).toEqual([]);
     expect(result.bestTriggerMap[SECOND_ABILITY_HRID]).toEqual([]);
     const adopted = result.perAbilityChoices.filter((choice) => choice.chosen);
@@ -332,7 +332,7 @@ describe('triggerOptimizerSearch', () => {
     expect(second.chosen.score).toBeLessThan(largest.chosen.score + TRIGGER_OPTIMIZER_MIN_ADOPT_SCORE);
   });
 
-  // ── 跨槽联合探针（C，2026-09-19，设计 §19.11）──────────────────────────────
+  // ── 跨槽联合探针（C，2026-09-19）──────────────────────────────
   // 响应器：两个槽的「立即释放」候选各自贡献一份确定性增益（gainA / gainB）；两槽同时为空
   // 时附加 jointExtra（默认 0 = 可加）。确定性增益 ⇒ 配对证据恒为 positive，把关注点留给
   // 「联合判据 + 边际检查」本身。
@@ -426,7 +426,7 @@ describe('triggerOptimizerSearch', () => {
 
     const small = choiceForSlot(result, ABILITY_SLOT);
     const big = choiceForSlot(result, SECOND_ABILITY_SLOT);
-    // 大增益槽被单独采纳（≈0.105），小增益槽单看不够格（≈0.0069）——正是 §19.10 实测里的
+    // 大增益槽被单独采纳（≈0.105），小增益槽单看不够格（≈0.0069）——正是先前实测里的
     // 「先采纳 B、再补 A 的增量被功效拦掉」形态；联合比较把两者收益并入同一分子后过闸。
     expect(Number(small.chosen.score)).toBeLessThan(TRIGGER_OPTIMIZER_MIN_ADOPT_SCORE);
     expect(Number(big.chosen.score)).toBeGreaterThanOrEqual(TRIGGER_OPTIMIZER_MIN_ADOPT_SCORE);
@@ -664,7 +664,7 @@ describe('triggerOptimizerSearch', () => {
     expect(finalTriggers[0].value).toBe(5);
   });
 
-  // ── 深挖（2026-09-19 设计 §18.1；2026-09-20 改独立种子，设计 §21）──────────
+  // ── 深挖（2026-09-19；2026-09-20 改独立种子）──────────
   // 用 workerId 的 "#rN" 后缀当轮序号，构造「前两轮看不出、加密复核才看得出」的确定性
   // 情形：立即释放候选的增益按轮序号给出 [0.08, 0.0137, 0.02, 0.02, 0.02, 0.02]。
   //   · settings.rounds = 2 → 配对样本 [0.0444, 0.0079]：均值 0.0261、2×SE 0.0366
@@ -703,7 +703,7 @@ describe('triggerOptimizerSearch', () => {
     expect(dive.mean).toBeCloseTo(0.01633, 4);
     expect(dive.stdError).toBeCloseTo(0.00565, 4);
     expect(['positive', 'inconclusive']).toContain(dive.verdict);
-    // 判据数据必须独立（设计 §21）：搜索期那几轮参与了「谁被复核」的决策，不能再用。
+    // 判据数据必须独立：搜索期那几轮参与了「谁被复核」的决策，不能再用。
     // 独立盐 ⇒ 深挖种子与搜索种子、复验种子都不相交（salt 进 key 参与 hash）。
     const searchSeeds = new Set(
       SimulatedWorkerClient.instances.slice(0, result.evaluationRounds).map((client) => client.payload.seed),
@@ -785,7 +785,7 @@ describe('triggerOptimizerSearch', () => {
     expect(result.evaluationRounds).toBe(TRIGGER_OPTIMIZER_DEEP_DIVE_ROUNDS);
   });
 
-  // 「轮数上限截断」（2026-09-19，设计 §19.8）：搜索循环的早停口径是「一整轮零采纳」；
+  // 「轮数上限截断」（2026-09-19）：搜索循环的早停口径是「一整轮零采纳」；
   // 跑到 maxRounds 才停说明固定点还没到（此刻无从知道「再给一轮会不会还有改进」）。
   // 上限 = 1 轮是最小可复现的截断：本轮一旦有采纳，循环就不是因收敛而停。
   it('轮数上限截断：跑满 maxRounds 且最后一轮仍有采纳 → roundLimitReached=true', async () => {
@@ -805,7 +805,7 @@ describe('triggerOptimizerSearch', () => {
     expect(result.roundLimitReached).toBe(true);
   });
 
-  // 报告里的搜索起点配置与适用范围（2026-09-23，设计 §29）：换难度复核要的「最优 vs 起点」
+  // 报告里的搜索起点配置与适用范围（2026-09-23）：换难度复核要的「最优 vs 起点」
   // 这一对配置，以及「这份结论是在哪个目标/难度上得出的」——两者此前都不在报告里
   //（workingConfig 是克隆体、bestTriggerMap 原地改写，起点无从复原）。
   it('报告带搜索起点配置与适用范围：换难度复核的两个前提', async () => {
@@ -825,12 +825,12 @@ describe('triggerOptimizerSearch', () => {
       useDungeon: false,
       difficultyTier: 0,
       simulationHours: 24,
-      // 队伍载荷（2026-09-27，设计 §59）：未传队友 = 单人载荷，恒发空数组（输入形状恒定）。
+      // 队伍载荷（2026-09-27）：未传队友 = 单人载荷，恒发空数组（输入形状恒定）。
       party: [],
     });
   });
 
-  // 换难度稳健性复核（2026-09-23，设计 §29）：触发器写的是全局技能配置，而搜索只在单一难度上
+  // 换难度稳健性复核（2026-09-23）：触发器写的是全局技能配置，而搜索只在单一难度上
   // 评估过 —— 复核把「最优配置 vs 搜索起点配置」搬到相邻难度上，用独立盐的新样本配对评估。
   it('换难度复核：两个配置在目标难度上用同一组新种子配对评估，给出该难度的结论', async () => {
     SimulatedWorkerClient.responder = fastWhenEmptyTriggers;
@@ -916,7 +916,7 @@ describe('triggerOptimizerSearch', () => {
     expect(result.simulations).toBe(6);
   });
 
-  // 复核轮数自适应（2026-09-25，设计 §49）：轮数上限是**复核口径**的 16（不是搜索口径的 12），
+  // 复核轮数自适应（2026-09-25）：轮数上限是**复核口径**的 16（不是搜索口径的 12），
   // 调用方带来的执行计划经净化后随结果留档；不自洽的快照整份丢弃、但不阻断复核本身。
   it('换难度复核：轮数按复核口径放行到 16 轮，计划快照自洽才留档', async () => {
     SimulatedWorkerClient.responder = fastWhenEmptyTriggers;
@@ -929,8 +929,8 @@ describe('triggerOptimizerSearch', () => {
       plannedRounds: TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS,
       plannedSimulations: TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS * 2,
       budgetSimulations: null,
-      // 追加补注的缺省值（2026-09-26，设计 §51）：normalizeTriggerOptimizerRobustnessPlan
-      // 净化**首跑**（§49）计划时也按缺省补齐这五个字段 —— 留档口径自此固定，期望得带上它们。
+      // 追加补注的缺省值（2026-09-26）：normalizeTriggerOptimizerRobustnessPlan
+      // 净化**首跑**计划时也按缺省补齐这五个字段 —— 留档口径自此固定，期望得带上它们。
       zeroDiff: false,
       atCap: false,
       limitedBy: null,
@@ -960,7 +960,7 @@ describe('triggerOptimizerSearch', () => {
     expect(mismatched.rounds).toBe(TRIGGER_OPTIMIZER_ROBUSTNESS_ROUNDS);
     expect(mismatched.plan).toBeUndefined();
 
-    // 越界值按归一化口径回落**保底 6 轮**（不是被钳到上限 —— 与 §47 同款约定：非法输入不猜上限，
+    // 越界值按归一化口径回落**保底 6 轮**（不是被钳到上限 —— 同款约定：非法输入不猜上限，
     // 宁可退回产品默认）；调用方没带计划时不留 plan 字段。
     const clamped = await verifyTriggerOptimizerRobustness(
       { ...createInput(), bestTriggerMap: { [ABILITY_HRID]: [] }, baselineTriggerMap: {} },

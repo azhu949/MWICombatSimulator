@@ -2,7 +2,7 @@
 //!
 //! 只移植与数据无关的**规则**：enhancement 总倍率加成与 JS 的 `|| 0` /
 //! 真值判断语义。具体的 `itemDetailMap` / `enhancementLevelTotalMultiplierTable`
-//! 数据表由上层（后续切片装配 Player/Monster 时）以参数形式提供——切片 3 的
+//! 数据表由上层（后续装配 Player/Monster 时）以参数形式提供——
 //! CombatUnit parity 不消费该函数，此处先固化为可单测的纯函数。
 //!
 //! 逐位 parity 要点（JS `getCombatStat`）：

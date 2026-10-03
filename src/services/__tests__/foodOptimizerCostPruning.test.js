@@ -172,7 +172,7 @@ describe('food optimizer in-round cost pruning', () => {
   }
 
   it('stops after real food consumption with a full-duration cost bound on the wasm engine', async () => {
-    // 切片 21A：优化器轮次 wasm-only——旧用例对照 JS 引擎的事件/RNG 前缀（spyOn
+    // 优化器轮次 wasm-only——旧用例对照 JS 引擎的事件/RNG 前缀（spyOn
     // CombatSimulator.prototype）已不适用，改为 wasm 轮的行为断言（真剪枝、部分
     // 时长、有限下界、观察器字段），两侧一致性由 parity 测试的 JS oracle 对账覆盖。
     const { request, candidate } = foodFixture();

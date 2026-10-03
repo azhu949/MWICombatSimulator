@@ -19,7 +19,7 @@ import {
 } from './foodOptimizerEvaluation.js';
 import { tryRunWasmProductionRound } from './wasmProductionSimulation.js';
 
-// RNG 隔离契约（切片 21A 收窄）
+// RNG 隔离契约（已收窄）
 // ------------
 // 优化器轮次已全部走 wasm 引擎（Rust RNG 自带确定性，不消耗 Math.random），
 // simulateFoodOptimizerRound 不再安装任何播种作用域。本文件仍导出
@@ -67,7 +67,7 @@ function buildFoodOptimizerPieces(request, candidate = null) {
   return { zone, players };
 }
 
-// 单轮评估的样本形状构造（wasm 路径专用，模块内部函数；切片 21B 起 JS oracle 已删除）。
+// 单轮评估的样本形状构造（wasm 路径专用，模块内部函数；JS oracle 已删除）。
 function buildRoundSample({
   request,
   seed,
@@ -104,7 +104,7 @@ function buildRoundSample({
   };
 }
 
-/// 切片 20：costBound 观察器安装条件（与 foodOptimizerCostBound 的安装守卫逐字镜像）。
+/// costBound 观察器安装条件（与 foodOptimizerCostBound 的安装守卫逐字镜像）。
 /// 不满足时不携带 costBound 请求字段——轮次跑满或仅由失败谓词停止。
 function shouldInstallCostBoundObserver(request, candidate, costBound) {
   return Boolean(
@@ -118,7 +118,7 @@ function shouldInstallCostBoundObserver(request, candidate, costBound) {
 }
 
 export function getFoodOptimizerResources(request) {
-  // 切片 21A 改道：不再构造 CombatSimulator（模拟执行层），在主线程上直接复刻
+  // 已改道：不再构造 CombatSimulator（模拟执行层），在主线程上直接复刻
   // 「reset() + initializeCombatPlayers(0)」在此载荷形状下的玩家初始化链——
   // 生成永久增益 → 完全重置（清 CC/战斗增益、复位冷却、满血满蓝）→ 卷轴开局。
   // 等价性依据：CombatSimulator.reset() 其余副作用（事件队列清空、simResult 重建、
@@ -169,8 +169,8 @@ export async function simulateFoodOptimizerRound(
   assertFoodOptimizerTarget(request);
   const hrid = `player${request.activePlayerId}`;
 
-  // 切片 21A/21B：优化器轮次 wasm-only（JS 引擎已物理删除）。候选轮 earlyStop、
-  // 阈值/闲置观察（observers）、成本上界（costBound）自切片 12/13/20 起全部由
+  // 优化器轮次 wasm-only（JS 引擎已物理删除）。候选轮 earlyStop、
+  // 阈值/闲置观察（observers）、成本上界（costBound）全部由
   // Rust 承接；wasm 不可用（引擎缺失 / 配置不受支持 / 运行出错）按审计定案 D1
   // 硬失败（tryRunWasmProductionRound 返回 null → throw）。
   const { zone, players } = buildFoodOptimizerPieces(request, candidate);
@@ -190,13 +190,13 @@ export async function simulateFoodOptimizerRound(
       enableHpMpVisualization: false,
       combatScrollsEnabled: Boolean(request.payload.extra?.combatScrollsEnabled),
       isGuildTrial: Boolean(request.payload.simulationContext?.isGuildTrial),
-      // 切片 12：候选轮把 JS shouldStop 谓词映射为 Rust earlyStop（空蓝或死亡数超预算）。
+      // 候选轮把 JS shouldStop 谓词映射为 Rust earlyStop（空蓝或死亡数超预算）。
       // deathLimit 形参在调用方已是 `(deathBudget ?? Infinity) - 已累计死亡`，可能为负
       //（早已超限）或 Infinity（负值/Infinity 由 bridge 归一：Infinity → null，负值原样
       // 传递——两侧语义一致）。
       ...(candidate ? { earlyStop: { watchHrid: hrid, deathLimit } } : {}),
       ...(collectObservers ? { observers: { watchHrid: hrid } } : {}),
-      // 切片 20：成本上界观察器——Rust 侧把 earlyStop（失败优先）与 costBound 组合成
+      // 成本上界观察器——Rust 侧把 earlyStop（失败优先）与 costBound 组合成
       // JS shouldStop 的完整语义（|| 短路顺序一致）；priceTable/consumableMode 供桥侧
       // 预解析价格快照。
       ...(installCostBound
@@ -215,7 +215,7 @@ export async function simulateFoodOptimizerRound(
   });
   if (!output) {
     throw new Error(
-      'Food optimizer round failed on the WASM engine (engine missing / unsupported configuration / runtime error); the JS engine fallback was removed (slice 21A).',
+      'Food optimizer round failed on the WASM engine (engine missing / unsupported configuration / runtime error); the JS engine fallback was removed.',
     );
   }
 

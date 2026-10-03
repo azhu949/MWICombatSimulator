@@ -9,10 +9,7 @@
 // 数据表下沉——房屋原始表 houseRoomDetailMap.json 仍随首屏加载，实际落点是
 // playerMapper chunk（首屏 modulepreload 项，被 index chunk 静态 import）。该状态早于
 // 本次拆分即存在（combatsimulator 战斗模块的静态引用为主因），本模块对它的静态引用
-// 不改变其首屏归属。可复核锚点：dist/index.html 的 modulepreload 两项（gameData、
-// playerMapper，文件名带哈希）；tmp/chunk-report-full.json 中 playerMapper chunk 下的
-// houseRoomDetailMap.json 条目（rendered 90436 / original 172150）与本模块在 index
-// chunk 下的条目。详见 docs/build-chunking.md。
+// 不改变其首屏归属。
 // 单向依赖约定：本模块不得 import assetScoreService.js（依赖方向恒为 重 → 轻）。
 // 全部函数实现搬迁自 assetScoreService 的原有私有副本（逐字保留），两侧数值口径
 // 由既有测试锁定同值，禁止各自演化。
@@ -21,7 +18,7 @@ import { combatGuildBuffHrids } from '../shared/guildBuffs.js';
 // 房屋原始表：生成的 houseRoomDetailIndex 精简掉了 usableInActionTypeMap，战斗房间
 // 判定（配置签名与 computePlayerAssetScore 共用同一谓词）必须读原始 houseRoomDetailMap。
 // 落点补充：该静态依赖把表挂在 playerMapper chunk（首屏预加载，见上），不因轻层常驻
-// index chunk 而变为按需数据；真正下沉需另行立项（见 docs/build-chunking.md 口径边界）。
+// index chunk 而变为按需数据；真正下沉需另行立项。
 import houseRoomDetailMap from '../combatsimulator/data/houseRoomDetailMap.json';
 
 export const ASSET_SCORE_UNIT = 1_000_000;

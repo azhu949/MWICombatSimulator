@@ -1,4 +1,4 @@
-// 切片 5-B：WASM / JS A/B 接线测试（默认关 + 回退纪律 + 两侧样本逐字段一致）。
+// WASM / JS A/B 接线测试（默认关 + 回退纪律 + 两侧样本逐字段一致）。
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -86,7 +86,7 @@ describe('wasm production A/B wiring', () => {
         zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
         seed: 1,
         simulationTimeLimit: 1e9,
-        // 切片 14：full-result / 战斗日志 / 可视化不再阻止 wasm——引擎未注入时回退原因
+        // full-result / 战斗日志 / 可视化不再阻止 wasm——引擎未注入时回退原因
         // 应落到 engine_unavailable（而不是配置不受支持）。
         options: { minimalResult: false, logCombatEvents: true, enableHpMpVisualization: true },
       }),
@@ -106,8 +106,8 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('guild_trial');
 
-    // 切片 15：副本不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
-    // 切片 19：full-result + logCombatEvents 组合也不再留 JS——团灭日志由引擎生成，
+    // 副本不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
+    // full-result + logCombatEvents 组合也不再留 JS——团灭日志由引擎生成，
     // 不再回退 dungeon_combat_logs。
     expect(
       await tryRunWasmProductionRound({
@@ -133,7 +133,7 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
 
-    // 切片 16：迷宫不再被配置闸门挡住（引擎未注入 → engine_unavailable）；迷宫模式
+    // 迷宫不再被配置闸门挡住（引擎未注入 → engine_unavailable）；迷宫模式
     // 没有 zone，`no_zone` 判据只对「既无区域又无迷宫」成立。
     expect(
       await tryRunWasmProductionRound({
@@ -148,7 +148,7 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
 
-    // 切片 17：卷轴不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
+    // 卷轴不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
     expect(
       await tryRunWasmProductionRound({
         useWasmEngine: true,
@@ -163,7 +163,7 @@ describe('wasm production A/B wiring', () => {
   });
 
   it('fails hard when the wasm engine cannot be loaded (no JS fallback)', async () => {
-    // 切片 21A（审计定案 D1）：wasm 产物随仓库提交，引擎不可达 = 构建事故——
+    // 审计定案 D1：wasm 产物随仓库提交，引擎不可达 = 构建事故——
     // 生产轮次硬失败，不再静默回退 JS 引擎。tryRunWasmProductionRound 返回 null
     // 由调用方（worker.js / simulateFoodOptimizerRound）上报 simulation_error / throw。
     expect(
@@ -179,7 +179,7 @@ describe('wasm production A/B wiring', () => {
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
   });
 
-  // 切片 21B：shouldUseWasmOptimizerRound 判据用例已删除——函数与开关一起清理
+  // shouldUseWasmOptimizerRound 判据用例已删除——函数与开关一起清理
   //（生产载荷不再携带 useWasmEngine，优化器轮次 wasm-only）。
 
   describe.runIf(wasmPackageBuilt)('with the built wasm package', () => {
@@ -187,7 +187,7 @@ describe('wasm production A/B wiring', () => {
       setWasmProductionEngineForTests(await loadRealEngine());
     });
 
-    // 切片 14：首页单轮（full-result + 战斗日志 + 可视化）在 wasm 上直接跑通——
+    // 首页单轮（full-result + 战斗日志 + 可视化）在 wasm 上直接跑通——
     // 结果期望由 golden 快照承载（wasmEngineProductionParity.test.js 的 full-1h-viz），
     // 此处只做接线冒烟（真实区域 + full-result 路径畅通 + 完整字段面有数据）。
     it('runs a full-result homepage round on wasm', async () => {

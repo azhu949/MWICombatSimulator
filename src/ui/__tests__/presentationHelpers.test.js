@@ -9,7 +9,7 @@ import { buildSkillingDrinkStatuses } from '../skillingDrinkPresentation.js';
 // 2026-10-03 合并：原 6 个 UI 展示层纯函数测试文件（homeFormatters / externalLinks /
 // multiResultsPresentation / queueItemStatusPresentation / advisorRuntimePresentation /
 // skillingDrinkPresentation）。用例、断言与注释逐字保留，仅减少测试文件数——
-// 全量墙钟瓶颈在文件数与 fork 启停，见 docs/trigger-optimizer-design.md §42。
+// 全量墙钟瓶颈在文件数与 fork 启停。
 
 describe('home formatters', () => {
   it.each([NaN, Infinity, -Infinity, 'NaN', 'invalid'])(

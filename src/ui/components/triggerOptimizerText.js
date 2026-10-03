@@ -33,7 +33,7 @@ export function resolveBestTriggers(bestTriggerMap, abilityHrid, fallback = null
   return Array.isArray(triggers) ? triggers : null;
 }
 
-// 本槽净效应（配对差，§27）：chosen.paired.metrics 是逐指标配对统计（mean / stdError /
+// 本槽净效应（配对差）：chosen.paired.metrics 是逐指标配对统计（mean / stdError /
 // verdict），而 chosen 的配对参考系是「本槽开跑时的配置」——它逐指标的配对差就是本槽改动
 // 的净效应（不含同轮其它技能的改动，那是累计表的口径）。结果卡片直显与详情弹窗共用本取数
 // 口径，两处不得分叉；「只在采纳时渲染」由调用方判定（未采纳的槽没有「本槽改动」）。
@@ -85,7 +85,7 @@ export function triggerVerdictBadgeClass(verdict) {
   return 'bg-muted text-muted-foreground';
 }
 
-// 指标方向：dps/利润/经验/击杀越高越好；死亡越高越差（设计 §5.2 只惩罚增加）。
+// 指标方向：dps/利润/经验/击杀越高越好；死亡越高越差（只惩罚增加）。
 export function triggerMetricDeltaClass(key, absolute) {
   const value = Number(absolute || 0);
   if (!value) return '';

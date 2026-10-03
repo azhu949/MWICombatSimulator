@@ -130,7 +130,7 @@ function makeResult(store, overrides = {}) {
         roleLabelKey: 'common:triggerOptimizer.role.damage',
         candidates,
         chosen,
-        // 截断透明化（设计 §28）：这一槽生成了 6 条、被「每槽候选上限 3」截掉 3 条 —— 候选表
+        // 截断透明化：这一槽生成了 6 条、被「每槽候选上限 3」截掉 3 条 —— 候选表
         // 里只有 3 条，UI 必须说出来（「评估了 3 条」≠「只有 3 条」）。
         candidateLimit: 3,
         generatedCandidates: 6,
@@ -140,7 +140,7 @@ function makeResult(store, overrides = {}) {
     metricsByCandidate: {
       // 报告以「槽位 + 签名」为键：不同技能可能生成同一份触发器列表，只按签名做键会串味。
       '1|default': { metrics: { ...metrics, dps: 90 }, score: -0.05, paired: null, slotIndex: 1 },
-      // racing 粗筛淘汰行（设计 §30）：lane='screen' 表示这行只有粗筛样本（未进精测），
+      // racing 粗筛淘汰行：lane='screen' 表示这行只有粗筛样本（未进精测），
       // UI 必须标注采样口径 —— 用例见「marks screened-only candidates…」。
       '1|[]': {
         metrics: { ...metrics, dps: 95 },
@@ -156,9 +156,9 @@ function makeResult(store, overrides = {}) {
     // 徽章只看 chosen 就会与「证据不足 / 已优化 0 / N」自相矛盾。
     adoptedSlots: [1],
     deepDives: [],
-    // 跨槽联合采纳（2026-09-19，设计 §19.11）：默认无；用例按需覆盖。
+    // 跨槽联合采纳（2026-09-19）：默认无；用例按需覆盖。
     jointAdoptions: [],
-    // 「轮数上限截断」（2026-09-19，设计 §19.8）：默认收敛结束 → false；用例按需覆盖。
+    // 「轮数上限截断」（2026-09-19）：默认收敛结束 → false；用例按需覆盖。
     roundLimitReached: false,
     baselineMetrics: { ...metrics, dps: 90 },
     bestTriggerMap: { [ABILITY_HRID]: triggers },
@@ -614,7 +614,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-verdict]').text()).toContain('样本不足');
   });
 
-  // 收尾相位回填（2026-09-24，设计 §37.3 观察项① 方案 A）：运行结束（含刷新重进，runtime.phase 回
+  // 收尾相位回填（2026-09-24，观察项① 方案 A）：运行结束（含刷新重进，runtime.phase 回
   // idle）后，进度区阶段行必须按报告收尾状态显示「搜索已完成 / 搜索已停止 / 搜索异常中断」，不能一边
   // 显示「未开始」一边给出报告真实计数。三态复用 phases.done/cancelled/error，i18n 零新增键。
   it('backfills the finish-state phase from the report when the run is over', async () => {
@@ -638,8 +638,8 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-phase]').text()).toContain('搜索异常中断');
   });
 
-  // 候选截断透明化（2026-09-23，设计 §28）：候选表被「每槽候选上限」截断时必须说出来，
-  // 否则「3 个候选」会被读成「搜索试遍了所有可能」（截断是静默丢候选，§22.3/§23.4 实测过）。
+  // 候选截断透明化（2026-09-23）：候选表被「每槽候选上限」截断时必须说出来，
+  // 否则「3 个候选」会被读成「搜索试遍了所有可能」（截断是静默丢候选，实测过）。
   it('discloses the candidates cut off by the per-slot candidate limit', async () => {
     const { wrapper, store } = await mountPage(readySetup);
     store.triggerOptimizer.results = makeResult(store);
@@ -668,7 +668,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.find('[data-trigger-optimizer-candidates-truncated]').exists()).toBe(false);
   });
 
-  // 结论适用范围 + 换难度复核（2026-09-23，设计 §29）：触发器写的是全局技能配置，而搜索只在
+  // 结论适用范围 + 换难度复核（2026-09-23）：触发器写的是全局技能配置，而搜索只在
   // 单一区域 + 单一难度上评估过 —— 结果区要写明这份结论的边界，并给出「换个难度再测一次」的入口。
   it('marks the scope of the conclusion and renders every re-check state', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -695,7 +695,7 @@ describe('trigger optimizer page', () => {
     expect(runButton.text()).toContain('难度 1');
     expect(runButton.attributes('disabled')).toBeUndefined();
     expect(scope.get('[data-trigger-optimizer-robustness-note]').text()).toContain('另一组随机种子');
-    // 轮数自适应（2026-09-25，设计 §49）：说明旁多一句「这次要跑几轮」的明细。报告的复验统计是
+    // 轮数自适应（2026-09-25）：说明旁多一句「这次要跑几轮」的明细。报告的复验统计是
     // 0.05 / SE 0.01（6 轮）⇒ 反解要 4 轮 → 保底 6 轮 = 计划 6 轮/侧（12 场，与旧行为同量级）。
     const planLine = scope.get('[data-trigger-optimizer-robustness-plan]').text();
     expect(planLine).toContain('6 轮/侧');
@@ -748,7 +748,7 @@ describe('trigger optimizer page', () => {
     expect(verdict.classes()).toContain('text-success');
     // 有结果就不再显示「怎么读」的说明（两个状态互斥，避免同屏两套说法）。
     expect(scope.find('[data-trigger-optimizer-robustness-note]').exists()).toBe(false);
-    // 这个结果没有计划快照（§49 之前跑的报告）：不显示计划明细行 —— 没有依据就不提轮数/护栏。
+    // 这个结果没有计划快照（之前跑的报告）：不显示计划明细行 —— 没有依据就不提轮数/护栏。
     expect(scope.find('[data-trigger-optimizer-robustness-plan-detail]').exists()).toBe(false);
 
     // ④ 旧报告（没有搜索起点配置）：按钮禁用 + 说清为什么，而不是点了什么都不发生。
@@ -774,7 +774,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.find('[data-trigger-optimizer-scope]').exists()).toBe(false);
   });
 
-  // 复核轮数自适应的三态上屏 + 导出留档（2026-09-25，设计 §49）：轮数不再是常量 —— 反解（正常，
+  // 复核轮数自适应的三态上屏 + 导出留档（2026-09-25）：轮数不再是常量 —— 反解（正常，
   // 见上一条用例）/ 已达上限 / 成本护栏三种情况都要说得清；导出必须带上同一句，因为界面上的计划行
   // 会被下一次渲染顶掉（事后复盘只有导出能查）。
   it('surfaces the robustness plan and its limits on screen and in the export', async () => {
@@ -865,7 +865,7 @@ describe('trigger optimizer page', () => {
     expect(legacyRow.value).toBe('在该难度上提升成立');
   });
 
-  // 复核追加（2026-09-26，设计 §51）：已复核过的报告再点复核 = 换盐追加（新样本与首跑样本
+  // 复核追加（2026-09-26）：已复核过的报告再点复核 = 换盐追加（新样本与首跑样本
   // 合并重检），不再是同盐复跑。界面上：首跑按钮消失、改挂「追加复核」入口 + 「补几轮」的提示；
   // 零差 / 已达上限 / 预算用尽三种「一轮都追加不了」的情形不挂按钮、只挂原因句（按钮凭空消失
   // 会被读成功能坏了）；追加过的报告多一行「已复核 N 次 · 合并 M 轮」的留档，导出把同一件事
@@ -908,7 +908,7 @@ describe('trigger optimizer page', () => {
     expect(hint).toContain('8 轮/侧');
     expect(hint).toContain('16 场');
     expect(hint).toContain('上限 16 轮');
-    // 累计预算进度（§53）：与复验追加同款子句 —— 点完这一下之后累计 0 + 16 场 / 预算 33 场。
+    // 累计预算进度：与复验追加同款子句 —— 点完这一下之后累计 0 + 16 场 / 预算 33 场。
     expect(hint).toContain('累计追加 16 / 33 场（含本次）');
     expect(scope.get('[data-trigger-optimizer-robustness-append]').text()).toContain('追加复核');
     expect(scope.find('[data-trigger-optimizer-robustness-append-blocked]').exists()).toBe(false);
@@ -977,7 +977,7 @@ describe('trigger optimizer page', () => {
     expect(merged).toContain('合并 8 轮');
     expect(merged).toContain('累计追加 4 场');
     expect(scope.get('[data-trigger-optimizer-robustness-append-hint]').text()).toContain('8 轮/侧');
-    // 累计预算进度（§53）：已花 4 场 + 本次 16 场 = 20 / 预算 33 场。
+    // 累计预算进度：已花 4 场 + 本次 16 场 = 20 / 预算 33 场。
     expect(scope.get('[data-trigger-optimizer-robustness-append-hint]').text()).toContain(
       '累计追加 20 / 33 场（含本次）',
     );
@@ -1027,14 +1027,14 @@ describe('trigger optimizer page', () => {
     expect(wrapper.find('[data-trigger-optimizer-note="jointAdoption"]').exists()).toBe(false);
     expect(wrapper.find('[data-trigger-optimizer-note="detectionFloor"]').exists()).toBe(false);
     expect(wrapper.find('[data-trigger-optimizer-note="roundLimit"]').exists()).toBe(false);
-    // 证据预算（2026-09-26，设计 §53）：没花过、也没停在出口 ⇒ 同样不出现（不留空条目）。
+    // 证据预算（2026-09-26）：没花过、也没停在出口 ⇒ 同样不出现（不留空条目）。
     expect(wrapper.find('[data-trigger-optimizer-note="evidenceBudget"]').exists()).toBe(false);
 
     await closeNotes(wrapper);
     expect(wrapper.find('[data-trigger-optimizer-notes="result"]').exists()).toBe(false);
   });
 
-  // 模拟载荷（2026-09-27，设计 §59）：勾选参与整队模拟的队友（除主角外的已保存玩家），
+  // 模拟载荷（2026-09-27）：勾选参与整队模拟的队友（除主角外的已保存玩家），
   // 集合写进设置（进输入指纹）。
   it('lists the other players as party teammates and writes the selection into settings', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -1053,7 +1053,7 @@ describe('trigger optimizer page', () => {
     expect(store.triggerOptimizer.settings.partyPlayerIds).toEqual([]);
   });
 
-  // 报告自证载荷（2026-09-27，设计 §59）：结论是在单人还是整队（哪些队友）上得出的写进适用范围块。
+  // 报告自证载荷（2026-09-27）：结论是在单人还是整队（哪些队友）上得出的写进适用范围块。
   it('labels the simulation loadout (solo vs party) in the scope block', async () => {
     const { wrapper, store } = await mountPage(readySetup);
     const scopeOf = (party) => ({
@@ -1067,7 +1067,7 @@ describe('trigger optimizer page', () => {
     store.triggerOptimizer.results = makeResult(store, { evaluationScope: scopeOf([]) });
     await flushPromises();
     expect(wrapper.get('[data-trigger-optimizer-scope-party]').text()).toContain('单人');
-    // 保守提示只针对队伍载荷（§60 / C1-①）：单人载荷不挂。
+    // 保守提示只针对队伍载荷（C1-①）：单人载荷不挂。
     expect(wrapper.find('[data-trigger-optimizer-scope-party-detection]').exists()).toBe(false);
 
     // 有队友：显示队伍 + 队友名（名字优先按**当前玩家表**解析 ⇒ 改名后显示现名）；同时挂出保守
@@ -1203,7 +1203,7 @@ describe('trigger optimizer page', () => {
 
     expect(store.triggerOptimizer.settings.candidateLimit).toBe(TRIGGER_OPTIMIZER_MAX_CANDIDATE_LIMIT);
     expect(store.triggerOptimizer.settings.maxRounds).toBe(3);
-    // 精细档在 24h 时长下给 6 轮（长时长口径，2026-09-20 §20.1 重定）。
+    // 精细档在 24h 时长下给 6 轮（长时长口径，2026-09-20 重定）。
     expect(store.triggerOptimizer.settings.rounds).toBe(6);
     expect(preset.element.value).toBe('fine');
     // 档位的即时反馈留在页面上（结果区那一行的旁边就是它）；「这个档位意味着什么」的长解释
@@ -1275,7 +1275,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-verification]').text()).toContain('未达显著');
   });
 
-  // 复验三态的诚实标注（2026-09-24，设计 §31）：复验判「未达显著」+ 搜索期确有提升时，页面必须
+  // 复验三态的诚实标注（2026-09-24）：复验判「未达显著」+ 搜索期确有提升时，页面必须
   // 明说「提升尚未被独立样本确认」并给出「追加复验」入口（恰好一个）；已判正 / 已判负时结论已被
   // 独立样本定性，不再给入口。产品口径不变：未达显著**仍可应用**（不拦），只是不许装作已确认。
   it('flags an unconfirmed improvement and offers exactly one append verification', async () => {
@@ -1297,7 +1297,7 @@ describe('trigger optimizer page', () => {
     // 未达显著不拦应用（拦的只有复验判负）：这是产品门槛，不是本轮改动的一部分。
     expect(wrapper.get('[data-trigger-optimizer-apply]').element.disabled).toBe(false);
 
-    // 追加轮数上屏（2026-09-25，设计 §47；累计护栏 2026-09-26，设计 §50 B-2）：这一份报告的整轮
+    // 追加轮数上屏（2026-09-25；累计护栏 2026-09-26，B-2）：这一份报告的整轮
     // 场次只有 10 场 ⇒ 单次 20% 护栏 = 2 场 = 1 轮/侧（累计 40% 预算 4 场还没花过，不是瓶颈）；而
     // (0.001, SE 0.02) 在 6 轮上「连上限 24 轮都判不出来」⇒ A′ 先补到上限、再被护栏钳到 1 轮。
     // 上屏的轮数由**与 store 同一个**纯函数、同一份输入算出，因此不会与实际分裂。
@@ -1305,10 +1305,10 @@ describe('trigger optimizer page', () => {
     expect(planLine.text()).toContain('1 轮/侧');
     expect(planLine.text()).toContain('20%');
     expect(planLine.text()).toContain('累计 ≤ 40%');
-    // 累计预算进度（§50 B-2）：点完这一下之后累计 0 + 2 场 / 预算 4 场 —— 界面必须说清还剩多少。
+    // 累计预算进度（B-2）：点完这一下之后累计 0 + 2 场 / 预算 4 场 —— 界面必须说清还剩多少。
     expect(planLine.text()).toContain('累计追加 2 / 4 场（含本次）');
 
-    // store 侧拒绝追加的原因（§31 遗留：error 一直写进 runtime 却没有渲染点）现在必须上屏。
+    // store 侧拒绝追加的原因（遗留：error 一直写进 runtime 却没有渲染点）现在必须上屏。
     store.triggerOptimizer.runtime.verifyAppend.error = 'common:triggerOptimizer.verifyAppendExhausted';
     await flushPromises();
     expect(wrapper.get('[data-trigger-optimizer-verify-append-error]').text()).toContain('无法再追加');
@@ -1367,7 +1367,7 @@ describe('trigger optimizer page', () => {
     const merged = wrapper.get('[data-trigger-optimizer-verify-append-merged]');
     expect(merged.text()).toContain('已复验 1 次');
     expect(merged.text()).toContain('合并 12 轮');
-    // 累计追加场次（§50 B-2）：1 次追加 6 轮/侧 = 12 场，与成本护栏同一口径。
+    // 累计追加场次（B-2）：1 次追加 6 轮/侧 = 12 场，与成本护栏同一口径。
     expect(merged.text()).toContain('累计追加 12 场');
 
     // 运行中（结论仍是未达显著）：入口换成「停止追加复验」。
@@ -1392,7 +1392,7 @@ describe('trigger optimizer page', () => {
     expect(stopSpy).toHaveBeenCalledOnce();
   });
 
-  // 证据预算（2026-09-26，设计 §53）：两条追加路径（复验追加 / 复核追加）各有独立的预算池
+  // 证据预算（2026-09-26）：两条追加路径（复验追加 / 复核追加）各有独立的预算池
   // （整轮场次 × 累计 40%），「已花 / 预算 / 剩余 / 停在哪个出口」收敛成同一处：说明弹窗一条 +
   // 导出一行（逐字同文）。没花过也没停住时整条不出现；缺整轮场次的旧报告只说「已花」。
   it('collects both append budgets into one evidence-budget note and export row', async () => {
@@ -1563,7 +1563,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-changed]').text()).toContain('0 / 1');
   });
 
-  // 「轮数上限截断」提示（2026-09-19，设计 §19.8）：搜索的早停口径是「一整轮零采纳」；
+  // 「轮数上限截断」提示（2026-09-19）：搜索的早停口径是「一整轮零采纳」；
   // 跑满上限且最后一轮仍有采纳 → 固定点没到，说明弹窗要给出下一步（提高上限 / 精细档）。
   it('suggests more rounds when the search stopped at the round limit, not at a fixed point', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -1592,7 +1592,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.find('[data-trigger-optimizer-note="roundLimit"]').exists()).toBe(false);
   });
 
-  // 两把尺子的上屏（2026-09-20 设计 §20.2 + 2026-09-25 设计 §45 + 2026-09-26 设计 §52）：把「这次
+  // 两把尺子的上屏（2026-09-20 / 2026-09-25 / 2026-09-26）：把「这次
   // 设置到底能测出多大的提升」讲清楚，并分别回答「被采纳（过噪声地板）要多少轮」与「判成 p<0.05
   // 明确结论要多少轮」。三种分支都要在页面上说实话：已够 / 提到 N 轮 / 拉满也不够（后者点明加时长
   // 比加轮数更划算）。
@@ -1629,7 +1629,7 @@ describe('trigger optimizer page', () => {
 
     // SE 0.005、重复次数 5：噪声地板 = 2×SE = 0.01（≈1.4% 利润）、显著门槛 = t(4)×SE ≈ 0.0139。
     // 采纳口径已够得着（0.01 ≥ 地板）→ 建议行说「已低于采纳门槛量级」，并按判定口径补一句
-    // 「判成 p<0.05 需 ≈8 轮」（两把尺子各自指名，设计 §52）。数字走页面的 toLocaleString 口径
+    // 「判成 p<0.05 需 ≈8 轮」（两把尺子各自指名）。数字走页面的 toLocaleString 口径
     // （最多四位小数、不补尾零），符号只在「±」上出现一次。
     store.triggerOptimizer.results = withFloor(0.005);
     await flushPromises();
@@ -1646,7 +1646,7 @@ describe('trigger optimizer page', () => {
 
     // SE 0.006、5 轮：噪声地板 ±0.012 > 门槛 ⇒ 采纳口径反解给出最小轮数 8 轮（5×(0.012/0.01)² = 7.2），
     // 并给出届时两组门槛（噪声地板 ≈ ±0.0095、显著门槛 ≈ ±0.0112）；判定口径同时说「判成 p<0.05
-    // 需 ≈10 轮」——同一目标量级、两把尺子给出两个轮数（设计 §52）。
+    // 需 ≈10 轮」——同一目标量级、两把尺子给出两个轮数。
     store.triggerOptimizer.results = withFloor(0.006);
     await flushPromises();
     const planned = noteEntry(wrapper, 'detectionFloor').text();
@@ -1682,7 +1682,7 @@ describe('trigger optimizer page', () => {
     expect(atMaxLine).not.toContain('把重复次数提到');
   });
 
-  // 跨槽联合采纳（2026-09-19，设计 §19.11）：单槽增量的证据不足、联合（相对本轮起点）显著时
+  // 跨槽联合采纳（2026-09-19）：单槽增量的证据不足、联合（相对本轮起点）显著时
   // 两槽一起落地。说明弹窗要说出来——否则用户会把「提升」里联合采纳的贡献误读成普通的槽内推荐。
   it('reports cross-slot joint adoptions as a summary line', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -1718,7 +1718,7 @@ describe('trigger optimizer page', () => {
     expect(entry).toContain('1 个技能');
   });
 
-  // 深挖（2026-09-19 设计 §18.1；2026-09-20 改独立种子，设计 §21）：被噪声地板拦下的槽级
+  // 深挖（2026-09-19；2026-09-20 改独立种子）：被噪声地板拦下的槽级
   // 最优候选会自动做一次独立种子复核，UI 必须把复核结论说出来——否则用户看到「证据不足」
   // 就以为是死路，不知道系统已经替他换了一组新样本再判过一次。
   it('reports the automatic deep-dive re-check of blocked candidates', async () => {
@@ -1834,7 +1834,7 @@ describe('trigger optimizer page', () => {
     store.triggerOptimizer.results = makeResult(store);
     await flushPromises();
 
-    // 复验（换种子 6 轮）带回了指标 → 指标卡与结论卡的 p 值同源（2026-09-19，设计 §19.6）：
+    // 复验（换种子 6 轮）带回了指标 → 指标卡与结论卡的 p 值同源（2026-09-19）：
     // 旧行为只在「复验判负」时切换，成立时仍标「搜索期估算」，数字与 p 值不是同一批证据。
     expect(wrapper.get('[data-trigger-optimizer-metric-source]').text()).toContain('复验实测');
 
@@ -1846,7 +1846,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-metric-source]').text()).toContain('搜索期估算');
   });
 
-  // 撤销入口不再被「结果过期」关掉（2026-09-19，设计 §19.6）：过期可能只是切了地图/难度/
+  // 撤销入口不再被「结果过期」关掉（2026-09-19）：过期可能只是切了地图/难度/
   // 时长，撤销只覆盖被优化的技能键，是否会踩掉手工改动由 store 的判定负责。
   it('keeps the revert entry available when the result went stale', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -1862,7 +1862,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-apply]').element.disabled).toBe(true);
   });
 
-  // 「推荐」徽章旁的证据解释（2026-09-19，设计 §19.4）：搜索期 verdict 不显著时，采纳依据是
+  // 「推荐」徽章旁的证据解释（2026-09-19）：搜索期 verdict 不显著时，采纳依据是
   // 噪声地板（|mean| > 2×SE），与同屏的「不显著」并列时必须说清楚，否则读成「没证据也硬采纳」。
   it('explains the noise-floor adoption basis next to the recommendation badge', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -1910,7 +1910,7 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-deep-dive-slot]').text()).toContain('深挖复核通过');
   });
 
-  // racing 粗筛标注（2026-09-24，设计 §30）：候选表的依据必须绑定产生它的那批测量 —— 只有
+  // racing 粗筛标注（2026-09-24）：候选表的依据必须绑定产生它的那批测量 —— 只有
   // 粗筛样本（未进精测）的行要明说「粗筛 N 轮」，否则 2 轮的噪声统计会与精测统计混读。
   it('marks screened-only candidates with their screening sample size', async () => {
     const { wrapper, store } = await mountPage(readySetup);
@@ -2109,7 +2109,7 @@ describe('trigger optimizer page', () => {
     }
   });
 
-  // 导出 Excel（2026-09-24，设计 §40）：结果区按钮把报告 + 页面同款文案交给导出入口。
+  // 导出 Excel（2026-09-24）：结果区按钮把报告 + 页面同款文案交给导出入口。
   it('hands the report and page-scope text to the Excel export entry', async () => {
     const { wrapper, store } = await mountPage(readySetup);
     store.triggerOptimizer.results = makeResult(store);
@@ -2125,7 +2125,7 @@ describe('trigger optimizer page', () => {
     expect(options.summaryRows.length).toBeGreaterThan(0);
   });
 
-  // 追加复验留档（2026-09-25，设计 §48）：轮数自适应（§47）之后，「这次补了几轮、上限/护栏有没有
+  // 追加复验留档（2026-09-25）：轮数自适应之后，「这次补了几轮、上限/护栏有没有
   // 咬住」只在界面上说过一次 —— 导出的汇总表必须带上同一件事，事后才能复盘。计划快照缺失
   //（本改动之前的旧报告）只说基础句：没有依据就不提上限/护栏。
   it('archives appended verifications and their plan snapshot in the exported summary rows', async () => {
@@ -2145,7 +2145,7 @@ describe('trigger optimizer page', () => {
             decisive: false,
             capped: true,
             budgetLimited: false,
-            // 两级护栏字段（2026-09-26，设计 §50 B-2）：整轮 370 场 ⇒ 单次 74 场 / 累计 148 场，
+            // 两级护栏字段（2026-09-26，B-2）：整轮 370 场 ⇒ 单次 74 场 / 累计 148 场，
             // 上限先咬住（capped），护栏没咬 —— 明细行的文案由 capped 分支给出。
             limitedBy: null,
             currentRounds: 6,
@@ -2168,7 +2168,7 @@ describe('trigger optimizer page', () => {
     await flushPromises();
 
     const rows = downloadTriggerOptimizerReportXlsx.mock.calls[0][0].summaryRows;
-    // 汇总行与界面逐字同款（verifyAppendMerged 的文案，含 §50 B-2 的累计追加场次：18 轮/侧 = 36 场）；
+    // 汇总行与界面逐字同款（verifyAppendMerged 的文案，含 B-2 的累计追加场次：18 轮/侧 = 36 场）；
     // 明细行给出轮数与「上限咬住」。
     expect(rows.some((row) => row.value === '已复验 1 次 · 合并 24 轮 · 累计追加 36 场')).toBe(true);
     const detail = rows.find((row) => row.item === '追加复验 1');
@@ -2191,7 +2191,7 @@ describe('trigger optimizer page', () => {
     expect(legacyDetail.value).toBe('追加 6 轮/侧（累计 12 轮）');
   });
 
-  // 本槽净效应直显（2026-09-25，§27.6）：卡片直接给出「指标 + 配对差 + 显著性」摘要，
+  // 本槽净效应直显（2026-09-25）：卡片直接给出「指标 + 配对差 + 显著性」摘要，
   // 不用打开详情弹窗；mean 为 null 的指标不产行（不把 null 当 0）。
   it('shows the per-ability net effect summary on the card without opening the modal', async () => {
     const { wrapper, store } = await mountPage(readySetup);

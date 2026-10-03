@@ -72,24 +72,24 @@ impl<K: PartialEq, V> OrderedMap<K, V> {
         self.entries.iter().map(|(_, value)| value)
     }
 
-    /// 可变值遍历（键序不变；切片 26 的池索引重映射用）。
+    /// 可变值遍历（键序不变；用于池索引重映射）。
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
         self.entries.iter_mut().map(|(_, value)| value)
     }
 
-    /// 清空全部条目（保留已分配的缓冲；切片 31：重置/复用路径免去重新分配）。
+    /// 清空全部条目（保留已分配的缓冲；重置/复用路径免去重新分配）。
     pub fn clear(&mut self) {
         self.entries.clear();
     }
 
-    /// 单趟原地删除不满足谓词的条目（键序不变、零分配；切片 31：过期源扫描）。
+    /// 单趟原地删除不满足谓词的条目（键序不变、零分配；过期源扫描）。
     pub fn retain(&mut self, mut keep: impl FnMut(&K, &V) -> bool) {
         self.entries.retain(|(key, value)| keep(key, value));
     }
 }
 
 impl<K: PartialEq + Clone, V> OrderedMap<K, V> {
-    /// 缺失时用 `create` 建值后返回可变引用（单趟查找；切片 31：add_buff 注册表扫描合并）。
+    /// 缺失时用 `create` 建值后返回可变引用（单趟查找；add_buff 注册表扫描合并）。
     pub fn get_or_insert_with<F: FnOnce() -> V>(&mut self, key: &K, create: F) -> &mut V {
         if let Some(index) = self.entries.iter().position(|(candidate, _)| candidate == key) {
             return &mut self.entries[index].1;
@@ -101,7 +101,7 @@ impl<K: PartialEq + Clone, V> OrderedMap<K, V> {
 }
 
 impl<K: PartialEq + Clone, V: Clone> OrderedMap<K, V> {
-    /// 整表克隆写入自身，复用已分配的缓冲（切片 31：combatBuffs 复位 clone）。
+    /// 整表克隆写入自身，复用已分配的缓冲（combatBuffs 复位 clone）。
     pub fn clone_from_map(&mut self, other: &Self) {
         self.entries.clone_from(&other.entries);
     }
@@ -109,8 +109,8 @@ impl<K: PartialEq + Clone, V: Clone> OrderedMap<K, V> {
 
 impl<K: PartialEq + Clone, V: Default> OrderedMap<K, V> {
     /// `map[key] ??= V::default()` 后返回其可变引用：单趟查找。
-    /// 与 `contains_key` + `set` + `get_mut` 等价，但只扫描一次（切片 27：
-    /// 结算结果表的热路径，原实现命中/缺失分别要 2/3 次线性扫描）。
+    /// 与 `contains_key` + `set` + `get_mut` 等价，但只扫描一次
+    /// （结算结果表的热路径，原实现命中/缺失分别要 2/3 次线性扫描）。
     pub fn entry_or_default_mut(&mut self, key: &K) -> &mut V {
         if let Some(index) = self.entries.iter().position(|(candidate, _)| candidate == key) {
             return &mut self.entries[index].1;

@@ -672,7 +672,7 @@ export function createProfitPricingOptions(pricingState) {
   };
 }
 
-// options.parallelWorkerLimit（§55）：无存储值 / 存储值缺失时的默认（store 注入本机自适应推荐；
+// options.parallelWorkerLimit：无存储值 / 存储值缺失时的默认（store 注入本机自适应推荐；
 // 省略 ⇒ 历史回退 4，服务级 / 测试路径行为不变）。
 export function loadQueueRuntimeSettingsFromStorage(options = {}) {
   const defaults = getDefaultQueueRuntimeSettings(options);
@@ -752,7 +752,7 @@ export function persistFoodOptimizerSettingsToStorage(settings) {
   return normalized;
 }
 
-// 触发器优化器设置（设计 §8.2/§12：键名带版本，脏数据回落到产品默认）。
+// 触发器优化器设置（键名带版本，脏数据回落到产品默认）。
 // 归一化口径由 triggerOptimizerDomain 独占，本层只负责版本闸门与序列化。
 export function loadTriggerOptimizerSettingsFromStorage() {
   const parsed = readJsonStorage(TRIGGER_OPTIMIZER_SETTINGS_STORAGE_KEY);
@@ -772,7 +772,7 @@ export function persistTriggerOptimizerSettingsToStorage(settings) {
   return normalized;
 }
 
-// 触发器优化报告落盘（2026-09-24，设计 §40）：最近一份报告自动持久化，刷新/崩溃/重进后
+// 触发器优化报告落盘（2026-09-24）：最近一份报告自动持久化，刷新/崩溃/重进后
 // 由 store 的 state 工厂 hydrate 回来。版本闸门同 settings.v1 —— 脏数据/版本不符一律静默
 // 回落 null（当作没有存档），不抛错也不半恢复。
 export function loadTriggerOptimizerReportFromStorage() {

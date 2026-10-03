@@ -1,4 +1,4 @@
-// JS 侧对账驱动（切片 3 parity）：用**真实** CombatUnit 执行与 Rust 探针相同的操作脚本，
+// JS 侧对账驱动：用**真实** CombatUnit 执行与 Rust 探针相同的操作脚本，
 // 产出与 `engine/src/unit_probe.rs` 同构的轨迹。两侧 schema 成对维护：任何一侧改动
 // 操作集、轨迹字段或数值归一规则，另一侧必须同步（否则 parity 测试立刻翻红）。
 //

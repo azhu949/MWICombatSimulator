@@ -280,7 +280,7 @@ export class WorkerClient {
   }
 
   /**
-   * 批量模拟（§54，2026-09-27）：一个 realm 里按顺序跑完 payloads —— **上一条结果（或失败）
+   * 批量模拟（2026-09-27）：一个 realm 里按顺序跑完 payloads —— **上一条结果（或失败）
    * 回来才发下一条**。串行投递是硬约束：worker.js 的 onmessage 是 async，并发投递会让同一
    * realm 里同时跑两个模拟，并把 installSeedScope 换上的全局 Math.random 互相覆盖
    * （「一个 realm 同一时刻只跑一场」是播种的安全前提，见 worker.js 的复用说明）。

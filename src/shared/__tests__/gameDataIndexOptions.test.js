@@ -10,7 +10,7 @@ import { ensurePlayerAdvancedState } from '../playerConfig.js';
 // 2026-10-03 合并：原 5 个 shared/ 侧薄测试文件（gameDataIndex.drinkOptions /
 // gameDataIndex.equipmentCombobox / gameDataIndex.zoneMonsterSpawn / gameDataIndex.charmOptions /
 // playerConfig）。用例、断言与注释逐字保留，仅减少测试文件数——全量墙钟瓶颈在文件数与
-// fork 启停，见 docs/trigger-optimizer-design.md §42。
+// fork 启停。
 const COMBAT_ACTION_TYPE_HRID = '/action_types/combat';
 
 describe('gameDataIndex & shared option projections', () => {

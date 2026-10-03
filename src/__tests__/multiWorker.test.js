@@ -241,7 +241,7 @@ describe('multiWorker', () => {
     await runPromise;
   });
 
-  // 切片 18：主线程批量消息的 wasm 开关（useWasmEngine）必须透传给每个子 worker，
+  // 主线程批量消息的 wasm 开关（useWasmEngine）必须透传给每个子 worker，
   // 否则批量扫描永远落在 JS 引擎上。
   it('forwards the wasm engine switch to each child worker', async () => {
     const workerScope = createWorkerScope();

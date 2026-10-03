@@ -1,4 +1,4 @@
-// 把 wasm-pack + wasm-opt 的产物同步到 public/engine/pkg（切片 18）。
+// 把 wasm-pack + wasm-opt 的产物同步到 public/engine/pkg。
 // public 目录由 vite 接管：dev 下映射到站点根（/engine/pkg/...），
 // 构建时原样拷进 dist/engine/pkg——提交进仓库的是这份同步副本，
 // CI 无 Rust 工具链也能构建出带 wasm 引擎的部署产物。

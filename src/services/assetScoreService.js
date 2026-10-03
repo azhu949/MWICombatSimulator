@@ -20,8 +20,8 @@ import {
 } from '../shared/gameDataIndex.js';
 // 注意：生成的 houseRoomDetailIndex 出于体积考虑精简掉了 usableInActionTypeMap，
 // 战斗房间判定必须读原始 houseRoomDetailMap。
-// 落点口径（2026-10-03 核验）：该原始表归属 playerMapper chunk（首屏 modulepreload 项，
-// 见 docs/build-chunking.md）；本模块按需化只下沉重计算链、不含数据表，引用该表不会
+// 落点口径（2026-10-03 核验）：该原始表归属 playerMapper chunk（首屏 modulepreload 项）；
+// 本模块按需化只下沉重计算链、不含数据表，引用该表不会
 // 把它拖入本 chunk（rollup 共享同一模块，表仍随首屏加载）。
 import houseRoomDetailMap from '../combatsimulator/data/houseRoomDetailMap.json';
 // 原始物品表：生成的 itemDetailIndex 精简掉了 guildCreditConversions（捐献换公会信用点），

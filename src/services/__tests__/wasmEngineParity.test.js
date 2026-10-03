@@ -1,4 +1,4 @@
-// 切片 2 parity → 切片 21B（定案 D2）：mulberry32 / hashSeed / deriveSeedSet 仍是
+// parity golden 化（定案 D2）：mulberry32 / hashSeed / deriveSeedSet 仍是
 // 双实现精确对账（JS `seededRandom.js` 保留——worker 种子派生在生产使用）；
 // 事件队列操作脚本（含 tie 顺序、身份移除、按类型/单位清除）改为与 golden 快照
 // 对账（JS EventQueue 已随 A 层删除；(time, seq) 全序语义由 Rust 单测与 golden 承载）。
@@ -39,7 +39,7 @@ function getEngine() {
   return enginePromise;
 }
 
-describe.runIf(wasmPackageBuilt)('wasm engine slice-2 parity (JS vs Rust)', () => {
+describe.runIf(wasmPackageBuilt)('wasm engine parity (JS vs Rust)', () => {
   it('matches the mulberry32 stream bit for bit', async () => {
     const engine = await getEngine();
     for (const seed of [0, 1, 42, 0xdeadbeef, 4294967295]) {

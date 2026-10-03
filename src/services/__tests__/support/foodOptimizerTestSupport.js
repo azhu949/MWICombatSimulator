@@ -13,7 +13,7 @@ import { getFoodOptimizerResources } from '../../foodOptimizerSimulation.js';
 import { loadWasmEngine } from '../../wasmEngineLoader.js';
 import { setWasmProductionEngineForTests } from '../../wasmProductionSimulation.js';
 
-// 切片 21B：JS 引擎（CombatSimulator）已物理删除——本文件不再提供 JS 引擎 oracle
+// JS 引擎（CombatSimulator）已物理删除——本文件不再提供 JS 引擎 oracle
 // （referenceFoodOptimizerRound / simulateFoodOptimizerRoundOnJsEngine）。等价性
 // 断言改用生产 wasm 轮（simulateFoodOptimizerRound 本身）；引擎输出漂移防线在
 // fixtures/golden 快照 + cargo test。真轮次用例统一由这里注入真实 wasm 引擎。

@@ -3,7 +3,7 @@ import sharedWorkerClient, { WorkerClient } from './workerClient.js';
 export const DEDICATED_WORKER_SCOPE_QUEUE = 'queue';
 export const DEDICATED_WORKER_SCOPE_ADVISOR = 'advisor';
 export const DEDICATED_WORKER_SCOPE_EXPERIMENTAL = 'experimental';
-// 技能触发器优化器：每个候选评估各起一个专用 worker（设计 §3.2/§4.1）。
+// 技能触发器优化器：每个候选评估各起一个专用 worker。
 export const DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER = 'trigger-optimizer';
 // 首页单目标「多轮模拟」：全部播种轮次收进一个专用 realm（批量入口）跑完，由 store 聚合。
 export const DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND = 'home-multi-round';
@@ -57,7 +57,7 @@ export function stopAdvisorWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_ADVISOR);
 }
 
-// 用户点「停止」时由 store 调用（设计 §4.3）：取消所有触发器优化器专用 worker
+// 用户点「停止」时由 store 调用：取消所有触发器优化器专用 worker
 // 运行，在途任务以 code:'cancelled' 拒绝，搜索层据此收尾而非上报失败。
 export function stopTriggerOptimizerWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER);
@@ -263,7 +263,7 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
   });
 }
 
-// 批量能力探测（§54，2026-09-27）：生产 WorkerClient 有 startSimulationBatch（一个 realm 跑完
+// 批量能力探测（2026-09-27）：生产 WorkerClient 有 startSimulationBatch（一个 realm 跑完
 // 一次评估的全部种子）；测试注入的桩通常只有 startSimulation/stopSimulation —— 调用方据此
 // 决定走批量还是逐场路径（逐场路径的语义完全不变）。
 export function supportsSimulationBatch(WorkerClientCtor) {
@@ -271,12 +271,12 @@ export function supportsSimulationBatch(WorkerClientCtor) {
   return typeof Ctor?.prototype?.startSimulationBatch === 'function';
 }
 
-// §54（2026-09-27）批量入口：一个 realm 跑完 list 里的全部 payload（每条 = 一场模拟）。
+// 批量入口（2026-09-27）：一个 realm 跑完 list 里的全部 payload（每条 = 一场模拟）。
 // 与 runSingleSimulationPayloadWithDedicatedWorker 的取消语义、scope、handle 注册完全一致
 // （stopTriggerOptimizerWorkerRuns 一样能定向取消、以 code:'cancelled' 拒绝整批），区别只在
 // 「realm 只建一次」—— 生产端每建一个 realm 都要付一次模块加载（装置实测 ≈0.43s/场，占单场
 // 墙钟约一半），而一次评估的 N 场本来就是串行跑的，收进同一个 realm 不改变任何样本
-// （装置 parity 16/16 逐位一致，见设计 §54）。
+// （装置 parity 16/16 逐位一致）。
 // 返回 Promise<{ simResults, errors }>：与 payloads 等长；失败位 simResults[i] = null、
 // errors[i] = 失败原因（调用方按 createDegenerateMetrics 处置，与逐场路径的 catch 分支同款）。
 // realm 级崩溃：把在飞的那一条记为失败，换一个新 realm 接着跑剩下的 —— 与「每场新建 realm」
@@ -285,7 +285,7 @@ export function supportsSimulationBatch(WorkerClientCtor) {
 // 残留（共享 buff 对象不得就地改写、模块级缓存不得跨场积累等）。该前提由
 // src/services/__tests__/simulatorRealmReuseParity.test.js 在常规流水线内锚定：
 // 同一批种子「同 realm 连跑」与「每场全新 realm」的 simResult 逐位一致 ——
-// 改动引擎引入任何非确定性残留时该测试即红。（该测试在切片 21B 曾随 JS 引擎物理
+// 改动引擎引入任何非确定性残留时该测试即红。（该测试曾随 JS 引擎物理
 // 删除，2026-10-01 以 wasm 形态重建。）
 export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () => {}, options = {}) {
   const list = Array.isArray(payloads) ? payloads : [];

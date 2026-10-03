@@ -1,4 +1,4 @@
-// 技能触发器优化器 —— racing 分级采样（2026-09-24，设计 §30）。
+// 技能触发器优化器 —— racing 分级采样（2026-09-24）。
 //
 // 候选池小（≤ TRIGGER_OPTIMIZER_RACING_MIN_POOL）时走原路径、零行为变化（既有契约由
 // triggerOptimizerSearch.test.js 全量锁定）；本文件专测大候选池的两段式采样：

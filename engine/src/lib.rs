@@ -1,12 +1,12 @@
 //! MWI combat engine — Rust/WASM port.
 //!
-//! Slice 1: infrastructure (crate skeleton, wasm build chain, loader, benchmark + parity harness).
-//! Slice 2: event queue + mulberry32 RNG (bit-for-bit identical to `src/services/seededRandom.js`),
-//! with JS-vs-Rust parity probes. Slice 24: the queue is a `(time, seq)` ordered priority queue
+//! Infrastructure (crate skeleton, wasm build chain, loader, benchmark + parity harness).
+//! Event queue + mulberry32 RNG (bit-for-bit identical to `src/services/seededRandom.js`),
+//! with JS-vs-Rust parity probes; the queue is a `(time, seq)` ordered priority queue
 //! (the heap-js port was dropped under the relaxed parity contract; see `event_queue.rs`).
-//! Slice 3: combat units (exact port of `combatUnit.js` / `buff.js` / `buffSourcePolicy.js`
+//! Combat units (exact port of `combatUnit.js` / `buff.js` / `buffSourcePolicy.js`
 //! stat resolution + buff lifecycle, plus the equipment stat rule), with unit parity probes.
-//! Slice 4: combat main loop (event types, ability/trigger/consumable behaviour, damage math,
+//! Combat main loop (event types, ability/trigger/consumable behaviour, damage math,
 //! unit arena) ported from `combatSimulator.js` / `combatUtilities.js`.
 
 pub mod ability;
@@ -42,10 +42,10 @@ pub fn wasm_start() {
     console_error_panic_hook::set_once();
 }
 
-/// Slice-1 smoke export: proves the JS<->WASM bridge and the build chain work.
+/// Smoke export: proves the JS<->WASM bridge and the build chain work.
 #[wasm_bindgen]
 pub fn bridge_probe(a: u32, b: u32) -> String {
-    format!("mwi-combat-engine 0.1.0 slice-1 probe: {}+{}={}", a, b, a + b)
+    format!("mwi-combat-engine 0.1.0 smoke probe: {}+{}={}", a, b, a + b)
 }
 
 /// Parity probe: `count` consecutive mulberry32 draws for `seed` (expect bit-for-bit
@@ -93,7 +93,7 @@ pub fn run_simulator_operations(request_json: &str) -> String {
         .unwrap_or_else(|error| panic!("simulator probe failed: {error}"))
 }
 
-/// Production entry (slice 5): runs a real zone simulation with real `SimResult`
+/// Production entry: runs a real zone simulation with real `SimResult`
 /// aggregation and returns `{ "simResult": {...}, "error": null }`.
 /// See `prod_probe.rs` for the schema and supported subset.
 #[wasm_bindgen]

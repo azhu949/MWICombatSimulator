@@ -391,7 +391,7 @@ describe('simulatorWorkerRuns', () => {
     expect(supportsSimulationBatch(BatchLessClient)).toBe(false);
   });
 
-  it('collects per-index batch results/errors from one client (§54)', async () => {
+  it('collects per-index batch results/errors from one client', async () => {
     const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }], vi.fn(), {
       scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
       WorkerClientCtor: FakeWorkerClient,
@@ -408,7 +408,7 @@ describe('simulatorWorkerRuns', () => {
     expect(client.stopSimulation).not.toHaveBeenCalled();
   });
 
-  it('restarts the realm for the remaining payloads after a realm-level crash (§54)', async () => {
+  it('restarts the realm for the remaining payloads after a realm-level crash', async () => {
     const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }, { id: 3 }], vi.fn(), {
       scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
       WorkerClientCtor: FakeWorkerClient,
@@ -458,7 +458,7 @@ describe('simulatorWorkerRuns', () => {
     }
   });
 
-  it('cancels the whole batch through the scoped handle (§54)', async () => {
+  it('cancels the whole batch through the scoped handle', async () => {
     const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), {
       scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
       WorkerClientCtor: FakeWorkerClient,
@@ -470,7 +470,7 @@ describe('simulatorWorkerRuns', () => {
     expect(FakeWorkerClient.instances[0].stopSimulation).toHaveBeenCalledTimes(1);
   });
 
-  it('reports every settled item through the optional onItemSettled callback (§54)', async () => {
+  it('reports every settled item through the optional onItemSettled callback', async () => {
     const settled = [];
     const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], vi.fn(), {
       scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,

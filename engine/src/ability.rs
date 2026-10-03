@@ -68,7 +68,7 @@ impl AbilityEffect {
         self.damage_type
     }
 
-    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用内层 `buffs` 已分配缓冲。
+    /// 同形态覆盖复制（重生复用热路径）——复用内层 `buffs` 已分配缓冲。
     /// 字段以解构模式绑定，新增字段时编译期强制同步。
     pub fn clone_from_reuse(&mut self, source: &Self) {
         let AbilityEffect {
@@ -193,7 +193,7 @@ impl Ability {
         Ok(should_trigger)
     }
 
-    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用 `ability_effects` /
+    /// 同形态覆盖复制（重生复用热路径）——复用 `ability_effects` /
     /// `triggers` 已分配缓冲；效果条目逐项走 `AbilityEffect::clone_from_reuse`。
     /// 字段以解构模式绑定，新增字段时编译期强制同步。
     pub fn clone_from_reuse(&mut self, source: &Self) {

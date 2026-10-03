@@ -275,7 +275,7 @@ macro_rules! combat_stats_numeric_fields {
                 }
             }
 
-            /// 切片 31：字段名 → 数值 setter（构造期一次解析；与 `set_numeric_field` 同集合；
+            /// 字段名 → 数值 setter（构造期一次解析；与 `set_numeric_field` 同集合；
             /// `tenacity` / `abilityHaste` 的 Option 语义由调用方 `resolve_numeric_setter` 处理）。
             pub fn numeric_field_setter(name: &str) -> Option<fn(&mut CombatStats, f64)> {
                 match name {
@@ -377,7 +377,7 @@ macro_rules! combat_stats_string_fields {
                 }
             }
 
-            /// 切片 31：字段名 → 字符串 setter（构造期一次解析；与 `set_string_field` 同集合）。
+            /// 字段名 → 字符串 setter（构造期一次解析；与 `set_string_field` 同集合）。
             pub fn string_field_setter(name: &str) -> Option<fn(&mut CombatStats, Hrid)> {
                 match name {
                     $( $name => Some(|stats: &mut CombatStats, value: Hrid| stats.$field = value), )*
@@ -490,7 +490,7 @@ impl BuffBoost {
     pub const ZERO: Self = Self { ratio_boost: 0.0, flat_boost: 0.0 };
 }
 
-/// 结算期增益汇总（切片 11-A）：单遍遍历 `combat_buffs`，按 `type_hrid` 直接
+/// 结算期增益汇总：单遍遍历 `combat_buffs`，按 `type_hrid` 直接
 /// 分派到固定槽位——替代旧方案「`index_buffs_by_type` 建 OrderedMap 索引
 /// （每类型一次 String 克隆）+ 结算体 40 次线性查找」。
 ///
@@ -558,7 +558,7 @@ enum Slot<'a> {
 }
 
 thread_local! {
-    /// 切片 29：结算暂存——跨 `update_combat_details` 调用复用 12 个逐项槽的 Vec 容量，
+    /// 结算暂存——跨 `update_combat_details` 调用复用 12 个逐项槽的 Vec 容量，
     /// 消除每次结算的整表构建分配/释放。**非语义状态**：每次使用前全量清零（`rebuild`
     /// 首步），读数恒来自当次构建；重入（`try_borrow_mut` 失败）时退回独立构建，
     /// 两条路径的输出逐位恒等，仅放弃容量复用。
@@ -574,7 +574,7 @@ impl SettlementBoosts {
         boosts
     }
 
-    /// 切片 29：原地重建（保留全部 Vec 容量）。输出与 `build` 逐位恒等。
+    /// 原地重建（保留全部 Vec 容量）。输出与 `build` 逐位恒等。
     pub fn rebuild(&mut self, buffs: &OrderedMap<Hrid, Buff>) {
         let _prof = crate::prof::start("unit.index_buffs");
         self.clear_for_reuse();
@@ -592,7 +592,7 @@ impl SettlementBoosts {
         }
     }
 
-    /// 切片 29：归零到可复用状态——逐项槽 `clear`（保容量）、汇总槽重置为 `BuffBoost::ZERO`
+    /// 归零到可复用状态——逐项槽 `clear`（保容量）、汇总槽重置为 `BuffBoost::ZERO`
     ///（与 `Self::default()` 的逐字段起点一致；容器容量不影响任何输出）。
     fn clear_for_reuse(&mut self) {
         self.stamina_level.clear();
@@ -730,7 +730,7 @@ pub struct RawBuffInput {
 }
 
 /// 玩家配置的战斗卷轴行（JS `normalizeCombatScrolls` 后的 `{ itemHrid: { quantity } }`
-/// 投影；数组顺序 = JS 对象键序。切片 17：桥侧快照，Rust 不持有游戏数据）。
+/// 投影；数组顺序 = JS 对象键序。桥侧快照，Rust 不持有游戏数据）。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CombatScrollConfig {
@@ -775,14 +775,14 @@ pub struct CombatUnit {
     /// 玩家 / 探针合成单位为 `None`（等价 JS DTO 单位上的 undefined）。
     pub difficulty_tier: Option<f64>,
     /// JS `unit.debuffOnLevelGap`（玩家 DTO 顶层字段，怪物恒 0）：经验计算与
-    /// 掉落上下文桶按 `(1 + debuffOnLevelGap)` 缩放。切片 14 起由桥序列化。
+    /// 掉落上下文桶按 `(1 + debuffOnLevelGap)` 缩放。由桥序列化。
     pub debuff_on_level_gap: f64,
     pub house_rooms: Vec<BuffList>,
     pub guild_buffs: Vec<BuffList>,
     pub achievements: Option<BuffList>,
     pub zone_buffs: Vec<RawBuffInput>,
     pub extra_buffs: Vec<RawBuffInput>,
-    /// 切片 17：玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
+    /// 玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
     pub combat_scrolls: Vec<CombatScrollConfig>,
     pub combat_details: CombatDetails,
     pub base_combat_stats: Option<CombatStats>,
@@ -813,14 +813,14 @@ pub struct CombatUnit {
     ///
     /// 注：曾试验把这里改成 `Rc<Ability>`（省掉施法路径的快照深拷贝）：原生 prof 快约 11%，
     /// 但 **WASM 端到端反而慢 5%–15%**（多一层指针追逐 + 每个单位多若干次堆分配），
-    /// 故保持裸值。教训见 `docs/wasm-engine-performance.md` 第 7 节。
+    /// 故保持裸值。
     pub abilities: Vec<Option<Ability>>,
     /// 食物 / 饮料槽（JS 各 3 个）。
     pub food: Vec<Option<Consumable>>,
     pub drinks: Vec<Option<Consumable>>,
     /// 每个技能累计消耗的魔法值（JS `abilityManaCosts` Map，仅玩家记账）。
     pub ability_mana_costs: OrderedMap<Hrid, f64>,
-    /// 切片 26：重生池键（`"<hrid>|<tier 键>"`，迷宫为 `"<hrid>|lab"`）。
+    /// 重生池键（`"<hrid>|<tier 键>"`，迷宫为 `"<hrid>|lab"`）。
     /// 仅由 `instantiate_templates` / 升变产物写入——`Some` 的怪物死亡后其槽位可入池、
     /// 被同键重生**原地复用**；玩家与探针合成单位恒 `None`（永不入池/复用）。
     pub respawn_pool_key: Option<String>,
@@ -981,7 +981,7 @@ fn settled_level(base_level: f64, boosts: &[BuffBoost]) -> f64 {
 }
 
 impl CombatUnit {
-    /// 切片 26（重生槽位复用）：把全部字段恢复为 `Default` 形态，**原地**保留
+    /// 重生槽位复用：把全部字段恢复为 `Default` 形态，**原地**保留
     /// `abilities` / `food` / `drinks` 等 Vec 的已分配容量。
     ///
     /// 字段清单与 `Default for CombatUnit` 一一对应——**新增字段时必须同步维护两处**
@@ -990,7 +990,7 @@ impl CombatUnit {
         self.reset_to_default_impl(true);
     }
 
-    /// 切片 31：重生复用专用变体——**保留 loadout 槽位内容**（abilities / food / drinks）。
+    /// 重生复用专用变体——**保留 loadout 槽位内容**（abilities / food / drinks）。
     ///
     /// `restore_for_respawn` 紧随其后调用 `apply_unit_spec`：槽位由 `clone_from_reuse`
     /// 同形态覆盖（复用内层 Vec 分配），超出 spec 长度的槽位由 apply 清空并归位长度；
@@ -1036,7 +1036,7 @@ impl CombatUnit {
         self.combat_details = CombatDetails::default();
         self.base_combat_stats = None;
         self.class_base_combat_stats = None;
-        // 切片 31：OrderedMap 一律 clear()——保留已分配的桶缓冲，避免每次重生重新分配。
+        // OrderedMap 一律 clear()——保留已分配的桶缓冲，避免每次重生重新分配。
         self.combat_buffs.clear();
         self.permanent_buffs.clear();
         self.buff_sources.clear();
@@ -1089,7 +1089,7 @@ impl CombatUnit {
     /// 等价 JS `updateCombatDetails`：构建增益汇总 → 结算。
     pub fn update_combat_details(&mut self) {
         let _prof = crate::prof::start("unit.update_details");
-        // 切片 29：优先复用线程内暂存（见 SETTLEMENT_BOOSTS_SCRATCH 注释）；不可用
+        // 优先复用线程内暂存（见 SETTLEMENT_BOOSTS_SCRATCH 注释）；不可用
         //（极端重入 / 线程销毁中）时退回独立构建——两条路径的输出逐位恒等。
         let handled = SETTLEMENT_BOOSTS_SCRATCH.try_with(|cell| {
             if let Ok(mut boosts) = cell.try_borrow_mut() {
@@ -1378,7 +1378,7 @@ impl CombatUnit {
         }
 
         // JS 语义：源注册表先建（即便随后策略冲突抛错也会留下空表）。
-        // 切片 31：注册表扫描合并——源表 contains+set 与策略表 get+set 各压成一次查找。
+        // 注册表扫描合并——源表 contains+set 与策略表 get+set 各压成一次查找。
         let sources = self.buff_sources.get_or_insert_with(&unique_hrid, OrderedMap::new);
         match self.buff_source_policies.get_mut(&unique_hrid) {
             Some(existing_policy) => {
@@ -1437,7 +1437,7 @@ impl CombatUnit {
     ///
     /// 调用方（addBuff / removeBuff / 过期清理）在调用前已完成对 `self.buff_sources` 的
     /// 全部改动，原实现传入的 `sources` 快照与实时表逐字段相同；此处直接借用实时表，
-    /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。切片 31：策略值由
+    /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。策略值由
     /// 调用方注入（调用方在改源注册表时已读取该值），再省一次策略表查找。可观察行为不变。
     fn reconcile_buff_source_live(
         &mut self,
@@ -1472,7 +1472,7 @@ impl CombatUnit {
         Ok(active_buff_changed)
     }
 
-    /// JS `unit.buffSources?.[uniqueHrid]?.has(sourceKey)`（切片 17：卷轴活跃 buff 恢复判定）。
+    /// JS `unit.buffSources?.[uniqueHrid]?.has(sourceKey)`（卷轴活跃 buff 恢复判定）。
     pub fn has_buff_source(&self, unique_hrid: Hrid, source_key: Hrid) -> bool {
         self.buff_sources.get(&unique_hrid).is_some_and(|sources| sources.contains_key(&source_key))
     }
@@ -1617,7 +1617,7 @@ impl CombatUnit {
         }
 
         let mut details_dirty = false;
-        // 切片 31：过期源单趟 retain 删除（零分配）——原实现先收集 `expired_keys`
+        // 过期源单趟 retain 删除（零分配）——原实现先收集 `expired_keys`
         // 再逐个 delete；本变体把 contains/get/get_mut 的多趟小表扫描压成一趟，
         // `remaining` / `active_key_missing` 直接取自同一可变借用。
         let active_source_key = self.active_buff_source_keys.get(&unique_hrid).copied();
@@ -1690,7 +1690,7 @@ impl CombatUnit {
         }
 
         // 与未在 buffSources 中表示、由旧调用方恢复的运行时增益保持兼容。
-        // 切片 31：只收集命中的键（原实现克隆全部 Buff 值）；判定谓词与逐项路径一致。
+        // 只收集命中的键（原实现克隆全部 Buff 值）；判定谓词与逐项路径一致。
         let expired_legacy_keys: Vec<Hrid> = self
             .combat_buffs
             .iter()
@@ -1717,7 +1717,7 @@ impl CombatUnit {
     pub fn clear_buffs(&mut self) {
         let _prof = crate::prof::start("unit.clear_buffs");
         // JS 对「非玩家 + 空 permanentBuffs」用全新 {}（与 structuredClone 内容一致），此处统一克隆。
-        // 切片 31：clone_from 复用自身已分配缓冲；三张附属表改 clear() 保留容量。
+        // clone_from 复用自身已分配缓冲；三张附属表改 clear() 保留容量。
         self.combat_buffs.clone_from_map(&self.permanent_buffs);
         self.buff_sources.clear();
         self.active_buff_source_keys.clear();
@@ -1732,7 +1732,7 @@ impl CombatUnit {
     /// 保留最近一次结算的派生值**（threat 等），直到下次 `updateCombatDetails` 从基准
     /// 重算。此前实现把 live 整体回滚到构造期快照（派生前的 threat=0）——玩家复活
     /// （`clearBuffs` → 结算 → `clearCCs`）后 threat 归零，单玩家威胁选靶 `rng*0=0`
-    /// 不满足 `>= 0 && < 0`，复刻出 JS 的 `.player` TypeError（切片 21A 修复）。
+    /// 不满足 `>= 0 && < 0`，复刻出 JS 的 `.player` TypeError（已修复）。
     ///
     /// JS 里 `Player` / `Monster` 覆写总在下次 `updateCombatDetails` 开头重写类自有
     /// 字段、`refreshBaseCombatStats` 因此捕获干净基准；Rust 无类覆写，故改为把
@@ -1869,7 +1869,7 @@ mod tests {
         assert_eq!(unit.combat_details.combat_stats.threat, 155.0);
     }
 
-    /// 切片 21A 回归：`clearCCs` 不得回滚 live 面板（JS 语义：保留派生值）。
+    /// 回归：`clearCCs` 不得回滚 live 面板（JS 语义：保留派生值）。
     /// 生产快照路径的玩家 spec 面板 threat=0（Player.updateCombatDetails 的装备合计
     /// 覆写了默认 100），构造期 class_base 捕获 threat=0、结算后 live threat=100。
     /// 旧实现把 live 回滚到 class_base（threat=0）→ 玩家复活后单玩家威胁选靶
@@ -2140,7 +2140,7 @@ mod tests {
 
     #[test]
     fn settlement_boosts_rebuild_clears_previous_contents() {
-        // 切片 29：原地重建必须丢弃上一轮的全部槽位内容（暂存复用的脏读回归锚点）。
+        // 原地重建必须丢弃上一轮的全部槽位内容（暂存复用的脏读回归锚点）。
         let mut first = CombatUnit::default();
         first.add_buff(&raw("/u/a", "/buff_types/damage", 0.5, 5.0, 1000.0), 0.0, None, None).expect("registers");
         let mut second = CombatUnit::default();
@@ -2156,7 +2156,7 @@ mod tests {
 
     #[test]
     fn update_combat_details_is_stable_across_repeated_calls() {
-        // 切片 29：连续两次结算（第二次走暂存复用路径）结果逐位一致。
+        // 连续两次结算（第二次走暂存复用路径）结果逐位一致。
         // 注：`combat_stats.tenacity` 可能为 `Some(NaN)`（parity 契约），NaN != NaN 使
         // 整体 PartialEq 恒假，故用 Debug 表示逐位核对。
         let mut unit = CombatUnit::default();

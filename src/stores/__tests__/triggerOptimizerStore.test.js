@@ -16,7 +16,7 @@ const LTE = '/combat_trigger_comparators/less_than_equal';
 const controls = vi.hoisted(() => ({
   calls: [],
   robustnessCalls: [],
-  // 复核追加（2026-09-26，设计 §51）：与首跑复核是**同一个 store 动作的两态**，但走服务层的
+  // 复核追加（2026-09-26）：与首跑复核是**同一个 store 动作的两态**，但走服务层的
   // 另一个导出 —— 单独一只桶，用例据此分清「首跑」与「追加」各被调了几次。
   robustnessAppendCalls: [],
   appendCalls: [],
@@ -28,20 +28,20 @@ vi.mock('../../services/triggerOptimizerSearch.js', () => ({
       controls.calls.push({ input, callbacks, resolve });
     });
   },
-  // 换难度复核（2026-09-23，设计 §29）走同一个模块的动态 import，必须一并打桩。
+  // 换难度复核（2026-09-23）走同一个模块的动态 import，必须一并打桩。
   verifyTriggerOptimizerRobustness(input, options) {
     return new Promise((resolve) => {
       controls.robustnessCalls.push({ input, options, resolve });
     });
   },
-  // 追加复验（2026-09-24，设计 §31）同上：动态 import 的**每个**用到的导出都得打桩，
+  // 追加复验（2026-09-24）同上：动态 import 的**每个**用到的导出都得打桩，
   // 漏一个就是 undefined（调用时报「不是函数」，而不是安静地走真实实现）。
   appendTriggerOptimizerVerification(input, options) {
     return new Promise((resolve) => {
       controls.appendCalls.push({ input, options, resolve });
     });
   },
-  // 复核追加（2026-09-26，设计 §51）同上：store 的两态编排里动态 import 解构出的**每一个**
+  // 复核追加（2026-09-26）同上：store 的两态编排里动态 import 解构出的**每一个**
   // 导出都得在桩里 —— 漏一个会让整条 import 抛错（被 store 的 catch 吃掉，表现为「点了复核
   // 却什么都没发生」，比「报错」更难查）。
   appendTriggerOptimizerRobustness(input, options) {
@@ -289,7 +289,7 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizer.baselineSnapshot).toBeNull();
   }, 30000);
 
-  // 撤销门禁收窄（2026-09-19，设计 §19.6）：只有「被优化的技能触发器被手改」才拒绝撤销——
+  // 撤销门禁收窄（2026-09-19）：只有「被优化的技能触发器被手改」才拒绝撤销——
   // 撤销会把那些键整条覆盖回应用前，手工改动会被踩掉。
   it('blocks revert when the optimized ability triggers were edited by hand', async () => {
     const store = importedStore();
@@ -359,7 +359,7 @@ describe('trigger optimizer store', () => {
     expect(raw.version).toBe(1);
   }, 30000);
 
-  // 队伍载荷（2026-09-27，设计 §59）：队友集合存设置（归一化 + 落盘 + 过期标记），运行期解析成
+  // 队伍载荷（2026-09-27）：队友集合存设置（归一化 + 落盘 + 过期标记），运行期解析成
   // **冻结副本**随 payload 传入；主角自身永不入队、未知 id 静默跳过（报告靠指纹变化自然过期）。
   it('resolves party teammates from settings and binds them into the run and fingerprint', async () => {
     const store = importedStore();
@@ -383,12 +383,12 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizerReportStale).toBe(true);
   }, 30000);
 
-  // 时长自适应轮数（2026-09-20 重定，设计 §20.1）：每档预设自带一张「时长 → 轮数」表。
+  // 时长自适应轮数（2026-09-20 重定）：每档预设自带一张「时长 → 轮数」表。
   // 用户改时长时，若当前三元组命中某档预设，就把该档在新时长下的有效轮数写回；
   // 显式改三元组的自定义配置绝不被静默覆盖。
   it('changing the duration while on a preset re-derives the sampling rounds (24h → 5, 4h → 8)', () => {
     const store = importedStore();
-    // 初始 = 标准档（10/2/5，时长 24h）：默认重复次数从 2 提到 5（功效实测，§20.1）。
+    // 初始 = 标准档（10/2/5，时长 24h）：默认重复次数从 2 提到 5（功效实测）。
     expect(store.triggerOptimizer.settings.rounds).toBe(5);
     expect(store.triggerOptimizer.settings.simulationHours).toBe(24);
 
@@ -479,7 +479,7 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizer.runtime.error).toBe('');
   }, 30000);
 
-  // 换难度稳健性复核（2026-09-23，设计 §29）：触发器写的是全局技能配置，而搜索只在单一难度上
+  // 换难度稳健性复核（2026-09-23）：触发器写的是全局技能配置，而搜索只在单一难度上
   // 评估过 —— 复核把报告里的「最优 vs 搜索起点」搬到**报告记录的**相邻难度上跑一次配对评估。
   // 只读：不写玩家配置，结果挂在当前这一份报告上（results.robustness）。
   it('re-checks the report on the adjacent difficulty and attaches the outcome to it', async () => {
@@ -490,7 +490,7 @@ describe('trigger optimizer store', () => {
       makeResult({
         baselineTriggerMap: baselineMap,
         evaluationScope: { zoneHrid: '/actions/combat/fly', useDungeon: false, difficultyTier: 0, simulationHours: 24 },
-        // 复核轮数自适应（2026-09-25，设计 §49）：反解的依据是报告里已有的复验统计，成本护栏的
+        // 复核轮数自适应（2026-09-25）：反解的依据是报告里已有的复验统计，成本护栏的
         // 基准是整轮场次 —— 报告两者都得带上，计划才会被算出来（缺一个就回落到固定 6 轮）。
         verification: {
           rounds: 6,
@@ -508,7 +508,7 @@ describe('trigger optimizer store', () => {
 
     // 目标难度 = 相邻难度（fly 的合法区间 0..5，tier 0 → +1）；时长取报告当时的 24 小时。
     expect(options.targetTier).toBe(1);
-    // 复核轮数自适应（2026-09-25，设计 §49）：0.04 / SE 0.02 在**目标难度**上要 9 轮才判得出来
+    // 复核轮数自适应（2026-09-25）：0.04 / SE 0.02 在**目标难度**上要 9 轮才判得出来
     //（保底 6 < 9 < 上限 16；护栏：整轮 84 场 × 20% = 16 → 2 ×(9−6) = 6 场预算没被咬住）。
     expect(options.rounds).toBe(9);
     // 计划快照与轮数同源（同一个纯函数的输出）：服务层据此写进 result.plan，报告能回答「为什么是
@@ -542,7 +542,7 @@ describe('trigger optimizer store', () => {
 
     options.onProgress({ phase: 'robustness', progress: 0.5, elapsedSeconds: 2 });
     expect(store.triggerOptimizer.runtime.robustness).toMatchObject({ progress: 0.5, elapsedSeconds: 2 });
-    // 复核结果只属于报告：跑之前报告里没有它（首跑态：结论只在跑完后写入 —— §51 起
+    // 复核结果只属于报告：跑之前报告里没有它（首跑态：结论只在跑完后写入 —— 复核追加起
     // 开局不再清空 robustness，留着它给追加态保留旧结论）。
     expect(store.triggerOptimizer.results.robustness).toBeFalsy();
 
@@ -551,7 +551,7 @@ describe('trigger optimizer store', () => {
       difficultyTier: 1,
       zoneHrid: '/actions/combat/fly',
       rounds: 9,
-      // 服务层真实输出的形状（§49）：计划快照净化后随结果留档（plannedRounds 与实际 rounds 自洽）。
+      // 服务层真实输出的形状：计划快照净化后随结果留档（plannedRounds 与实际 rounds 自洽）。
       plan: {
         capped: false,
         budgetLimited: false,
@@ -583,7 +583,7 @@ describe('trigger optimizer store', () => {
     // 只读动作：玩家配置与报告主体都没被动过。
     expect(store.activePlayer.triggerMap[ABILITY_HRID]).toBeUndefined();
     expect(store.triggerOptimizer.results.bestTriggerMap).toEqual({ [ABILITY_HRID]: [customTrigger(500)] });
-    // 计划快照随报告落盘（2026-09-25，设计 §49）：deep watch 把带 createdAt 的报告整体写进本地
+    // 计划快照随报告落盘（2026-09-25）：deep watch 把带 createdAt 的报告整体写进本地
     // 存储，robustness.plan 一并往返 —— 刷新/重进之后仍能复盘「这次复核跑了几轮、上限/护栏有没有
     // 咬住」。缺了落盘，上屏那句话就成了唯一的证据（下一次渲染就被顶掉）。
     expect(store.triggerOptimizer.results.robustness.plan?.plannedRounds).toBe(9);
@@ -592,9 +592,9 @@ describe('trigger optimizer store', () => {
     expect(persisted.report.robustness.plan).toMatchObject({ plannedRounds: 9, currentRounds: 6, capRounds: 16 });
   }, 60000);
 
-  // ── 复核追加（2026-09-26，设计 §51）：两态编排的第二态 ──────────────────────
+  // ── 复核追加（2026-09-26）：两态编排的第二态 ──────────────────────
   // 报告已有复核结论时，再点复核 = 换盐追加（新样本与首跑样本合并重检），不再同盐复跑
-  //（§51 装置实测：同盐两次派生逐值相同、信息增量 0 ⇒ 纯白烧）。只读：不写玩家配置，合并结论
+  //（装置实测：同盐两次派生逐值相同、信息增量 0 ⇒ 纯白烧）。只读：不写玩家配置，合并结论
   // 写回**当前这一份报告**的 robustness（含 attempts 留档）；取消/失败不覆盖（旧结论保留到合并成功）。
 
   // 复核记录的逐轮样本：逐轮带抖动（配对差非恒值 ⇒ stdError ≠ 0），免得计划撞上零差出口。
@@ -650,7 +650,7 @@ describe('trigger optimizer store', () => {
     expect(controls.robustnessCalls).toHaveLength(0);
     expect(options.attempt).toBe(1);
     expect(options.targetTier).toBe(1);
-    // 补到上限（§51 S2 口径）：已有 6 轮 ⇒ 目标补 10 轮（上限 16）；整轮 100 场 ⇒ 单次预算 20 场
+    // 补到上限（S2 口径）：已有 6 轮 ⇒ 目标补 10 轮（上限 16）；整轮 100 场 ⇒ 单次预算 20 场
     // 正好装下（2 × 10，边界不咬）、累计预算 40，两级护栏都没咬住。
     expect(options.rounds).toBe(10);
     expect(options.plan).toMatchObject({
@@ -677,7 +677,7 @@ describe('trigger optimizer store', () => {
       simulationTimeHours: 24,
     });
     expect(store.triggerOptimizer.runtime.robustness).toMatchObject({ isRunning: true, difficultyTier: 1 });
-    // 旧结论保留到合并成功（§51）：追加期间结论仍是首跑的，不再被开局清空。
+    // 旧结论保留到合并成功：追加期间结论仍是首跑的，不再被开局清空。
     expect(store.triggerOptimizer.results.robustness.verdict).toBe('inconclusive');
 
     options.onProgress({ phase: 'robustness-append', progress: 0.5, elapsedSeconds: 3 });
@@ -728,7 +728,7 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizer.runtime.serviceRunInFlight).toBe(false);
     // 只读动作：玩家配置没有被写。
     expect(store.activePlayer.triggerMap[ABILITY_HRID]).toBeUndefined();
-    // 合并结论与 attempts 留档随报告落盘（§51 与 §48 同款理由：刷新/重进之后仍能复盘
+    // 合并结论与 attempts 留档随报告落盘（同款理由：刷新/重进之后仍能复盘
     // 「这次补了几轮、护栏有没有咬住」）。
     await nextTick();
     const persisted = JSON.parse(localStorage.getItem('mwi.triggerOptimizer.report.v1'));
@@ -816,7 +816,7 @@ describe('trigger optimizer store', () => {
     controls.robustnessAppendCalls.at(-1).resolve({ cancelled: true });
     await pending;
 
-    // 「什么都没追加」：旧结论原样保留（§51 语义变化 —— 不再像旧口径那样被开局清空丢掉）。
+    // 「什么都没追加」：旧结论原样保留（语义变化 —— 不再像旧口径那样被开局清空丢掉）。
     expect(store.triggerOptimizer.results.robustness).toMatchObject({ verdict: 'inconclusive', rounds: 6 });
     expect(store.triggerOptimizer.results.robustness.attempts).toHaveLength(0);
     expect(store.triggerOptimizer.runtime.robustness.error).toBe('');
@@ -836,7 +836,7 @@ describe('trigger optimizer store', () => {
     }));
   }
 
-  // 追加复验（2026-09-24，设计 §31）：首轮复验判「未达显著」时再采一组独立样本、与首轮样本合并
+  // 追加复验（2026-09-24）：首轮复验判「未达显著」时再采一组独立样本、与首轮样本合并
   // 重检。只读（不写玩家配置），合并结论写回**当前这一份报告**的 verification（含 attempts 留档）；
   // 取消不写回（服务层「什么都没追加」的口径）。
   it('appends an independent verification and writes the merged verdict back to the report', async () => {
@@ -881,11 +881,11 @@ describe('trigger optimizer store', () => {
     });
     // 第一次追加 = attempt 1（进种子盐）；两份配置与首轮样本都取自报告，且是深拷贝。
     expect(options.attempt).toBe(1);
-    // 追加轮数自适应（2026-09-25，设计 §47）：0.01 / SE 0.02 在 6 轮上「连上限 24 轮都判不出来」
+    // 追加轮数自适应（2026-09-25）：0.01 / SE 0.02 在 6 轮上「连上限 24 轮都判不出来」
     // ⇒ A′ 口径补到上限：目标 24 轮 − 已有 6 轮 = 18 轮/侧（36 场）。报告没有整轮场次
     //（makeResult 不带 simulations）⇒ 拿不到护栏基准 ⇒ 不假装有护栏，按上限口径全量追加。
     expect(options.rounds).toBe(18);
-    // 计划快照随调用透传（2026-09-25，设计 §48）：服务层据此写进 attempts[i].plan，留档「为什么是
+    // 计划快照随调用透传（2026-09-25）：服务层据此写进 attempts[i].plan，留档「为什么是
     // 18 轮」—— 上屏的计划行与这里传下去的是同一个纯函数的输出，不能让报告拿到另一套口径。
     expect(options.plan?.plannedRounds).toBe(18);
     expect(store.triggerOptimizer.runtime.verifyAppend.error).toBe('');
@@ -915,7 +915,7 @@ describe('trigger optimizer store', () => {
       verdict: 'positive',
       rounds: 24,
       seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      // 服务层真实输出的形状（§47/§48）：本次追加 18 轮、合并 24 轮，attempts 里带计划快照 ——
+      // 服务层真实输出的形状：本次追加 18 轮、合并 24 轮，attempts 里带计划快照 ——
       // 快照自身与 rounds 自洽（plannedRounds = 18），store 只负责原样写回并落盘。
       attempts: [
         {
@@ -927,7 +927,7 @@ describe('trigger optimizer store', () => {
             decisive: false,
             capped: false,
             budgetLimited: false,
-            // 两级护栏字段（2026-09-26，设计 §50 B-2）：这一份报告没有整轮场次 ⇒ 两个护栏基准都是
+            // 两级护栏字段（2026-09-26，B-2）：这一份报告没有整轮场次 ⇒ 两个护栏基准都是
             // null（不假装有护栏）、累计已花 0（第一次追加）。
             limitedBy: null,
             currentRounds: 6,
@@ -953,14 +953,14 @@ describe('trigger optimizer store', () => {
     // 合并结论写回报告（含 attempts 留档）。
     expect(store.triggerOptimizer.results.verification).toMatchObject({ verdict: 'positive', rounds: 24 });
     expect(store.triggerOptimizer.results.verification.attempts).toHaveLength(1);
-    // 计划快照随报告落盘（2026-09-25，设计 §48）：deep watch 把带 createdAt 的报告整体写进本地
+    // 计划快照随报告落盘（2026-09-25）：deep watch 把带 createdAt 的报告整体写进本地
     // 存储，attempts[i].plan 一并往返 —— 刷新/重进（hydrate）之后仍能复盘「这次补了几轮、
     // 上限/护栏有没有咬住」。
     await nextTick();
     const stored = JSON.parse(localStorage.getItem('mwi.triggerOptimizer.report.v1'));
     expect(stored.report.verification.attempts[0].plan.plannedRounds).toBe(18);
     expect(stored.report.verification.attempts[0].plan.capRounds).toBe(24);
-    // §50 B-2 的两级护栏字段同样原样往返（store 不做二次加工，字段白名单在 domain）。
+    // 两级护栏字段（B-2）同样原样往返（store 不做二次加工，字段白名单在 domain）。
     expect(stored.report.verification.attempts[0].plan.limitedBy).toBeNull();
     expect(stored.report.verification.attempts[0].plan.spentSimulations).toBe(0);
     expect(store.triggerOptimizer.runtime.verifyAppend).toMatchObject({
@@ -968,14 +968,14 @@ describe('trigger optimizer store', () => {
       phase: 'done',
       progress: 1,
     });
-    // 结算后必须清掉「服务调用在途」：留着会让页面永久停在忙态（§29.9 的卡死教训）。
+    // 结算后必须清掉「服务调用在途」：留着会让页面永久停在忙态（卡死教训）。
     expect(store.triggerOptimizer.runtime.serviceRunInFlight).toBe(false);
     // 只读动作：玩家配置与报告主体都没被动过。
     expect(store.activePlayer.triggerMap[ABILITY_HRID]).toBeUndefined();
     expect(store.triggerOptimizer.results.bestTriggerMap).toEqual({ [ABILITY_HRID]: [customTrigger(500)] });
   }, 60000);
 
-  // 成本护栏与「一次都不派」的两种情形（2026-09-25，设计 §47）：追加场次不许超过整轮运行的 20%
+  // 成本护栏与「一次都不派」的两种情形（2026-09-25）：追加场次不许超过整轮运行的 20%
   //（快档整轮只有 ~74 场，24 轮上限对它是 48% ⇒ 护栏必需）；而上限已尽 / 结论已明确时追加没有统计
   // 收益，白跑只是烧机器 —— 这两种情形必须一次模拟都不派，并把原因写进 runtime.verifyAppend.error。
   it('clamps the adaptive append by the cost guard and refuses a pointless append without dispatching', async () => {
@@ -1039,7 +1039,7 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizer.runtime.verifyAppend.error).toBe(
       'common:triggerOptimizer.verifyAppendBudgetExhausted',
     );
-    // ⑤ 累计护栏咬住（2026-09-26，设计 §50 B-2）：整轮 100 场 ⇒ 累计预算 40 场；已经追加过 18 轮
+    // ⑤ 累计护栏咬住（2026-09-26，B-2）：整轮 100 场 ⇒ 累计预算 40 场；已经追加过 18 轮
     //    （36 场）⇒ 本次只剩 4 场 = 2 轮 —— 单次 20% 允许 10 轮，累计才是最终瓶颈（limitedBy）。
     store.triggerOptimizer.results.simulations = 100;
     store.triggerOptimizer.results.verification = {
@@ -1182,7 +1182,7 @@ describe('trigger optimizer store', () => {
     expect(store.triggerOptimizer.runtime.serviceRunInFlight).toBe(false);
   }, 60000);
 
-  // 报告落盘/恢复（2026-09-24，设计 §40）：最近一份报告自动持久化，换新 store 从存储恢复。
+  // 报告落盘/恢复（2026-09-24）：最近一份报告自动持久化，换新 store 从存储恢复。
   it('persists the finished report and restores it in a fresh store', async () => {
     const store = importedStore();
     await completeStart(store, makeResult());

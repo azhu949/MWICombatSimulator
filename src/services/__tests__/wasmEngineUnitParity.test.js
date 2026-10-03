@@ -1,4 +1,4 @@
-// 切片 3 parity：Rust CombatUnit（属性结算 + 增益生命周期）与 JS 实现的**精确对账**（无统计容差）。
+// parity：Rust CombatUnit（属性结算 + 增益生命周期）与 JS 实现的**精确对账**（无统计容差）。
 //
 // 前置：npm run build:wasm 产出 engine/pkg；未构建时整组跳过（CI 无 Rust 环境也保持绿色）。
 // 覆盖：
@@ -44,7 +44,7 @@ function getEngine() {
   return enginePromise;
 }
 
-describe.runIf(wasmPackageBuilt)('wasm engine slice-3 parity (CombatUnit: stat resolution + buff lifecycle)', () => {
+describe.runIf(wasmPackageBuilt)('wasm engine parity (CombatUnit: stat resolution + buff lifecycle)', () => {
   it('replays the targeted combat-unit script identically', async () => {
     const engine = await getEngine();
     const ops = buildTargetedCombatUnitOps();

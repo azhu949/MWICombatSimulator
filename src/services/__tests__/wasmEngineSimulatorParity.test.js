@@ -1,4 +1,4 @@
-// 切片 4 parity → 切片 21B（定案 D2）golden 快照：Rust `CombatSimulator`
+// parity golden 快照（定案 D2）：Rust `CombatSimulator`
 // （战斗主循环：事件/技能/触发器/消耗品）探针的**全轨迹输出**（事件流水 +
 // simResult 调用流水 + 单位快照）与 `fixtures/golden/simulator-*.json` 的固定期望
 // 对账。JS 引擎已删除；行为语义回归防线在 cargo test（engine/src/*.rs）。
@@ -46,7 +46,7 @@ function runRustScenario(engine, scenario) {
   return rustResult;
 }
 
-describe.runIf(wasmPackageBuilt)('wasm engine slice-4 golden (combat main loop)', () => {
+describe.runIf(wasmPackageBuilt)('wasm engine golden (combat main loop)', () => {
   it('matches the golden trace of the mixed attrition scenario (abilities, DoT, CC, curse/fury/weaken, thorns, food)', async () => {
     const engine = await getEngine();
     const rustResult = runRustScenario(engine, buildTargetedScenarioA());

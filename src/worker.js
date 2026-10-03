@@ -10,7 +10,7 @@ import { createFoodOptimizerEvaluator } from './services/foodOptimizerSimulation
 // payload.seed 是**可选**字段。给定时，wasm 引擎按该种子跑出完全确定的 simResult
 // （Rust RNG 自带确定性，不消耗 Math.random）。不传 seed 时（首页单轮 / 批量区域扫描）
 // 随机采一个，保持「每场独立随机流」的统计语义。
-// 切片 21A：JS 引擎回退分支已删除——wasm 产物随仓库提交（public/engine/pkg），
+// JS 引擎回退分支已删除——wasm 产物随仓库提交（public/engine/pkg），
 // 引擎缺失/不支持/运行失败属于构建事故，直接上报 simulation_error 硬失败
 // （审计定案 D1），不再静默回退。
 function pickWasmSeed(seed) {
@@ -21,7 +21,7 @@ function pickWasmSeed(seed) {
   return (Math.random() * 0x100000000) >>> 0;
 }
 
-// ── 食物优化器协议（切片 22：自 src/foodOptimizerWorker.js 并入，原文件已删除）──
+// ── 食物优化器协议（自 src/foodOptimizerWorker.js 并入，原文件已删除）──
 // Vite 5 的 worker 是每入口一次独立 Rollup 构建（manualChunks 不生效、跨构建不共享
 // chunk，见 memory pitfall），两个入口意味着两份 ~3.67MB bundle（战斗 B 层 + gameData
 // + wasm 桥各打包一次）。并入后单 worker 入口双协议：浏览器只下载/缓存一个 worker
@@ -125,7 +125,7 @@ self.onmessage = async function (event) {
         isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
       };
 
-      // 切片 21A：无条件走 wasm 引擎（切片 18 起生产载荷默认带 useWasmEngine: true；
+      // 无条件走 wasm 引擎（生产载荷默认带 useWasmEngine: true；
       // 不带的入口——HomeExperimentalModal 批处理手写载荷——由这里的 true 兜底）。
       // wasm 输出为 null（引擎缺失 / 配置不受支持 / 运行出错）时按审计定案 D1
       // 上报 simulation_error 硬失败：产物已随仓库提交，不可达 = 构建事故。
@@ -145,7 +145,7 @@ self.onmessage = async function (event) {
       }
 
       const reason = getWasmProductionDiagnostics().lastFallbackReason || 'unknown';
-      console.error(`[worker] WASM engine unavailable (reason: ${reason}); no JS fallback exists (slice 21A).`);
+      console.error(`[worker] WASM engine unavailable (reason: ${reason}); no JS fallback exists.`);
       // simulation_error 按 errorCode 分两类（消费端 workerClient 据此分流批量路径）：
       // - engine_unavailable：wasm 引擎加载失败已被本 realm 的模块级缓存记住，本 realm 内
       //   不可恢复（realm 级 sticky 失败），复用只会立刻再次失败；

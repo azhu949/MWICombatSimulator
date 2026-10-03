@@ -1,5 +1,5 @@
 // Post-processes the wasm-pack output with wasm-opt (binaryen) at -O4.
-// Slice 10 verified: identical parity (17/17), no benchmark regression, and a
+// Verified: identical parity (17/17), no benchmark regression, and a
 // ~12.6% size cut. binaryen ships a Node CLI wrapper (bin/wasm-opt has no .exe
 // extension), so it must be spawned through the node binary itself.
 // node scripts/optimize-wasm.mjs

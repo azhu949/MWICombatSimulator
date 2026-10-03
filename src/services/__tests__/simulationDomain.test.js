@@ -90,7 +90,7 @@ describe('simulationDomain', () => {
     });
   });
 
-  // 相邻难度解析（2026-09-23，设计 §29）：难度是区域属性，合法区间 0..maxDifficulty。
+  // 相邻难度解析（2026-09-23）：难度是区域属性，合法区间 0..maxDifficulty。
   // 换难度复核的目标难度由它决定 —— 越界必须返回 null（调用方据此说「没有可复核的相邻难度」），
   // 而不是静默回落到原难度（那会跑出一份「换难度」的假复核）。
   it('resolves the neighbouring difficulty inside the zone bounds, or null when there is none', () => {
@@ -193,7 +193,7 @@ describe('simulationDomain', () => {
         enableHpMpVisualization: true,
         combatScrollsEnabled: false,
       },
-      // 切片 21B：useWasmEngine 已从生产载荷删除（引擎 wasm-only，无回退分支）。
+      // useWasmEngine 已从生产载荷删除（引擎 wasm-only，无回退分支）。
     });
 
     expect(

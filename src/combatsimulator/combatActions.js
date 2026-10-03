@@ -1,4 +1,4 @@
-// 切片 21A：共享战斗动作核心。
+// 共享战斗动作核心。
 //
 // 战斗「单步动作」方法（施法 / 消耗品 / 触发器检查 / 遭遇战收尾 / 经验与团灭记账）
 // 的单一事实来源。`CombatSimulator`（完整事件驱动引擎）与 `CombatPreviewContext`
@@ -16,7 +16,7 @@
 //   this.enrageBeginTime / this.experienceAwardedEnemies / this.enemyDeathSnapshots /
 //   this.pendingExperienceGains / this.invalidExperienceRateWarningKeys / this.wipeLogs。
 //
-// 方法体逐字保留自 combatSimulator.js（2026-09-29 切片 21A 抽出）；修改动作语义时
+// 方法体逐字保留自 combatSimulator.js（2026-09-29 抽出）；修改动作语义时
 // 必须同步评估 Rust 侧（engine/src/simulator.rs）的对应实现。
 import CombatUtilities from './combatUtilities';
 import AutoAttackEvent from './events/autoAttackEvent';

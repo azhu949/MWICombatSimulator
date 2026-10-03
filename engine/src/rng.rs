@@ -2,7 +2,7 @@
 //!
 //! 为什么必须一致：`src/worker.js` 在给定 seed 时用 mulberry32 替换 `Math.random`，
 //! 「同一 payload + 同一 seed 必然产出相同 simResult」是该项目的既定契约（公共随机数 /
-//! Common Random Numbers，技能与食物优化器精度的来源）。Rust 引擎要在切片 4/5 接管
+//! Common Random Numbers，技能与食物优化器精度的来源）。Rust 引擎要接管
 //! 模拟，就必须消费与 JS 完全相同的随机流，本模块是逐位 parity 的第一块基石。
 //!
 //! 位运算说明：JS 侧 `Math.imul`/`^`/`>>>` 在 int32 与 ToUint32 之间往返，

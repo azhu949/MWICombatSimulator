@@ -35,7 +35,7 @@ pub struct Consumable {
 impl Consumable {
     /// 等价 JS `Consumable.shouldTrigger(currentTime, source, target, friendlies, enemies)`。
     ///
-    /// `observe`（切片 13）：快速路径调用 compare_value 的那一刻同步记录
+    /// `observe`：快速路径调用 compare_value 的那一刻同步记录
     /// (value, active)——与 JS 侧包装 compareValue 的观察点逐次一致（门控早退不记录）。
     pub fn should_trigger(
         &self,
@@ -54,7 +54,7 @@ impl Consumable {
 
         // JS `if (this.catagoryHrid.includes('food'))`：食物取 foodHaste，其余取 drinkConcentration。
         let combat_stats = &unit.combat_details.combat_stats;
-        // 切片 31：两项缩放系数都为 0 时类别解析可整体跳过（无论类别如何 haste 恒为 0，
+        // 两项缩放系数都为 0 时类别解析可整体跳过（无论类别如何 haste 恒为 0，
         // 后续 `haste > 0.0` 判定与表达式均不依赖具体类别值）。
         let consumable_haste = if combat_stats.food_haste == 0.0 && combat_stats.drink_concentration == 0.0 {
             0.0
@@ -111,7 +111,7 @@ impl Consumable {
         Ok(should_trigger)
     }
 
-    /// 切片 31：同形态覆盖复制（重生复用热路径）——复用 `buffs` / `triggers` 已分配缓冲。
+    /// 同形态覆盖复制（重生复用热路径）——复用 `buffs` / `triggers` 已分配缓冲。
     /// 字段以解构模式绑定，新增字段时编译期强制同步。
     pub fn clone_from_reuse(&mut self, source: &Self) {
         let Consumable {

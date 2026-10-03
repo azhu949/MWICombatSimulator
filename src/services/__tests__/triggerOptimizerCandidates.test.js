@@ -224,7 +224,7 @@ describe('triggerOptimizerCandidates', () => {
       }
     });
 
-    // 截断透明化（2026-09-23，设计 §28）：报告必须能说出「生成了多少条、被上限截掉多少条」，
+    // 截断透明化（2026-09-23）：报告必须能说出「生成了多少条、被上限截掉多少条」，
     // 否则 UI 上的「8 个候选」会被读成「搜索试遍了所有可能」——截断是静默丢候选。
     it('reports how many candidates were generated and how many the limit cut off', () => {
       const rich = generateAbilityCandidatesDetailed(player(), 1, {
@@ -363,7 +363,7 @@ describe('triggerOptimizerCandidates', () => {
       // ② AOE 计数 2/3。
       const many = candidates.filter((candidate) => candidate.labelKey === labels.manyEnemies);
       expect(many.map((candidate) => candidate.labelParams.count)).toEqual([2, 3]);
-      // ③ 波内进度（2026-09-20，设计 §22）：引擎的 number_of_dead_units 只在多目标依赖下
+      // ③ 波内进度（2026-09-20）：引擎的 number_of_dead_units 只在多目标依赖下
       //    求值，数的是**当前这一波**的死怪数。阈值被 waveSize = 4 过滤：只保 ≤ 0（开波期）
       //    与 ≥ 1/2（清场期）；≥ 4 恒假、≤ 3 恒真，两种都不生成。
       const deadMost = candidates.filter((candidate) => candidate.labelKey === labels.deadUnitsAtMost);
@@ -384,7 +384,7 @@ describe('triggerOptimizerCandidates', () => {
             candidate.triggers[0].comparatorHrid === '/combat_trigger_comparators/greater_than_equal',
         ),
       ).toBe(true);
-      // ④ 跨技能增益门（2026-09-19，设计 §18.3）：只在其他已佩戴技能挂给自身的增益
+      // ④ 跨技能增益门（2026-09-19）：只在其他已佩戴技能挂给自身的增益
       //    覆盖期间释放 —— 槽 0 的守护光环提供了 guardian_aura 条件，因此这里必有一条。
       const buffWindow = candidates.filter((candidate) => candidate.labelKey === labels.buffWindow);
       expect(buffWindow.length).toBe(1);
@@ -416,10 +416,10 @@ describe('triggerOptimizerCandidates', () => {
         lowHp.every((candidate) => candidate.triggers[0].value === 500 || candidate.triggers[0].value === 750),
       ).toBe(true);
 
-      // 家族交错契约（2026-09-24，设计 §39-A）：截断保留规则是「按 labelKey 家族 round-robin
+      // 家族交错契约（2026-09-24）：截断保留规则是「按 labelKey 家族 round-robin
       // 取代表」——每族首条进 top-N（轮 1），同族第 2 条排在所有族首条之后（轮 2）。
       // 动机：熊熊星球 T0 实测真最优 deadUnitsAtMost{0} 按旧「纯价值顺序」排第 12、被默认
-      // 上限 10 整族截断（§34 Δ = −0.03236）。前两条仍是 default / alwaysFire 两个锚点。
+      // 上限 10 整族截断（Δ = −0.03236）。前两条仍是 default / alwaysFire 两个锚点。
       const singles = candidates
         .filter((candidate) => !candidate.labelKey.includes('.composite'))
         .map((candidate) => candidate.labelKey);
@@ -477,7 +477,7 @@ describe('triggerOptimizerCandidates', () => {
       ).toEqual([]);
     });
 
-    // 截断锚点（设计 §39-A）：家族交错后，截断丢的只是「同族第 2 条」（轮 2），每族首条
+    // 截断锚点：家族交错后，截断丢的只是「同族第 2 条」（轮 2），每族首条
     // 优先进默认档（10）—— 熊熊 T0 实测旧规则会把 deadUnitsAtMost 整族截断（真最优丢分
     // −0.03236），新规则下它排在轮 1。本用例钉住这条不变式。
     it('候选上限：默认档按家族交错保每族代表，截断只丢同族第 2 条', () => {
@@ -637,7 +637,7 @@ describe('triggerOptimizerCandidates', () => {
     });
   });
 
-  // ── 跨技能增益门（2026-09-19 新增，设计 §18.3）──────────────────────────────
+  // ── 跨技能增益门（2026-09-19 新增）──────────────────────────────
   // 旧生成器只用「本技能自己」的 buff 条件，跨技能的一条都不产；引擎侧其实支持
   // （trigger.js 按 condition 名字读 source.combatBuffs，不区分谁挂的；allAllies 的
   // 增益会施加到含施法者自己在内的 players）。这里的断言锁住「只从其他已佩戴技能的
@@ -664,7 +664,7 @@ describe('triggerOptimizerCandidates', () => {
       expect(sanitizeTriggerList(windows[0].triggers)).toEqual(windows[0].triggers);
     });
 
-    it('其他技能不提供增益时不产出（不制造恒定假的候选，见 §13 的教训）', () => {
+    it('其他技能不提供增益时不产出（不制造恒定假的候选，见既有教训）', () => {
       const player = playerWithAbilities(
         [
           { abilityHrid: FIREBALL, level: 1 },
@@ -762,7 +762,7 @@ describe('triggerOptimizerCandidates', () => {
     });
   });
 
-  // ── 跨技能减益窗口（2026-09-21 新增，设计 §23）──────────────────────────────
+  // ── 跨技能减益窗口（2026-09-21 新增）──────────────────────────────
   // 条件侧别由技能定义的 targetType 决定（self/allAllies = 自身侧、enemy/allEnemies =
   // 目标侧）：同一份 buff 条件表，配 self 读施法者自己身上的 buff（trigger.js 28-29），
   // 配 targeted_enemy 读目标身上的 buff（trigger.js 31-35）。旧生成器把敌人减益也塞进
@@ -817,7 +817,7 @@ describe('triggerOptimizerCandidates', () => {
       ]);
       expect(selfSide[0].triggers[0].dependencyHrid).toBe('/combat_trigger_dependencies/self');
       expect(targetSide.map((candidate) => candidate.labelParams.conditionHrid)).toEqual([PUNCTURE_CONDITION]);
-      // §23 的回归点：减益不再出现在增益门里（旧实现会产出一条结构性恒假的 self 候选）。
+      // 回归点：减益不再出现在增益门里（旧实现会产出一条结构性恒假的 self 候选）。
       expect(selfSide.every((candidate) => candidate.labelParams.conditionHrid !== PUNCTURE_CONDITION)).toBe(true);
       // 减益窗口的依赖固定为目标侧（读 target.combatBuffs），不是施法者自己。
       expect(
@@ -897,7 +897,7 @@ describe('triggerOptimizerCandidates', () => {
       const singles = candidates
         .filter((candidate) => !candidate.labelKey.includes('.composite'))
         .map((candidate) => candidate.labelKey);
-      // 家族交错契约（§39-A）：轮 1 = 每族首条（族序 = 生成序：AOE → 敌人数 → 波内进度 →
+      // 家族交错契约：轮 1 = 每族首条（族序 = 生成序：AOE → 敌人数 → 波内进度 →
       // 增益门 → 减益窗口 → 单体 → 斩杀 → 蓝量 → 自身残血）；轮 2 = 同族第 2 条。
       // 两条窗口候选的先后（自身增益在前）也是契约的一部分。
       expect(singles.slice(2, 12)).toEqual([
@@ -921,9 +921,9 @@ describe('triggerOptimizerCandidates', () => {
     });
   });
 
-  // ── §25：敌人数波上限自守 + 光环守卫维度（2026-09-21）────────────────────────
+  // ── 敌人数波上限自守 + 光环守卫维度（2026-09-21）────────────────────────
   // 两件事同一个主题：候选表里不留「结构性不成立」或「语义重复」的条目。
-  describe('§25 敌人数波上限自守与光环守卫维度', () => {
+  describe('敌人数波上限自守与光环守卫维度', () => {
     const SELF = '/combat_trigger_dependencies/self';
     const ALL_ENEMIES = '/combat_trigger_dependencies/all_enemies';
     const ACTIVE_UNITS = '/combat_trigger_conditions/number_of_active_units';
@@ -1091,7 +1091,7 @@ describe('triggerOptimizerCandidates', () => {
 
     const RES = { maxHp: 1000, maxMp: 500 };
 
-    // 输出技能在默认候选上限（10）下按家族交错截断（§39-A），轮 2 的同族第 2 条会被丢掉。
+    // 输出技能在默认候选上限（10）下按家族交错截断，轮 2 的同族第 2 条会被丢掉。
     // 精炼用例需要完整网格 → 用上限档（16）生成。
     const fireballCandidates = () =>
       generateAbilityCandidates(playerWith(FIREBALL), 1, {
@@ -1140,7 +1140,7 @@ describe('triggerOptimizerCandidates', () => {
       const levelOne = buildRefinementCandidates(winner, RES, { level: 1 });
       expect(levelOne.map((descriptor) => descriptor.labelParams.percent).sort((a, b) => a - b)).toEqual([45, 55]);
       expect(levelOne.map((descriptor) => descriptor.triggers[0].value).sort((a, b) => a - b)).toEqual([450, 550]);
-      // level 2+ 仍是 ±5（下限：再细的阈值差异已低于逐轮抽样噪声；二分对照的无提升实证见设计 §32）。
+      // level 2+ 仍是 ±5（下限：再细的阈值差异已低于逐轮抽样噪声；二分对照已实证无提升）。
       expect(
         buildRefinementCandidates(winner, RES, { level: 2 })
           .map((descriptor) => descriptor.labelParams.percent)
@@ -1233,7 +1233,7 @@ describe('triggerOptimizerCandidates', () => {
       expect(buildRefinementCandidates(winner8, RES).map((descriptor) => descriptor.labelParams.count)).toEqual([7]);
     });
 
-    // 波内进度类（2026-09-20，设计 §22.4）：计数 ±1，但合法区间由**区域一波怪的上限人数**
+    // 波内进度类（2026-09-20）：计数 ±1，但合法区间由**区域一波怪的上限人数**
     // 决定（≥ 类 [1, waveSize−1]、≤ 类 [0, waveSize−2]），不能复用 number_of_active_units
     // 的 [2,8]：≤ 0 是合法网格点（≤ 1 恒真），≥ waveSize 是恒假配置。
     it('波内进度类精炼 ±1 并 clamp 到区域波上限决定的合法区间', () => {
@@ -1269,7 +1269,7 @@ describe('triggerOptimizerCandidates', () => {
       expect(sanitizeTriggerList(refined.triggers)).toEqual(refined.triggers);
     });
 
-    // 敌方血量类（2026-09-21 新增，设计 §24）：阈值 = 百分比 × 敌方血量尺度，步长复用同一把
+    // 敌方血量类（2026-09-21 新增）：阈值 = 百分比 × 敌方血量尺度，步长复用同一把
     // 「百分点」尺子；标签插值是绝对值 {{value}}（没有 percent），百分比由 value ÷ 尺度反推，
     // 物化仍写回 { value } —— 与网格候选完全同一份标签契约（UI/i18n 无需改动）。
     it('敌方血量类精炼 ±10 个百分点并换算回绝对值（三标签各用自己的尺度）', () => {

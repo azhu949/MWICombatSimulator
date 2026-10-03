@@ -147,7 +147,7 @@ function yieldToEventLoop() {
 
 export class FoodOptimizerWorkerClient {
   constructor() {
-    // 切片 22：与首页/批量模拟共用 worker.js 单入口（双协议），消除 Vite worker
+    // 与首页/批量模拟共用 worker.js 单入口（双协议），消除 Vite worker
     // 独立打包下的第二份 ~3.67MB bundle。
     this.worker = new Worker(new URL('../worker.js', import.meta.url), { type: 'module' });
     this.pending = null;

@@ -147,7 +147,7 @@ describe('common locale resources', () => {
         Object.keys(zhCommon?.triggerOptimizer?.[nested] || {}).sort(),
       );
     }
-    // 「空列表 = 立即释放，不是禁用」的澄清文案必须在两种语言里都存在（设计 §1.1/§9.2）。
+    // 「空列表 = 立即释放，不是禁用」的澄清文案必须在两种语言里都存在。
     expect(zhCommon?.triggerOptimizer?.candidate?.disabledHint).toContain('并非禁用');
     expect(enCommon?.triggerOptimizer?.candidate?.disabledHint).toContain('not disabled');
     expect(zhCommon?.triggerOptimizer?.emptyState).toContain('导入');

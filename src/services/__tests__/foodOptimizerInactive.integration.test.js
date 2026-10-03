@@ -34,7 +34,7 @@ describe('inactive foods across real combat compositions', () => {
           .map((item) => ({ ...item, threshold: Math.max(...item.thresholds) })),
       ]);
       expect(expanded.slots).toHaveLength(3);
-      // 切片 21B：JS 引擎已删除——参照改为独立缓存的 evaluator 真跑同一候选（wasm
+      // JS 引擎已删除——参照改为独立缓存的 evaluator 真跑同一候选（wasm
       // 确定性下与「缓存复用」路径的物理结果必须逐字段一致）。
       const referenceEvaluator = createFoodOptimizerEvaluator(request, { items });
       const expected = await referenceEvaluator(expanded, baseline.deaths);

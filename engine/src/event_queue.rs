@@ -1,12 +1,12 @@
 //! 事件队列：按 `(time, seq)` 全序弹出的稳定优先级队列。
 //!
-//! 切片 24（用户已批的契约放宽）：**放弃逐行复刻 heap-js**。平局（同 time）弹出序不再
+//! 用户已批的契约放宽：**放弃逐行复刻 heap-js**。平局（同 time）弹出序不再
 //! 依赖堆内部数组布局，而是按**入队序**（FIFO tie-break，`seq` 单调递增）——这也正是
 //! 旧注释里「同时间事件顺序敏感」的真实约束：顺序确定且可复现即可，不必与 JS 堆同构
-//! （JS 引擎已随切片 21B 删除）。
+//! （JS 引擎已删除）。
 //!
 //! 语义防线：本文件测试锁定队列自身的 (time, seq) 全序与各查询/清除契约；
-//! `queue_probe` 探针测试 + 生产 golden 快照（切片 24 已重锚）承载模拟轨迹级漂移。
+//! `queue_probe` 探针测试 + 生产 golden 快照（已重锚）承载模拟轨迹级漂移。
 //!
 //! 数据结构：`VecDeque<QueueEntry>` 按 (time, seq) 升序存储——
 //! - `add_event`：二分定位插入点后 `insert`（`O(n)` 移动，元素紧凑、队列小）；
@@ -114,7 +114,7 @@ impl<E: QueueItem> EventQueue<E> {
         self.clear_matching(|event| event.event_type() == event_type);
     }
 
-    /// 切片 30：连续多次 `clearEventsOfType` 的单趟合并（任一类型命中即清）。清除集合与
+    /// 连续多次 `clearEventsOfType` 的单趟合并（任一类型命中即清）。清除集合与
     /// 保留元素的相对 (time, seq) 序与逐次调用完全一致（类型相等判定无副作用，短路顺序无关）。
     pub fn clear_events_of_types(&mut self, types: &[Hrid]) {
         self.clear_matching(|event| {
@@ -252,7 +252,7 @@ mod tests {
         order
     }
 
-    // 以下期望值按切片 24 的 (time, seq) 全序语义人工推导（旧 heap-js 金标已弃用）。
+    // 以下期望值按 (time, seq) 全序语义人工推导（旧 heap-js 金标已弃用）。
 
     #[test]
     fn pop_order_with_ties_is_insertion_stable() {

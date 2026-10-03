@@ -10,7 +10,7 @@
 //   setTriggerOptimizerSettings   归一化 + 校验 + 落盘 + 标记结果过期
 //   resetTriggerOptimizerResults  导入新存档时重置会话内结果
 //
-// 互斥（设计 §4.2）：triggerOptimizerBusy 汇总 store.runtime / queue / advisor /
+// 互斥：triggerOptimizerBusy 汇总 store.runtime / queue / advisor /
 // foodOptimizer / pricing / 共享 worker / 自身运行态。上游 service 的口径不改。
 //
 // 报告过期：输入指纹（node-2 的 createTriggerOptimizerInputSignature）变化即过期，
@@ -75,7 +75,7 @@ function storeKey(store) {
   return toRaw(store);
 }
 
-// 队伍载荷（2026-09-27，设计 §59）：把设置里的 partyPlayerIds 解析成**冻结队友配置**（顺序按
+// 队伍载荷（2026-09-27）：把设置里的 partyPlayerIds 解析成**冻结队友配置**（顺序按
 // 勾选顺序；主角自身永不入队 —— 它在载荷里固定是 player1）。找不到的 id 静默跳过：玩家被删后
 // 报告会因为指纹变化自然过期，这里不报错、也不阻断运行。
 // 返回 deepClone 出来的普通对象（Pinia 的响应式代理不能进 worker 的序列化）。
@@ -98,7 +98,7 @@ export function resolveTriggerOptimizerTeammates(store) {
 }
 
 // 输入快照 + 指纹（过期判定的唯一口径，仿 foodOptimizerSnapshot）：
-// 玩家配置全量 + 队友配置子集（2026-09-27，设计 §59）+ 模拟设置子集 + 优化器设置。
+// 玩家配置全量 + 队友配置子集（2026-09-27）+ 模拟设置子集 + 优化器设置。
 // 行情口径（consumable/drop/tax 模式）随快照外的 pricing 传入搜索，不参与指纹——与
 // foodOptimizer 只跟踪食物价格同款取舍。队友进指纹 ⇒ 换队友 / 改队友配置都会让报告过期。
 export function snapshotTriggerOptimizerInput(store) {
@@ -133,7 +133,7 @@ export function createTriggerOptimizerState() {
       totalSimulations: 0,
       // 完成通知：每次成功完成自增，UI watch 它弹「已完成」提示（同 runtime.completionNoticeId）。
       completionNoticeId: 0,
-      // 换难度稳健性复核的运行态（2026-09-23，设计 §29）：独立于搜索的一次「2 次评估 × 6 场」，
+      // 换难度稳健性复核的运行态（2026-09-23）：独立于搜索的一次「2 次评估 × 6 场」，
       // 但共用同一套取消链（模块级注册表 + 专属 worker 停表），因此也参与运行互斥。
       // runId 与搜索同款：stop 时自增，让在途流程在下一个检查点自行退出、不再写回。
       robustness: {
@@ -147,7 +147,7 @@ export function createTriggerOptimizerState() {
         error: '',
         cancelRequested: false,
       },
-      // 追加复验的运行态（2026-09-24，设计 §31）：与稳健性复核同款的一次「2 次评估 × 6 场」，
+      // 追加复验的运行态（2026-09-24）：与稳健性复核同款的一次「2 次评估 × 6 场」，
       // 共用同一套取消链（模块级注册表 + 专属 worker 停表），因此也参与运行互斥。
       // 没有 difficultyTier：追加复验**不换难度**（沿用报告记录的难度），只回答「证据够不够」。
       verifyAppend: {
@@ -160,7 +160,7 @@ export function createTriggerOptimizerState() {
         error: '',
         cancelRequested: false,
       },
-      // 「搜索 / 复核的服务调用在途」标志（2026-09-23，设计 §29.10）：**响应式锚点**。
+      // 「搜索 / 复核的服务调用在途」标志（2026-09-23）：**响应式锚点**。
       // 注册表与共享 worker 的运行标志是模块级普通变量（变化不触发重算），而它们的清空发生在
       // 异步收尾里 —— 晚于 stop 把 isRunning 置 false 的那一次渲染。计算属性于是会把「清理
       // 还没跑完」的一瞬间缓存下来，此后再无响应式变化让它重算：实测停止复核后「开始搜索」
@@ -168,7 +168,7 @@ export function createTriggerOptimizerState() {
       // 并让依赖它的计算属性在结算后再算一次（判定口径不变，见 triggerOptimizerBusy）。
       serviceRunInFlight: false,
     },
-    // 报告落盘/恢复（2026-09-24，设计 §40）：刷新/崩溃/重进后最近一份报告自动回来
+    // 报告落盘/恢复（2026-09-24）：刷新/崩溃/重进后最近一份报告自动回来
     //（版本闸门 + 形状闸门，脏数据静默回落空结果）。写入点是 trackResultStaleness 的
     // 持久化 watch，唯一删除点是 resetTriggerOptimizerResults。
     results: loadTriggerOptimizerReportFromStorage() || createEmptyResult(),
@@ -195,9 +195,9 @@ export function triggerOptimizerBusy(store) {
   return (
     otherRunsBusy(store) ||
     Boolean(store.triggerOptimizer?.runtime?.isRunning) ||
-    // 换难度复核（2026-09-23，设计 §29）也占用专属 worker：搜索期间复核不能开跑，
+    // 换难度复核（2026-09-23）也占用专属 worker：搜索期间复核不能开跑，
     // 复核期间同样不能开工新搜索 / 应用结果（两者都会改变它正在读的那份配置）。
-    // 追加复验（2026-09-24，设计 §31）同理：它读的就是当前这份报告的两份配置快照。
+    // 追加复验（2026-09-24）同理：它读的就是当前这份报告的两份配置快照。
     Boolean(store.triggerOptimizer?.runtime?.robustness?.isRunning) ||
     Boolean(store.triggerOptimizer?.runtime?.verifyAppend?.isRunning) ||
     // 服务调用在途（含 stop 之后的**收尾窗口**）：见 runtime.serviceRunInFlight 的说明 ——
@@ -209,7 +209,7 @@ export function triggerOptimizerBusy(store) {
   );
 }
 
-// ── 撤销前的「手工改动」检查（2026-09-19，设计 §19.6）────────────────────────
+// ── 撤销前的「手工改动」检查（2026-09-19）────────────────────────
 // 只比较**被优化的技能**的触发器条目：撤销只覆盖这些键，食物/饮品键与其它技能不参与。
 // 两侧都过 sanitizeTriggerMap 归一化后再比 —— 写回路径（apply）写的就是 sanitize 后的值，
 // 比较基准必须同口径（否则归一化差异会被误判成「被手改」）。
@@ -246,7 +246,7 @@ function trackResultStaleness(store) {
   trackedStores.add(key);
   const scope = effectScope(true);
   // 双职责（函数名沿用旧名，调用点不动）：① 输入变化 → 标记结果过期（见上）；② 报告落盘
-  // （2026-09-24，设计 §40）——results 任何变化（整体替换 :335/:428/:865 或原地写 stale、
+  // （2026-09-24）——results 任何变化（整体替换 :335/:428/:865 或原地写 stale、
   // appliedInputSignature、追加复验/稳健性复核结论）都把带 createdAt 的报告写进本地存储。
   // 空结果（createEmptyResult，无 createdAt）**不删**存储：开跑清空后崩溃/刷新要能找回上一份
   // ——持久化要防的正是这种丢法；唯一删除点是 resetTriggerOptimizerResults（导入新存档）。
@@ -294,7 +294,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       if (this.triggerOptimizer.runtime.isRunning) return false;
       const previous = this.triggerOptimizer.settings;
       const next = { ...previous, ...settings };
-      // 时长自适应（2026-09-19，设计 §18.2）：预设 = 三个旋钮 + 一条时长规则
+      // 时长自适应（2026-09-19）：预设 = 三个旋钮 + 一条时长规则
       // （rounds = max(基础轮数, 推荐轮数(时长))）。用户改「模拟时长」时，若当前三元组
       // 命中某档预设，就把该档在新时长下的有效轮数同步写回——否则会出现「下拉显示
       // 精细档、轮数却还是 24h 的口径」的状态漂移（resolveTriggerOptimizerPresetId
@@ -332,7 +332,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         lockedAbilityHrids: Array.isArray(hrids) ? hrids.map((hrid) => String(hrid)).filter(Boolean) : [],
       });
     },
-    // 队伍载荷（2026-09-27，设计 §59）：切换参与整队模拟的队友集合（玩家 id 数组；空 = 单人）。
+    // 队伍载荷（2026-09-27）：切换参与整队模拟的队友集合（玩家 id 数组；空 = 单人）。
     // 与锁定集合同款：走同一套归一化 + 校验 + 落盘 + 过期标记 ——「换队友」会让既有报告立即过期
     // （指纹里既有 id 列表、也有队友的配置快照），不会被误应用。
     setTriggerOptimizerPartyPlayers(playerIds) {
@@ -436,7 +436,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       };
       const input = {
         playerConfig: deepClone(activePlayer),
-        // 队伍载荷（2026-09-27，设计 §59）：冻结队友配置随搜索一起进模拟（口径 A：只改主角触发器）。
+        // 队伍载荷（2026-09-27）：冻结队友配置随搜索一起进模拟（口径 A：只改主角触发器）。
         // 空数组 = 现状单人载荷，行为逐值不变。
         teammates: resolveTriggerOptimizerTeammates(this),
         simulationSettings,
@@ -559,14 +559,14 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       runtime.phase = 'cancelled';
       runtime.progress = 0;
     },
-    // 换难度稳健性复核（2026-09-23，设计 §29；两态编排 2026-09-26，设计 §51）：触发器写的是
+    // 换难度稳健性复核（2026-09-23；两态编排 2026-09-26）：触发器写的是
     // **全局技能配置**，而搜索只在「一个区域 + 一个难度」上评估过 —— 结论可能只在那一个难度成立。
     // 本动作把报告里的「最优配置 vs 搜索起点配置」搬到相邻难度上做一次配对评估（独立盐种子、
-    // 2 次评估 × 自适应 6~12 轮，见设计 §49），回答「换个难度这笔提升还成立吗」。只读：不写玩家
+    // 2 次评估 × 自适应 6~12 轮），回答「换个难度这笔提升还成立吗」。只读：不写玩家
     // 配置，不动报告主体。
-    // 两态编排（§51）：报告**已有**复核结论时，再点 = 换盐追加（新样本与首跑样本合并重检，写回
+    // 两态编排：报告**已有**复核结论时，再点 = 换盐追加（新样本与首跑样本合并重检，写回
     // 合并结论与 attempts 留档）——旧口径的同盐复跑被实测证伪（逐值相同的样本、信息增量 0，
-    // 见 §51 装置）；首跑语义不变（§49 路径）。
+    // 见装置实测）；首跑语义不变（原路径）。
     async runTriggerOptimizerRobustness() {
       const runtime = this.triggerOptimizer.runtime;
       const robustness = runtime.robustness;
@@ -615,7 +615,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         // 时长取报告当时的时长，缺值时回落到当前设置：复核的唯一变量是难度。
         simulationTimeHours: Math.max(1, Number(scope.simulationHours) || Number(settings.simulationHours) || 24),
       };
-      // 追加态（§51）：合并重检的原料 = 首跑复核的逐轮样本；缺 samples（旧报告 / 退化结构）就
+      // 追加态：合并重检的原料 = 首跑复核的逐轮样本；缺 samples（旧报告 / 退化结构）就
       // 无从合并 —— 明确报错请用户重跑搜索，而不是猜一份样本去追加。
       const appendMode = Boolean(previousRobustness);
       const previousBaselineSamples = previousRobustness?.baselineMetrics?.samples;
@@ -634,8 +634,8 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       // 追加的样本互不相交、也与首跑的 robustness 盐不相交（理由见 triggerOptimizerDomain 的种子集说明）。
       const attempt = (Array.isArray(previousRobustness?.attempts) ? previousRobustness.attempts.length : 0) + 1;
       // 执行计划（纯函数；页面入口旁那一行用的是同一个函数、同一份输入）：
-      //   · 首跑（§49）= 用报告里的复验统计反解，保底 6 轮 / 上限 16 轮 / 20% 成本护栏；
-      //   · 追加（§51）= 补到复核上限（实测解析率显著高于按需反解），带零差出口与两级护栏
+      //   · 首跑 = 用报告里的复验统计反解，保底 6 轮 / 上限 16 轮 / 20% 成本护栏；
+      //   · 追加 = 补到复核上限（实测解析率显著高于按需反解），带零差出口与两级护栏
       //     （单次 20% / 累计 40%；累计已花按 attempts 求和 —— 页面用同一个求和函数）。
       let plan = null;
       if (appendMode) {
@@ -658,7 +658,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
           return false;
         }
       } else {
-        // 复核轮数自适应（2026-09-25，设计 §49）：反解不出来（旧报告 / 统计退化）时 plan = null ——
+        // 复核轮数自适应（2026-09-25）：反解不出来（旧报告 / 统计退化）时 plan = null ——
         // 省略 rounds，由服务层缺省 6 轮兜底（常量的事实源仍然只在服务层）。
         plan = planTriggerOptimizerRobustnessRounds(results.verification?.paired?.score, {
           maxRounds: TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS,
@@ -668,7 +668,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
 
       const input = {
         playerConfig: deepClone(this.activePlayer),
-        // 队伍载荷（2026-09-27，设计 §59）：复核必须与搜索期**同载荷** —— 否则结论是在另一个
+        // 队伍载荷（2026-09-27）：复核必须与搜索期**同载荷** —— 否则结论是在另一个
         // 载荷上得出的，与报告自证的适用范围不符。
         teammates: resolveTriggerOptimizerTeammates(this),
         simulationSettings,
@@ -679,7 +679,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         pricing: { pricingOptions: deepClone(createProfitPricingOptions(this.pricing)) },
         bestTriggerMap: deepClone(results.bestTriggerMap),
         baselineTriggerMap: deepClone(results.baselineTriggerMap),
-        // 追加态：首跑的复核记录（含逐轮样本）——服务层据此合并重检（§51）。
+        // 追加态：首跑的复核记录（含逐轮样本）——服务层据此合并重检。
         ...(appendMode ? { previousRobustness: deepClone(previousRobustness) } : {}),
         startedAt: Date.now(),
       };
@@ -695,7 +695,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         elapsedSeconds: 0,
         cancelRequested: false,
       });
-      // 旧结论保留到合并成功再覆盖（§51）：追加失败/取消 = 「什么都没追加」，结论字段由服务层
+      // 旧结论保留到合并成功再覆盖：追加失败/取消 = 「什么都没追加」，结论字段由服务层
       // 原样带回；这里不再开局清空（旧口径会把失败时的结论也一并丢掉）。
       const active = () => robustness.runId === runId && robustness.isRunning;
 
@@ -720,7 +720,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
               attempt,
               targetTier,
               rounds: plan ? plan.plannedRounds : undefined,
-              // 计划快照一并留档（§51）：报告要能回答「这次补了几轮、零差/上限/护栏有没有咬住」。
+              // 计划快照一并留档：报告要能回答「这次补了几轮、零差/上限/护栏有没有咬住」。
               // plan 为 null（统计退化）时不带 —— 服务层缺省口径兜底。
               plan: plan || undefined,
               onProgress,
@@ -728,7 +728,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
           : await verifyTriggerOptimizerRobustness(input, {
               targetTier,
               rounds: plan ? plan.plannedRounds : undefined,
-              // 计划快照一并留档（2026-09-25，设计 §49）：报告要能回答「这次跑了几轮、依据是什么、
+              // 计划快照一并留档（2026-09-25）：报告要能回答「这次跑了几轮、依据是什么、
               // 上限/成本护栏有没有咬住」。plan 为 null 时不带 —— 服务层缺省口径与今天一致。
               plan: plan || undefined,
               onProgress,
@@ -760,7 +760,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         }
       }
     },
-    // 追加复验（2026-09-24，设计 §31）：首轮复验判「未达显著」≠「没有提升」，只是「样本不足」。
+    // 追加复验（2026-09-24）：首轮复验判「未达显著」≠「没有提升」，只是「样本不足」。
     // 本动作再采一组**独立盐**的新样本，与首轮样本合并后重新检验，把不确定结论追到转正 / 判负。
     // 与换难度稳健性复核的区别：**不换难度**（沿用报告记录的范围），回答的是「证据够不够」。
     // 只读：不写玩家配置、不动报告主体，只更新当前报告的 verification（含 attempts 留档）。
@@ -818,7 +818,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       // attempt 递进（首轮复验没有 attempts → 第一次追加 = 1）：它进种子盐，保证每次追加的样本
       // 互不相交、也与首轮复验的 verify 盐不相交（理由见 triggerOptimizerDomain 的种子集说明）。
       const attempt = (Array.isArray(verification.attempts) ? verification.attempts.length : 0) + 1;
-      // 追加轮数自适应（2026-09-25，设计 §47；累计护栏 2026-09-26，设计 §50 B-2）：轮数不再是常量
+      // 追加轮数自适应（2026-09-25；累计护栏 2026-09-26）：轮数不再是常量
       // —— 由当前样本反解「要多少轮才能判出明确结论」，按保底 12 轮 / 上限 24 轮钳一次，再用
       // 成本护栏（单次 ≤ 整轮 20%；累计已花 + 本次 ≤ 整轮 40%）兜底。计划函数与页面入口旁那一行
       // 用的是同一个（纯函数 + 同一份输入），上屏的轮数与实际追加的轮数同源。反解不出来（旧报告 /
@@ -827,12 +827,12 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         maxRounds: TRIGGER_OPTIMIZER_VERIFY_MAX_ROUNDS,
         wholeRunSimulations: Number(results.simulations) || 0,
         // 累计已花按 attempts 求和（只数追加部分，不含首轮复验）—— 页面那一行用同一个函数，
-        // 「文案里的预算」与「实际扣的预算」不会分裂成两套（§50）。
+        // 「文案里的预算」与「实际扣的预算」不会分裂成两套。
         spentSimulations: resolveTriggerOptimizerAppendSpentSimulations(verification?.attempts),
       });
       // 结论已明确 / 预算用尽 / 上限也不够 → 一次模拟都不派：这三种情形追加都没有统计收益，
-      // 白跑只是烧机器（与 §45 capped 分支同一处置原则：宁可如实上屏，也不做做不到的事）。
-      // 分键顺序（§50 B-2）：预算钳到 0（单次或累计）优先于 capped —— 零差案例（B-1 之后 plan
+      // 白跑只是烧机器（与 capped 分支同一处置原则：宁可如实上屏，也不做做不到的事）。
+      // 分键顺序：预算钳到 0（单次或累计）优先于 capped —— 零差案例（B-1 之后 plan
       // 是 capped）在预算耗尽时，如实说的是「预算用尽」而不是「上限也不够」。
       if (plan && (plan.decisive || plan.plannedRounds < 1)) {
         verifyAppend.error = plan.decisive
@@ -844,7 +844,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       }
       const input = {
         playerConfig: deepClone(this.activePlayer),
-        // 队伍载荷（2026-09-27，设计 §59）：追加复验同样与搜索期同载荷（见复核处的说明）。
+        // 队伍载荷（2026-09-27）：追加复验同样与搜索期同载荷（见复核处的说明）。
         teammates: resolveTriggerOptimizerTeammates(this),
         simulationSettings,
         // extra 与搜索期同源（首页设置序列化）：追加不该顺带换掉消耗品/掉落口径。
@@ -879,12 +879,12 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         }
         // 服务调用在途（含 stop 之后的收尾窗口）：见 runtime.serviceRunInFlight 的说明。
         runtime.serviceRunInFlight = true;
-        // 轮数走上面的自适应计划（设计 §47）：plan 为 null（旧报告）时省略该项，由服务层缺省
+        // 轮数走上面的自适应计划：plan 为 null（旧报告）时省略该项，由服务层缺省
         // （TRIGGER_OPTIMIZER_VERIFY_ROUNDS = 6）兜底 —— 常量的事实源仍然只在服务层。
         const outcome = await appendTriggerOptimizerVerification(input, {
           attempt,
           rounds: plan ? plan.plannedRounds : undefined,
-          // 计划快照一并留档（2026-09-25，设计 §48）：报告要能回答「这次补了几轮、依据是什么、
+          // 计划快照一并留档（2026-09-25）：报告要能回答「这次补了几轮、依据是什么、
           // 上限/护栏有没有咬住」。plan 为 null（旧报告 / 反解不出来）时不带 —— 服务层缺省口径
           // 与今天一致，报告里也不会留下没有依据的字段。
           plan: plan || undefined,
@@ -947,7 +947,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       if (!player) return false;
 
       // 只覆盖「参与优化的技能」键：bestTriggerMap 里这些键的值是搜索终态
-      // （default 态 = 无键 → 从玩家配置里删键，设计 §10.3）；食物/饮品键一律不动。
+      // （default 态 = 无键 → 从玩家配置里删键）；食物/饮品键一律不动。
       const optimizedHrids = (Array.isArray(results.perAbilityChoices) ? results.perAbilityChoices : [])
         .map((choice) => String(choice?.abilityHrid || ''))
         .filter(Boolean);
@@ -967,7 +967,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
       try {
         this.$patch(() => {
           player.triggerMap = sanitizeTriggerMap(nextTriggerMap);
-          // 撤销门禁的判定基准（2026-09-19，设计 §19.6）：应用后这些技能键「应该长什么样」。
+          // 撤销门禁的判定基准（2026-09-19）：应用后这些技能键「应该长什么样」。
           // 撤销只覆盖这些键，所以「会不会踩掉手工改动」只看它们——不再拿整份输入指纹的
           // stale 一刀切（切地图/难度/时长同样会 stale，但撤销并不会踩到这些东西）。
           const appliedTriggers = {};
@@ -1008,7 +1008,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         runtime.error = 'common:triggerOptimizer.noChangesToRevert';
         return false;
       }
-      // 撤销门禁（2026-09-19 收窄，设计 §19.6）：只拦「被优化的技能触发器在应用后被手改」——
+      // 撤销门禁（2026-09-19 收窄）：只拦「被优化的技能触发器在应用后被手改」——
       // 撤销会把那些键整条覆盖回应用前，手工改动会被踩掉。旧实现用整份输入指纹的 stale
       // 一刀切，切地图/难度/时长同样会 stale，撤销按钮凭空消失，而那些改动撤销并不会碰到。
       if (hasOptimizedTriggersBeenEdited(this, snapshot)) {
@@ -1036,7 +1036,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
     resetTriggerOptimizerResults() {
       // 搜索**或**复核**或**追加复验任在跑都先停掉：三者共用注册表与专属 worker，且复核/追加
       // 结束后会往报告里写结果 —— 旧实现只检查 isRunning（搜索），会把在途复核留在新报告上
-      // （2026-09-23）；追加复验（2026-09-24，设计 §31）同理。
+      // （2026-09-23）；追加复验（2026-09-24）同理。
       if (
         this.triggerOptimizer.runtime.isRunning ||
         this.triggerOptimizer.runtime.robustness?.isRunning ||
@@ -1045,7 +1045,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
         this.stopTriggerOptimizer();
       }
       this.triggerOptimizer.results = createEmptyResult();
-      // 唯一显式删除点（设计 §40）：导入新存档 ⇒ 旧报告作废，不再兜底恢复。
+      // 唯一显式删除点：导入新存档 ⇒ 旧报告作废，不再兜底恢复。
       clearTriggerOptimizerReportFromStorage();
       this.triggerOptimizer.baselineSnapshot = null;
       this.triggerOptimizer.runtime.error = '';

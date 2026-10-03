@@ -53,7 +53,7 @@ describe('workerClient', () => {
     expect(onResult).toHaveBeenCalledWith({ encounters: 1 });
   });
 
-  it('batches payloads in one realm, posting the next only after a reply (§54)', () => {
+  it('batches payloads in one realm, posting the next only after a reply', () => {
     const client = new WorkerClient();
     const onResult = vi.fn();
     const onError = vi.fn();
@@ -111,7 +111,7 @@ describe('workerClient', () => {
     client.stopSimulation();
   });
 
-  it('stops posting after a realm-level crash and reports the in-flight index (§54)', () => {
+  it('stops posting after a realm-level crash and reports the in-flight index', () => {
     const client = new WorkerClient();
     const onAbort = vi.fn();
     const payloads = [{ workerId: 'w#r1' }, { workerId: 'w#r2' }];

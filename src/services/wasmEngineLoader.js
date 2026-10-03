@@ -1,4 +1,4 @@
-// Rust/WASM 引擎加载器（切片 1：基建；切片 5 接入 worker 时按需扩展缓存策略）。
+// Rust/WASM 引擎加载器（接入 worker 时按需扩展缓存策略）。
 //
 // 设计约束：
 // - engine/pkg 是可选的本地构建产物（git 忽略，见 package.json 的 build:wasm）。
@@ -22,7 +22,7 @@ export async function loadWasmEngine({ glueUrl, moduleOrPath } = {}) {
   return null;
 }
 
-// 引擎产物的部署位是 public/engine/pkg（切片 18）：dev 下 vite 把 public 映射到
+// 引擎产物的部署位是 public/engine/pkg：dev 下 vite 把 public 映射到
 // 站点根、构建时原样拷进 dist/engine/pkg，CI 无 Rust 工具链也能产出带 wasm 的
 // dist（产物随仓库提交）。两个候选对应两种布局（上跳级数不同）；此前固定把两级
 // 上跳排前，在 GitHub Pages 子路径（user.github.io/<repo>/）下每次新建 realm 都先

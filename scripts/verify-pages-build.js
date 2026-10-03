@@ -43,7 +43,7 @@ if (fileExists(indexHtmlPath)) {
 const assetsDir = path.join(distDir, 'assets');
 assertCondition(fileExists(assetsDir), 'Missing dist/assets directory.');
 
-// 切片 18：wasm 引擎产物必须进部署产物（public/engine/pkg 随仓库提交，
+// wasm 引擎产物必须进部署产物（public/engine/pkg 随仓库提交，
 // vite 构建时拷贝）；缺失意味着线上永远回退 JS 引擎。
 const enginePkgDir = path.join(distDir, 'engine', 'pkg');
 assertCondition(

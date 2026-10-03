@@ -177,7 +177,7 @@ describe('Party aura combat preview', () => {
       .filter((source) => source.sourceKey?.startsWith('teammate-aura-player2-'))
       .map((source) => source.sourceHrid);
     expect(auraSourceHrids).toEqual(['/abilities/speed_aura']);
-    // 切片 21B：JS 引擎已删除——「真实引擎一分钟也有足够魔法」的端到端对照由
+    // JS 引擎已删除——「真实引擎一分钟也有足够魔法」的端到端对照由
     // golden 快照（wasmEngineProductionParity）承载；预览侧断言保持不变。
   });
 

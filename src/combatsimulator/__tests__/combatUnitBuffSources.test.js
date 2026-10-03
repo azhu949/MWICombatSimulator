@@ -183,7 +183,7 @@ describe('CombatUnit buff sources and party aura engine', () => {
   });
 
   it('grants the hero speed_aura when a teammate casts it (allAllies)', async () => {
-    // 切片 21B：JS 引擎已删除——光环授予语义改由 wasm golden 快照（scroll/observers
+    // JS 引擎已删除——光环授予语义改由 wasm golden 快照（scroll/observers
     // 系列）+ cargo 单测承载。此处保留 B 层语义断言：预览上下文按生产装配给队友
     // 施放光环，英雄获得同一 buff（allAllies 目标）。
     const preview = buildCombatPreviewData(emptyConfig('1'), null, null, {
@@ -199,7 +199,7 @@ describe('CombatUnit buff sources and party aura engine', () => {
     const weakConfig = withAura(emptyConfig('2'), '/abilities/speed_aura');
     weakConfig.levels = { ...weakConfig.levels, attack: 1 };
 
-    // 切片 21B：JS 引擎已删除——最强源仲裁由 B 层 addBuff（STRONGEST 策略）承载，
+    // JS 引擎已删除——最强源仲裁由 B 层 addBuff（STRONGEST 策略）承载，
     // 预览路径给出同款断言（英雄自身的强光环施放 vs 队友的弱光环回放，强者胜出）。
     const preview = buildCombatPreviewData(strongConfig, null, null, {
       partyPlayerConfigs: [strongConfig, weakConfig],
@@ -1002,7 +1002,7 @@ describe('CombatUnit buff sources and party aura engine', () => {
   });
 
   it('allows different aura types to be active simultaneously (no cross-overwrite)', () => {
-    // 切片 21B：JS 引擎已删除——同款断言改走预览路径（不同光环类型互不覆盖）。
+    // JS 引擎已删除——同款断言改走预览路径（不同光环类型互不覆盖）。
     const preview = buildCombatPreviewData(emptyConfig('1'), null, null, {
       partyPlayerConfigs: [
         emptyConfig('1'),

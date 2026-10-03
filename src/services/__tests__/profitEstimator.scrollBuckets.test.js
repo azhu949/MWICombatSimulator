@@ -4,7 +4,7 @@ import { buildNoRngDropCountMap, buildNoRngProfitBreakdown, buildRandomProfitBre
 const MONSTER_HRID = '/monsters/abyssal_imp';
 const COIN_HRID = '/items/coin';
 
-// 切片 21B：JS SimResult 类已随 A 层删除。桶的合并/归一/兼容重载语义由 Rust
+// JS SimResult 类已随 A 层删除。桶的合并/归一/兼容重载语义由 Rust
 // sim_result.rs 的单测承载，wasm 序列化形状由 golden 快照锁定；本文件只保留
 // profitEstimator 对 dropContextBuckets 消费口径的断言（手写桶对象）。
 

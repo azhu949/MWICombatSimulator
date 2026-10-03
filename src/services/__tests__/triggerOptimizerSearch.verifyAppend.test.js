@@ -1,4 +1,4 @@
-// 技能触发器优化器 —— 追加复验（2026-09-24，设计 §31）。
+// 技能触发器优化器 —— 追加复验（2026-09-24）。
 //
 // 用 SimulatedWorkerClient 桩跑 appendTriggerOptimizerVerification（与 racing.test.js 同款桩），
 // 锁定四件事：
@@ -331,7 +331,7 @@ describe('追加复验（合并样本重检）', () => {
     expect(result.verdict).toBe(first.verdict);
   });
 
-  // 自适应轮数（2026-09-25，设计 §47）：调用方按反解传来的轮数可以超过搜索期的轮数上限（当时 10、
+  // 自适应轮数（2026-09-25）：调用方按反解传来的轮数可以超过搜索期的轮数上限（当时 10、
   // 2026-09-27 起 12），复验口径的上限是 24 —— 用搜索口径归一化会把「要 18 轮」静默钳成小值，
   // 这里把这条锁住；顺带锁住越界值的处置：不 clamp 到边界，而是按归一化口径回落产品默认（6 轮）。
   it('honours adaptive round counts beyond the search-rounds cap, and defaults out-of-range counts', async () => {
@@ -370,7 +370,7 @@ describe('追加复验（合并样本重检）', () => {
     expect(outOfRange.rounds).toBe(2 * TRIGGER_OPTIMIZER_VERIFY_ROUNDS);
   });
 
-  // 计划快照留档（2026-09-25，设计 §48）：自适应轮数（§47）只有进报告才能事后复盘「这次补了几轮、
+  // 计划快照留档（2026-09-25）：自适应轮数只有进报告才能事后复盘「这次补了几轮、
   // 上限/护栏有没有咬住」—— 调用方把计划从 options.plan 带进来，服务层净化后写进 attempts[i].plan；
   // 不自洽（plannedRounds ≠ 实际执行的 rounds）或没带时**不留档**（宁可不留，也不留矛盾数据）。
   it('archives the append plan snapshot only when it is self-consistent with the executed rounds', async () => {
@@ -380,7 +380,7 @@ describe('追加复验（合并样本重检）', () => {
       decisive: false,
       capped: false,
       budgetLimited: false,
-      // 成本护栏的两级字段（2026-09-26，设计 §50 B-2）：第一次追加（spent = 0）；整轮 370 场 ⇒
+      // 成本护栏的两级字段（2026-09-26）：第一次追加（spent = 0）；整轮 370 场 ⇒
       // 单次预算 74 场 / 累计预算 148 场（都没咬）。
       limitedBy: null,
       currentRounds: 6,
@@ -453,13 +453,13 @@ describe('追加复验（合并样本重检）', () => {
   });
 });
 
-// 复核追加（2026-09-26，设计 §51）：报告已有复核结论时再点复核 = 换盐追加（不再同盐复跑：
-// §51 装置实测同盐两次派生逐值相同、信息增量 0 ⇒ 纯白烧）。锁定四件事：
+// 复核追加（2026-09-26）：报告已有复核结论时再点复核 = 换盐追加（不再同盐复跑：
+// 装置实测同盐两次派生逐值相同、信息增量 0 ⇒ 纯白烧）。锁定四件事：
 //   ① 合并重检：首跑 6 轮 + 追加 6 轮 → **12 轮样本一起**进 computePairedStats，verdict 是
 //      合并后的结论、seeds = 旧 6 + 新 6、attempts 留下本次的双口径记录；
 //   ② 样本分割：盐 = robustness 盐 + `.r${attempt}` ⇒ 各次追加互不相交，且与首跑复核 /
 //      复验追加 / 搜索 / 粗筛全不相交（「要不要追加」是拿已合并结论做的决定，新样本必须
-//      独立于那个决定 —— §21 的可选停时教训）；
+//      独立于那个决定 —— 可选停时的教训）；
 //   ③ 缺逐轮样本（旧报告 / 退化结构 / 完全没有 previousRobustness）→ 抛
 //      MISSING_ROBUSTNESS_ERROR，不猜、不静默通过；
 //   ④ 取消 → resolve { cancelled: true }（取消不算失败），且**不写回**合并结论
@@ -678,7 +678,7 @@ describe('复核追加（换盐新样本与首跑合并重检）', () => {
     expect(result.verdict).toBe(first.verdict);
   });
 
-  // 计划快照留档（§51）+ 轮数口径：追加轮数走**复核口径**的上限 16（不复用搜索口径 —— 语义不同，
+  // 计划快照留档 + 轮数口径：追加轮数走**复核口径**的上限 16（不复用搜索口径 —— 语义不同，
   // 历史上搜索口径曾把「补到 12 轮」静默钳成 10 轮）；越界值回落产品默认（少花比多花安全）。
   it('archives the append plan snapshot only when self-consistent, and honours the robustness cap', async () => {
     SimulatedWorkerClient.responder = makeResponder();

@@ -1,11 +1,11 @@
-//! 单位容器（切片 4）：把 `CombatUnit` 放在一个竞技场里按下标寻址，
+//! 单位容器：把 `CombatUnit` 放在一个竞技场里按下标寻址，
 //! 以便模拟循环同时可变借用一个攻击者与一个目标（JS 侧为对象引用）。
 //!
 //! 设计要点：
 //! - 事件持有 `UnitId`（= 竞技场下标）而非引用，避免 Rust 借用冲突；
 //! - 玩家 / 敌人的遍历顺序由各自的 id 列表维护（与 JS 数组顺序一致）；
 //! - 单位列表在模拟期**只增不减**（死亡单位保留在竞技场中，只是 HP = 0）；
-//!   切片 26 的唯一例外是重生池的形态不符丢弃（`release`，调用方负责全表重映射）。
+//!   唯一例外是重生池的形态不符丢弃（`release`，调用方负责全表重映射）。
 
 use crate::ability::Ability;
 use crate::consumable::Consumable;
@@ -48,7 +48,7 @@ impl UnitArena {
         &mut self.units[id]
     }
 
-    /// 切片 26（重生槽位复用）：移除一个槽位——`Vec::swap_remove` 语义，**末位单位被换入
+    /// 重生槽位复用：移除一个槽位——`Vec::swap_remove` 语义，**末位单位被换入
     /// 该下标、其余下标一律不变**，返回被移除的单位。
     ///
     /// 调用方必须负责重映射所有持有 `UnitId` 的表（`CombatSimulator::remove_slot_or_degrade`
@@ -161,7 +161,7 @@ impl CombatUnit {
         }
     }
 
-    /// 便捷构造：给指定槽位装备技能（切片 4 探针 / 场景装配用）。
+    /// 便捷构造：给指定槽位装备技能（探针 / 场景装配用）。
     pub fn set_ability(&mut self, slot: usize, ability: Ability) {
         self.abilities[slot] = Some(ability);
     }

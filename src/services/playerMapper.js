@@ -1048,7 +1048,7 @@ function createCombatPreviewSimulationState(
   });
   const simulationPlayers = [player, ...teammatePlayers];
 
-  // 切片 21A：轻量预览上下文（共享 CombatActionsCore 动作语义，无事件循环/记账），
+  // 轻量预览上下文（共享 CombatActionsCore 动作语义，无事件循环/记账），
   // 替代旧 `new CombatSimulator(...)`（从不 simulate，只借单步动作方法）。
   const simulator = new CombatPreviewContext(simulationPlayers);
   simulator.enemies = resolvedPreviewEnvironment.enemies;
@@ -1465,7 +1465,7 @@ function buildDrinkPreviewCard(playerConfig, slotIndex, previewExtra = null, pre
     return card;
   }
 
-  // 切片 21A：轻量预览上下文（同上）。饮品卡预览只借 tryUseConsumable 与冷却事件时间戳。
+  // 轻量预览上下文（同上）。饮品卡预览只借 tryUseConsumable 与冷却事件时间戳。
   const simulator = new CombatPreviewContext([previewPlayer]);
   simulator.simulationTime = 0;
 
@@ -2409,7 +2409,7 @@ function buildPartyAuraPreviewResult(
   });
   const teammateSourceKeys = new Set(teamPlayers.filter((player) => player !== hero).map((player) => player.hrid));
 
-  // 切片 21A：轻量预览上下文（同上）。队伍光环回放共享同一动作语义。
+  // 轻量预览上下文（同上）。队伍光环回放共享同一动作语义。
   const simulator = new CombatPreviewContext(teamPlayers);
   simulator.enemies = resolvedPreviewEnvironment.enemies;
   simulator.simulationTime = 0;

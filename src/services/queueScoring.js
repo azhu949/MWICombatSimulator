@@ -19,13 +19,13 @@ import { clamp, deepClone, isPlainObject, normalizeBaselineSaleSide, toFiniteNum
 export const QUEUE_PARALLEL_WORKER_LIMIT_MIN = 1;
 export const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
 export const QUEUE_WEIGHT_SUM_EPSILON = 1e-6;
-// 历史固定默认（§55 起语义收窄为「回退值」）：核数未知的机型、以及纯服务级调用（无 navigator
+// 历史固定默认（语义已收窄为「回退值」）：核数未知的机型、以及纯服务级调用（无 navigator
 // 上下文的存储 / 测试路径）继续沿用 4；读得到机型的机器由 resolveAdaptiveParallelWorkerDefault
 // 给出自适应推荐（见下方「机型探测与自适应推荐」段）。
 export const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
 // 自适应推荐的绝对上限（不随核数无限放大）：每多一个工人就多一份引擎 realm 的内存
 // （引擎 chunk + 游戏数据），桌面端还要给用户其它工作留余量；用户仍可在设置页手动调到
-// 核数（保存校验只拦 > 核数）。2026-10-01 从 8 提到 12：引擎切片 24-32 后单 worker 内存
+// 核数（保存校验只拦 > 核数）。2026-10-01 从 8 提到 12：引擎优化后单 worker 内存
 // 压力已下降，12 档让 13+ 核机器的重度负载（step10 全目录 / 多轮优化）墙钟再降 ~1/4；
 // 内存护栏（deviceMemory ≤2GB→2、≤4GB→4）继续兜底低配机器。
 export const QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP = 12;
@@ -87,7 +87,7 @@ function getStdDev(values, meanValue) {
   return Math.sqrt(variance);
 }
 
-// options.parallelWorkerLimit（§55）：调用方（store）可注入「本机自适应推荐」作为无存储值时的
+// options.parallelWorkerLimit：调用方（store）可注入「本机自适应推荐」作为无存储值时的
 // 默认；省略时沿用历史回退值 4（服务级 / 测试路径行为不变）。
 export function getDefaultQueueRuntimeSettings(options = {}) {
   return {
@@ -177,7 +177,7 @@ export function haveQueueRunRankingSettingsChanged(previousSettings, nextSetting
   );
 }
 
-// ── 机型探测与自适应推荐（§55，2026-09-27）───────────────────────────────────────
+// ── 机型探测与自适应推荐（2026-09-27）───────────────────────────────────────
 // 浏览器上下文读探测值；无 navigator / 字段缺失 / 非法值一律返回 null（调用方回退历史值）。
 export function getDetectedHardwareCoreCount() {
   const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
@@ -250,7 +250,7 @@ export function normalizeParallelWorkerLimit(
   return clamp(parsed, QUEUE_PARALLEL_WORKER_LIMIT_MIN, hardMax);
 }
 
-// options.parallelWorkerLimit（§55）：存储值缺失时的回退（store 注入本机自适应推荐）。
+// options.parallelWorkerLimit：存储值缺失时的回退（store 注入本机自适应推荐）。
 export function normalizeQueueRuntimeSettings(settings, options = {}) {
   return {
     finalWeights: normalizeQueueScoreWeights(settings?.finalWeights),

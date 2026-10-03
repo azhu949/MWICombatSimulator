@@ -18,7 +18,7 @@
 // 会把 +49% 的噪声报成提升。
 // 门槛还必须与候选分**同参考系**（同日晚间实测复盘修正）：旧实现拿「上一个被采纳候选在
 // 它自己那个参考系里的分」当门槛，等于每采纳一个槽就把其余槽的门槛抬高 MIN_ADOPT_SCORE，
-// 系统性压制多槽叠加 —— 详见 shouldAdoptCandidate 上方注释与设计 §16.9。
+// 系统性压制多槽叠加 —— 详见 shouldAdoptCandidate 上方注释。
 //
 // 复合分口径（与队列多轮打分同源，权重来自 shared/queuePerformanceWeights）：
 //   score = Σ_m byMetric[m] * clamp(log2(1 + Δ_m/max(|base_m|,floor_m)), -1, 1)
@@ -117,7 +117,7 @@ function compareSignature(left, right) {
 // 排序比较（升序数组用 .sort(compareCandidates) 得到「分数高 → 改动小」的顺序）：
 //   1. 分数高者优先（-Infinity 沉底）
 //   2. 并列时配对信号更强者优先（有统计支撑的候选优先于「分数一样但说不清」的）
-//   3. 再并列时利润高者优先（设计 §5.2 的确定性 tie-break）
+//   3. 再并列时利润高者优先（确定性 tie-break）
 //   4. 再并列时 DPS 高者优先
 //   5. 仍并列时改动更小/更接近基线的候选优先（搜索确定收敛，避免在等价候选间抖动）
 //   6. 最后按签名字典序（全序兜底，绝不返回 0）
@@ -260,7 +260,7 @@ function resolveReferenceScore(reference) {
 //      一律不采纳。宁可保持现状，也不要把某组种子的运气写进报告（这正是「应用后与
 //      预期不符」的常见来源）。
 //
-// ⚠️ 比较必须**同参考系**（2026-09-18 实测复盘修正，设计 §16.9）：
+// ⚠️ 比较必须**同参考系**（2026-09-18 实测复盘修正）：
 // 搜索层每个候选的 score 都是「以本槽开跑时的当前工作配置为参考」的增量分（与参考相同 = 0 分）。
 // 旧实现把它与 `best.score`（= 上一个被采纳候选在**它自己那个参考系**里的增量分）相减，
 // 跨参考系比较 ⇒ 每采纳一个槽就把其余所有槽的门槛抬高 best.score + MIN_ADOPT_SCORE，
@@ -339,7 +339,7 @@ export function summarizeDeltas(baseline, candidate) {
   };
 }
 
-// ── 可检测下限（2026-09-20，设计 §20.2）─────────────────────────────────────
+// ── 可检测下限（2026-09-20）─────────────────────────────────────
 // 把「本次设置到底能确认多大的提升」变成可展示的数字：由某个候选（通常是推荐配置）
 // 的配对统计反推两个门槛：
 //   噪声地板 = 2×SE       —— 采纳闸门的口径（「比噪声大」）；
@@ -385,13 +385,13 @@ export function projectTriggerOptimizerDetectionFloor(floor, targetRounds) {
   };
 }
 
-// 反解：让给定效应量（分数）**过采纳闸门**至少要多少轮（2026-09-25，设计 §45）。
+// 反解：让给定效应量（分数）**过采纳闸门**至少要多少轮（2026-09-25）。
 // 口径与 projectTriggerOptimizerDetectionFloor 同源（同一 σ 估计 + 同一 ∝1/√n 缩放）：
 //   采纳闸门要求「|mean| > NOISE_MULTIPLIER × SE」，而第 n 轮的 SE = σ/√n、σ = SE(当前轮) × √轮数
 //   ⇒ 要让目标效应过闸，需 2σ/√n ≤ effect ⇔ n ≥ 轮数 × (2 × SE / effect)²。
 //   这里取满足该式的**最小整数轮数**（向上取整：不给一个差一点点的建议）。
 //   ⚠️ n 与「当前 SE 的平方」成反比：漏掉 √轮数 这一项会把所需轮数算小一个量级（实现时踩过）。
-//   口径归属（2026-09-26，设计 §52）：本函数走**采纳口径**（噪声地板 2×SE：比噪声大、不是显著性
+//   口径归属（2026-09-26）：本函数走**采纳口径**（噪声地板 2×SE：比噪声大、不是显著性
 //   声明）；「判成 p<0.05 明确结论要多少轮」是另一把尺子 —— 见 resolveTriggerOptimizerRoundsForSignificance。
 // 三种结果（调用方据此改口，而不是一律说「提到上限」）：
 //   satisfied=true —— 当前轮数的下限已 ≤ 目标（无需改轮数）；
@@ -430,11 +430,11 @@ export function resolveTriggerOptimizerRoundsForEffect(floor, effect, maxRounds)
   return { ...base, ...describe(chosen, projected), capped };
 }
 
-// 反解：把给定效应量（分数）判成 **p<0.05 的明确结论** 至少要多少轮（2026-09-26，设计 §52）。
+// 反解：把给定效应量（分数）判成 **p<0.05 的明确结论** 至少要多少轮（2026-09-26）。
 // 与上面的 resolveTriggerOptimizerRoundsForEffect 是**同一形状的两把尺子**（同一 σ 估计 + 同一
 // ∝1/√n 缩放），区别只在判据：
 //   采纳口径（上面那个）：噪声地板 2×SE —— 「比噪声大」，采纳闸门用；**不是**显著性声明；
-//   判定口径（本函数）：显著门槛 t(n−1)×SE —— 与逐轮 verdict / §47 / §49 同一把尺子。
+//   判定口径（本函数）：显著门槛 t(n−1)×SE —— 与逐轮 verdict 同一把尺子。
 // ⚠️ n ≤ 61 时 t(n−1) > 2 ⇒ 两把尺子在全部可达轮数内（搜索 ≤10 / 复核 ≤12 / 复验 ≤24）不可能
 // 给出同一个答案：过噪声地板只说明「可被采纳」，要判成明确结论必须按本函数（或复验）补样本。
 // 显著性条件：effect > t(n−1) × SE(n)，SE(n) = SE(当前轮) × √(当前轮 / n)；取满足该式的
@@ -461,8 +461,8 @@ export function resolveTriggerOptimizerRoundsForSignificance(floor, effect, maxR
 }
 
 // 反解：把**已经观测到的效应量**判成明确结论（positive / negative）至少需要多少轮
-// （2026-09-25，设计 §47）。与 §45 的反解同源（同一 σ ∝ 1/√n 缩放），但目标不同：
-//   §45 问「多大的效应能被采纳闸门看见」——口径 2×SE（噪声地板）；
+// （2026-09-25）。与上面的反解同源（同一 σ ∝ 1/√n 缩放），但目标不同：
+//   上面的反解问「多大的效应能被采纳闸门看见」——口径 2×SE（噪声地板）；
 //   本函数问「这批样本要多大才能给出 p<0.05 的明确结论」——口径 t(n−1)×SE（与结论卡同一把尺子）。
 // 显著性条件：|mean| > t(n−1) × SE(n)，而 SE(n) = SE(当前轮) × √(当前轮 / n)
 //   ⇒ 取满足该式的**最小整数 n**（不给差一点点的方案）。
@@ -470,16 +470,16 @@ export function resolveTriggerOptimizerRoundsForSignificance(floor, effect, maxR
 //   decisive    —— 已经是 positive/negative，无需追加；
 //   extend      —— 追加到 targetRounds（= requiredRounds ≤ 上限）即可判成明确结论；
 //   capped      —— 连上限都不够（requiredRounds = null、targetRounds = 上限）：调用方**不要**白花
-//                  样本，把所需轮数如实上屏（与 §45 的 capped 分支同一处置原则）；
+//                  样本，把所需轮数如实上屏（与上面的 capped 分支同一处置原则）；
 //   capRounds   —— **上限本身**（≥ currentRounds；调用方没给合法上限时退化成 currentRounds =
 //                  无从追加）。要拿「上限」时必须读这个字段：它只在 capped 时恰好等于 targetRounds，
 //                  非 capped 时 targetRounds 是「反解所需轮数」—— 张冠李戴会让保底轮数与成本护栏的
 //                  对比基准一起错位（见 planTriggerOptimizerVerificationAppend 的说明）。
 // 非法输入（缺 mean / 标准误为负或非有限、轮数 < 2）一律 null：宁可不出方案，也不编一个假的。
-// 零差是**合法退化**、不是非法输入（2026-09-26，设计 §50 B-1）：stdError = 0（逐轮差恒 0）时同轮数
+// 零差是**合法退化**、不是非法输入（2026-09-26 B-1）：stdError = 0（逐轮差恒 0）时同轮数
 // 下标准误永远是 0，t×SE 恒为 0 ⇒ 再加多少轮都判不出，这正是 capped 的定义。旧实现把它当非法输入
 // 返回 null，调用方于是回落「每次 +6 轮」兜底 —— 这条路径不受 24 轮上限约束（零差样本永远
-// inconclusive、按钮一直在），可以无限追加；实测（§50 装置）零差案例在现状下平均烧 36 场买 0 次
+// inconclusive、按钮一直在），可以无限追加；实测零差案例在现状下平均烧 36 场买 0 次
 // 判出。现在与其它 capped 同出口：补到上限、再由成本护栏钳住累计总额。
 export function resolveTriggerOptimizerVerificationRounds(summary, maxRounds) {
   const rounds = Math.floor(Number(summary?.rounds));
@@ -513,17 +513,17 @@ export function resolveTriggerOptimizerVerificationRounds(summary, maxRounds) {
   return { ...base, decisive: false, extend: true, capped: false, requiredRounds: required, targetRounds: required };
 }
 
-// 追加复验的**执行计划**（2026-09-25，设计 §47；累计护栏 2026-09-26，设计 §50 B-2）：把上面的反解
+// 追加复验的**执行计划**（2026-09-25；累计护栏 2026-09-26 B-2）：把上面的反解
 // 按实测胜出的 A′ 口径折成「这一次到底追加多少轮」，并把成本护栏一并吃掉。store（真的去跑）与页面
 //（上屏说将要跑多少）共用这一份计划 ——「文案说的轮数」与「实际追加的轮数」因此不可能分裂成两套口径。
-//   A′ 口径（设计 §47 实测：5/5 槽解析率 ≥ 现状 12 轮、假阳性不升）：目标总轮数 = clamp(n*, 保底, 上限)
+//   A′ 口径（实测：5/5 槽解析率 ≥ 现状 12 轮、假阳性不升）：目标总轮数 = clamp(n*, 保底, 上限)
 //     · n* = 反解所需轮数（口径 |mean| > t(n−1) × SE，见上）；
 //     · 保底 = 2 × TRIGGER_OPTIMIZER_VERIFY_ROUNDS（= 现状口径 12 轮：自适应绝不比今天少花样本）；
 //     · capped（上限也不够 / 零差）→ 目标就是上限：反解已经说「再多也判不出来」，实测的处置是补到上限。
 //       ⚠️ 别改成 A 臂的「capped 就不花样本」—— 那一臂在本轮对照里 5/5 槽解析率都低于现状，未采用。
-//   成本护栏（判据③；两级，2026-09-26 设计 §50 B-2 升级）：
-//     · 单次：本次追加场次 2 × plannedRounds ≤ 整轮 × 20%（§47 口径不变）；
-//     · 累计：**累计已花（options.spentSimulations）+ 本次 ≤ 整轮 × 40%**（§50 实测胜出：累计 20%
+//   成本护栏（判据③；两级，2026-09-26 B-2 升级）：
+//     · 单次：本次追加场次 2 × plannedRounds ≤ 整轮 × 20%（口径不变）；
+//     · 累计：**累计已花（options.spentSimulations）+ 本次 ≤ 整轮 × 40%**（实测胜出：累计 20%
 //       收太紧、合计解析率 −11~13pp；40% 的合计解析率与现状持平且成本低 11%）。
 //     咬住时把轮数往下钳（宁可结论仍是 inconclusive，也不超预算），limitedBy 记下最终瓶颈是谁
 //     （'single' / 'cumulative'）；拿不到整轮场次（老报告）= 不限：如实返回 null，不假装有护栏。
@@ -595,16 +595,16 @@ export function planTriggerOptimizerVerificationAppend(summary, options = {}) {
   };
 }
 
-// 复核轮数的反解（2026-09-25，设计 §49）：拿报告里已有的效应量证据（独立复验的配对统计），
+// 复核轮数的反解（2026-09-25）：拿报告里已有的效应量证据（独立复验的配对统计），
 // 反解「换到相邻难度重测时，至少要跑多少轮才能把同量级的效应判成明确结论」。
-// 与 §47 的 resolveTriggerOptimizerVerificationRounds 同源（同一把 t×SE 尺子、同一 σ ∝ 1/√n
+// 与 resolveTriggerOptimizerVerificationRounds 同源（同一把 t×SE 尺子、同一 σ ∝ 1/√n
 // 缩放），但**语义不同**：那个函数回答「在已有样本上还要**追加**多少」（已判明确就不追加）；
 // 本函数回答「新现场**从零**要跑多少轮」—— 先验是不是已判明确都要给出一个轮数，因为复核
-// 一定要换难度重测（这正是它要回答的问题）。先验跨难度的外推是本口径的诚实边界（设计 §49）：
+// 一定要换难度重测（这正是它要回答的问题）。先验跨难度的外推是本口径的诚实边界：
 // 反解说 9 轮，不等于「9 轮在新难度一定够」（两难度的噪声尺度可能不同，区域间实测差过 20 倍）。
 // 返回 { currentRounds, capRounds, mean, stdError, requiredRounds, capped }：
 //   requiredRounds —— 最小充分轮数（≥ 2）；反解在 cap 内无解时 capped = true、requiredRounds = null
-//   （调用方补到上限，与 §47 的 A′ 口径同款处置）。
+//   （调用方补到上限，与 A′ 口径同款处置）。
 // 非法输入（缺 mean / 标准误非正、轮数 < 2）一律 null：宁可不出方案，也不编一个假的。
 export function resolveTriggerOptimizerRobustnessRounds(summary, maxRounds) {
   const rounds = Math.floor(Number(summary?.rounds));
@@ -626,16 +626,16 @@ export function resolveTriggerOptimizerRobustnessRounds(summary, maxRounds) {
   return { currentRounds: rounds, capRounds, mean, stdError, requiredRounds, capped: requiredRounds === null };
 }
 
-// 复核的**执行计划**（2026-09-25，设计 §49）：把上面的反解按实测口径折成「这一次复核到底
+// 复核的**执行计划**（2026-09-25）：把上面的反解按实测口径折成「这一次复核到底
 // 跑多少轮」，并把成本护栏一并吃掉。store（真的去跑）与页面（上屏说将要跑多少）共用这一份
 // 计划 ——「文案说的轮数」与「实际执行的轮数」因此不可能分裂成两套口径。
-//   A′ 口径（设计 §49）：
+//   A′ 口径：
 //     · 保底 = min(上限, max(现状 6 轮, 先验轮数)) —— 自适应绝不比今天少花样本；
-//     · capped（上限也不够）→ 目标就是上限：补到上限（§47 的 A′ 教训）；
+//     · capped（上限也不够）→ 目标就是上限：补到上限（A′ 教训）；
 //     · 否则目标 = clamp(n*, 保底, 上限)。
-//   成本护栏（复用 §47 的 20% 比例，单一事实源）：复核**相对现状多花的**场次
+//   成本护栏（复用 20% 比例，单一事实源）：复核**相对现状多花的**场次
 //   2 × (plannedRounds − 保底) ≤ 整轮场次 × 20%；咬住时把轮数往下钳，但**不低于保底**
-//   （复核是用户主动点的检查，护栏限制的只是「多花多少」，不像 §47 允许把追加钳到零）。
+//   （复核是用户主动点的检查，护栏限制的只是「多花多少」，不像追加复验允许把追加钳到零）。
 //   拿不到整轮场次（旧报告）= 不限：如实返回 budgetSimulations = null，不假装有护栏。
 // 返回 { capped, budgetLimited, currentRounds, requiredRounds, capRounds, plannedRounds,
 //        plannedSimulations, budgetSimulations }（requiredRounds 在 capped 时为 null）。
@@ -673,13 +673,13 @@ export function planTriggerOptimizerRobustnessRounds(summary, options = {}) {
   };
 }
 
-// 复核**追加**的执行计划（2026-09-26，设计 §51 B-2）：复跑不再重算同一批种子（恒等白烧），而是
-// 换盐追加新样本、与首跑样本合并重检。口径（装置实测胜出，§51）：
+// 复核**追加**的执行计划（2026-09-26 B-2）：复跑不再重算同一批种子（恒等白烧），而是
+// 换盐追加新样本、与首跑样本合并重检。口径（装置实测胜出）：
 //   · 目标 = **补到复核上限**（TRIGGER_OPTIMIZER_ROBUSTNESS_MAX_ROUNDS）：实测「首跑未达显著 →
 //     明确」= 97.6%（按需补 n* 的臂只有 89.4%，差 8.2pp ⇒ 不采用按需）；总轮数不越上限 ⇒
 //     复核成本上界 = 2 × 上限（2026-09-27 上限 12 → 16 后为 ≤ 2 × 16 = 32 场），只是把「白烧」
 //     换成真样本。
-//   · 零差出口（§51 Q2 实测）：目标难度的当前统计 stdError = 0（逐轮差恒 0）⇒ 同轮数下 SE 恒为 0、
+//   · 零差出口（装置实测）：目标难度的当前统计 stdError = 0（逐轮差恒 0）⇒ 同轮数下 SE 恒为 0、
 //     任何追加都判不出（实测零差案例 6 轮 / 12 轮判出次数均为 0）⇒ plannedRounds = 0 且
 //     zeroDiff = true：调用方明示出口，不花样本。
 //   · 已达上限 ⇒ plannedRounds = 0 且 atCap = true（再加也不越上限：复核上限是**总量**上限）。
@@ -689,7 +689,7 @@ export function planTriggerOptimizerRobustnessRounds(summary, options = {}) {
 //     budgetSimulations = null，不假装有护栏。
 // 返回 { zeroDiff, atCap, capped, budgetLimited, limitedBy, currentRounds, capRounds, requiredRounds,
 //        plannedRounds, plannedSimulations, budgetSimulations, cumulativeBudgetSimulations,
-//        spentSimulations }（capped = true：本计划的目标就是上限，与 §49 的 capped 语义同款；
+//        spentSimulations }（capped = true：本计划的目标就是上限，与 resolveTriggerOptimizerRobustnessRounds 的 capped 语义同款；
 //        requiredRounds 恒为 null —— 复核追加不做反解，目标就是上限）。
 // 退化输入（缺 rounds / 轮数 < 2）→ null：调用方不追加，也不编一份计划。
 export function planTriggerOptimizerRobustnessAppend(summary, options = {}) {

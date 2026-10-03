@@ -83,7 +83,7 @@ function capturePermanentBuffCombatStats(player) {
 }
 
 async function runDeterministicSimulation(player, seed) {
-  // 切片 21B：JS 引擎已删除——roundtrip 一致性改在 wasm 引擎上对账（同一种子
+  // JS 引擎已删除——roundtrip 一致性改在 wasm 引擎上对账（同一种子
   // 下两次运行的 simResult 必须逐字段一致，且 DTO roundtrip 不改变结果）。
   const { existsSync, readFileSync } = await import('node:fs');
   const { setWasmProductionEngineForTests, tryRunWasmProductionRound } = await import('../wasmProductionSimulation.js');

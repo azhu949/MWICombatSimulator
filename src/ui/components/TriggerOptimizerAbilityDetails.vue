@@ -177,7 +177,7 @@
             t('common:triggerOptimizer.candidateSortHint')
           }}</span>
         </p>
-        <!-- 截断透明化（2026-09-23，设计 §28）：候选表被「每槽候选上限」截断时明示还有多少条
+        <!-- 截断透明化（2026-09-23）：候选表被「每槽候选上限」截断时明示还有多少条
              从未被评估 —— 「8 个候选」不等于「搜索试遍了所有可能」（截断是静默丢候选）。 -->
         <p
           v-if="truncatedCandidates > 0"
@@ -248,7 +248,7 @@
                   <div v-if="candidateSignalDetail(candidate)" class="text-[10px] tabular-nums text-muted-foreground">
                     {{ candidateSignalDetail(candidate) }}
                   </div>
-                  <!-- 粗筛行标注（设计 §30）：未进精测的候选只有 2 轮统计，必须与精测行区分。 -->
+                  <!-- 粗筛行标注：未进精测的候选只有 2 轮统计，必须与精测行区分。 -->
                   <div
                     v-if="candidateSampleNote(candidate)"
                     class="text-[10px] text-muted-foreground"
@@ -263,7 +263,7 @@
         </div>
       </section>
 
-      <!-- 深挖复核记录（设计 §18.1 / §21）：被噪声地板拦下的槽级最优候选换独立种子重判的结果。 -->
+      <!-- 深挖复核记录：被噪声地板拦下的槽级最优候选换独立种子重判的结果。 -->
       <section v-if="deepDive" class="rounded-md border border-border p-3" data-trigger-optimizer-details-deep-dive>
         <p class="text-xs font-medium">{{ t('common:triggerOptimizer.deepDiveTitle') }}</p>
         <dl class="mt-2 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
@@ -295,7 +295,7 @@
         </p>
       </section>
 
-      <!-- 跨槽联合采纳记录（设计 §19.11）：单槽证据不足、两槽联合显著时的补救。 -->
+      <!-- 跨槽联合采纳记录：单槽证据不足、两槽联合显著时的补救。 -->
       <section
         v-if="jointAdoptions.length"
         class="rounded-md border border-border p-3"
@@ -441,8 +441,8 @@ function candidateSignalDetail(candidate) {
   if (!Number.isFinite(mean) || !Number.isFinite(stdError)) return '';
   return t('common:triggerOptimizer.pairedMeanSe', '', { mean: signed(mean, 4), se: signed(stdError, 4) });
 }
-// 粗筛行标注（2026-09-24，设计 §30）：racing 后未进精测的候选只有粗筛的少量样本，
-// 其配对统计不能与精测行混读 —— 依据必须绑定产生它的那批测量（§19.6 A3 的教训）。
+// 粗筛行标注（2026-09-24）：racing 后未进精测的候选只有粗筛的少量样本，
+// 其配对统计不能与精测行混读 —— 依据必须绑定产生它的那批测量（这条教训）。
 function candidateSampleNote(candidate) {
   const entry = candidateEntry(candidate);
   if (!entry || entry.lane !== 'screen') return '';

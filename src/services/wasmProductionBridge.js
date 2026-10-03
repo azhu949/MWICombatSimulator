@@ -1,4 +1,4 @@
-// 生产桥（切片 5）：把 JS 侧**已构建**的单位（玩家 / 怪物实例）快照成 Rust `UnitSpec`，
+// 生产桥：把 JS 侧**已构建**的单位（玩家 / 怪物实例）快照成 Rust `UnitSpec`，
 // 组装 `run_production_simulation` 请求，供 worker / 探针调用。
 //
 // 设计要点：
@@ -193,7 +193,7 @@ export function dumpUnitSpec(unit) {
       : {}),
     enrageTime: Number.isFinite(unit.enrageTime) ? unit.enrageTime : 0,
     experience: Number.isFinite(unit.experience) ? unit.experience : 0,
-    // 切片 14：JS 玩家 DTO 顶层字段（`playerMapper` 按等级差计算；怪物缺省 0）。
+    // JS 玩家 DTO 顶层字段（`playerMapper` 按等级差计算；怪物缺省 0）。
     // 影响经验收益与掉落上下文桶的 `debuffOnLevelGap`。
     debuffOnLevelGap: Number.isFinite(unit.debuffOnLevelGap) ? unit.debuffOnLevelGap : 0,
     houseRooms: (unit.houseRooms ?? []).map((room) => ({
@@ -218,7 +218,7 @@ export function dumpUnitSpec(unit) {
     abilities: unit.abilities.map((ability) => (ability ? serializeAbility(ability) : null)),
     food: unit.food.map((item) => (item ? serializeConsumable(item) : null)),
     drinks: unit.drinks.map((item) => (item ? serializeConsumable(item) : null)),
-    // 切片 17：玩家配置的战斗卷轴（JS `normalizeCombatScrolls` 后的对象键序；怪物为空）。
+    // 玩家配置的战斗卷轴（JS `normalizeCombatScrolls` 后的对象键序；怪物为空）。
     combatScrolls: Object.entries(unit.combatScrolls ?? {}).map(([itemHrid, configuration]) => ({
       itemHrid,
       quantity: configuration?.quantity ?? null,
@@ -229,7 +229,7 @@ export function dumpUnitSpec(unit) {
 /// 区域怪物模板：对 `randomSpawnInfo.spawns` + `bossSpawns` 里每个 hrid 实例化 `new Monster(...)`
 /// 并快照；按 `(zoneHrid, difficultyTier)` 缓存（模板只读，可跨模拟复用）。
 ///
-/// 切片 15：副本时还要把 `dungeonInfo` 两张波次表里的怪物一并纳入模板集合——副本刷怪走
+/// 副本时还要把 `dungeonInfo` 两张波次表里的怪物一并纳入模板集合——副本刷怪走
 /// `getNextWave()`，怪物定义不在 `fightInfo` 里（`fixedSpawnsMap` 各固定波次 +
 /// `randomSpawnInfoMap` 各波次区间的 spawns）。
 export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo, dungeonInfo = null) {
@@ -264,7 +264,7 @@ export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo, dun
   return templates;
 }
 
-/// 切片 16：迷宫怪物模板（`Labyrinth.getMonster()` = `new Monster(hrid, 0, roomLevel)`，单只）。
+/// 迷宫怪物模板（`Labyrinth.getMonster()` = `new Monster(hrid, 0, roomLevel)`，单只）。
 ///
 /// 迷宫每轮遭遇都会生成一只**全新**怪物，但模板只读：这里按 `(monsterHrid, roomLevel)` 缓存
 /// 一份已按房间等级缩放并结算过的快照，Rust 侧每次遭遇用 `instantiate_templates` 复刻实例。
@@ -319,7 +319,7 @@ function getBloomAbilityTemplate() {
   return bloomAbilityTemplate;
 }
 
-/// 切片 17：战斗卷轴定义表——玩家配置引用到的 itemHrid 去重后快照
+/// 战斗卷轴定义表——玩家配置引用到的 itemHrid 去重后快照
 ///（`durationNs` + `new Buff(template, 1)` 的注册输入）。Rust 侧不持有游戏数据。
 function buildCombatScrollDefinitions(players) {
   const seen = new Set();
@@ -340,7 +340,7 @@ function buildCombatScrollDefinitions(players) {
   return definitions;
 }
 
-/// 切片 20：成本上界观察器请求字段（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
+/// 成本上界观察器请求字段（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
 ///
 /// 价格由桥侧预解析成 `[hrid, price]` 快照：键序 = 监视玩家 food 槽 `filter(Boolean)`
 /// 去重（与 JS 观察器 `foodUsed` 的求和序逐字一致——浮点加法顺序即结果），且只含
@@ -374,18 +374,18 @@ function buildCostBoundSpec(costBound, players, simulationTimeLimit) {
 
 /// 生产路径支持判定：不满足时本轮 wasm 不可用（返回原因供日志/UI 使用；生产调用方硬失败，无 JS 回退）。
 ///
-/// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
+/// `minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
 /// ——full-result 全量覆盖（经验记账、掉落上下文桶、1000-tick 时序快照、激怒层数），
 /// 战斗日志只影响控制台输出（无数据），时序随 simResult 的 `timeSeriesData` 一次性返回
 /// （wasm 侧没有流式 progress）。
 ///
-/// 切片 15：副本（dungeon）波次机制纳入覆盖（含团灭计数、逐波存活时间、
+/// 副本（dungeon）波次机制纳入覆盖（含团灭计数、逐波存活时间、
 /// maxWaveReached、bossSpawns）。minimal 变体把 `addWipeEvent` 覆写为空操作、
 /// 也不序列化 `wipeEvents`，不受影响。
 ///
-/// 切片 16：迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启。
-/// 切片 17：战斗卷轴窗口语义纳入覆盖（定义表随请求快照传入）。
-/// 切片 19：副本 + full-result + `logCombatEvents` 组合纳入覆盖——团灭日志
+/// 迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启。
+/// 战斗卷轴窗口语义纳入覆盖（定义表随请求快照传入）。
+/// 副本 + full-result + `logCombatEvents` 组合纳入覆盖——团灭日志
 /// （`wipeEvents`）由引擎生成，timestamp 用确定性字符串 `t+{simulationTime}`
 /// 替代 JS 的 `new Date().toISOString()` 墙钟（UI 仅用作 v-for key，不显示）。
 /// 仍留 JS 的还有公会试炼与无区域。
@@ -414,12 +414,12 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       zonePresent: Boolean(zone),
       zoneHrid,
       zoneDifficultyTier,
-      // 切片 15：副本标记必须显式传递——Rust 侧 `zone_is_dungeon` 默认 false，
+      // 副本标记必须显式传递——Rust 侧 `zone_is_dungeon` 默认 false，
       // 缺失时副本会被当作普通区域跑（`getRandomEncounter` 而非 `getNextWave`）。
       zoneIsDungeon: Boolean(zone?.isDungeon),
       zoneMonsterSpawnInfo: zone?.monsterSpawnInfo ?? null,
       zoneDungeonSpawnInfo: zone?.dungeonSpawnInfo ?? null,
-      // 切片 16：迷宫模式没有 zone（`payload.zone` 为 null），怪物模板来自
+      // 迷宫模式没有 zone（`payload.zone` 为 null），怪物模板来自
       // `Labyrinth.getMonster()` 的单怪快照（difficultyTier 恒 0）。
       labyrinthPresent: Boolean(labyrinth),
       labyrinthName: labyrinth?.monsterHrid ?? null,
@@ -429,17 +429,17 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
         : labyrinth
           ? buildLabyrinthEncounterTemplate(labyrinth)
           : [],
-      // 切片 14：full-result 经验记账需要的风格技能表（静态数据，进程内缓存）。
+      // full-result 经验记账需要的风格技能表（静态数据，进程内缓存）。
       combatStyleSkillExpMap: getCombatStyleSkillExpMap(),
       logCombatEvents: Boolean(options.logCombatEvents),
       enableHpMpVisualization: Boolean(options.enableHpMpVisualization),
       combatScrollsEnabled: Boolean(options.combatScrollsEnabled),
-      // 切片 17：卷轴定义表（玩家配置引用的 itemHrid 去重快照）。
+      // 卷轴定义表（玩家配置引用的 itemHrid 去重快照）。
       combatScrollDefinitions: buildCombatScrollDefinitions(players),
       isGuildTrial: Boolean(options.isGuildTrial),
       blazeAbility: getBlazeAbilityTemplate(),
       bloomAbility: getBloomAbilityTemplate(),
-      // 切片 12：候选轮 shouldStop 谓词（watchHrid + deathLimit）。deathLimit 为
+      // 候选轮 shouldStop 谓词（watchHrid + deathLimit）。deathLimit 为
       // Infinity / 非有限数时传 null——Rust 侧反序列化为 None（= JS Infinity，仅空蓝停止）。
       earlyStop: options.earlyStop
         ? {
@@ -450,10 +450,10 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
                 : null,
           }
         : null,
-      // 切片 13：观察器（阈值区间 + 闲置食物下界，等价 JS observeFoodOptimizerThresholds /
+      // 观察器（阈值区间 + 闲置食物下界，等价 JS observeFoodOptimizerThresholds /
       // observeInactiveFoodThresholds）。纯读窥视——不改 RNG/事件流/simResult。
       observers: options.observers ? { watchHrid: options.observers.watchHrid } : null,
-      // 切片 20：成本上界观察器（等价 JS observeFoodOptimizerCostBound）。与 earlyStop
+      // 成本上界观察器（等价 JS observeFoodOptimizerCostBound）。与 earlyStop
       // 组合成 JS shouldStop 的完整语义（失败谓词优先、成本其次——|| 短路顺序一致）；
       // 停止结论与下界走独立输出字段 costBound，simResult 逐字节不变。
       costBound: buildCostBoundSpec(options.costBound, players, simulationTimeLimit),
@@ -464,8 +464,8 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
 
 /// 调用 wasm 生产出口；`error` 非空时抛错（调用方按失败处置，无 JS 回退）。
 /// 返回 `{ simResult, observers, costBound }`：simResult 形状由 golden 快照锁定
-/// （切片 21B 起 parity 对 golden，JS 引擎已删除）；observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`；
-/// costBound（切片 20）在未激活时为 null，激活时为 `{ stoppedForCost, costLowerBound }`
+/// （parity 改为对 golden，JS 引擎已删除）；observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`；
+/// costBound 在未激活时为 null，激活时为 `{ stoppedForCost, costLowerBound }`
 ///（独立输出字段，保证 simResult 逐字节不变）。
 export function runWasmProductionSimulation(engine, request) {
   const output = JSON.parse(engine.run_production_simulation(JSON.stringify(request)));

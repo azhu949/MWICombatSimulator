@@ -94,7 +94,7 @@ describe('triggerOptimizerDomain', () => {
           bestTriggerMap: null,
           passes: [],
           improvedSlots: [],
-          // 跨槽联合采纳记录（2026-09-19，设计 §19.11）：骨架为空数组，搜索层原地累积。
+          // 跨槽联合采纳记录（2026-09-19）：骨架为空数组，搜索层原地累积。
           jointAdoptions: [],
           createdAt: 0,
           stale: false,
@@ -296,7 +296,7 @@ describe('triggerOptimizerDomain', () => {
       expect(getTriggerOptimizerPresetSettings(TRIGGER_OPTIMIZER_PRESET_CUSTOM)).toBeNull();
     });
 
-    // 时长自适应轮数（2026-09-20 按功效实测重定，设计 §20.1）：从「全局推荐值 ×
+    // 时长自适应轮数（2026-09-20 按功效实测重定）：从「全局推荐值 ×
     // 基础轮数」的两段式改为**每档自带一张「时长 → 轮数」表**。依据：采纳地板
     // ∝ 1/√(n·T)（总模拟小时数是唯一货币），但 p<0.05 的显著门槛还要乘 t(n−1)——
     // 实测 24h × 2 轮的显著门槛要 ≈9.2% 利润（搜索期 verdict 几乎恒 inconclusive），
@@ -439,7 +439,7 @@ describe('triggerOptimizerDomain', () => {
       expect(input.simulation.zoneHrid).toBe('/zones/test');
     });
 
-    it('队伍载荷进指纹：队友集合 / 队友配置变化都让报告过期（设计 §59）', () => {
+    it('队伍载荷进指纹：队友集合 / 队友配置变化都让报告过期', () => {
       const source = playerWithAbilities([{ abilityHrid: '/abilities/fireball', level: 1 }]);
       const makeMate = (overrides = {}) => ({
         ...playerWithAbilities([{ abilityHrid: '/abilities/fireball', level: 1 }]),
@@ -463,7 +463,7 @@ describe('triggerOptimizerDomain', () => {
       expect(signature([makeMate({ assetScore: { computedAt: 1, total: 2 } })])).toBe(withMate);
     });
 
-    it('队伍设置归一化：去重 + 保序 + 上限，并拒绝非法值（设计 §59）', () => {
+    it('队伍设置归一化：去重 + 保序 + 上限，并拒绝非法值', () => {
       const source = playerWithAbilities([{ abilityHrid: '/abilities/fireball', level: 1 }]);
       const partyOf = (partyPlayerIds) =>
         createOptimizerInput(source, simulationSettings(), { settings: { partyPlayerIds } }).settings.partyPlayerIds;
@@ -571,7 +571,7 @@ describe('triggerOptimizerDomain', () => {
       expect(second.perAbilityChoices).toEqual([]);
       expect(second.metricsByCandidate).toEqual({});
       expect(second.rounds).toBe(TRIGGER_OPTIMIZER_DEFAULT_ROUNDS);
-      // 「轮数上限截断」标记默认 false（2026-09-19，设计 §19.8）：骨架与搜索报告同形。
+      // 「轮数上限截断」标记默认 false（2026-09-19）：骨架与搜索报告同形。
       expect(second.roundLimitReached).toBe(false);
     });
   });
@@ -882,7 +882,7 @@ describe('triggerOptimizerDomain', () => {
     expect(TRIGGER_OPTIMIZER_SCORE_EPSILON).toBe(1e-9);
   });
 
-  // 追加复验的计划快照净化（2026-09-25，设计 §48；累计字段 2026-09-26，设计 §50 B-2）：报告里的
+  // 追加复验的计划快照净化（2026-09-25；累计字段 2026-09-26）：报告里的
   // attempts[i].plan 要能回答「这次补了几轮、上限/护栏有没有咬住、累计预算花到哪」—— 白名单 +
   // 类型校验，任何缺项/类型不符整份丢弃；还必须与这一条实际执行的 rounds 自洽
   //（plannedRounds === rounds），否则宁可不出快照。
@@ -891,7 +891,7 @@ describe('triggerOptimizerDomain', () => {
       decisive: false,
       capped: false,
       budgetLimited: false,
-      // 成本护栏的两级字段（§50 B-2）：未咬 = limitedBy null；本次之前累计已花 24 场；整轮 370 场
+      // 成本护栏的两级字段：未咬 = limitedBy null；本次之前累计已花 24 场；整轮 370 场
       // ⇒ 单次预算 74 场 / 累计预算 148 场（都够用，所以没咬）。
       limitedBy: null,
       currentRounds: 6,
@@ -941,7 +941,7 @@ describe('triggerOptimizerDomain', () => {
     });
   });
 
-  // 追加复验的累计已花场次（2026-09-26，设计 §50 B-2）：attempts 各条 rounds 即「本次追加几轮/侧」，
+  // 追加复验的累计已花场次（2026-09-26）：attempts 各条 rounds 即「本次追加几轮/侧」，
   // 每轮双侧 = 2 场 ⇒ 累计 = Σ(2 × rounds)；只数**追加**部分（不含首轮复验）—— store（真的去跑）
   // 与页面（上屏说将要花多少）共用这一个口径，否则「文案里的预算」与「实际扣的预算」会分裂。
   describe('resolveTriggerOptimizerAppendSpentSimulations（累计已花的场次）', () => {
@@ -960,9 +960,9 @@ describe('triggerOptimizerDomain', () => {
     });
   });
 
-  // 复核轮数的归一化（2026-09-25，设计 §49）：上限由**复核口径**的常量（2026-09-27 起 16）独立
+  // 复核轮数的归一化（2026-09-25）：上限由**复核口径**的常量（2026-09-27 起 16）独立
   // 给出，不复用搜索口径的归一化（语义不同；历史上搜索上限 10 曾把「这次要 12 轮」静默钳成
-  // 10 轮 —— §47 同款教训）。
+  // 10 轮 —— 同款教训）。
   describe('normalizeTriggerOptimizerRobustnessRounds（复核轮数的归一化）', () => {
     it('accepts 1..16 and falls back to the baseline for anything outside', () => {
       expect(normalizeTriggerOptimizerRobustnessRounds(9)).toBe(9);
@@ -979,8 +979,8 @@ describe('triggerOptimizerDomain', () => {
     });
   });
 
-  // 复核**追加**轮数的归一化（2026-09-26，设计 §51）：合法区间与首跑相同（1..上限 16），但语义
-  // 是「这一次补几轮」。与首跑的归一化同形分离（§47/§49 的教训：两套口径可以长得像、含义不同，
+  // 复核**追加**轮数的归一化（2026-09-26）：合法区间与首跑相同（1..上限 16），但语义
+  // 是「这一次补几轮」。与首跑的归一化同形分离（教训：两套口径可以长得像、含义不同，
   // 将来任一方改口径时不会静默串味）；同样**不能**复用搜索口径（语义不同；历史上搜索上限 10
   // 曾把「补到 12 轮」静默钳短）。
   describe('normalizeTriggerOptimizerRobustnessAppendRounds（复核追加轮数的归一化）', () => {
@@ -1001,11 +1001,11 @@ describe('triggerOptimizerDomain', () => {
     });
   });
 
-  // 复核计划的留档快照（2026-09-25，设计 §49；追加计划字段 2026-09-26，设计 §51）：与 §48 的
-  // 追加复验同款（白名单 + 类型校验 + 自洽闸门），但字段集不同 —— 复核没有 decisive / targetRounds：
+  // 复核计划的留档快照（2026-09-25；追加计划字段 2026-09-26）：与追加复验的计划快照同款（白名单 +
+  // 类型校验 + 自洽闸门），但字段集不同 —— 复核没有 decisive / targetRounds：
   // 它回答的是「新现场从零跑多少轮」，先验已判明确也照样给轮数。追加计划的额外字段（zeroDiff /
   // atCap / limitedBy / spentSimulations / cumulativeBudgetSimulations）按**可选**处理：首跑的
-  // §49 计划没有它们，缺了不丢整份（「这次跑了几轮」的主证据在 §49 字段里，追加细节只是补注）。
+  // 复核计划没有它们，缺了不丢整份（「这次跑了几轮」的主证据在复核字段里，追加细节只是补注）。
   describe('normalizeTriggerOptimizerRobustnessPlan（复核计划的留档快照）', () => {
     const plan = () => ({
       capped: false,
@@ -1016,8 +1016,8 @@ describe('triggerOptimizerDomain', () => {
       plannedRounds: 9,
       plannedSimulations: 18,
       budgetSimulations: 16,
-      // 追加补注的缺省值（§51）：zeroDiff / atCap 缺省 false，limitedBy 缺省 null，两个预算
-      // 字段缺省 null —— 首跑的 §49 计划不带它们，净化时按缺省补齐。
+      // 追加补注的缺省值：zeroDiff / atCap 缺省 false，limitedBy 缺省 null，两个预算
+      // 字段缺省 null —— 首跑计划不带它们，净化时按缺省补齐。
       zeroDiff: false,
       atCap: false,
       limitedBy: null,
@@ -1041,7 +1041,7 @@ describe('triggerOptimizerDomain', () => {
     });
 
     it('keeps the optional append annotations when they are present and well-typed', () => {
-      // 追加计划（§51）：补注字段显式给出时原样留档（这条计划说「补到上限、护栏没咬」）。
+      // 追加计划：补注字段显式给出时原样留档（这条计划说「补到上限、护栏没咬」）。
       const annotated = {
         ...plan(),
         atCap: true,

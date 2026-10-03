@@ -184,7 +184,7 @@ describe('food optimizer shared round execution', () => {
     const before = structuredClone(shared);
     const receiver = createFoodOptimizerEvaluator(structuredClone(request), { sharedRounds: true, items });
     const result = await receiver(target, Infinity, undefined, shared);
-    // 切片 21B：JS 引擎已删除——参照改为一个全新 evaluator（独立缓存）真跑同一候选，
+    // JS 引擎已删除——参照改为一个全新 evaluator（独立缓存）真跑同一候选，
     // wasm 确定性下复用轮次与重算轮次的物理结果必须逐字段一致。
     const reference = await evaluateFoodOptimizerCandidate(request, target, Infinity);
 

@@ -2,10 +2,10 @@
 //
 // 本模块把「候选」翻译成「一场可运行的模拟」：
 //   buildCandidatePayload  克隆玩家配置 → 只按候选改一个技能的 triggerMap
-//                          （applyTriggerStateToTriggerMap 的四态语义，设计 §1/§3.1）
+//                          （applyTriggerStateToTriggerMap 的四态语义）
 //                          → buildPlayersForSimulation → buildSingleSimulationPayload
 //   evaluatePayload        用 trigger-optimizer scope 的专用 worker 跑一场评估：默认把本次
-//                          评估的全部种子收进**一个** worker realm（§54 批量路径，省掉每场
+//                          评估的全部种子收进**一个** worker realm（批量路径，省掉每场
 //                          一次 realm 新建的固定开销；注入的桩没有批量能力时回退到逐场路径），
 //                          同一槽的基线与全部候选共享同一组 seeds = 公共随机数，
 //                          按 aggregateRoundMetrics 聚合打分指标与逐轮样本
@@ -20,7 +20,7 @@
 //
 // payload.players 是引擎 Player 对象（buildPlayersForSimulation 的输出），
 // 候选改的是 triggerMap（配置侧），由 playerMapper 的注入逻辑等价地落到
-// Player.abilities[i].triggers（设计 §3.1 的 B 写法）。
+// Player.abilities[i].triggers（B 写法）。
 
 import { buildPlayersForSimulation } from './playerMapper.js';
 import {
@@ -45,12 +45,12 @@ import { getFoodOptimizerResources } from './foodOptimizerSimulation.js';
 import Monster from '../combatsimulator/monster.js';
 import Zone from '../combatsimulator/zone.js';
 
-// payload.workerId：worker 内部按 workerId 派生随机流（设计 §3.2 的 RNG 隔离说明）。
+// payload.workerId：worker 内部按 workerId 派生随机流（RNG 隔离说明）。
 export const TRIGGER_OPTIMIZER_WORKER_ID = 'trigger-optimizer';
 
 // 候选的 triggerMap 落盘状态（与 triggerMapper 的 getEffectiveTriggerState 同源）：
 //   triggers 为 null/undefined → default（删键）
-//   空数组                     → disabled（写 []，引擎语义=冷却好了立即释放，设计 §1.1）
+//   空数组                     → disabled（写 []，引擎语义=冷却好了立即释放）
 //   非空数组                   → custom（写 sanitize 后的条目）
 function resolveCandidateState(candidate) {
   if (!candidate) return null;
@@ -97,7 +97,7 @@ export function readCurrentTriggers(triggerMap, abilityHrid) {
 //   enableHpMpVisualization —— 强制 false：首页若开着血蓝曲线，每场都会把整条时间
 //                              序列 postMessage 回来，在「候选数 × 轮数」次评估下
 //                              是纯浪费（优化器只读汇总指标）。
-//   options.teammates —— 队伍载荷（2026-09-27，设计 §59）：**冻结队友配置**数组（口径 A：
+//   options.teammates —— 队伍载荷（2026-09-27）：**冻结队友配置**数组（口径 A：
 //                      整队进模拟、只改主角触发器）。空数组 = 现状单人载荷，行为逐值不变。
 export function buildCandidatePayload(playerConfig, simulationSettings, extra, candidate, options = {}) {
   const config = applyCandidateToPlayerConfig(playerConfig, candidate);
@@ -138,7 +138,7 @@ export function createDegenerateMetrics(reason) {
   };
 }
 
-// simResult → 打分指标（设计 §2.3）：
+// simResult → 打分指标：
 //   dps/dailyNoRngProfit/xpPerHour/killsPerHour 取自 computeQueueMetrics，
 //   deathsPerHour 直接由 simResult.deaths / 小时 换算（summarizeResult 同口径），
 //   ranOutOfMana 是空蓝强否决标记。
@@ -220,7 +220,7 @@ export async function evaluatePayload(
   { WorkerClientCtor, pricingOptions, preferredPlayerId, seeds, rounds = TRIGGER_OPTIMIZER_DEFAULT_ROUNDS } = {},
 ) {
   const resolvedSeeds = resolveEvaluationSeeds(payload, seeds, rounds);
-  // §54（2026-09-27）：默认走「一次评估一个 realm」的批量路径 —— 生产端每建一个 realm 都要
+  // 2026-09-27：默认走「一次评估一个 realm」的批量路径 —— 生产端每建一个 realm 都要
   // 付一次模块加载（装置实测 ≈0.43s/场、约占单场墙钟一半），而一次评估的 N 场本来就是串行
   // 跑的，收进同一个 realm 不改变任何样本（装置 parity 16/16 逐位一致）。注入的测试桩没有
   // startSimulationBatch 时回退到逐场路径 —— 既有测试与桩的语义完全不变；单场评估
@@ -285,7 +285,7 @@ export function resolveEvaluationSeeds(payload, seeds, rounds = TRIGGER_OPTIMIZE
 //   group 区域随机刷新的怪物血量之和 —— 「一整波」尺度（AOE 的敌方总血量阈值）
 //   waveSize 一波怪的**上限**人数（randomSpawnInfo.maxSpawnCount，见 zone.js
 //            buildEncounterFromSpawnInfo 的循环上界；实际人数还会被 maxTotalStrength
-//            提前截断）—— 「已死怪数」类候选的阈值上界（2026-09-20，设计 §22）。
+//            提前截断）—— 「已死怪数」类候选的阈值上界（2026-09-20）。
 // 任何失败都返回 null：候选生成器会跳过敌方血量类候选，其余候选不受影响。
 export function resolveEnemyHpScale(payload) {
   // 未知区域 hrid 会让 Zone/Monster 构造函数直接抛错（引擎按 actionDetailMap 索引），
@@ -327,7 +327,7 @@ export function resolveEnemyHpScale(payload) {
 }
 
 // 数值类候选（current_hp/missing_hp 等）的 value 是绝对值，必须取自基线模拟的
-// 真实战斗属性（设计 §6.3）。走 getFoodOptimizerResources 同款路径：构造模拟器
+// 真实战斗属性。走 getFoodOptimizerResources 同款路径：构造模拟器
 // → reset → initializeCombatPlayers → 读 maxHitpoints/maxManapoints。
 // 该路径不吃迷宫输入（食物优化器自身的限制）且依赖完整游戏数据，任何失败都
 // 降级为返回 null —— 候选生成器会跳过数值类候选，只保留非数值锚点。

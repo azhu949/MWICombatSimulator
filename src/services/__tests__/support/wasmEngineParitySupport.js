@@ -1,4 +1,4 @@
-// 切片 2 parity → 切片 21B（定案 D2）golden 化：JS 事件队列已随 A 层删除，
+// parity golden 化（定案 D2）：JS 事件队列已随 A 层删除，
 // Rust 探针（`engine/src/queue_probe.rs`）的轨迹输出改为与 golden 快照对账。
 // 操作脚本构造器与轨迹比较助手保留：前者生成确定性输入，后者供 unitParity 复用。
 import { isDeepStrictEqual } from 'node:util';
@@ -17,7 +17,7 @@ export function findTraceDivergence(jsTrace, rustTrace) {
 }
 
 // 定向脚本：覆盖同时间事件（FIFO tie 顺序）、f64 小数时间、超大时间、按类型/单位清除、
-// 空队列查询等边界。与 Rust 侧的 (time, seq) 全序队列（切片 24）对账。
+// 空队列查询等边界。与 Rust 侧的 (time, seq) 全序队列对账。
 export function buildTargetedEventQueueOps() {
   return [
     { op: 'push', id: 1, type: 'autoAttack', time: 1200, source: 10, target: 20 },

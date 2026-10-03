@@ -33,6 +33,8 @@ lto = true
 codegen-units = 1
 
 # wasm-opt (binaryen) 从 GitHub Release 下载在国内网络下极慢/易挂起（实测 3 次构建全部卡死）。
-# 切片 1-4 不依赖其体积/性能收益；切片 5+ 做性能对照前再启用（可通过镜像或 PATH 安装 binaryen）。
+# 下方 false 只关闭 wasm-pack 内置的下载/调用路径；实际的 wasm-opt -O4 由 build:wasm 的
+# 后处理 scripts/optimize-wasm.mjs（npm binaryen devDependency）常态化完成——parity 不变、
+# 体积约 -12.6%，勿因误判「未启用」而在此处打开或重复引入。
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false

@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <!-- 模拟载荷（2026-09-27，设计 §59）：勾选参与整队模拟的队友。空 = 单人模拟（现状，零行为
+      <!-- 模拟载荷（2026-09-27）：勾选参与整队模拟的队友。空 = 单人模拟（现状，零行为
            变化）；勾上队友后按整队评估（更贴近组队刷怪），但每场模拟约慢 3~4 倍（实测量级）。
            队友配置**冻结**参与（只改主角触发器），指标仍按主角结算；队友集合与队友配置都进输入
            指纹 ⇒ 换队友 / 改队友配置后既有报告自动过期。 -->
@@ -366,7 +366,7 @@
               <p class="tabular-nums text-xs text-muted-foreground">{{ verificationPValueLabel }}</p>
             </div>
           </div>
-          <!-- 复验三态的诚实标注（2026-09-24，设计 §31）：复验判「未达显著」且搜索期确有提升时，
+          <!-- 复验三态的诚实标注（2026-09-24）：复验判「未达显著」且搜索期确有提升时，
                不能默默放行 —— 明说「提升尚未被独立样本确认」，并给出「追加复验」把不确定结论追到
                明确（产品口径不变：只有复验判负才否决应用，未达显著仍可应用，只是不许装作已确认）。
                合并轮数标注与警示行分开判定：追加后结论转正时警示行消失，留档仍然显示。 -->
@@ -379,7 +379,7 @@
             >
               {{ t('common:triggerOptimizer.verifyUnconfirmed') }}
             </p>
-            <!-- 追加轮数不是常量了（2026-09-25，设计 §47）：这一次要追加多少轮、护栏/上限有没有
+            <!-- 追加轮数不是常量了（2026-09-25）：这一次要追加多少轮、护栏/上限有没有
                  咬住，必须在上屏处说清；上限或护栏咬到「一轮都追加不了」时按钮不挂出来。 -->
             <p
               v-if="verifyAppendPlanText"
@@ -449,9 +449,9 @@
           </div>
         </div>
       </div>
-      <!-- 结论适用范围 + 换难度复核（2026-09-23，设计 §29）：触发器写的是**全局技能配置**，
+      <!-- 结论适用范围 + 换难度复核（2026-09-23）：触发器写的是**全局技能配置**，
            而搜索只在「一个区域 + 一个难度」上评估过 —— 这里把结论的边界写在结论旁边，并给出
-           「换个难度再看一眼」的入口（2 次评估 × 自适应 6~12 轮，见设计 §49；只读，不改玩家配置）。 -->
+           「换个难度再看一眼」的入口（2 次评估 × 自适应 6~12 轮；只读，不改玩家配置）。 -->
       <div
         v-if="evaluationScope"
         class="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs"
@@ -461,10 +461,10 @@
           <div class="min-w-0">
             <p class="font-medium text-muted-foreground">{{ t('common:triggerOptimizer.scopeTitle') }}</p>
             <p class="mt-0.5" data-trigger-optimizer-scope-text>{{ scopeText }}</p>
-            <!-- 模拟载荷（2026-09-27，设计 §59）：与「结论适用范围」同一块的边界标注 —— 这份结论是在
+            <!-- 模拟载荷（2026-09-27）：与「结论适用范围」同一块的边界标注 —— 这份结论是在
                  单人还是整队（哪些队友）载荷上得出的。 -->
             <p class="mt-0.5 text-muted-foreground" data-trigger-optimizer-scope-party>{{ scopePartyText }}</p>
-            <!-- 队伍载荷的保守提示（2026-09-27，设计 §60 / C1-①）：C1 实测队伍载荷下判据链真检出率偏低
+            <!-- 队伍载荷的保守提示（2026-09-27）：实测队伍载荷下判据链真检出率偏低
                  （本机基准 93.2% → 64.6%，同一批种子与切分）⇒ 有队友时结论可能欠采。只提示，不改判据 / 数值。 -->
             <p
               v-if="scopePartyEntries.length > 0"
@@ -484,7 +484,7 @@
             ><Square />{{ robustnessStopLabel }}</Button
           >
           <!-- 首跑入口：只在没有复核结论时挂出；已有结论时再点是**追加**（见结果区的追加入口），
-               不会用同盐复跑覆盖旧结论（§51）。 -->
+               不会用同盐复跑覆盖旧结论。 -->
           <Button
             v-else-if="!robustnessSummary"
             size="sm"
@@ -528,7 +528,7 @@
             {{ t('common:triggerOptimizer.robustnessVerdict') }}：{{ robustnessVerdictLabel }}
           </span>
         </div>
-        <!-- 复核**实际执行**的计划（2026-09-25，设计 §49）：跑了几轮、是反解出来的还是被上限/成本
+        <!-- 复核**实际执行**的计划（2026-09-25）：跑了几轮、是反解出来的还是被上限/成本
              护栏咬住 —— 结论旁边要有这句，否则「为什么是 6 轮 / 12 轮」事后无据可查。 -->
         <p
           v-if="robustnessPlanDetail"
@@ -537,8 +537,8 @@
         >
           {{ robustnessPlanDetail }}
         </p>
-        <!-- 复核追加（2026-09-26，设计 §51）：已复核过就再补一组**换盐新样本**与首跑样本合并重检
-             ——旧口径的「同盐复跑」被实测证伪（逐值相同、白烧 2 × 轮数样本，见 §51）。护栏/上限/
+        <!-- 复核追加（2026-09-26）：已复核过就再补一组**换盐新样本**与首跑样本合并重检
+             ——旧口径的「同盐复跑」被实测证伪（逐值相同、白烧 2 × 轮数样本）。护栏/上限/
              零差咬到「一轮都追加不了」时不挂按钮，只挂原因句（按钮凭空消失会被读成功能坏了）。 -->
         <p
           v-if="robustnessAppendMergedText"
@@ -571,7 +571,7 @@
           ><RefreshCw />{{ t('common:triggerOptimizer.robustnessAppendRun') }}</Button
         >
         <!-- 未复核时给一句可执行的说明（能复核 → 说明怎么读；不能复核 → 说明为什么）。轮数不是常量
-             了（2026-09-25，设计 §49）：反解出计划时再补一句「这次要跑几轮」的明细。 -->
+             了（2026-09-25）：反解出计划时再补一句「这次要跑几轮」的明细。 -->
         <p
           v-if="!robustnessRunning && !robustnessSummary"
           :class="robustnessBlockReason ? 'text-warning' : 'text-muted-foreground'"
@@ -693,7 +693,7 @@
                 {{ t(`common:triggerOptimizer.signals.${choice.chosen.paired.score?.verdict || 'unknown'}`) }}
               </span>
               <!-- 搜索期 verdict 不是 positive 时，采纳依据是**噪声地板**（|mean| > 2×SE）而不是
-                   显著性声明：不写清楚会被读成「没证据也硬采纳」（2026-09-19，设计 §19.4/§19.6）。
+                   显著性声明：不写清楚会被读成「没证据也硬采纳」（2026-09-19）。
                    深挖采纳的槽**不挂**这枚标签：它的依据是扩样到 6 轮后的复测（旁边已有
                    「深挖复核通过（6 轮）」），而搜索期的 mean 可能本来就没过地板
                    （熊熊图实测：搜索期 0.0732 < 2×SE 0.0764，深挖 6 轮 0.0785 > 0.0632）。 -->
@@ -710,7 +710,7 @@
                 {{ t('common:triggerOptimizer.noiseFloorPassed') }}
               </span>
               <!-- 深挖采纳的槽：搜索期的「不显著」徽章会被误读成「没证据也硬采纳」，
-                   这里补一句「哪来的证据」（同盐扩样，设计 §18.1）。 -->
+                   这里补一句「哪来的证据」（同盐扩样）。 -->
               <span
                 v-if="deepDiveForSlot(choice.slotIndex)?.adopted === true"
                 class="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground"
@@ -826,7 +826,7 @@
             </section>
           </div>
 
-          <!-- 本槽净效应直显（2026-09-25，§27.6）：与详情弹窗同源（buildNetMetricRows），
+          <!-- 本槽净效应直显（2026-09-25）：与详情弹窗同源（buildNetMetricRows），
                卡片只留「指标 + 配对差 ± 标准误 + 显著性」摘要，完整表与口径说明在弹窗里。
                未采纳的槽不渲染（净效应是「本槽改动」的账，没改动就没账可记）。 -->
           <div
@@ -1035,7 +1035,7 @@ const choices = computed(() =>
 const METRIC_KEYS = TRIGGER_OPTIMIZER_METRIC_KEYS;
 const disabledHint = computed(() => t(TRIGGER_OPTIMIZER_CANDIDATE_DISABLED_HINT_KEY, ''));
 
-// 深挖记录（2026-09-19，设计 §18.1）：被噪声地板拦下的槽级最优候选的加密复核结果。
+// 深挖记录（2026-09-19）：被噪声地板拦下的槽级最优候选的加密复核结果。
 // 报告里最多每槽一条；UI 用它解释「这个槽为什么被采纳（或不采纳）」。
 const deepDives = computed(() => (Array.isArray(results.value?.deepDives) ? results.value.deepDives : []));
 // 真正被采纳过的槽位（2026-09-19 实测补记）：`chosen` 会保留「槽内最优」——即使它因证据
@@ -1059,7 +1059,7 @@ const deepDiveSummary = computed(() => {
 function deepDiveForSlot(slotIndex) {
   return deepDives.value.find((entry) => Number(entry?.slotIndex) === Number(slotIndex)) ?? null;
 }
-// 跨槽联合采纳（2026-09-19，设计 §19.11）：单槽增量的证据不足、但一对配置相对本轮起点显著时，
+// 跨槽联合采纳（2026-09-19）：单槽增量的证据不足、但一对配置相对本轮起点显著时，
 // 两槽一起被采纳。这里汇总一行说清「提升里包含联合采纳的贡献」，避免被误读成普通的槽内推荐。
 const jointAdoptions = computed(() =>
   Array.isArray(results.value?.jointAdoptions) ? results.value.jointAdoptions : [],
@@ -1079,7 +1079,7 @@ function chosenScore(choice) {
   return Number.isFinite(value) ? value : 0;
 }
 
-// 本槽净效应直显（2026-09-25，§27.6）：与详情弹窗共用取数口径（buildNetMetricRows），
+// 本槽净效应直显（2026-09-25）：与详情弹窗共用取数口径（buildNetMetricRows），
 // 卡片只留「指标 + 配对差 ± 标准误 + 显著性」摘要；未采纳的槽不渲染（没有「本槽改动」可记）。
 function netMetricRowsFor(choice) {
   return slotAdopted(choice?.slotIndex) ? buildNetMetricRows(choice) : [];
@@ -1122,7 +1122,7 @@ const abilitySlots = computed(() => {
 const activeSlotCount = computed(() => abilitySlots.value.length);
 const searchableSlotCount = computed(() => abilitySlots.value.filter((slot) => !slot.locked).length);
 
-// ── 模拟载荷：队友选择（2026-09-27，设计 §59）────────────────────────────────────
+// ── 模拟载荷：队友选择（2026-09-27）────────────────────────────────────
 // 候选 = 除主角外的已保存玩家（引擎按勾选顺序把队友挂成 player2 / player3…）。
 // 勾选集合存 settings.partyPlayerIds：空集合 = 单人载荷（现状，零行为变化）；它进输入指纹，
 // 因此「换队友」会让既有报告立即过期（与锁定集合同款语义）。
@@ -1147,8 +1147,8 @@ function togglePartyPlayer(playerId, selected) {
 //   基线 1 次 × 重复次数（大候选池再加粗筛参考 1 × SCREEN_ROUNDS）
 //   + 轮数上限 × Σ_可搜槽「小池：候选数 × 重复次数 / 大池：候选数 × 粗筛轮数 + 幸存者上界 × 重复次数」
 //   + 轮数上限 × 槽对数 × 重复次数 + 复验 2 × VERIFY_ROUNDS
-// 幸存者上界 = min(候选数, RACING_KEEP + 2)：top-K + 两个锚点保送（设计 §30）。
-// 槽对数 = C(可搜槽数, 2)：跨槽联合探针的成本上界（设计 §19.11；实际只在存在合格成员时才探）。
+// 幸存者上界 = min(候选数, RACING_KEEP + 2)：top-K + 两个锚点保送。
+// 槽对数 = C(可搜槽数, 2)：跨槽联合探针的成本上界（实际只在存在合格成员时才探）。
 // 精炼与深挖不在内（只在采纳/被拦时发生，无法事前计入，是既有的简化）。
 const plannedSimulations = computed(() => {
   const current = settings.value;
@@ -1259,7 +1259,7 @@ const progressValue = computed(() => {
   return displayProgress.value;
 });
 
-// 收尾相位回填（2026-09-24，设计 §37.3 观察项① 方案 A）：运行结束后（尤其刷新重进，runtime.phase
+// 收尾相位回填（2026-09-24，观察项① 方案 A）：运行结束后（尤其刷新重进，runtime.phase
 // 回到 idle）阶段行若仍读运行态相位会显示「未开始」，而同区计数已回落报告真实值 —— 文案与底层状态
 // 不符。非运行且有报告时，相位改由报告收尾状态推导：cancelled → 搜索已停止、error 非空 → 搜索异常
 // 中断、其余 → 搜索已完成（复用 phases.done/cancelled/error，i18n 零新增键）；运行中仍如实显示实时相位。
@@ -1336,7 +1336,7 @@ const canApply = computed(() =>
   ),
 );
 // 撤销入口只看「有没有应用快照」：结果过期（切了地图/难度/时长/手改触发器…）不再关掉它——
-// 撤销只覆盖被优化的技能键，是否会踩掉手工改动由 store 的 revert 判定（设计 §19.6）。
+// 撤销只覆盖被优化的技能键，是否会踩掉手工改动由 store 的 revert 判定。
 const canRevert = computed(() => !running.value && !busy.value && Boolean(simulator.triggerOptimizer.baselineSnapshot));
 const hasAlwaysFireCandidate = computed(() =>
   choices.value.some((choice) =>
@@ -1447,9 +1447,9 @@ const verificationPValueLabel = computed(() =>
   verificationPValue.value == null ? '—' : verificationPValue.value.toFixed(3),
 );
 
-// ── 结论适用范围 + 换难度复核（2026-09-23，设计 §29）───────────────────────────
+// ── 结论适用范围 + 换难度复核（2026-09-23）───────────────────────────
 // 触发器写的是**全局技能配置**，而搜索只在报告记录的那一个区域 + 那一个难度上评估过
-// （实测区域间噪声差 20 倍，§19.5）。两件事都在这里：把边界写在结论旁边；给一个
+// （实测区域间噪声差 20 倍）。两件事都在这里：把边界写在结论旁边；给一个
 // 「换个难度再测一次」的入口（只读：跑两个配置的配对评估，不改玩家配置）。
 const evaluationScope = computed(() => {
   const scope = results.value?.evaluationScope;
@@ -1466,7 +1466,7 @@ const scopeText = computed(() => {
     hours: number(Number(scope.simulationHours) || 0, 0),
   });
 });
-// 模拟载荷（2026-09-27，设计 §59）：报告在单人还是整队（哪些队友）载荷上得出的 —— 与 scopeText
+// 模拟载荷（2026-09-27）：报告在单人还是整队（哪些队友）载荷上得出的 —— 与 scopeText
 // 同一块边界标注。队友名优先按当前玩家表解析（改名后显示现名），解析不到时回落报告里的快照名 / id。
 const scopePartyEntries = computed(() => {
   const party = evaluationScope.value?.party;
@@ -1485,7 +1485,7 @@ const scopePartyText = computed(() => {
     party: scopePartyEntries.value.map((entry) => entry.name).join(' / '),
   });
 });
-// 队伍载荷的保守提示（2026-09-27，设计 §60 / C1-①）：C1 实测队伍载荷下判据链真检出率偏低（本机基准
+// 队伍载荷的保守提示（2026-09-27）：实测队伍载荷下判据链真检出率偏低（本机基准
 // 93.2% → 64.6%，同一批种子与切分）⇒ 有队友时搜索可能欠采。只做提示，不改任何判据 / 数值。
 const scopePartyDetectionNote = computed(() => t('common:triggerOptimizer.partyDetectionNote'));
 const robustness = computed(() => runtime.value.robustness ?? {});
@@ -1515,7 +1515,7 @@ const robustnessButtonLabel = computed(() =>
     ? t('common:triggerOptimizer.robustnessRun')
     : t('common:triggerOptimizer.robustnessRunTier', '', { tier: robustnessTargetTier.value }),
 );
-// 复核轮数自适应的**上屏口径**（2026-09-25，设计 §49）：实测胜出的 A′ 口径把「复核要花多少样本」
+// 复核轮数自适应的**上屏口径**（2026-09-25）：实测胜出的 A′ 口径把「复核要花多少样本」
 // 从常量变成了反解值（保底 6 轮 / 上限 16 轮 / 多花的部分受整轮场次 20% 的成本护栏约束），所以
 // 入口旁必须说清这一次要跑多少轮、上限或护栏有没有咬住。这里与 store 真正执行时用的是**同一个**
 // 纯函数、同一份输入（报告的复验统计 + 报告里的整轮场次），「文案说的轮数」与「实际跑的轮数」
@@ -1554,8 +1554,8 @@ const robustnessNote = computed(() => {
   });
 });
 
-// ── 复核追加的**上屏口径**（2026-09-26，设计 §51）──────────────────────────────
-// 已复核过这个难度之后再点复核 = 换盐追加（新样本与首跑合并重检），不再同盐复跑（§51 实测：
+// ── 复核追加的**上屏口径**（2026-09-26）──────────────────────────────
+// 已复核过这个难度之后再点复核 = 换盐追加（新样本与首跑合并重检），不再同盐复跑（实测：
 // 同盐复跑逐值相同、信息增量 0）。这里与 store 真正执行时用的是**同一个**纯函数、同一份输入
 // （首跑复核的合并统计 + 报告里的整轮场次 + attempts 累计已花），「文案说的轮数」与「实际追加的
 // 轮数」不会分裂。三种「一轮都追加不了」的出口（零差 / 已达上限 / 预算用尽）与 store 的早退
@@ -1591,7 +1591,7 @@ const robustnessAppendHintText = computed(() => {
     currentRounds: Number(plan.currentRounds) || 0,
     cap: Number(plan.capRounds) || 0,
   });
-  // 累计预算进度（2026-09-26，设计 §53）：与复验追加的 verifyAppendCumulative 同款子句 ——
+  // 累计预算进度（2026-09-26）：与复验追加的 verifyAppendCumulative 同款子句 ——
   // 点完这一下之后累计花到哪，两条追加路径在决策点是同一口径。没有整轮场次（旧报告）不显示。
   const budget = Number(plan.cumulativeBudgetSimulations);
   const cumulative =
@@ -1664,7 +1664,7 @@ const robustnessErrorText = computed(() => {
   return message ? t(message, '') : '';
 });
 
-// 「推荐」徽章旁的证据解释（2026-09-19，设计 §19.4/§19.6）：搜索期 verdict 是
+// 「推荐」徽章旁的证据解释（2026-09-19）：搜索期 verdict 是
 // inconclusive/unknown 时，采纳依据是**噪声地板**（|mean| > 2×SE），不是显著性声明——
 // 与同屏的「不显著」徽章并列时必须说清楚，否则会被读成「没证据也硬采纳」。
 function adoptionEvidenceHint(choice) {
@@ -1680,13 +1680,13 @@ function adoptionEvidenceHint(choice) {
   });
 }
 
-// 「轮数上限截断」提示（2026-09-19，设计 §19.8）：报告声称提升、且搜索因跑满轮数上限而结束
+// 「轮数上限截断」提示（2026-09-19）：报告声称提升、且搜索因跑满轮数上限而结束
 // （不是固定点收敛）→ 还有改进空间，给用户一个明确的下一步（精细档 / 提高搜索轮数上限）。
 const roundLimitReached = computed(
   () => improvement.value?.improved === true && results.value?.roundLimitReached === true,
 );
 
-// 「本次可确认的最小提升」（2026-09-20，设计 §20.2）：把两把尺子按**本次运行实测的噪声**上屏——
+// 「本次可确认的最小提升」（2026-09-20）：把两把尺子按**本次运行实测的噪声**上屏——
 // 噪声地板（2×SE，采纳口径：「比噪声大」）与显著门槛（t(n−1)×SE，判定口径：p<0.05）。
 // 搜索期 verdict 恒 inconclusive（低轮数下 t 临界值巨大）时，这一行才是「为什么没采纳、
 // 多大的提升才算数」的答案——把「感觉搜不出提升」换成一个可以对着看的数字。
@@ -1723,9 +1723,9 @@ const detectionFloorNote = computed(() => {
     profitPercent: floor.profitPercent == null ? '—' : number(floor.profitPercent, 2),
   });
 });
-// 「还差多少轮」的两把尺子（2026-09-26，设计 §52）：
-//   ① 采纳口径（本块主体，§45 反解）：噪声地板 2×SE —— 回答「再跑多少轮才可能被采纳」；
-//   ② 判定口径（significance 子句，§47/§49 同一把 t×SE 尺子）：回答「判成 p<0.05 明确结论还要多少轮」。
+// 「还差多少轮」的两把尺子（2026-09-26）：
+//   ① 采纳口径（本块主体）：噪声地板 2×SE —— 回答「再跑多少轮才可能被采纳」；
+//   ② 判定口径（significance 子句，同一把 t×SE 尺子）：回答「判成 p<0.05 明确结论还要多少轮」。
 // 两把尺子在全部可达轮数内不可能给出同一个答案（t(n−1) > 2，见 scoring 注释）——所以建议句必须
 // 各自指名口径，不能让「确认下来」这种无口径动词把采纳口径读成显著性承诺。
 // 三个分支缺一不可（文案必须与实际一致）：已够（当前下限 ≤ 门槛）/ 提到 N 轮即可 / 拉满也不够
@@ -1825,7 +1825,7 @@ const verificationNoteText = computed(() => {
   return t('common:triggerOptimizer.verificationHint');
 });
 
-// 复验三态的诚实标注（2026-09-24，设计 §31）：复验判「未达显著」且搜索期确有提升时，结论不能
+// 复验三态的诚实标注（2026-09-24）：复验判「未达显著」且搜索期确有提升时，结论不能
 // 默默放行 —— 页面明说「提升尚未被独立样本确认」，并给出「追加复验」入口。产品口径不变：
 // 只有复验判 negative 才否决应用（resultRejected 与 store 同源），这里只是不许把「没测出来」
 // 装成「测出来了」。已判正/判负时不显示：那两种结论都已经被独立样本定了性。
@@ -1839,7 +1839,7 @@ const verifyAppendMergedText = computed(() => {
   const attempts = Array.isArray(verification.value?.attempts) ? verification.value.attempts : [];
   if (attempts.length === 0) return '';
   const rounds = Number(verification.value?.rounds) || 0;
-  // 累计追加场次（§50 B-2）：与成本护栏同一口径（Σ 2 × rounds），读者能看出结论是花多少样本追
+  // 累计追加场次：与成本护栏同一口径（Σ 2 × rounds），读者能看出结论是花多少样本追
   // 出来的 —— 导出的汇总行用同一份文案。
   return t('common:triggerOptimizer.verifyAppendMerged', '', {
     attempts: attempts.length,
@@ -1848,13 +1848,13 @@ const verifyAppendMergedText = computed(() => {
   });
 });
 
-// 追加轮数自适应的**上屏口径**（2026-09-25，设计 §47；累计护栏 2026-09-26，设计 §50 B-2）：
+// 追加轮数自适应的**上屏口径**（2026-09-25；累计护栏 2026-09-26）：
 // 实测胜出的 A′ 口径把「会追加多少轮」从常量变成了反解值（保底 12 轮 / 上限 24 轮 / 成本护栏
 // 单次 ≤ 整轮 20%、累计 ≤ 整轮 40%），所以入口旁必须说清这一次要花多少样本、护栏或上限有没有
 // 咬住。这里与 store 真正执行时用的是**同一个**纯函数、同一份输入（报告的复验统计 + 报告里的
 // 整轮场次 + attempts 累计已花），「文案说的轮数」与「实际追加的轮数」因此不会分裂。反解不出来
 //（旧报告）时不显示这一行，行为与今天一致（服务层缺省 6 轮）。
-//（§53：同一次调用拆成两段——不设门槛的 verifyAppendBudgetPlan 供「证据预算」视图使用：
+//（同一次调用拆成两段——不设门槛的 verifyAppendBudgetPlan 供「证据预算」视图使用：
 //  verdict 转正、入口消失之后，「已花 / 预算」仍要照实可查；带门槛的 verifyAppendPlan 保持
 //  按钮与计划行的原判据。）
 const verifyAppendBudgetPlan = computed(() =>
@@ -1883,7 +1883,7 @@ const verifyAppendPlanText = computed(() => {
       ? t('common:triggerOptimizer.verifyAppendBudgetExhausted', '', params)
       : t('common:triggerOptimizer.verifyAppendExhausted', '', params);
   }
-  // 累计预算进度（§50 B-2）：有整轮场次时，把「点完这一下之后累计花到哪」一并说清 —— 用户据此
+  // 累计预算进度：有整轮场次时，把「点完这一下之后累计花到哪」一并说清 —— 用户据此
   // 知道还能再点几次，而不是点到「预算用尽」才知道。没有整轮场次（旧报告）不显示。
   const budget = Number(plan.cumulativeBudgetSimulations);
   const cumulative =
@@ -1901,7 +1901,7 @@ const verifyAppendPlanText = computed(() => {
   return cumulative ? `${sentence}｜${cumulative}` : sentence;
 });
 // 追加复验的失败原因（缺样本 / 忙 / 结论已明确 / 上限已尽…）：store 一直把 i18n 键写进
-// verifyAppend.error，但页面上此前没有任何渲染点（§31 遗留）—— 2026-09-25 补上，与上面
+// verifyAppend.error，但页面上此前没有任何渲染点（历史遗留）—— 2026-09-25 补上，与上面
 // 三种「不追加」分支共用同一块 UI。t() 找不到键时原样显示，便于定位。
 const verifyAppendErrorText = computed(() => {
   const message = String(simulator.triggerOptimizer.runtime.verifyAppend?.error || '');
@@ -1928,7 +1928,7 @@ const scoreBarFillClass = computed(() => {
 });
 
 // 指标对照卡：每项一组「基线 vs 最优」同尺度双条形 + 带单位的差值（死亡单列一张卡）。
-// 口径来源（2026-09-19 调整，设计 §19.6）：
+// 口径来源（2026-09-19 调整）：
 //   复验可用 → **一律用复验实测**（换种子 6 轮）。① 判负时：搜索期的 +0.1% 已被证伪，
 //              继续拿它当「提升」展示会与结论卡自相矛盾（2026-09-18）；② 成立/未达显著时：
 //              结论卡那个 p 值就是这 6 轮算出来的，指标卡必须同源，用户才能把「提升多少」
@@ -1989,9 +1989,9 @@ function closeNotes() {
   notesOpen.value = false;
 }
 
-// ── 证据预算（2026-09-26，设计 §53）────────────────────────────────────────
+// ── 证据预算（2026-09-26）────────────────────────────────────────
 // 两条追加路径（复验追加 / 复核追加）各有**独立**的预算池：整轮场次 × 累计 40%，单次追加另有
-// 20% 上限（§50 / §51 的同一对常量）；已花 = Σ(2 × attempts[].rounds)，只算追加、不含首跑。
+// 20% 上限（两条追加路径共用同一对常量）；已花 = Σ(2 × attempts[].rounds)，只算追加、不含首跑。
 // 这里把「已花 / 预算 / 剩余 / 停在哪个出口」收敛到同一处：说明弹窗与导出逐字同文 —— 数字全部
 // 来自与执行同一纯函数、同一份输入的计划字段（spentSimulations / cumulativeBudgetSimulations /
 // plannedRounds / 出口标记），页面不另行重算；两条路径分行并列，不合并成总和（池子彼此独立，
@@ -2058,8 +2058,8 @@ const resultNotes = computed(() => {
       text: verificationNoteText.value,
     },
   ];
-  // 噪声地板与显著门槛（设计 §20.2；两把尺子的口径分离见 §52）：缺标准误就没有——整条不出现；
-  // 建议行（§45 采纳口径反解 + §52 判定口径反解）单独可能为空，那时只展示两组门槛本身。
+  // 噪声地板与显著门槛（两把尺子的口径分离）：缺标准误就没有——整条不出现；
+  // 建议行（采纳口径反解 + 判定口径反解）单独可能为空，那时只展示两组门槛本身。
   if (detectionFloorNote.value) {
     notes.push({
       key: 'detectionFloor',
@@ -2075,7 +2075,7 @@ const resultNotes = computed(() => {
       text: t('common:triggerOptimizer.roundLimitReached'),
     });
   }
-  // 证据预算（2026-09-26，设计 §53）：两条追加路径的「已花 / 预算 / 剩余 / 停在哪」收敛成同一处
+  // 证据预算（2026-09-26）：两条追加路径的「已花 / 预算 / 剩余 / 停在哪」收敛成同一处
   // （导出同文）；没花过也没停住时整条不出现。
   if (evidenceBudgetNote.value) {
     notes.push({
@@ -2244,7 +2244,7 @@ function updateWeight(key, raw) {
 }
 
 // 预设 = 三个旋钮的捆绑写入（未知 id 直接忽略，「自定义」不是可写入的档位）。
-// 时长按**当前设置**传入（2026-09-19，设计 §18.2）：预设的 rounds = max(基础轮数,
+// 时长按**当前设置**传入（2026-09-19）：预设的 rounds = max(基础轮数,
 // 推荐轮数(时长))，短时长会被加密（4h → 5 轮），默认 24h 仍是 6/1/2、10/2/2、16/3/3。
 function applyPreset(presetId) {
   const preset = getTriggerOptimizerPresetSettings(presetId, settings.value.simulationHours);
@@ -2263,22 +2263,22 @@ function run() {
   simulator.startTriggerOptimizer();
 }
 
-// 换难度复核（2026-09-23，设计 §29）：只读动作 —— 不影响玩家配置，也不动报告主体，结果写进
-// results.robustness（属于当前这一份报告）。再点一次 = 换盐追加（§51），因此同一次运行里可以
+// 换难度复核（2026-09-23）：只读动作 —— 不影响玩家配置，也不动报告主体，结果写进
+// results.robustness（属于当前这一份报告）。再点一次 = 换盐追加，因此同一次运行里可以
 // 重复触发：首次换成相邻难度复核，之后每次再补一组新样本与已复核样本合并重检。
 function runRobustness() {
   lastAction.value = '';
   simulator.runTriggerOptimizerRobustness();
 }
 
-// 复核追加（2026-09-26，设计 §51）：与首跑走**同一个** store 动作（内部按「有无复核结论」分两态），
+// 复核追加（2026-09-26）：与首跑走**同一个** store 动作（内部按「有无复核结论」分两态），
 // 这里单独挂入口只为把「首跑 / 追加」两个语义在界面上分开。
 function runRobustnessAppend() {
   lastAction.value = '';
   simulator.runTriggerOptimizerRobustness();
 }
 
-// 追加复验（2026-09-24，设计 §31）：同样只读 —— 不写玩家配置，只把「首轮样本 + 新样本合并重检」
+// 追加复验（2026-09-24）：同样只读 —— 不写玩家配置，只把「首轮样本 + 新样本合并重检」
 // 的结论写回当前报告的 verification（动作见 store 的 runTriggerOptimizerVerificationAppend）。
 function runVerificationAppend() {
   lastAction.value = '';
@@ -2298,7 +2298,7 @@ function revert() {
   if (simulator.revertTriggerOptimizerChanges()) lastAction.value = 'reverted';
 }
 
-// ── 导出 Excel（2026-09-24，设计 §40）────────────────────────────────────────
+// ── 导出 Excel（2026-09-24）────────────────────────────────────────
 // 与「报告落盘恢复」互补而不是二选一：恢复 = 自动防丢（刷新/崩溃后重进自动回来），
 // 导出 = 手动带走（留存/分享）。文案与界面同源（createTriggerOptimizerText + t），
 // 不出现任何底层字段名；文件名带时间戳。
@@ -2315,8 +2315,8 @@ function exportStatusFor(choice) {
   return 'keepCurrent';
 }
 
-// 导出用：单次追加复验的**人话留档**（2026-09-25，设计 §48；累计字段 2026-09-26，设计 §50）——
-// 基础句（轮数 / 累计）任何报告都说得出（attempts.rounds / mergedRounds 是 §31 就有的字段）；
+// 导出用：单次追加复验的**人话留档**（2026-09-25；累计字段 2026-09-26）——
+// 基础句（轮数 / 累计）任何报告都说得出（attempts.rounds / mergedRounds 是原有字段）；
 // 计划快照在时再补一句「上限或护栏有没有生效」，这正是复盘要回答的第三个问题。快照缺失（本改动
 // 之前的旧报告，或服务层判定不自洽而丢弃）就只说基础句：宁可少说，也不说没有依据的话。
 function verifyAppendArchiveText(attempt) {
@@ -2336,7 +2336,7 @@ function verifyAppendArchiveText(attempt) {
   return t('common:triggerOptimizer.verifyAppendArchiveWithinLimits', '', params);
 }
 
-// 导出用：单次复核追加的**人话留档**（2026-09-26，设计 §51）——与追加复验同款：基础句（轮数 /
+// 导出用：单次复核追加的**人话留档**（2026-09-26）——与追加复验同款：基础句（轮数 /
 // 累计）任何报告都说得出；计划快照在时再补一句成本护栏有没有生效（复核追加的目标恒为「补到
 // 上限」，所以这里只区分护栏，不区分上限来源）。快照缺失（本改动之前的旧报告，或服务层判定
 // 不自洽而丢弃）就只说基础句：宁可少说，也不说没有依据的话。
@@ -2398,7 +2398,7 @@ async function exportReport() {
       },
     );
   }
-  // 追加复验的留档（2026-09-25，设计 §48）：轮数自适应（§47）之后，「这次补了几轮、上限/护栏
+  // 追加复验的留档（2026-09-25）：轮数自适应之后，「这次补了几轮、上限/护栏
   // 有没有咬住」只在上屏说过一次（下一次渲染就被新计划顶掉）—— 导出必须带上同一件事，事后
   // 才能复盘。汇总行与界面逐字同款（verifyAppend / verifyAppendMerged），然后每次追加一行明细。
   const attempts = Array.isArray(verification.value?.attempts) ? verification.value.attempts : [];
@@ -2420,7 +2420,7 @@ async function exportReport() {
       });
     });
   }
-  // 复核留档（2026-09-25，设计 §49）：轮数从固定 6 轮变成按需反解之后，导出里必须带上「这次跑了
+  // 复核留档（2026-09-25）：轮数从固定 6 轮变成按需反解之后，导出里必须带上「这次跑了
   // 几轮、上限/成本护栏有没有咬住」；旧报告没有 plan（或净化失败）时只说结论。
   if (robustnessSummary.value) {
     const verdict = robustnessVerdictLabel.value;
@@ -2430,7 +2430,7 @@ async function exportReport() {
       }),
       value: robustnessPlanDetail.value ? `${verdict} · ${robustnessPlanDetail.value}` : verdict,
     });
-    // 复核追加的留档（2026-09-26，设计 §51）：换盐追加之后，「补了几轮、护栏有没有咬住」只在上屏
+    // 复核追加的留档（2026-09-26）：换盐追加之后，「补了几轮、护栏有没有咬住」只在上屏
     // 说过一次 —— 导出必须带上同一件事，事后才能复盘。汇总行与界面逐字同款（robustnessAppendRun /
     // robustnessAppendMerged），然后每次追加一行明细（与追加复验同款结构）。
     const robustnessAttempts = Array.isArray(robustnessSummary.value.attempts) ? robustnessSummary.value.attempts : [];
@@ -2453,7 +2453,7 @@ async function exportReport() {
       });
     }
   }
-  // 证据预算（2026-09-26，设计 §53）：与说明弹窗逐字同文 —— 界面上的句子会被下一次渲染顶掉，
+  // 证据预算（2026-09-26）：与说明弹窗逐字同文 —— 界面上的句子会被下一次渲染顶掉，
   // 事后复盘只有导出能查（两条追加路径的已花 / 预算 / 剩余 / 出口）。
   if (evidenceBudgetNote.value) {
     summaryRows.push({

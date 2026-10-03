@@ -16,7 +16,7 @@ import {
   referenceDeathBudget,
 } from './foodOptimizerTestSupport.js';
 
-// 切片 21B：独立 JS 引擎 oracle 已随引擎删除。参照臂逐轮直调生产模拟轮
+// 独立 JS 引擎 oracle 已随引擎删除。参照臂逐轮直调生产模拟轮
 // （simulateFoodOptimizerRound，wasm）后自行聚合：不走生产 evaluator、不用轮次
 // 缓存、无成本剪枝，预算 Infinity 强制每个种子跑满（含不可行候选）。死亡预算
 // 沿用 slot-aware 独立实现（少带食物必须严格更少死），不共享生产 helper。

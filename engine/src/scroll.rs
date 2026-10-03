@@ -1,4 +1,4 @@
-//! 战斗卷轴运行时（切片 17）：`src/combatsimulator/combatSimulator.js` 卷轴窗口状态机
+//! 战斗卷轴运行时：`src/combatsimulator/combatSimulator.js` 卷轴窗口状态机
 //! （`initializeScrollRuntime` / `openScrollWindow` / `closeScrollWindow` /
 //! `syncScrollsToTime` / `activateInitialScrolls` / `finalizeScrollUsage`）的数据结构。
 //!

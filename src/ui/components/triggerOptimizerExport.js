@@ -1,4 +1,4 @@
-// 报告导出 Excel（2026-09-24，设计 §40）—— 纯构建（buildTriggerOptimizerReportSheets）
+// 报告导出 Excel（2026-09-24）—— 纯构建（buildTriggerOptimizerReportSheets）
 // 与下载封装（downloadTriggerOptimizerReportXlsx）。
 //
 // 为什么单独成模块：导出的每一格文案都必须与界面**同款**（判据②：人可读、不出现字段名），

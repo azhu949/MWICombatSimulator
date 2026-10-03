@@ -1,4 +1,4 @@
-// Verifies the Rust/WASM engine build chain end to end (slice 1).
+// Verifies the Rust/WASM engine build chain end to end.
 // Loads engine/pkg produced by `npm run build:wasm`, initializes it in Node,
 // and calls the bridge probe export. Fails loudly if the package is missing,
 // so the WASM side of the engine can never rot silently.
