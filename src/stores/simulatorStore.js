@@ -36,18 +36,10 @@ import {
   savePlayerDataSnapshotToStorage,
   upsertPlayerDataSnapshotToStorage,
 } from '../services/simulatorStorage.js';
-import {
-  exportGroupConfig,
-  exportSoloConfig,
-  importGroupConfig as parseGroupImportConfig,
-  importSoloConfig as parseSoloImportConfig,
-} from '../services/importExportMapper.js';
-import {
-  assetScoreEquals,
-  computeAssetScoreConfigSignature,
-  computePlayerAssetScore,
-  isPricingDataAvailableForAssetScore,
-} from '../services/assetScoreService.js';
+// 候选 A（2026-10-03）：资产分轻符号（快照等值守卫 / 玩家配置签名）静态导入轻层
+// 模块（常驻 index chunk）；重计算链（computePlayerAssetScore / pricing 可用性判定，
+// 含 enhancementSimulator 成本法与商店/制作取价）改走下方 loadAssetScoreModule 按需加载。
+import { assetScoreEquals, computeAssetScoreConfigSignature } from '../services/assetScorePresentation.js';
 import {
   ensureTriggerMapEntry,
   getDefaultTriggerDtosForHrid,
@@ -94,6 +86,7 @@ import { createPricingActions, ensureQueueMarketPriceSnapshot } from './simulato
 import { createAdvisorActions } from './simulatorAdvisorActions.js';
 import { createSimulationActions } from './simulatorSimulationActions.js';
 import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
+import { runPlayerConfigMutationExclusive } from '../services/playerConfigMutationQueue.js';
 import { createFoodOptimizerActions, createFoodOptimizerState } from './simulatorFoodOptimizerActions.js';
 import { snapshotFoodOptimizerInput } from '../services/foodOptimizerSnapshot.js';
 import { createFoodOptimizerInputSignature } from '../services/foodOptimizerDomain.js';
@@ -110,6 +103,17 @@ const ABILITY_BOOK_CATEGORY_HRID = '/item_categories/ability_book';
 // 同一次导入；一次瞬态失败（弱网抖动）不再让 Home 模拟 / advisor 扫描 /
 // queue 基线三个功能整会话持续失败，下次调用自动重试。
 const loadPlayerMapperModule = createCachedModuleLoader(() => import('../services/playerMapper.js'));
+
+// ③ importExportMapper 动态化（2026-10-03）：导入导出与快照序列化仅为用户触发路径
+//（导入导出模态框 / 主站桥接 / 手动存档），改为按需加载——其实现（含清洗与槽位路由）
+// 不再进入首屏 index chunk；失败自动清缓存、下次调用可重试（语义同 playerMapper）。
+const loadImportExportMapperModule = createCachedModuleLoader(() => import('../services/importExportMapper.js'));
+
+// 候选 A（2026-10-03）：资产分重计算链按需加载——refreshAssetScores 首次调用
+//（首屏初算 / 配置或行情变化 / 导入导出前刷新）时拉取并缓存，不再进入首屏
+// index chunk；失败自动清缓存、下次调用可重试（语义同前两个 loader）。
+// 加载失败由调用方兜底为「本次不刷新」（导入导出入口 .catch 静默继续）。
+const loadAssetScoreModule = createCachedModuleLoader(() => import('../services/assetScoreService.js'));
 
 function sortByNameThenLevel(a, b) {
   if (a.itemLevel !== b.itemLevel) {
@@ -250,6 +254,9 @@ export const useSimulatorStore = defineStore('simulator', {
         elapsedSeconds: 0,
         workerMode: 'single',
         completionNoticeId: 0,
+        // 备忘录 0364491149911703552：导出前资产分刷新失败标记（会话内瞬态，不落盘；
+        // exportGroupConfig / exportSoloConfig 每次导出开始时重置，刷新失败时置位）。
+        assetScoreRefreshFailedOnExport: false,
       },
       results: {
         simResult: null,
@@ -587,17 +594,30 @@ export const useSimulatorStore = defineStore('simulator', {
       this.playerDataSnapshot = createPlayerDataSnapshotState();
       return this.playerDataSnapshot;
     },
-    savePlayerDataSnapshot() {
-      const snapshotMap = {};
-      for (const player of this.players) {
-        const playerId = String(player.id || '');
-        if (!playerId) {
-          continue;
-        }
-        snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings);
+    async savePlayerDataSnapshot() {
+      // ③ 动态化（2026-10-03）：序列化模块按需加载；模块加载失败（刷新页面通常可恢复）与
+      // 序列化/落盘等业务失败分开归因，各自 console.warn 留痕（不再向上抛同步异常）。
+      let exportSoloConfig;
+      try {
+        ({ exportSoloConfig } = await loadImportExportMapperModule());
+      } catch (error) {
+        console.warn('[playerSnapshot] save module load failed:', error);
+        return {
+          ok: false,
+          messageKey: 'common:settingsPage.playerSaveModuleError',
+        };
       }
 
+      const snapshotMap = {};
       try {
+        for (const player of this.players) {
+          const playerId = String(player.id || '');
+          if (!playerId) {
+            continue;
+          }
+          snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings);
+        }
+
         savePlayerDataSnapshotToStorage(snapshotMap);
         this.playerDataSnapshot = createPlayerDataSnapshotState();
         return {
@@ -606,116 +626,139 @@ export const useSimulatorStore = defineStore('simulator', {
           messageKey: 'common:settingsPage.playerSaveSuccess',
         };
       } catch (error) {
+        console.warn('[playerSnapshot] save failed:', error);
         return {
           ok: false,
           messageKey: 'common:settingsPage.playerSaveError',
         };
       }
     },
-    loadPlayerDataSnapshot() {
-      const loadResult = loadPlayerDataSnapshotFromStorage();
-      if (loadResult.status === 'not_found') {
-        this.playerDataSnapshot = createPlayerDataSnapshotState();
-        return {
-          ok: false,
-          messageKey: 'common:settingsPage.playerLoadNotFound',
-        };
-      }
-
-      if (loadResult.status !== 'ok') {
-        this.playerDataSnapshot = createPlayerDataSnapshotState();
-        return {
-          ok: false,
-          messageKey: 'common:settingsPage.playerLoadInvalid',
-        };
-      }
-
-      const loadedPlayerIds = Object.keys(loadResult.playerDataMap || {});
-      if (loadedPlayerIds.length === 0) {
-        this.playerDataSnapshot = createPlayerDataSnapshotState();
-        return {
-          ok: false,
-          messageKey: 'common:settingsPage.playerLoadInvalid',
-        };
-      }
-
-      try {
-        let nextPlayers = [...this.players];
-        let preferredSimulationSettings = null;
-        let fallbackSimulationSettings = null;
-
-        for (const playerId of loadedPlayerIds) {
-          const snapshotText = loadResult.playerDataMap[playerId];
-          const sourcePlayer =
-            nextPlayers.find((player) => String(player.id) === String(playerId)) || createEmptyPlayerConfig(playerId);
-
-          const parsed = parseSoloImportConfig(snapshotText, sourcePlayer, this.simulationSettings);
-          this.ensurePlayerConfig(parsed.player);
-          nextPlayers = nextPlayers.map((player) => (String(player.id) === String(playerId) ? parsed.player : player));
-
-          if (!fallbackSimulationSettings && parsed?.simulationSettings) {
-            fallbackSimulationSettings = {
-              ...parsed.simulationSettings,
-            };
-          }
-          if (String(playerId) === String(this.activePlayerId) && parsed?.simulationSettings) {
-            preferredSimulationSettings = {
-              ...parsed.simulationSettings,
-            };
-          }
-
-          this.queue.byPlayer[String(playerId)] = createQueuePlayerState(
-            this.queue.byPlayer[String(playerId)]?.settings,
-          );
-          this.setImportedProfileState(playerId, true);
-          this.setImportedBaselineSnapshot(playerId, parsed.player);
-        }
-
-        this.players = this.players.map((player) => {
-          const resolved = nextPlayers.find((candidate) => String(candidate.id) === String(player.id));
-          return resolved || player;
-        });
-        this.persistPlayerAchievements();
-        // 快照恢复同样整体替换玩家配置，触发器优化结果随之失效。
-        this.resetTriggerOptimizerResults();
-
-        const nextSimulationSettings = preferredSimulationSettings || fallbackSimulationSettings;
-        if (nextSimulationSettings) {
-          this.simulationSettings = {
-            ...this.simulationSettings,
-            ...nextSimulationSettings,
+    async loadPlayerDataSnapshot() {
+      // 玩家配置整体替换入口（2026-10-03）：与 importSoloConfig / importGroupConfig 共用
+      // 玩家配置写入串行器——先发起者的 await 后置动作（如桥接侧 clearPlayerSlots）一定排在
+      // 后发起者的写入之前，await 窗口内落地的手动写入不再被清除动作误伤。
+      return runPlayerConfigMutationExclusive(async () => {
+        const loadResult = loadPlayerDataSnapshotFromStorage();
+        if (loadResult.status === 'not_found') {
+          this.playerDataSnapshot = createPlayerDataSnapshotState();
+          return {
+            ok: false,
+            messageKey: 'common:settingsPage.playerLoadNotFound',
           };
-          // 恢复角色数据时应默认回到常规区域视图，便于立即编辑。
-          this.simulationSettings.mode = 'zone';
-          this.simulationSettings.useDungeon = false;
-          if (!this.simulationSettings.zoneHrid) {
-            this.simulationSettings.zoneHrid = String(this.options?.zones?.[0]?.hrid || '');
-          }
-          this.normalizeRunScope();
-          this.normalizeDifficulty();
-          // 导入合并携带的 UI 级字段（含主站带回的迷宫升级等级）随之落盘，防止刷新后
-          // 回落到上次持久化值；persist 只写 8 字段白名单，mode/zone 等会话级字段不入存储。
-          this.persistSimulationUiSettings();
         }
 
-        this.playerDataSnapshot = {
-          savedAt: Number(loadResult.savedAt || 0),
-          playerDataMap: loadResult.playerDataMap || {},
-        };
+        if (loadResult.status !== 'ok') {
+          this.playerDataSnapshot = createPlayerDataSnapshotState();
+          return {
+            ok: false,
+            messageKey: 'common:settingsPage.playerLoadInvalid',
+          };
+        }
 
-        return {
-          ok: true,
-          savedAt: this.playerDataSnapshot.savedAt,
-          loadedPlayerIds,
-          messageKey: 'common:settingsPage.playerLoadSuccess',
-        };
-      } catch (error) {
-        this.playerDataSnapshot = createPlayerDataSnapshotState();
-        return {
-          ok: false,
-          messageKey: 'common:settingsPage.playerLoadInvalid',
-        };
-      }
+        const loadedPlayerIds = Object.keys(loadResult.playerDataMap || {});
+        if (loadedPlayerIds.length === 0) {
+          this.playerDataSnapshot = createPlayerDataSnapshotState();
+          return {
+            ok: false,
+            messageKey: 'common:settingsPage.playerLoadInvalid',
+          };
+        }
+
+        let parseSoloImportConfig;
+        try {
+          // ③ 动态化（2026-10-03）：快照恢复同样按需加载序列化模块；模块加载失败在此单独
+          // 归因并留痕，不再与快照数据问题共用 playerLoadInvalid 反馈。
+          ({ importSoloConfig: parseSoloImportConfig } = await loadImportExportMapperModule());
+        } catch (error) {
+          console.warn('[playerSnapshot] load module load failed:', error);
+          this.playerDataSnapshot = createPlayerDataSnapshotState();
+          return {
+            ok: false,
+            messageKey: 'common:settingsPage.playerLoadModuleError',
+          };
+        }
+
+        try {
+          let nextPlayers = [...this.players];
+          let preferredSimulationSettings = null;
+          let fallbackSimulationSettings = null;
+
+          for (const playerId of loadedPlayerIds) {
+            const snapshotText = loadResult.playerDataMap[playerId];
+            const sourcePlayer =
+              nextPlayers.find((player) => String(player.id) === String(playerId)) || createEmptyPlayerConfig(playerId);
+
+            const parsed = parseSoloImportConfig(snapshotText, sourcePlayer, this.simulationSettings);
+            this.ensurePlayerConfig(parsed.player);
+            nextPlayers = nextPlayers.map((player) =>
+              String(player.id) === String(playerId) ? parsed.player : player,
+            );
+
+            if (!fallbackSimulationSettings && parsed?.simulationSettings) {
+              fallbackSimulationSettings = {
+                ...parsed.simulationSettings,
+              };
+            }
+            if (String(playerId) === String(this.activePlayerId) && parsed?.simulationSettings) {
+              preferredSimulationSettings = {
+                ...parsed.simulationSettings,
+              };
+            }
+
+            this.queue.byPlayer[String(playerId)] = createQueuePlayerState(
+              this.queue.byPlayer[String(playerId)]?.settings,
+            );
+            this.setImportedProfileState(playerId, true);
+            this.setImportedBaselineSnapshot(playerId, parsed.player);
+          }
+
+          this.players = this.players.map((player) => {
+            const resolved = nextPlayers.find((candidate) => String(candidate.id) === String(player.id));
+            return resolved || player;
+          });
+          this.persistPlayerAchievements();
+          // 快照恢复同样整体替换玩家配置，触发器优化结果随之失效。
+          this.resetTriggerOptimizerResults();
+
+          const nextSimulationSettings = preferredSimulationSettings || fallbackSimulationSettings;
+          if (nextSimulationSettings) {
+            this.simulationSettings = {
+              ...this.simulationSettings,
+              ...nextSimulationSettings,
+            };
+            // 恢复角色数据时应默认回到常规区域视图，便于立即编辑。
+            this.simulationSettings.mode = 'zone';
+            this.simulationSettings.useDungeon = false;
+            if (!this.simulationSettings.zoneHrid) {
+              this.simulationSettings.zoneHrid = String(this.options?.zones?.[0]?.hrid || '');
+            }
+            this.normalizeRunScope();
+            this.normalizeDifficulty();
+            // 导入合并携带的 UI 级字段（含主站带回的迷宫升级等级）随之落盘，防止刷新后
+            // 回落到上次持久化值；persist 只写 8 字段白名单，mode/zone 等会话级字段不入存储。
+            this.persistSimulationUiSettings();
+          }
+
+          this.playerDataSnapshot = {
+            savedAt: Number(loadResult.savedAt || 0),
+            playerDataMap: loadResult.playerDataMap || {},
+          };
+
+          return {
+            ok: true,
+            savedAt: this.playerDataSnapshot.savedAt,
+            loadedPlayerIds,
+            messageKey: 'common:settingsPage.playerLoadSuccess',
+          };
+        } catch (error) {
+          console.warn('[playerSnapshot] load failed:', error);
+          this.playerDataSnapshot = createPlayerDataSnapshotState();
+          return {
+            ok: false,
+            messageKey: 'common:settingsPage.playerLoadInvalid',
+          };
+        }
+      });
     },
     deleteSinglePlayerDataSnapshot(playerId) {
       const targetPlayerId = String(playerId || '');
@@ -986,95 +1029,131 @@ export const useSimulatorStore = defineStore('simulator', {
     setLanguage(language) {
       this.ui.language = language === 'zh' ? 'zh' : 'en';
     },
-    exportGroupConfig() {
+    async exportGroupConfig() {
+      // 备忘录 0364491149911703552（2026-10-03）：导出前刷新失败不阻断导出，但置位 runtime
+      // 标记供反馈面区分「已导出但资产分未刷新」；标记为会话内瞬态（runtime 不落盘），
+      // 每次导出开始时重置为未失败，刷新失败的 catch 中置位（并发导出以最后一次写入为准）。
+      this.runtime.assetScoreRefreshFailedOnExport = false;
+      // ③ 动态化（2026-10-03）：显式导入导出入口共用按需加载的序列化模块。
+      const { exportGroupConfig: buildGroupExport } = await loadImportExportMapperModule();
       // 导出前刷新资产分快照，保证导出 JSON 携带的分数与当前配置/行情一致。
-      this.refreshAssetScores();
-      return exportGroupConfig(this.players, this.simulationSettings);
+      // 候选 A：刷新链路为按需加载（异步）；失败降级 + 控制台告警——不阻断导出，
+      // 载荷携带旧快照、下次触发/调用自动重试，仅 console.warn 留痕。
+      await this.refreshAssetScores().catch((error) => {
+        console.warn('[assetScore] refresh failed (before group export):', error);
+        this.runtime.assetScoreRefreshFailedOnExport = true;
+      });
+      return buildGroupExport(this.players, this.simulationSettings);
     },
-    exportSoloConfig(playerId) {
+    async exportSoloConfig(playerId) {
+      // 同 exportGroupConfig：标记为会话内瞬态，每次导出开始时重置为未失败。
+      this.runtime.assetScoreRefreshFailedOnExport = false;
+      const { exportSoloConfig: buildSoloExport } = await loadImportExportMapperModule();
       const targetId = String(playerId || this.activePlayerId);
       const targetPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
-      this.refreshAssetScores([targetPlayer.id]);
-      return exportSoloConfig(targetPlayer, this.simulationSettings);
-    },
-    importGroupConfig(text) {
-      const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
-      if (result.marketItemValues) {
-        this.applyImportedMarketItemValues(
-          result.marketItemValues,
-          result.marketEstimateSource,
-          result.syntheticItemHrids,
-          result.syntheticLevelKeys,
-        );
-      }
-      result.players.forEach((player) => this.ensurePlayerConfig(player));
-      const byId = Object.fromEntries(result.players.map((player) => [String(player.id), player]));
-      this.players = this.players.map((player) => byId[String(player.id)] || player);
-      this.persistPlayerAchievements();
-      result.players.forEach((player) => {
-        this.setImportedProfileState(player.id, true);
-        this.setImportedBaselineSnapshot(player.id, player);
+      // 导出前刷新（单人）：失败降级 + 控制台告警，不阻断导出。
+      await this.refreshAssetScores([targetPlayer.id]).catch((error) => {
+        console.warn('[assetScore] refresh failed (before solo export):', error);
+        this.runtime.assetScoreRefreshFailedOnExport = true;
       });
-      // 玩家配置被整体替换，既有触发器优化结果不再对应任何当前输入。
-      this.resetTriggerOptimizerResults();
-      this.simulationSettings = {
-        ...this.simulationSettings,
-        ...result.simulationSettings,
-      };
-      this.normalizeRunScope();
-      this.normalizeDifficulty();
-      // 导入合并携带的 UI 级字段（含迷宫升级等级）随之落盘（白名单口径同快照恢复分支）。
-      this.persistSimulationUiSettings();
-      this.refreshAssetScores();
-      return result;
+      return buildSoloExport(targetPlayer, this.simulationSettings);
     },
-    importSoloConfig(text, playerId) {
-      const targetId = String(playerId || this.activePlayerId);
-      const currentPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
-      const result = parseSoloImportConfig(text, currentPlayer, this.simulationSettings);
-      // Solo 导入是「替换目标槽位配置」而非「身份迁移」：sanitizePlayerConfig 是
-      // 导出/group/快照恢复共用的清洗函数，通用 id 语义（source.id || fallback.id）
-      // 的 source.id 优先只在「载荷 id 与目标 id 分歧」时改变结果——solo 的目标由
-      // 入参 playerId 决定、载荷 id 无槽位路由职责（group 按载荷 id 路由槽位，匹配
-      // 后 source.id 与 fallback.id 恒同值），任由载荷 id 胜出会让携带 id 的 native
-      // solo 载荷（modern-solo / modern-player-only；原生导出经 buildExportPlayer
-      // 恒携带 id）在顶替目标槽位后带着来源 id——目标 id 从玩家列表消失，此后按
-      // 玩家 id 过滤的即时资产分刷新落空（只能等 App.vue 250ms 防抖兜底；导入配置
-      // 与槽位原配置签名一致时 watch 不触发，载荷携带的跨会话行情快照将无限期
-      // 滞留），imported 标记 / 基线快照 / 桥接 selectAfterImport 全部挂错 id，且
-      // 来源 id 撞上其他现有玩家时产生重复 id。与 share-profile /
-      // main-site-current-character 分支恒用 fallback.id（= 目标 id）的既有语义
-      // 对齐：写入前归一为目标槽位 id。不影响快照保留守卫：configSignature 不含
-      // id（equipment/houseRooms/abilities/guildBuffs/工匠茶）；group 导入与快照
-      // 恢复按 id 合并的路径不经此处，零影响。
-      result.player.id = targetId;
-      if (result.marketItemValues) {
-        this.applyImportedMarketItemValues(
-          result.marketItemValues,
-          result.marketEstimateSource,
-          result.syntheticItemHrids,
-          result.syntheticLevelKeys,
-        );
-      }
-      this.ensurePlayerConfig(result.player);
+    async importGroupConfig(text) {
+      // 玩家配置整体替换入口（2026-10-03）：与 importSoloConfig / loadPlayerDataSnapshot 共用
+      // 玩家配置写入串行器，语义见 playerConfigMutationQueue 注释。
+      return runPlayerConfigMutationExclusive(async () => {
+        const { importGroupConfig: parseGroupImportConfig } = await loadImportExportMapperModule();
+        const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
+        if (result.marketItemValues) {
+          this.applyImportedMarketItemValues(
+            result.marketItemValues,
+            result.marketEstimateSource,
+            result.syntheticItemHrids,
+            result.syntheticLevelKeys,
+          );
+        }
+        result.players.forEach((player) => this.ensurePlayerConfig(player));
+        const byId = Object.fromEntries(result.players.map((player) => [String(player.id), player]));
+        this.players = this.players.map((player) => byId[String(player.id)] || player);
+        this.persistPlayerAchievements();
+        result.players.forEach((player) => {
+          this.setImportedProfileState(player.id, true);
+          this.setImportedBaselineSnapshot(player.id, player);
+        });
+        // 玩家配置被整体替换，既有触发器优化结果不再对应任何当前输入。
+        this.resetTriggerOptimizerResults();
+        this.simulationSettings = {
+          ...this.simulationSettings,
+          ...result.simulationSettings,
+        };
+        this.normalizeRunScope();
+        this.normalizeDifficulty();
+        // 导入合并携带的 UI 级字段（含迷宫升级等级）随之落盘（白名单口径同快照恢复分支）。
+        this.persistSimulationUiSettings();
+        // 导入完成后刷新资产分快照：失败降级 + 控制台告警，不阻断导入；保持
+        // await resolve 语义（主站桥接的 await 后置动作时序不变）。
+        await this.refreshAssetScores().catch((error) => {
+          console.warn('[assetScore] refresh failed (after group import):', error);
+        });
+        return result;
+      });
+    },
+    async importSoloConfig(text, playerId) {
+      // 玩家配置整体替换入口（2026-10-03）：与 importGroupConfig / loadPlayerDataSnapshot 共用
+      // 玩家配置写入串行器。主站桥接在 await 之后才执行 clearPlayerSlots 等后置动作，该动作的
+      // 先后顺序依赖本队列（见 tampermonkeyImportBridge 的顺序不变量注释）。
+      return runPlayerConfigMutationExclusive(async () => {
+        const { importSoloConfig: parseSoloImportConfig } = await loadImportExportMapperModule();
+        const targetId = String(playerId || this.activePlayerId);
+        const currentPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
+        const result = parseSoloImportConfig(text, currentPlayer, this.simulationSettings);
+        // Solo 导入是「替换目标槽位配置」而非「身份迁移」：sanitizePlayerConfig 是
+        // 导出/group/快照恢复共用的清洗函数，通用 id 语义（source.id || fallback.id）
+        // 的 source.id 优先只在「载荷 id 与目标 id 分歧」时改变结果——solo 的目标由
+        // 入参 playerId 决定、载荷 id 无槽位路由职责（group 按载荷 id 路由槽位，匹配
+        // 后 source.id 与 fallback.id 恒同值），任由载荷 id 胜出会让携带 id 的 native
+        // solo 载荷（modern-solo / modern-player-only；原生导出经 buildExportPlayer
+        // 恒携带 id）在顶替目标槽位后带着来源 id——目标 id 从玩家列表消失，此后按
+        // 玩家 id 过滤的即时资产分刷新落空（只能等 App.vue 250ms 防抖兜底；导入配置
+        // 与槽位原配置签名一致时 watch 不触发，载荷携带的跨会话行情快照将无限期
+        // 滞留），imported 标记 / 基线快照 / 桥接 selectAfterImport 全部挂错 id，且
+        // 来源 id 撞上其他现有玩家时产生重复 id。与 share-profile /
+        // main-site-current-character 分支恒用 fallback.id（= 目标 id）的既有语义
+        // 对齐：写入前归一为目标槽位 id。不影响快照保留守卫：configSignature 不含
+        // id（equipment/houseRooms/abilities/guildBuffs/工匠茶）；group 导入与快照
+        // 恢复按 id 合并的路径不经此处，零影响。
+        result.player.id = targetId;
+        if (result.marketItemValues) {
+          this.applyImportedMarketItemValues(
+            result.marketItemValues,
+            result.marketEstimateSource,
+            result.syntheticItemHrids,
+            result.syntheticLevelKeys,
+          );
+        }
+        this.ensurePlayerConfig(result.player);
 
-      this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
-      this.persistPlayerAchievements();
-      this.setImportedProfileState(targetId, true);
-      this.setImportedBaselineSnapshot(targetId, result.player);
-      // 玩家配置被替换，既有触发器优化结果不再对应任何当前输入。
-      this.resetTriggerOptimizerResults();
-      this.simulationSettings = {
-        ...this.simulationSettings,
-        ...result.simulationSettings,
-      };
-      this.normalizeRunScope();
-      this.normalizeDifficulty();
-      // 导入合并携带的 UI 级字段（含主站桥带回的迷宫升级等级）随之落盘
-      // （白名单口径同快照恢复分支），防止刷新后回落。
-      this.persistSimulationUiSettings();
-      this.refreshAssetScores([targetId]);
-      return result;
+        this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
+        this.persistPlayerAchievements();
+        this.setImportedProfileState(targetId, true);
+        this.setImportedBaselineSnapshot(targetId, result.player);
+        // 玩家配置被替换，既有触发器优化结果不再对应任何当前输入。
+        this.resetTriggerOptimizerResults();
+        this.simulationSettings = {
+          ...this.simulationSettings,
+          ...result.simulationSettings,
+        };
+        this.normalizeRunScope();
+        this.normalizeDifficulty();
+        // 导入合并携带的 UI 级字段（含主站桥带回的迷宫升级等级）随之落盘
+        // （白名单口径同快照恢复分支），防止刷新后回落。
+        this.persistSimulationUiSettings();
+        // 导入完成后刷新资产分快照（单人）：失败降级 + 控制台告警，不阻断导入。
+        await this.refreshAssetScores([targetId]).catch((error) => {
+          console.warn('[assetScore] refresh failed (after solo import):', error);
+        });
+        return result;
+      });
     },
     // 资产分（Gear Score）重算：市场数据不可用且玩家已有快照时的保留语义——
     // 快照仅在「仍与当前配置对应」时保留（导入携带语义的兜底：快照带 configSignature，
@@ -1084,8 +1163,12 @@ export const useSimulatorStore = defineStore('simulator', {
     // 值未变化时不写回（App.vue 的资产分 watch 源只跟踪配置签名与行情引用、
     // 不跟踪快照本身；等值守卫同时避免
     // 无谓的引用替换与 UI 重渲染）。
-    refreshAssetScores(playerIds = null) {
+    async refreshAssetScores(playerIds = null) {
       const targets = Array.isArray(playerIds) ? new Set(playerIds.map((id) => String(id))) : null;
+      // 候选 A（2026-10-03）：重计算链按需加载（首次经 loadAssetScoreModule 拉取，
+      // 此后命中缓存）；加载失败向上抛，调用方以 .catch 兜底为「本次不刷新」+
+      // console.warn 留痕（App.vue 与导出/导入调用点，统一 [assetScore] 前缀）。
+      const { computePlayerAssetScore, isPricingDataAvailableForAssetScore } = await loadAssetScoreModule();
       const pricingReady = isPricingDataAvailableForAssetScore(this.pricing);
       for (const player of this.players) {
         if (targets && !targets.has(String(player.id))) {

@@ -59,11 +59,26 @@ async function mountAppWithPlayer() {
   simulator.ensureAbilityUpgradeReferenceDataLoaded = vi.fn();
   const player = setupWeaponPlayer(simulator);
 
+  // 候选 A（2026-10-03）：refreshAssetScores 改为按需加载重模块（异步）——先预热
+  // 模块（真实模块图加载不随 fake timers 推进），使挂载期初算与后续防抖触发的
+  // 刷新只经历微任务级 await。
+  await import('../../services/assetScoreService.js');
+
   const router = createTestRouter();
   await router.push('/home');
   await router.isReady();
   const wrapper = mount(App, { global: { plugins: [pinia, router] } });
+  // 等待 onMounted 初算写回（模块已预热，纯微任务级；轮转上限防呆）。
+  await settleAssetScoreRefresh();
   return { wrapper, simulator, player };
+}
+
+// 刷新链（防抖/初算回调 → 按需模块 await → 写回）为纯微任务——轮转微任务队列，
+// 等待写回完成（断言稳定；模块由 mountAppWithPlayer 预热）。
+async function settleAssetScoreRefresh() {
+  for (let flush = 0; flush < 20; flush += 1) {
+    await Promise.resolve();
+  }
 }
 
 describe('App 资产分触发向量行为', () => {
@@ -97,6 +112,7 @@ describe('App 资产分触发向量行为', () => {
     player.equipment.weapon.enhancementLevel = 1;
     await nextTick();
     await vi.advanceTimersByTimeAsync(300);
+    await settleAssetScoreRefresh();
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     // 重算写回携带新等级与官方估算值的快照（marketItemValues[weaponHrid][1] = 500）。
     expect(player.assetScore).not.toBe(initial);
@@ -110,6 +126,7 @@ describe('App 资产分触发向量行为', () => {
     };
     await nextTick();
     await vi.advanceTimersByTimeAsync(300);
+    await settleAssetScoreRefresh();
     expect(refreshSpy).toHaveBeenCalledTimes(2);
     expect(player.assetScore).not.toBe(initial);
     expect(player.assetScore.items.equipment[0].value).toBe(900);

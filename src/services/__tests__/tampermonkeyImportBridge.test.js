@@ -45,11 +45,11 @@ describe('tampermonkeyImportBridge', () => {
     global.localStorage = createLocalStorageMock();
   });
 
-  it('keeps the original active player during multi-slot team imports', () => {
+  it('keeps the original active player during multi-slot team imports', async () => {
     const simulator = useSimulatorStore();
     simulator.setActivePlayer('4');
 
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-1',
@@ -60,7 +60,7 @@ describe('tampermonkeyImportBridge', () => {
         activateAfterImport: false,
       }),
     );
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-2',
@@ -70,7 +70,7 @@ describe('tampermonkeyImportBridge', () => {
         activateAfterImport: false,
       }),
     );
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-3',
@@ -91,11 +91,11 @@ describe('tampermonkeyImportBridge', () => {
     expect(simulator.players[3].selected).toBe(false);
   });
 
-  it('keeps the original active player even when that slot is part of the imported team', () => {
+  it('keeps the original active player even when that slot is part of the imported team', async () => {
     const simulator = useSimulatorStore();
     simulator.setActivePlayer('2');
 
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-same-1',
@@ -106,7 +106,7 @@ describe('tampermonkeyImportBridge', () => {
         activateAfterImport: false,
       }),
     );
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-same-2',
@@ -116,7 +116,7 @@ describe('tampermonkeyImportBridge', () => {
         activateAfterImport: false,
       }),
     );
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'team-same-3',
@@ -132,11 +132,11 @@ describe('tampermonkeyImportBridge', () => {
     expect(simulator.players[1].selected).toBe(true);
   });
 
-  it('keeps backward-compatible activation when only selectAfterImport is provided', () => {
+  it('keeps backward-compatible activation when only selectAfterImport is provided', async () => {
     const simulator = useSimulatorStore();
     simulator.setActivePlayer('4');
 
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'legacy-single',
@@ -151,13 +151,13 @@ describe('tampermonkeyImportBridge', () => {
     expect(simulator.players[1].selected).toBe(true);
   });
 
-  it('resets team selection before marking imported slots as selected', () => {
+  it('resets team selection before marking imported slots as selected', async () => {
     const simulator = useSimulatorStore();
     simulator.players.forEach((player) => {
       player.selected = true;
     });
 
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'selection-reset',
@@ -176,19 +176,19 @@ describe('tampermonkeyImportBridge', () => {
     expect(simulator.players[4].selected).toBe(false);
   });
 
-  it('clears requested non-target slots without affecting the imported target slot', () => {
+  it('clears requested non-target slots without affecting the imported target slot', async () => {
     const simulator = useSimulatorStore();
 
-    simulator.importSoloConfig(
+    await simulator.importSoloConfig(
       JSON.stringify(createMainSiteShareProfileFixture({ characterName: 'Existing Two' })),
       '2',
     );
-    simulator.importSoloConfig(
+    await simulator.importSoloConfig(
       JSON.stringify(createMainSiteShareProfileFixture({ characterName: 'Existing Three' })),
       '3',
     );
 
-    applyTampermonkeyImportMessage(
+    await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({
         requestId: 'clear-others',
@@ -249,13 +249,13 @@ describe('tampermonkeyImportBridge', () => {
 
   // 迷宫商店升级等级的覆盖摘要必须随桥接响应回传给脚本状态栏：该字段是破坏性整包
   // 覆盖（主站未购买 = 全 0 → 清空），只回 ok 会让用户手填的多选框等级无声消失。
-  it('forwards the labyrinth upgrade overwrite summary to the script status bar', () => {
+  it('forwards the labyrinth upgrade overwrite summary to the script status bar', async () => {
     const simulator = useSimulatorStore();
     simulator.simulationSettings.labyrinthUpgrades = { damage: 5, cast_speed: 2 };
     const payload = createMainSiteCurrentCharacterFixture({ characterName: 'No Upgrades Hero' });
     payload.characterInfo = { labyrinthCombatDamageLevel: 0, labyrinthAttackSpeedLevel: 0 };
 
-    const result = applyTampermonkeyImportMessage(simulator, { requestId: 'labyrinth-1', payload });
+    const result = await applyTampermonkeyImportMessage(simulator, { requestId: 'labyrinth-1', payload });
 
     expect(result.detectedFormat).toBe('main-site-current-character');
     expect(result.labyrinthUpgradesImport).toEqual({
@@ -267,11 +267,11 @@ describe('tampermonkeyImportBridge', () => {
     expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({});
   });
 
-  it('reports no labyrinth upgrade summary when the payload carries no levels', () => {
+  it('reports no labyrinth upgrade summary when the payload carries no levels', async () => {
     const simulator = useSimulatorStore();
     simulator.simulationSettings.labyrinthUpgrades = { damage: 5 };
 
-    const shareProfile = applyTampermonkeyImportMessage(
+    const shareProfile = await applyTampermonkeyImportMessage(
       simulator,
       createImportMessage({ requestId: 'labyrinth-2', characterName: 'Share Profile Hero' }),
     );

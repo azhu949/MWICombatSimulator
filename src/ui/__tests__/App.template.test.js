@@ -300,7 +300,9 @@ describe('App shell contracts', () => {
   });
 
   it('drives asset score refresh from a signature computed instead of a deep watch', () => {
-    expect(appSource).toContain("import { computeAssetScoreConfigSignature } from '../services/assetScoreService.js';");
+    expect(appSource).toContain(
+      "import { computeAssetScoreConfigSignature } from '../services/assetScorePresentation.js';",
+    );
     expect(appSource).toContain('const assetScoreRefreshTrigger = computed(() => [');
     expect(appSource).toContain('simulator.players.map((player) => computeAssetScoreConfigSignature(player))');
     expect(appSource).toContain('simulator.pricing?.marketItemValues ?? null');
@@ -311,7 +313,12 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('simulator.pricing?.enhancementQuotesByItem ?? null');
     expect(appSource).toContain('simulator.pricing?.lastFetchedAt ?? 0');
     expect(appSource).toContain('watch(assetScoreRefreshTrigger, () => {');
-    expect(appSource).toContain('simulator.refreshAssetScores();');
+    // 候选 A（2026-10-03）：刷新链路按需加载（异步）——防抖回调与 onMounted 初算
+    // 均以 void + catch 降级并 console.warn 留痕（加载失败不弹全局错误窗、不打断
+    // 回调）；空 catch 静默吞错已被替换，不得回归。
+    expect(appSource).toContain("console.warn('[assetScore] refresh failed (debounced trigger):', error);");
+    expect(appSource).toContain("console.warn('[assetScore] refresh failed (onMounted):', error);");
+    expect(appSource).not.toContain('void simulator.refreshAssetScores().catch(() => {});');
     expect(appSource).toContain('}, 250);');
     // App.vue 当前唯一 deep: true 即旧资产分触发器；拆除后不应再现（若未来新增
     // 合理的 deep watch，应把本断言改为块级定位而非全局负断言）。

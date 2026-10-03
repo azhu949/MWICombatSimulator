@@ -235,7 +235,7 @@ function postTampermonkeyImportResult(payload) {
   window.postMessage({ channel: TAMPERMONKEY_BRIDGE_CHANNEL, ...payload }, window.location.origin);
 }
 
-function handleTampermonkeyImportWindowMessage(event) {
+async function handleTampermonkeyImportWindowMessage(event) {
   if (event.source !== window || event.origin !== window.location.origin) return;
   const data = event.data;
   if (
@@ -259,7 +259,7 @@ function handleTampermonkeyImportWindowMessage(event) {
     return;
   }
   try {
-    const result = applyTampermonkeyImportMessage(simulator, data);
+    const result = await applyTampermonkeyImportMessage(simulator, data);
     postTampermonkeyImportResult({
       type: 'mwi-tm-import-result',
       requestId,

@@ -85,7 +85,11 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Button } from '@/ui/components/ui/button/index.js';
 import { useI18nText } from '../composables/useI18nText.js';
 import { useGameDataText } from '../composables/useGameDataText.js';
-import { ASSET_SCORE_SOURCES, formatAssetScoreGold, formatAssetScoreLabel } from '../../services/assetScoreService.js';
+import {
+  ASSET_SCORE_SOURCES,
+  formatAssetScoreGold,
+  formatAssetScoreLabel,
+} from '../../services/assetScorePresentation.js';
 
 const props = defineProps({
   players: { type: Array, default: () => [] },

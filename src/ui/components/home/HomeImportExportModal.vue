@@ -133,7 +133,7 @@ import { computed, ref, watch } from 'vue';
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useI18nText } from '../../composables/useI18nText.js';
 import { MAIN_SITE_IMPORT_SCRIPT_URL } from '../../config/externalLinks.js';
-import { formatAssetScoreLabel } from '../../../services/assetScoreService.js';
+import { formatAssetScoreLabel } from '../../../services/assetScorePresentation.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';
 import BaseModal from '../BaseModal.vue';
 
@@ -184,32 +184,78 @@ function openMainSiteImportScript() {
   }
 }
 
-function handleGroupExport() {
-  groupText.value = simulator.exportGroupConfig();
-  setStatus(
-    'success',
-    t('common:vue.settings.msgGroupExported', 'Group exported in {{format}} format.', { format: 'modern' }),
-  );
+// ③（2026-10-03）：导入导出经按需加载的序列化模块，四个入口均为 async。
+// 导出入口同样就地兜底按需模块加载失败（部署更新后旧页面 chunk 404 / 网络异常）：
+// 失败写 danger 状态区，与导入路径反馈对称；成功分支不变。
+async function handleGroupExport() {
+  try {
+    groupText.value = await simulator.exportGroupConfig();
+    // 备忘录 0364491149911703552：导出前资产分刷新失败不阻断导出（store 已留 console.warn），
+    // 此处把反馈降级为 warning，明确「已导出但资产分未刷新」；未失败时维持 success 文案不变。
+    if (simulator.runtime.assetScoreRefreshFailedOnExport) {
+      setStatus(
+        'warning',
+        t(
+          'common:vue.settings.msgGroupExportedAssetScoreNotRefreshed',
+          'Group exported in {{format}} format, but the Gear Score snapshot was not refreshed and may not match current market data.',
+          { format: 'modern' },
+        ),
+      );
+      return;
+    }
+    setStatus(
+      'success',
+      t('common:vue.settings.msgGroupExported', 'Group exported in {{format}} format.', { format: 'modern' }),
+    );
+  } catch (error) {
+    setStatus(
+      'danger',
+      t('common:vue.settings.msgGroupExportFailed', 'Group export failed: {{error}}', {
+        error: error?.message || String(error),
+      }),
+    );
+  }
 }
 
-function handleSoloExport() {
-  soloText.value = simulator.exportSoloConfig(soloTargetPlayerId.value);
-  setStatus(
-    'success',
-    t('common:vue.settings.msgSoloExported', 'Player {{player}} exported in {{format}} format.', {
-      player: soloTargetPlayerId.value,
-      format: 'modern',
-    }),
-  );
+async function handleSoloExport() {
+  try {
+    soloText.value = await simulator.exportSoloConfig(soloTargetPlayerId.value);
+    // 同 handleGroupExport：刷新失败降级为 warning，成功文案路径不变。
+    if (simulator.runtime.assetScoreRefreshFailedOnExport) {
+      setStatus(
+        'warning',
+        t(
+          'common:vue.settings.msgSoloExportedAssetScoreNotRefreshed',
+          'Player {{player}} exported in {{format}} format, but the Gear Score snapshot was not refreshed and may not match current market data.',
+          { player: soloTargetPlayerId.value, format: 'modern' },
+        ),
+      );
+      return;
+    }
+    setStatus(
+      'success',
+      t('common:vue.settings.msgSoloExported', 'Player {{player}} exported in {{format}} format.', {
+        player: soloTargetPlayerId.value,
+        format: 'modern',
+      }),
+    );
+  } catch (error) {
+    setStatus(
+      'danger',
+      t('common:vue.settings.msgSoloExportFailed', 'Solo export failed: {{error}}', {
+        error: error?.message || String(error),
+      }),
+    );
+  }
 }
 
-function handleGroupImport() {
+async function handleGroupImport() {
   if (props.blockPlayerConfigReplacement()) {
     setStatus('warning', t('common:vue.home.dirtyDraftBlocked', 'Save or cancel the current changes first.'));
     return;
   }
   try {
-    const result = simulator.importGroupConfig(groupText.value);
+    const result = await simulator.importGroupConfig(groupText.value);
     // #40（2026-09-01）：组队导入与单人同样提取并应用 marketItemValues（mapper
     // importGroupConfig / store applyImportedMarketItemValues），反馈复用同一门控
     // helper（见下方 OFFICIAL_ESTIMATE_FORMATS 注释），消除「组队侧静默应用零反馈」
@@ -320,13 +366,13 @@ function buildMarketEstimatesText(result) {
   );
 }
 
-function handleSoloImport() {
+async function handleSoloImport() {
   if (props.blockPlayerConfigReplacement()) {
     setStatus('warning', t('common:vue.home.dirtyDraftBlocked', 'Save or cancel the current changes first.'));
     return;
   }
   try {
-    const result = simulator.importSoloConfig(soloText.value, soloTargetPlayerId.value);
+    const result = await simulator.importSoloConfig(soloText.value, soloTargetPlayerId.value);
     // 官方估值计数让用户导入后立刻确认资产分取价链第①级是否可用；门控/合成中价/
     // 混合分列语义见上方 buildImportSuccessText 注释（组队/单人共用同一实现，#40）。
     setStatus(

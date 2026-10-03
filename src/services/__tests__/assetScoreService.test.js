@@ -1,24 +1,26 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   ASSET_SCORE_SOURCES,
-  COST_RESULT_CACHE_LIMIT,
   POUCH_DRINK_ENHANCEMENT_BONUSES,
   assetScoreEquals,
-  computeAcquisitionInputPrice,
   computeAssetScoreConfigSignature,
+  formatAssetScoreGold,
+  formatScoreValue,
+  formatAssetScoreLabel,
+  resolveCraftingTeaLessResource,
+  sanitizeAssetScorePayload,
+} from '../assetScorePresentation.js';
+import {
+  COST_RESULT_CACHE_LIMIT,
+  computeAcquisitionInputPrice,
   computeGuildTokenValue,
   computePlayerAssetScore,
   computeShopCurrencyValue,
   computeEnhancedEquipmentCost,
-  formatAssetScoreGold,
-  formatScoreValue,
-  formatAssetScoreLabel,
   listShopCurrencyRewardEntries,
   resolveAssetItemValue,
-  resolveCraftingTeaLessResource,
   resolveEquipmentAssetValue,
   resolveOfficialMarketItemValue,
-  sanitizeAssetScorePayload,
 } from '../assetScoreService.js';
 import { itemDetailIndex } from '../../shared/gameDataIndex.js';
 import houseRoomDetailMap from '../../combatsimulator/data/houseRoomDetailMap.json';

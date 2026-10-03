@@ -22,11 +22,8 @@ import { HOME_MULTI_ROUND_SEED_BASE } from '../../services/homeMultiRoundSimulat
 import { deriveSeedSet } from '../../services/seededRandom.js';
 import { summarizeSeries } from '../../services/robustStats.js';
 import marketHistoryService from '../../services/marketHistoryService.js';
-import {
-  ASSET_SCORE_SOURCES,
-  computeAssetScoreConfigSignature,
-  computePlayerAssetScore,
-} from '../../services/assetScoreService.js';
+import { ASSET_SCORE_SOURCES, computeAssetScoreConfigSignature } from '../../services/assetScorePresentation.js';
+import { computePlayerAssetScore } from '../../services/assetScoreService.js';
 import { exportSoloConfig } from '../../services/importExportMapper.js';
 import { equipmentOptionsBySlot } from '../../shared/gameDataIndex.js';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
@@ -738,7 +735,7 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('refreshAssetScores：行情不可用时保留与配置一致的快照，配置变化后重算', () => {
+  it('refreshAssetScores：行情不可用时保留与配置一致的快照，配置变化后重算', async () => {
     const simulator = useSimulatorStore();
     // 行情完全不可用（从未抓取且无透传值）。
     simulator.pricing.lastFetchedAt = 0;
@@ -751,18 +748,18 @@ describe('simulatorStore', () => {
 
     const player = simulator.players.find((entry) => String(entry.id) === String(simulator.activePlayerId));
     player.equipment.weapon = { itemHrid: vendorPricedHrid, enhancementLevel: 0 };
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     const initial = player.assetScore;
     expect(initial).not.toBeNull();
     expect(initial.configSignature).toBe(computeAssetScoreConfigSignature(player));
 
     // 配置未变 + 行情仍不可用 → 保留快照（不写回，引用不变）。
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(player.assetScore).toBe(initial);
 
     // 配置变化（强化等级）→ 快照与配置脱节 → 重算并写回携带新签名的快照。
     player.equipment.weapon.enhancementLevel = 1;
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(player.assetScore).not.toBe(initial);
     expect(player.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(player));
     expect(player.assetScore.items.equipment[0].enhancementLevel).toBe(1);
@@ -772,11 +769,11 @@ describe('simulatorStore', () => {
     const legacyHeld = player.assetScore;
     expect(legacyHeld.configSignature).toBeUndefined();
     player.equipment.weapon.enhancementLevel = 2;
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(player.assetScore).toBe(legacyHeld);
   });
 
-  it('refreshAssetScores：导入携带快照（无行情）端到端保留，改配置后重算', () => {
+  it('refreshAssetScores：导入携带快照（无行情）端到端保留，改配置后重算', async () => {
     const simulator = useSimulatorStore();
 
     // —— 导出方：内存配置（含 0 级房间/全 0 神龛/空技能槽的真实形状）算出快照后导出。
@@ -806,9 +803,9 @@ describe('simulatorStore', () => {
     simulator.pricing.lastFetchedAt = 0;
     simulator.pricing.enhancementQuotesByItem = {};
     simulator.pricing.marketItemValues = {};
-    simulator.importSoloConfig(soloText, '1');
+    await simulator.importSoloConfig(soloText, '1');
     const importedPlayer = simulator.players.find((entry) => String(entry.id) === '1');
-    simulator.refreshAssetScores(['1']);
+    await simulator.refreshAssetScores(['1']);
     expect(importedPlayer.assetScore).not.toBeNull();
     // 命门断言：导入后配置的签名与快照签名一致（跨 sanitize 无漂移）→ 守卫保留。
     expect(importedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(importedPlayer));
@@ -818,7 +815,7 @@ describe('simulatorStore', () => {
     //（assetScoreEquals 比较含 configSignature 的完整载荷，签名不同即写回，即使数值巧合相同）。
     const heldSnapshot = importedPlayer.assetScore;
     importedPlayer.equipment.weapon.enhancementLevel = 2;
-    simulator.refreshAssetScores(['1']);
+    await simulator.refreshAssetScores(['1']);
     expect(importedPlayer.assetScore).not.toBe(heldSnapshot);
     expect(importedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(importedPlayer));
     expect(importedPlayer.assetScore.items.equipment[0].enhancementLevel).toBe(2);
@@ -827,7 +824,7 @@ describe('simulatorStore', () => {
   // B4（2026-09-01）：targets 过滤的「未列入者被跳过」此前零覆盖——若回归（如漏
   // String 归一、Set 成员判定反转），导出前定点刷新（exportSoloConfig 只传单 id）
   // 会悄悄放大为全量重算，或反过来对未列入者漏算。
-  it('refreshAssetScores(playerIds)：只刷新列入 id 的玩家，未列入者快照不被触碰', () => {
+  it('refreshAssetScores(playerIds)：只刷新列入 id 的玩家，未列入者快照不被触碰', async () => {
     const simulator = useSimulatorStore();
 
     // 无行情：列入者 '1' 走重算分支（快照从无到有）；未列入者 '2' 携带签名脱节的
@@ -862,19 +859,19 @@ describe('simulatorStore', () => {
     expect(refreshedPlayer).toBeTruthy();
     refreshedPlayer.equipment.weapon = { itemHrid: String(vendorPricedEntry[0]), enhancementLevel: 0 };
 
-    simulator.refreshAssetScores(['1']);
+    await simulator.refreshAssetScores(['1']);
 
     expect(refreshedPlayer.assetScore).not.toBeNull();
     expect(refreshedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(refreshedPlayer));
     expect(skippedPlayer.assetScore).toBe(staleRef);
 
     // 数字 id 传入：Set 构造的 String 归一保证与字符串玩家 id 匹配。
-    simulator.refreshAssetScores([2]);
+    await simulator.refreshAssetScores([2]);
     expect(skippedPlayer.assetScore).not.toBe(staleRef);
     expect(skippedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(skippedPlayer));
   });
 
-  it('importSoloConfig：native 载荷携带不同 id 时目标槽位身份保持、资产分即时刷新生效', () => {
+  it('importSoloConfig：native 载荷携带不同 id 时目标槽位身份保持、资产分即时刷新生效', async () => {
     const simulator = useSimulatorStore();
 
     // 接收方行情可用：官方估算 ≠ vendor 价，与导出方快照（vendor 口径）可区分，
@@ -914,7 +911,7 @@ describe('simulatorStore', () => {
     });
     const soloText = exportSoloConfig(exportPlayer, {});
 
-    const result = simulator.importSoloConfig(soloText, '1');
+    const result = await simulator.importSoloConfig(soloText, '1');
 
     // 身份归一：返回玩家与列表内玩家 id 均为目标 id；无来源 id 残留、无重复 id。
     expect(result.player.id).toBe('1');
@@ -937,14 +934,14 @@ describe('simulatorStore', () => {
     expect(player2Before).toBeTruthy();
     const collisionPlayer = createEmptyPlayerConfig(2);
     collisionPlayer.equipment.weapon = { itemHrid: weaponHrid, enhancementLevel: 0 };
-    simulator.importSoloConfig(exportSoloConfig(collisionPlayer, {}), '1');
+    await simulator.importSoloConfig(exportSoloConfig(collisionPlayer, {}), '1');
     expect(new Set(simulator.players.map((entry) => String(entry.id))).size).toBe(simulator.players.length);
     const player2After = simulator.players.find((entry) => String(entry.id) === '2');
     expect(player2After).toBe(player2Before);
     expect(player2After.equipment.weapon.itemHrid).toBe('');
   });
 
-  it('refreshAssetScores：行情到达后重算覆盖 vendor 初算快照，等值守卫只挡同值', () => {
+  it('refreshAssetScores：行情到达后重算覆盖 vendor 初算快照，等值守卫只挡同值', async () => {
     const simulator = useSimulatorStore();
     // 行情不可用（从未抓取且无透传值）→ 初算走降级链 vendor 兜底。
     simulator.pricing.lastFetchedAt = 0;
@@ -968,7 +965,7 @@ describe('simulatorStore', () => {
 
     const player = simulator.players.find((entry) => String(entry.id) === String(simulator.activePlayerId));
     player.equipment.weapon = { itemHrid: weaponHrid, enhancementLevel: 0 };
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     const vendorSnapshot = player.assetScore;
     expect(vendorSnapshot).not.toBeNull();
     expect(vendorSnapshot.items.equipment[0]).toMatchObject({
@@ -981,7 +978,7 @@ describe('simulatorStore', () => {
     const marketValue = vendorPrice * 10 + 7;
     simulator.pricing.lastFetchedAt = Date.now();
     simulator.pricing.marketItemValues = { [weaponHrid]: { 0: marketValue } };
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     const marketSnapshot = player.assetScore;
     expect(marketSnapshot).not.toBe(vendorSnapshot);
     expect(marketSnapshot.items.equipment[0]).toMatchObject({
@@ -993,7 +990,7 @@ describe('simulatorStore', () => {
 
     // 同值重算（行情未再变化）→ 等值守卫挡住同值 → 引用不变（不写回——App.vue 资产分
     // watch 源只跟踪签名与行情引用，快照写回不构成触发）。
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(player.assetScore).toBe(marketSnapshot);
   });
 
@@ -1608,18 +1605,18 @@ describe('simulatorStore', () => {
     expect(Number(cheaperRow?.finalScore)).toBeGreaterThan(Number(expensiveRow?.finalScore));
   });
 
-  it('saves, loads, and deletes player data snapshots', () => {
+  it('saves, loads, and deletes player data snapshots', async () => {
     const simulator = useSimulatorStore();
 
     simulator.players[0].levels.stamina = 77;
     simulator.players[0].achievements[ACHIEVEMENT_HRID] = true;
-    const saveResult = simulator.savePlayerDataSnapshot();
+    const saveResult = await simulator.savePlayerDataSnapshot();
     expect(saveResult.ok).toBe(true);
     expect(simulator.playerDataSnapshotRows.some((row) => row.hasSnapshot)).toBe(true);
 
     simulator.players[0].levels.stamina = 1;
     simulator.players[0].achievements = {};
-    const loadResult = simulator.loadPlayerDataSnapshot();
+    const loadResult = await simulator.loadPlayerDataSnapshot();
     expect(loadResult.ok).toBe(true);
     expect(simulator.players[0].levels.stamina).toBe(77);
     expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
@@ -4466,7 +4463,7 @@ describe('simulatorStore', () => {
     );
   });
 
-  it('marks imported profile state after solo import', () => {
+  it('marks imported profile state after solo import', async () => {
     const simulator = useSimulatorStore();
     const soloText = JSON.stringify({
       version: 2,
@@ -4478,7 +4475,7 @@ describe('simulatorStore', () => {
     });
     simulator.setImportedProfileState('1', false);
 
-    simulator.importSoloConfig(soloText, '1');
+    await simulator.importSoloConfig(soloText, '1');
 
     expect(simulator.queue.importedProfileByPlayer['1']).toBe(true);
     expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
@@ -4501,7 +4498,7 @@ describe('simulatorStore', () => {
     expect(restarted.simulationSettings.labyrinthUpgrades).toEqual({ damage: 7 });
   });
 
-  it('persists main-site imported labyrinth upgrades across store restart (S2)', () => {
+  it('persists main-site imported labyrinth upgrades across store restart (S2)', async () => {
     const simulator = useSimulatorStore();
     const payload = {
       ...createMainSiteCurrentCharacterFixture({ characterName: 'Upgrade Hero' }),
@@ -4513,7 +4510,7 @@ describe('simulatorStore', () => {
         labyrinthExperienceLevel: 12,
       },
     };
-    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    await simulator.importSoloConfig(JSON.stringify(payload), '1');
     expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({
       damage: 5,
       attack_speed: 3,
@@ -4537,12 +4534,12 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('restores the dense in-memory advanced-state contract at the Store import boundary', () => {
+  it('restores the dense in-memory advanced-state contract at the Store import boundary', async () => {
     const simulator = useSimulatorStore();
     const roomHrids = Object.keys(simulator.activePlayer.houseRooms);
     const importedRoomHrid = roomHrids[0];
 
-    const result = simulator.importSoloConfig(
+    const result = await simulator.importSoloConfig(
       JSON.stringify({
         version: 2,
         player: {
@@ -4561,11 +4558,40 @@ describe('simulatorStore', () => {
     expect(result.player.achievements).toEqual({});
     expect(Object.keys(result.player.guildBuffs)).toHaveLength(combatGuildBuffDetails.length);
 
-    const exportedPlayer = JSON.parse(simulator.exportSoloConfig('1')).player;
+    const exportedPlayer = JSON.parse(await simulator.exportSoloConfig('1')).player;
     expect(exportedPlayer.houseRooms).toEqual({ [importedRoomHrid]: 3 });
   });
 
-  it('imports main-site shareable profile into the active player without changing simulation settings', () => {
+  // 备忘录 0364491149911703552：导出前资产分刷新失败不阻断导出——仍 resolve 字符串（UI 契约不变），
+  // 同时置位 runtime 标记供反馈面降级为 warning；每次导出开始时先重置为未失败。
+  it('marks runtime when the pre-export asset score refresh fails and still returns the export text', async () => {
+    const simulator = useSimulatorStore();
+    expect(simulator.runtime.assetScoreRefreshFailedOnExport).toBe(false);
+
+    const refreshSpy = vi.spyOn(simulator, 'refreshAssetScores');
+    refreshSpy.mockRejectedValue(new Error('chunk 404 after redeploy'));
+
+    const groupText = await simulator.exportGroupConfig();
+    expect(typeof groupText).toBe('string');
+    expect(groupText.length).toBeGreaterThan(0);
+    expect(simulator.runtime.assetScoreRefreshFailedOnExport).toBe(true);
+
+    // 单人导出共用同一标记：重置后再次失败仍置位。
+    const soloText = await simulator.exportSoloConfig('1');
+    expect(typeof soloText).toBe('string');
+    expect(soloText.length).toBeGreaterThan(0);
+    expect(simulator.runtime.assetScoreRefreshFailedOnExport).toBe(true);
+
+    // 下一次导出刷新成功：标记被重置为未失败（反馈面回到 success 文案路径）。
+    refreshSpy.mockResolvedValue(undefined);
+    const refreshedText = await simulator.exportGroupConfig();
+    expect(typeof refreshedText).toBe('string');
+    expect(simulator.runtime.assetScoreRefreshFailedOnExport).toBe(false);
+
+    refreshSpy.mockRestore();
+  });
+
+  it('imports main-site shareable profile into the active player without changing simulation settings', async () => {
     const simulator = useSimulatorStore();
     const headItemHrid = findFirstEquipmentItemByType('/equipment_types/head');
     const weaponItemHrid = findFirstEquipmentItemByType('/equipment_types/two_hand');
@@ -4666,7 +4692,7 @@ describe('simulatorStore', () => {
       },
     };
 
-    const result = simulator.importSoloConfig(JSON.stringify(payload), '3');
+    const result = await simulator.importSoloConfig(JSON.stringify(payload), '3');
 
     expect(result.detectedFormat).toBe('main-site-share-profile');
     expect(simulator.players[2].name).toBe('Main Site Hero');
@@ -4701,7 +4727,7 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.simulationTimeHours).toBe(48);
   });
 
-  it('#18：混合载荷逐件来源标注——syntheticItemHrids 命中的 hrid 标合成中价，其余标官方', () => {
+  it('#18：混合载荷逐件来源标注——syntheticItemHrids 命中的 hrid 标合成中价，其余标官方', async () => {
     const simulator = useSimulatorStore();
     const payload = {
       ...createMainSiteCurrentCharacterFixture({ characterName: 'Mixed Source Hero' }),
@@ -4709,7 +4735,7 @@ describe('simulatorStore', () => {
       marketEstimateSource: 'official',
       syntheticItemHrids: ['/items/bar'],
     };
-    const result = simulator.importSoloConfig(JSON.stringify(payload), '1');
+    const result = await simulator.importSoloConfig(JSON.stringify(payload), '1');
     expect(result.marketItemValues).toEqual(payload.marketItemValues);
     expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(100);
     expect(simulator.pricing.marketItemValueSources).toEqual({
@@ -4719,7 +4745,7 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('【一般-5】混合物品等级级来源标注——syntheticLevelKeys 命中等级建覆盖，二次导入清理陈旧覆盖', () => {
+  it('【一般-5】混合物品等级级来源标注——syntheticLevelKeys 命中等级建覆盖，二次导入清理陈旧覆盖', async () => {
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();
     const buildPayload = (extra = {}) => ({
@@ -4732,7 +4758,10 @@ describe('simulatorStore', () => {
     // 混合物品：等级 0 官方、等级 1 由合成中价补齐（syntheticLevelKeys 清单，含非规范
     // 键 '1.0'——归一化为 '1' 后才与消费端规范查询键对齐）。
     // 物品级标注保持 official（默认来源），等级级覆盖只记合成补齐的等级。
-    simulator.importSoloConfig(JSON.stringify(buildPayload({ syntheticLevelKeys: { '/items/foo': ['1.0'] } })), '1');
+    await simulator.importSoloConfig(
+      JSON.stringify(buildPayload({ syntheticLevelKeys: { '/items/foo': ['1.0'] } })),
+      '1',
+    );
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
     expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({
       '/items/foo': { 1: 'synthetic' },
@@ -4740,12 +4769,12 @@ describe('simulatorStore', () => {
 
     // 下次载荷不再携带清单（物品转纯官方）：本次载荷覆盖的 hrid 陈旧等级覆盖被清理
     //（不残留——否则转纯官方后的等级 1 仍被误标合成中价）。
-    simulator.importSoloConfig(JSON.stringify(buildPayload()), '2');
+    await simulator.importSoloConfig(JSON.stringify(buildPayload()), '2');
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
     expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({});
   });
 
-  it('【一般-5】等级级来源标注随市场缓存持久化——重启后合成补齐等级标签不翻转', () => {
+  it('【一般-5】等级级来源标注随市场缓存持久化——重启后合成补齐等级标签不翻转', async () => {
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();
     const payload = {
@@ -4754,14 +4783,14 @@ describe('simulatorStore', () => {
       marketEstimateSource: 'official',
       syntheticLevelKeys: { '/items/foo': ['0'] },
     };
-    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    await simulator.importSoloConfig(JSON.stringify(payload), '1');
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
     expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({ '/items/foo': { 0: 'synthetic' } });
 
     // 玩家装备 foo（0 级）→ 行级标签 = synthetic_mid（等级级覆盖优先于物品级 official）。
     const playerA = simulator.players.find((entry) => String(entry.id) === '1');
     playerA.equipment.weapon = { itemHrid: '/items/foo', enhancementLevel: 0 };
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(playerA.assetScore).not.toBeNull();
     const fooRowA = playerA.assetScore.items.equipment.find((row) => row.itemHrid === '/items/foo');
     expect(fooRowA).toMatchObject({
@@ -4776,7 +4805,7 @@ describe('simulatorStore', () => {
     expect(restarted.pricing.marketItemValueSourcesByLevel).toEqual({ '/items/foo': { 0: 'synthetic' } });
   });
 
-  it('#30 A3：来源标注随市场缓存持久化——重启+快照恢复后合成中价标签不翻转', () => {
+  it('#30 A3：来源标注随市场缓存持久化——重启+快照恢复后合成中价标签不翻转', async () => {
     // 会话 A：REST 行情缓存存在（lastFetchedAt > 0），主站透传合成来源估值。
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();
@@ -4785,13 +4814,13 @@ describe('simulatorStore', () => {
       marketItemValues: { '/items/foo': { 0: 100 } },
       marketEstimateSource: 'synthetic',
     };
-    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    await simulator.importSoloConfig(JSON.stringify(payload), '1');
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'synthetic' });
 
     // 玩家装备 foo（0 级：官方估算分支直达，无成本择优干扰）→ 行级标签 = synthetic_mid。
     const playerA = simulator.players.find((entry) => String(entry.id) === '1');
     playerA.equipment.weapon = { itemHrid: '/items/foo', enhancementLevel: 0 };
-    simulator.refreshAssetScores();
+    await simulator.refreshAssetScores();
     expect(playerA.assetScore).not.toBeNull();
     const fooRowA = playerA.assetScore.items.equipment.find((row) => row.itemHrid === '/items/foo');
     expect(fooRowA).toMatchObject({
@@ -4820,7 +4849,7 @@ describe('simulatorStore', () => {
     // 恢复后重算（pricingReady=true 恒重算）与快照逐字段一致 → 等值守卫挡住写回，
     // 诚实标签不被改标官方估算（修复前：sources 丢失 → 重算全标 official_estimate →
     // assetScoreEquals 不等 → 快照被覆写）。
-    restarted.importSoloConfig(snapshotText, '1');
+    await restarted.importSoloConfig(snapshotText, '1');
     const restoredPlayer = restarted.players.find((entry) => String(entry.id) === '1');
     expect(restoredPlayer.assetScore).not.toBeNull();
     const restoredSnapshot = restoredPlayer.assetScore;
@@ -4829,11 +4858,11 @@ describe('simulatorStore', () => {
       source: ASSET_SCORE_SOURCES.SYNTHETIC_MID,
     });
     // 模拟 App.vue 资产分 watch（签名+行情引用触发向量）再次触发的重算：同值同源 → 引用不变（无覆写）。
-    restarted.refreshAssetScores();
+    await restarted.refreshAssetScores();
     expect(restoredPlayer.assetScore).toBe(restoredSnapshot);
   });
 
-  it('#23：团队桥接逐成员导入同一份 merged 快照——值相同时引用不变且不再落盘', () => {
+  it('#23：团队桥接逐成员导入同一份 merged 快照——值相同时引用不变且不再落盘', async () => {
     const simulator = useSimulatorStore();
     // 已有 REST 行情缓存（lastFetchedAt > 0）时，透传值合并会随市场缓存落盘。
     simulator.pricing.lastFetchedAt = Date.now();
@@ -4848,7 +4877,7 @@ describe('simulatorStore', () => {
       global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.price.marketCache.v1').length;
 
     // 第一个成员导入：合并（引用替换）+ 市场缓存落盘各一次。
-    simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '1');
+    await simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '1');
     const afterFirstMember = simulator.pricing.marketItemValues;
     expect(afterFirstMember['/items/foo']['0']).toBe(100);
     const writesAfterFirstMember = countMarketCacheWrites();
@@ -4856,20 +4885,20 @@ describe('simulatorStore', () => {
 
     // 第二个成员透传同一份 merged 快照（脚本侧 getMergedMarketItemValues 共享缓存）：
     // 内容一致 → 引用不变（成本缓存指纹不失效、Vue 依赖不触发）且不再全量落盘。
-    simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '2');
+    await simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '2');
     expect(simulator.pricing.marketItemValues).toBe(afterFirstMember);
     expect(countMarketCacheWrites()).toBe(writesAfterFirstMember);
 
     // 值变化（模拟行情更新后的下一次导入）：恢复引用替换 + 落盘。
     const changedPayload = buildTeamMemberPayload();
     changedPayload.marketItemValues = { '/items/foo': { 0: 120 } };
-    simulator.importSoloConfig(JSON.stringify(changedPayload), '3');
+    await simulator.importSoloConfig(JSON.stringify(changedPayload), '3');
     expect(simulator.pricing.marketItemValues).not.toBe(afterFirstMember);
     expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(120);
     expect(countMarketCacheWrites()).toBe(writesAfterFirstMember + 1);
   });
 
-  it('#23：值相同但来源标记变化——数值引用不变、sources 换标并落盘（#30 A3）', () => {
+  it('#23：值相同但来源标记变化——数值引用不变、sources 换标并落盘（#30 A3）', async () => {
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();
 
@@ -4879,7 +4908,7 @@ describe('simulatorStore', () => {
       marketEstimateSource: estimateSource,
     });
 
-    simulator.importSoloConfig(JSON.stringify(buildPayload('official')), '1');
+    await simulator.importSoloConfig(JSON.stringify(buildPayload('official')), '1');
     const afterFirstImport = simulator.pricing.marketItemValues;
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
     const countMarketCacheWrites = () =>
@@ -4889,13 +4918,13 @@ describe('simulatorStore', () => {
     // 同值、来源标记从 official 翻转为 synthetic：数值引用不变（无缓存失效），
     // 来源标注按载荷整体换标（标签语义与数值口径解耦）；sources 变化需随缓存落盘
     //（#30 A3：同值换源不落盘会使重启后恢复旧来源标注、来源真值跨会话断裂）。
-    simulator.importSoloConfig(JSON.stringify(buildPayload('synthetic')), '2');
+    await simulator.importSoloConfig(JSON.stringify(buildPayload('synthetic')), '2');
     expect(simulator.pricing.marketItemValues).toBe(afterFirstImport);
     expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'synthetic' });
     expect(countMarketCacheWrites()).toBe(writesAfterFirstImport + 1);
   });
 
-  it('#23：现值为载荷严格超集且重叠值相同——合并为空操作，引用不变不落盘', () => {
+  it('#23：现值为载荷严格超集且重叠值相同——合并为空操作，引用不变不落盘', async () => {
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();
 
@@ -4908,7 +4937,7 @@ describe('simulatorStore', () => {
       marketItemValues: { '/items/foo': { 0: 100 }, '/items/bar': { 0: 200 } },
       marketEstimateSource: 'official',
     };
-    simulator.importSoloConfig(JSON.stringify(fullPayload), '1');
+    await simulator.importSoloConfig(JSON.stringify(fullPayload), '1');
     const afterFullImport = simulator.pricing.marketItemValues;
     expect(afterFullImport['/items/bar']['0']).toBe(200);
     expect(countMarketCacheWrites()).toBe(1);
@@ -4922,7 +4951,7 @@ describe('simulatorStore', () => {
       marketItemValues: { '/items/foo': { 0: 100 } },
       marketEstimateSource: 'official',
     };
-    simulator.importSoloConfig(JSON.stringify(subsetPayload), '2');
+    await simulator.importSoloConfig(JSON.stringify(subsetPayload), '2');
     expect(simulator.pricing.marketItemValues).toBe(afterFullImport);
     expect(countMarketCacheWrites()).toBe(1);
 
@@ -4933,7 +4962,7 @@ describe('simulatorStore', () => {
       marketItemValues: { '/items/foo': { 0: 120 } },
       marketEstimateSource: 'official',
     };
-    simulator.importSoloConfig(JSON.stringify(changedSubsetPayload), '3');
+    await simulator.importSoloConfig(JSON.stringify(changedSubsetPayload), '3');
     expect(simulator.pricing.marketItemValues).not.toBe(afterFullImport);
     expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(120);
     expect(simulator.pricing.marketItemValues['/items/bar']['0']).toBe(200);
@@ -4981,7 +5010,7 @@ describe('simulatorStore', () => {
     expect(simulator.pricing.marketItemValues).toBe(baseline);
   });
 
-  it('imports main-site current character payload into the active player without changing simulation settings', () => {
+  it('imports main-site current character payload into the active player without changing simulation settings', async () => {
     const simulator = useSimulatorStore();
     const headItemHrid = findFirstEquipmentItemByType('/equipment_types/head');
     const weaponItemHrid = findFirstEquipmentItemByType('/equipment_types/two_hand');
@@ -5087,7 +5116,7 @@ describe('simulatorStore', () => {
       },
     };
 
-    const result = simulator.importSoloConfig(JSON.stringify(payload), '4');
+    const result = await simulator.importSoloConfig(JSON.stringify(payload), '4');
 
     expect(result.detectedFormat).toBe('main-site-current-character');
     expect(simulator.players[3].name).toBe('Current Hero');
@@ -5195,7 +5224,7 @@ describe('simulatorStore', () => {
     }
   });
 
-  it('clears other players before a post-party solo main-site import', () => {
+  it('clears other players before a post-party solo main-site import', async () => {
     const simulator = useSimulatorStore();
     const headItemHrid = findFirstEquipmentItemByType('/equipment_types/head');
     const zoneActionHrid = findFirstCombatAction(false);
@@ -5246,7 +5275,7 @@ describe('simulatorStore', () => {
     };
 
     simulator.clearOtherPlayersForSoloImport('1');
-    const result = simulator.importSoloConfig(JSON.stringify(payload), '1');
+    const result = await simulator.importSoloConfig(JSON.stringify(payload), '1');
 
     expect(result.detectedFormat).toBe('main-site-current-character');
     expect(simulator.players[0].name).toBe('Solo Hero');
@@ -6601,12 +6630,12 @@ describe('simulatorStore', () => {
     expect(preview.totals.totalCost).toBe(expectedTotal);
   });
 
-  it('stores only meaningful player snapshots when saving snapshot data', () => {
+  it('stores only meaningful player snapshots when saving snapshot data', async () => {
     const simulator = useSimulatorStore();
 
     simulator.players[0].levels.stamina = 99;
     simulator.players[0].skillExperience.stamina = 123456;
-    const saveResult = simulator.savePlayerDataSnapshot();
+    const saveResult = await simulator.savePlayerDataSnapshot();
     expect(saveResult.ok).toBe(true);
 
     const rowsWithSnapshot = simulator.playerDataSnapshotRows.filter((row) => row.hasSnapshot);
@@ -6618,26 +6647,26 @@ describe('simulatorStore', () => {
     expect(storedSnapshotPayload.player.skillExperience.stamina).toBe(123456);
   });
 
-  it('restores imported baseline snapshot when loading player data snapshot', () => {
+  it('restores imported baseline snapshot when loading player data snapshot', async () => {
     const simulator = useSimulatorStore();
     simulator.players[0].levels.stamina = 99;
     simulator.players[0].skillExperience.stamina = 654321;
 
-    const saveResult = simulator.savePlayerDataSnapshot();
+    const saveResult = await simulator.savePlayerDataSnapshot();
     expect(saveResult.ok).toBe(true);
 
     simulator.players[0].levels.stamina = 1;
     simulator.players[0].skillExperience.stamina = null;
     simulator.queue.importedBaselineByPlayer['1'] = null;
 
-    const loadResult = simulator.loadPlayerDataSnapshot();
+    const loadResult = await simulator.loadPlayerDataSnapshot();
     expect(loadResult.ok).toBe(true);
     expect(simulator.players[0].levels.stamina).toBe(99);
     expect(simulator.players[0].skillExperience.stamina).toBe(654321);
     expect(simulator.queue.importedBaselineByPlayer['1'].skillExperience.stamina).toBe(654321);
   });
 
-  it('restores zone and difficulty from modern player data snapshot without forcing labyrinth mode', () => {
+  it('restores zone and difficulty from modern player data snapshot without forcing labyrinth mode', async () => {
     const simulator = useSimulatorStore();
     const payload = {
       version: 1,
@@ -6666,7 +6695,7 @@ describe('simulatorStore', () => {
     };
     global.localStorage.setItem('mwi.player.data.snapshot.v1', JSON.stringify(payload));
 
-    const loadResult = simulator.loadPlayerDataSnapshot();
+    const loadResult = await simulator.loadPlayerDataSnapshot();
     expect(loadResult.ok).toBe(true);
     expect(simulator.simulationSettings.mode).toBe('zone');
     expect(simulator.simulationSettings.useDungeon).toBe(false);
@@ -6674,7 +6703,7 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.difficultyTier).toBe(3);
   });
 
-  it('preserves achievements when restoring player snapshot without achievements field', () => {
+  it('preserves achievements when restoring player snapshot without achievements field', async () => {
     const simulator = useSimulatorStore();
     simulator.players[0].achievements = {
       [ACHIEVEMENT_HRID]: true,
@@ -6704,7 +6733,7 @@ describe('simulatorStore', () => {
     };
     global.localStorage.setItem('mwi.player.data.snapshot.v1', JSON.stringify(payload));
 
-    const loadResult = simulator.loadPlayerDataSnapshot();
+    const loadResult = await simulator.loadPlayerDataSnapshot();
 
     expect(loadResult.ok).toBe(true);
     expect(simulator.players[0].achievements).toEqual({
@@ -6712,13 +6741,13 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('preserves achievements on modern solo import when achievements field is missing', () => {
+  it('preserves achievements on modern solo import when achievements field is missing', async () => {
     const simulator = useSimulatorStore();
     simulator.players[0].achievements = {
       [ACHIEVEMENT_HRID]: true,
     };
 
-    simulator.importSoloConfig(
+    await simulator.importSoloConfig(
       JSON.stringify({
         version: 2,
         player: {
@@ -6735,10 +6764,10 @@ describe('simulatorStore', () => {
     });
   });
 
-  it('supports manual legacy solo import payloads', () => {
+  it('supports manual legacy solo import payloads', async () => {
     const simulator = useSimulatorStore();
 
-    const result = simulator.importSoloConfig(
+    const result = await simulator.importSoloConfig(
       JSON.stringify({
         player: {
           intelligenceLevel: 102,
@@ -6799,13 +6828,13 @@ describe('simulatorStore', () => {
     expect(simulator.players[0].abilities[4].abilityHrid).toBe('/abilities/fireball');
   });
 
-  it('clears achievements only when import explicitly provides empty achievements', () => {
+  it('clears achievements only when import explicitly provides empty achievements', async () => {
     const simulator = useSimulatorStore();
     simulator.players[0].achievements = {
       [ACHIEVEMENT_HRID]: true,
     };
 
-    simulator.importSoloConfig(
+    await simulator.importSoloConfig(
       JSON.stringify({
         version: 2,
         player: {

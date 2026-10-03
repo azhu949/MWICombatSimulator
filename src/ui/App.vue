@@ -740,6 +740,7 @@ import { useTheme } from './composables/useTheme.js';
 import {
   getUnreadPatchNoteEntries,
   initializePatchNotesState,
+  loadPatchNoteCatalog,
   markPatchNoteEntriesAsRead,
   resolvePatchNoteEntries,
 } from './patchNotes.js';
@@ -755,7 +756,7 @@ import {
   QUEUE_PRICE_METHOD_LEFT1,
   QUEUE_PRICE_METHOD_RIGHT1,
 } from '../services/queueUpgradeCost.js';
-import { computeAssetScoreConfigSignature } from '../services/assetScoreService.js';
+import { computeAssetScoreConfigSignature } from '../services/assetScorePresentation.js';
 
 const appVersion = __APP_VERSION__;
 
@@ -921,7 +922,18 @@ const topQueueActionStatusClass = computed(() => {
   }
   return 'text-foreground/85';
 });
-const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
+// 补丁目录按需加载（见 patchNotes.js）：数据就绪前列表为空、未读徽标隐藏；
+// 拉取在挂载后立即发起，与首屏渲染并行，对用户不可感。
+const patchNotesEntries = ref([]);
+const patchNotesCatalog = ref(null);
+
+async function refreshPatchNotesEntries() {
+  if (!patchNotesCatalog.value) {
+    patchNotesCatalog.value = await loadPatchNoteCatalog();
+  }
+  patchNotesEntries.value = resolvePatchNoteEntries(patchNotesCatalog.value, language.value);
+  return patchNotesEntries.value;
+}
 const patchNotesUnreadPreviewItems = computed(() => {
   const previewEntryIds = patchNotesUnreadPreviewEntryIds.value;
   if (previewEntryIds.length === 0) {
@@ -2193,6 +2205,24 @@ async function openBaselineReminderSettings() {
   }
 }
 
+// 补丁目录异步初始化：加载 → 首次基线（存储无效时把当前全部版本记为已读）→ 刷新未读。
+// 加载失败仅告警：未读徽标保持隐藏，不影响应用其余启动流程。
+async function initializePatchNotesData() {
+  try {
+    await refreshPatchNotesEntries();
+  } catch (error) {
+    console.warn('[patchNotes] catalog load failed:', error);
+    return;
+  }
+  initializePatchNotesState({
+    entries: patchNotesEntries.value,
+  });
+  refreshPatchNoteUnreadEntries();
+  if (route.name === 'patch-notes') {
+    markPatchNotesReadOnPageEntry();
+  }
+}
+
 function refreshPatchNoteUnreadEntries() {
   patchNotesUnreadEntries.value = getUnreadPatchNoteEntries({
     entries: patchNotesEntries.value,
@@ -2351,20 +2381,23 @@ watch(assetScoreRefreshTrigger, () => {
   }
   assetScoreRefreshTimer = setTimeout(() => {
     assetScoreRefreshTimer = null;
-    simulator.refreshAssetScores();
+    // 候选 A（2026-10-03）：刷新链路按需加载（异步）——失败降级 + 控制台告警：
+    // loader 已清缓存、下次触发自动重试；此处仅 console.warn 留痕，不弹全局错误窗、
+    // 不打断本回调。
+    void simulator.refreshAssetScores().catch((error) => {
+      console.warn('[assetScore] refresh failed (debounced trigger):', error);
+    });
   }, 250);
 });
 
 onMounted(() => {
-  initializePatchNotesState({
-    entries: patchNotesEntries.value,
-  });
-  refreshPatchNoteUnreadEntries();
-  if (route.name === 'patch-notes') {
-    markPatchNotesReadOnPageEntry();
-  }
+  void initializePatchNotesData();
   scheduleDeferredInitialization();
-  simulator.refreshAssetScores();
+  // 初算同走按需加载 + 降级告警：onMounted 不等待刷新（失败由后续资产分 watch
+  // 触发或导入导出前的刷新重试），仅 console.warn 留痕。
+  void simulator.refreshAssetScores().catch((error) => {
+    console.warn('[assetScore] refresh failed (onMounted):', error);
+  });
   window.addEventListener('error', onWindowError);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
 });
@@ -2381,7 +2414,13 @@ onUnmounted(() => {
 
 watch(
   () => language.value,
-  () => {
+  async () => {
+    // 语言切换后重解析目录文本（entryId 集合不变）；目录未就绪时等待其加载。
+    try {
+      await refreshPatchNotesEntries();
+    } catch (error) {
+      console.warn('[patchNotes] catalog refresh failed:', error);
+    }
     refreshPatchNoteUnreadEntries();
     if (patchNotesUnreadModalOpen.value) {
       patchNotesUnreadPreviewEntryIds.value = patchNotesUnreadEntries.value.map((entry) => entry.entryId);

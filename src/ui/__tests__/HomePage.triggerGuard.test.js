@@ -265,7 +265,7 @@ describe('Home trigger replacement guard', () => {
     wrapper.unmount();
   });
 
-  it('restores a snapshot when no trigger draft blocks replacement', () => {
+  it('restores a snapshot when no trigger draft blocks replacement', async () => {
     const wrapper = mountHarness();
     const simulator = useSimulatorStore();
     const loadSnapshot = vi.spyOn(simulator, 'loadPlayerDataSnapshot').mockReturnValue({
@@ -274,7 +274,7 @@ describe('Home trigger replacement guard', () => {
       messageKey: 'common:settingsPage.playerLoadSuccess',
     });
 
-    snapshots.load();
+    await snapshots.load();
 
     expect(loadSnapshot).toHaveBeenCalledOnce();
     expect(snapshots.status.value.tone).toBe('success');
@@ -282,7 +282,7 @@ describe('Home trigger replacement guard', () => {
     wrapper.unmount();
   });
 
-  it('shows a readable fallback when the snapshot store returns an unknown message key', () => {
+  it('shows a readable fallback when the snapshot store returns an unknown message key', async () => {
     const wrapper = mountHarness();
     const simulator = useSimulatorStore();
     vi.spyOn(simulator, 'savePlayerDataSnapshot').mockReturnValue({
@@ -290,7 +290,7 @@ describe('Home trigger replacement guard', () => {
       messageKey: 'common:settingsPage.missingSnapshotMessage',
     });
 
-    snapshots.save();
+    await snapshots.save();
 
     expect(snapshots.statusText.value).toBe('Player config operation failed.');
     expect(snapshots.statusText.value).not.toContain('missingSnapshotMessage');
@@ -395,6 +395,47 @@ describe('Home trigger replacement guard', () => {
       }
       expect(wrapper.findAll('textarea')[textareaIndex].element.value).toBe(exportedText);
       expect(wrapper.text()).toMatch(/exported in modern format/i);
+      wrapper.unmount();
+    },
+  );
+
+  it.each(exportCases)(
+    'keeps the $kind textarea unchanged and shows failure when the export rejects',
+    async ({ buttonLabel, textareaIndex, exportMethod }) => {
+      const wrapper = mountModal(vi.fn(() => false));
+      const simulator = useSimulatorStore();
+      const existingText = '{"existing":true}';
+      vi.spyOn(simulator, exportMethod).mockRejectedValue(new Error('chunk load failed'));
+
+      await wrapper.findAll('textarea')[textareaIndex].setValue(existingText);
+      await wrapper
+        .findAll('button')
+        .find((button) => button.text() === buttonLabel)
+        .trigger('click');
+
+      expect(wrapper.text()).toContain('export failed: chunk load failed');
+      expect(wrapper.findAll('textarea')[textareaIndex].element.value).toBe(existingText);
+      wrapper.unmount();
+    },
+  );
+
+  // 备忘录 0364491149911703552：导出前资产分刷新失败不阻断导出，反馈降级为 warning
+  //（「已导出但资产分未刷新」），不再显示普通 success 文案。
+  it.each(exportCases)(
+    'shows a warning when the exported asset score was not refreshed',
+    async ({ buttonLabel, textareaIndex, exportMethod, exportedText }) => {
+      const wrapper = mountModal(vi.fn(() => false));
+      const simulator = useSimulatorStore();
+      vi.spyOn(simulator, exportMethod).mockReturnValue(exportedText);
+      simulator.runtime.assetScoreRefreshFailedOnExport = true;
+
+      await wrapper
+        .findAll('button')
+        .find((button) => button.text() === buttonLabel)
+        .trigger('click');
+
+      expect(wrapper.findAll('textarea')[textareaIndex].element.value).toBe(exportedText);
+      expect(wrapper.text()).toContain('Gear Score snapshot was not refreshed');
       wrapper.unmount();
     },
   );

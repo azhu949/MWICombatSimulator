@@ -469,9 +469,9 @@ describe('trigger optimizer store', () => {
     // 空玩家配置不算「有意义的快照」（simulatorStorage 的 hasMeaningful 校验会过滤掉），
     // 先做一次真实改动再保存。
     store.players[0].levels.stamina = 77;
-    expect(store.savePlayerDataSnapshot().ok).toBe(true);
+    expect((await store.savePlayerDataSnapshot()).ok).toBe(true);
     store.players[0].levels.stamina = 1;
-    expect(store.loadPlayerDataSnapshot().ok).toBe(true);
+    expect((await store.loadPlayerDataSnapshot()).ok).toBe(true);
     expect(store.players[0].levels.stamina).toBe(77);
 
     expect(store.triggerOptimizer.results.createdAt).toBeFalsy();

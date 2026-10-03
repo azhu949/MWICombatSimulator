@@ -28,7 +28,7 @@
 // 详见 triggerOptimizerDomain.computeObjectiveScore（公式唯一实现处）。
 // 死亡的奖励与惩罚对称：增加死亡被惩罚、减少死亡被奖励（用户目标包含「死亡更低」）。
 
-import jStat from 'jstat';
+import * as jStat from '../vendor/jstatSubset.js';
 
 import { resolveQueuePerformanceSubweights } from '../shared/queuePerformanceWeights.js';
 import {

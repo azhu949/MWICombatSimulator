@@ -14,7 +14,7 @@ describe('PatchNotesPage workspace', () => {
   });
 
   it('renders localized entries as categorized version cards using the shared sections component', () => {
-    expect(pageSource).toContain('resolvePatchNoteEntries(undefined, language.value)');
+    expect(pageSource).toContain('resolvePatchNoteEntries(catalog, language.value)');
     expect(pageSource).toContain("import PatchNoteSections from '../components/PatchNoteSections.vue'");
     expect(pageSource).toContain('<PatchNoteSections :sections="entry.sections" />');
     expect(pageSource).toContain('v-for="entry in entries"');

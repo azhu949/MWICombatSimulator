@@ -1098,7 +1098,7 @@ common.triggerOptimizer.candidate.composite*（10 个组合标签）/ candidate.
 - **第 2 层配对统计** `computePairedStats(candidateMetrics, referenceMetrics, weights)`：
   要求两侧 `samples` 长度相同且第 i 轮同种子；逐轮相减 → `summarizeSamples` →
   mean / 标准误 / t / dof / 双侧 p / verdict；
-- **p 值必须用 `jstat` 的 Student-t 真实 CDF**（项目已依赖，`enhancementSimulator.js` 也在用）。
+- **p 值必须用 `jstat` 的 Student-t 真实 CDF**（现经 `src/vendor/jstatSubset.js` 子集提供，jstat 包为 devDependency 仅供对拍脚本使用；`enhancementSimulator.js` 也在用）。
   **不要**用「|t| ≥ 2 ≈ 95%」近似：本功能默认 2 轮，自由度 1，t 要 12.7 才 p < 0.05，
   近似会给出假阳性。出现 `-Infinity`（空蓝回归）→ 直接 `negative` 不做统计；
   所有差值完全相同且非 0 → 标准误 0 → t = ±Infinity → p = 0 → 明确的 positive/negative；

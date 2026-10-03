@@ -5,9 +5,13 @@ import { useI18nText } from './useI18nText.js';
 const STATUS_FALLBACKS = {
   'common:settingsPage.playerSaveSuccess': 'Player configs saved.',
   'common:settingsPage.playerSaveError': 'Failed to save player configs. Check browser storage permissions.',
+  'common:settingsPage.playerSaveModuleError':
+    'Failed to load the config module; player configs were not saved. Refresh the page and try again.',
   'common:settingsPage.playerLoadSuccess': 'Player configs restored (saved at: {{time}}).',
   'common:settingsPage.playerLoadNotFound': 'No player config snapshot found. Save one first.',
   'common:settingsPage.playerLoadInvalid': 'Player config snapshot is invalid and cannot be restored.',
+  'common:settingsPage.playerLoadModuleError':
+    'Failed to load the config module; player configs were not restored. Refresh the page and try again.',
   'common:settingsPage.playerDeleteAllSuccess': 'Deleted all player snapshot data.',
   'common:settingsPage.playerDeleteSingleSuccess': 'Deleted snapshot data for player {{playerId}}.',
   'common:settingsPage.playerDeleteError': 'Failed to delete player snapshot data. Check browser storage permissions.',
@@ -47,20 +51,21 @@ export function useHomePlayerSnapshots(blockPlayerConfigReplacement) {
     status.value = { tone, text: t(messageKey, statusFallback(messageKey, tone), options) };
   }
 
-  function save() {
-    const result = simulator.savePlayerDataSnapshot();
+  // ③（2026-10-03）：store 快照序列化改为按需加载的 async 入口，保存/恢复随之异步。
+  async function save() {
+    const result = await simulator.savePlayerDataSnapshot();
     setStatus(
       result.ok ? 'common:settingsPage.playerSaveSuccess' : result.messageKey || 'common:settingsPage.playerSaveError',
       result.ok ? 'success' : 'danger',
     );
   }
 
-  function load() {
+  async function load() {
     if (blockPlayerConfigReplacement?.()) {
       setStatus('common:vue.home.dirtyDraftBlocked', 'warning');
       return;
     }
-    const result = simulator.loadPlayerDataSnapshot();
+    const result = await simulator.loadPlayerDataSnapshot();
     if (!result.ok) {
       setStatus(result.messageKey || 'common:settingsPage.playerLoadInvalid', 'danger');
       return;

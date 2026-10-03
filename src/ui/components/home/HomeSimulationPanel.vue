@@ -447,7 +447,7 @@ import {
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useGameDataText } from '../../composables/useGameDataText.js';
 import { useI18nText } from '../../composables/useI18nText.js';
-import { formatAssetScoreLabel } from '../../../services/assetScoreService.js';
+import { formatAssetScoreLabel } from '../../../services/assetScorePresentation.js';
 import { normalizeTaxMode } from '../../../services/marketPriceService.js';
 import { SearchCombobox } from '../ui/combobox/index.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';

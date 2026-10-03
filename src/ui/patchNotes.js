@@ -1,4 +1,28 @@
-import patchNote from '../../patchNote.json';
+// 补丁目录（patchNote.json，双语全文）改为按需加载——它曾由本模块顶层静态 import，
+// 使整包数据经 App.vue 静态依赖链进入首屏 index chunk。首个消费者（App 启动 /
+// PatchNotesPage 挂载）调用 loadPatchNoteCatalog() 拉取一次并缓存；未读徽标与
+// 预览内容在数据就绪后刷新，加载失败则保持隐藏。
+let patchNoteCatalog = null;
+let patchNoteCatalogPromise = null;
+
+export function loadPatchNoteCatalog() {
+  if (patchNoteCatalog) {
+    return Promise.resolve(patchNoteCatalog);
+  }
+  if (!patchNoteCatalogPromise) {
+    patchNoteCatalogPromise = import('../../patchNote.json')
+      .then((module) => {
+        patchNoteCatalog = module?.default ?? module;
+        return patchNoteCatalog;
+      })
+      .catch((error) => {
+        // 失败后清空缓存允许重试；错误交给调用方决定兜底策略。
+        patchNoteCatalogPromise = null;
+        throw error;
+      });
+  }
+  return patchNoteCatalogPromise;
+}
 
 export const PATCH_NOTES_STORAGE_KEY = 'mwi.ui.patchNotes.v1';
 export const PATCH_NOTES_STORAGE_VERSION = 1;
@@ -252,7 +276,10 @@ function persistPatchNotesState(storage, state) {
   }
 }
 
-export function resolvePatchNoteEntries(patchNotes = patchNote, language = 'zh') {
+// 解析补丁目录对象（patchNote.json 的原始形态）为 { entryId, label, sections } 条目数组。
+// patchNotes 为必传参数（模块已不再静态导入目录、此处也没有默认值）：undefined / null /
+// 非对象 / 数组入参一律返回 []；数组入参请走 resolveEntries 的归一化分派路径。
+export function resolvePatchNoteEntries(patchNotes, language = 'zh') {
   if (!patchNotes || typeof patchNotes !== 'object' || Array.isArray(patchNotes)) {
     return [];
   }
@@ -270,18 +297,28 @@ export function resolvePatchNoteEntries(patchNotes = patchNote, language = 'zh')
   });
 }
 
-export const patchNoteEntries = Object.freeze(resolvePatchNoteEntries(patchNote, 'zh'));
-
 export function readPatchNotesState(storage) {
   return parseStoredPatchNotesState(storage).state;
 }
 
-export function initializePatchNotesState({ entries = patchNoteEntries, storage, initializedAt = Date.now() } = {}) {
+// 首次启动建立读基线：把当前全部版本一次性记为已读；存储已有效时原样返回、不覆盖。
+// entries 为必传参数（无默认值、无静态目录兜底）：未传 / 空数组时不写持久化、直接返回
+// 默认状态（静默降级，见下方防御分支），开发环境会在该分支给出 console.warn 提示调用方。
+export function initializePatchNotesState({ entries, storage, initializedAt = Date.now() } = {}) {
   const resolvedEntries = resolveEntries(entries);
   const { isValid, state } = parseStoredPatchNotesState(storage);
 
   if (isValid) {
     return state;
+  }
+
+  // 防御：目录数据尚未加载（entries 为空）时不写持久化——否则会留下
+  // readEntryIds: [] 的基线，之后所有版本都会显示为未读。
+  if (resolvedEntries.length === 0) {
+    if (import.meta.env.DEV) {
+      console.warn('[patchNotes] initializePatchNotesState skipped: no entries resolved, baseline not persisted.');
+    }
+    return createDefaultPatchNotesState();
   }
 
   const timestamp = normalizeTimestamp(initializedAt);
@@ -296,7 +333,9 @@ export function initializePatchNotesState({ entries = patchNoteEntries, storage,
   return nextState;
 }
 
-export function getUnreadPatchNoteEntries({ entries = patchNoteEntries, storage } = {}) {
+// 返回尚未标记为已读的条目（未读徽标与预览弹窗的数据源）。
+// entries 为必传参数：未传 / 空数组时不初始化、不写持久化，直接返回 []（静默降级）。
+export function getUnreadPatchNoteEntries({ entries, storage } = {}) {
   const resolvedEntries = resolveEntries(entries);
   if (resolvedEntries.length === 0) {
     return [];

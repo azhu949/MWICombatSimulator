@@ -84,13 +84,36 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import PatchNoteSections from '../components/PatchNoteSections.vue';
 import { useI18nText } from '../composables/useI18nText.js';
-import { resolvePatchNoteEntries } from '../patchNotes.js';
+import { loadPatchNoteCatalog, resolvePatchNoteEntries } from '../patchNotes.js';
 
 const { language, t } = useI18nText();
-const entries = computed(() => resolvePatchNoteEntries(undefined, language.value));
+
+// 目录按需加载（与 App 共享同一份缓存的 patchNote.json）；数据到达前渲染空态，
+// entryId 集合变化由下方 scroll-spy watch 负责重建观察器。
+const entries = ref([]);
+
+async function refreshEntries() {
+  const catalog = await loadPatchNoteCatalog();
+  entries.value = resolvePatchNoteEntries(catalog, language.value);
+}
+
+void refreshEntries().catch((error) => {
+  console.warn('[patchNotes] catalog load failed:', error);
+});
+
+// 语言切换后重新解析目录文本（entryId 集合不变、DOM 复用）；失败沿用与首次加载
+// 一致的告警兜底。此处不触碰下方 entryId 观察器：重解析只替换 label/sections，
+// entryId 不变时观察器回调不重建 scroll-spy，activeEntryId 与视口位置保持一致。
+watch(language, async () => {
+  try {
+    await refreshEntries();
+  } catch (error) {
+    console.warn('[patchNotes] catalog refresh failed:', error);
+  }
+});
 
 const activeEntryId = ref('');
 // 卡片元素按 entryId 索引（由 collectCardElements 一次性采集，避免内联函数
@@ -184,6 +207,9 @@ watch(
       setupScrollSpy();
     }
   },
+  // 目录异步加载：首帧空列表 → 数据到达时在 DOM 更新后再采集卡片/重建观察器，
+  // 否则 pre-flush 阶段收集不到刚渲染的卡片元素。
+  { flush: 'post' },
 );
 
 onBeforeUnmount(() => {

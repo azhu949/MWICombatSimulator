@@ -22,7 +22,7 @@ import {
   normalizeLabyrinthShopUpgrades,
   readLabyrinthShopUpgradeLevel,
 } from '../shared/labyrinthShopUpgrades.js';
-import { sanitizeAssetScorePayload } from './assetScoreService.js';
+import { sanitizeAssetScorePayload } from './assetScorePresentation.js';
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== 'weapon');
 const COMBAT_ABILITY_SLOT_COUNT = 5;

@@ -59,8 +59,8 @@ afterEach(() => {
 
 describe('patchNotes', () => {
   it('publishes the newest bilingual entry first and preserves the release chain order', () => {
-    const zhEntries = resolvePatchNoteEntries(undefined, 'zh');
-    const enEntries = resolvePatchNoteEntries(undefined, 'en');
+    const zhEntries = resolvePatchNoteEntries(patchNoteCatalog, 'zh');
+    const enEntries = resolvePatchNoteEntries(patchNoteCatalog, 'en');
     // patchNote.json 的源码顺序即发布链（最新的在前）。
     // 从目录中推导期望值，可让本测试在每次发布时
     // 无需修改硬编码版本号即可保持通过。
@@ -333,8 +333,8 @@ describe('patchNotes', () => {
   });
 
   it('resolves the real catalog for zh and en with non-empty sections and zh/en parity', () => {
-    const zhEntries = resolvePatchNoteEntries(undefined, 'zh');
-    const enEntries = resolvePatchNoteEntries(undefined, 'en');
+    const zhEntries = resolvePatchNoteEntries(patchNoteCatalog, 'zh');
+    const enEntries = resolvePatchNoteEntries(patchNoteCatalog, 'en');
 
     expect(zhEntries).toHaveLength(Object.keys(patchNoteCatalog).length);
     expect(enEntries).toHaveLength(Object.keys(patchNoteCatalog).length);
@@ -592,5 +592,54 @@ describe('patchNotes', () => {
         storage,
       }),
     ).toEqual([]);
+  });
+
+  it('keeps storage untouched until entries resolve, then writes the baseline exactly once', () => {
+    const storage = createLocalStorageMock();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // 未传 entries：静默降级——返回默认状态且不写持久化，避免留下 readEntryIds: [] 的毒基线。
+    expect(initializePatchNotesState({ storage })).toEqual({
+      version: PATCH_NOTES_STORAGE_VERSION,
+      readEntryIds: [],
+      initializedAt: 0,
+      updatedAt: 0,
+    });
+    // 显式空数组：语义同上。
+    expect(initializePatchNotesState({ entries: [], storage })).toEqual({
+      version: PATCH_NOTES_STORAGE_VERSION,
+      readEntryIds: [],
+      initializedAt: 0,
+      updatedAt: 0,
+    });
+    expect(storage.setItem).not.toHaveBeenCalled();
+    expect(storage.getItem(PATCH_NOTES_STORAGE_KEY)).toBeNull();
+
+    // 空 entries 下 getUnread 同样既不初始化也不写持久化，直接返回空数组。
+    expect(getUnreadPatchNoteEntries({ storage })).toEqual([]);
+    expect(storage.setItem).not.toHaveBeenCalled();
+
+    // vitest 默认 mode=test ⇒ import.meta.env.DEV 恒为 true（与 queueUpgradeCost 开发期护栏同理，
+    // 该处 keyContract 测试亦对 DEV 分支做无条件断言）；因此本断言锁定「误用必须留下显式信号」。
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[patchNotes] initializePatchNotesState skipped'));
+    warnSpy.mockRestore();
+
+    // 随后补传非空 entries：基线正常写出，证明此前未残留任何状态。
+    vi.spyOn(Date, 'now').mockReturnValue(777);
+    const entries = resolvePatchNoteEntries({
+      '2026年3月25日（v1.0.7）': {
+        improvements: { zh: ['第一条'] },
+      },
+    });
+
+    const baseline = initializePatchNotesState({ entries, storage });
+    expect(baseline).toEqual({
+      version: PATCH_NOTES_STORAGE_VERSION,
+      readEntryIds: ['2026年3月25日（v1.0.7）'],
+      initializedAt: 777,
+      updatedAt: 777,
+    });
+    expect(JSON.parse(storage.getItem(PATCH_NOTES_STORAGE_KEY))).toEqual(baseline);
+    expect(getUnreadPatchNoteEntries({ entries, storage })).toEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-import jStat from 'jstat';
+import * as jStat from '../vendor/jstatSubset.js';
 import { applyMarketSaleFee, isMarketSaleSource } from './marketPriceService.js';
 
 const DEFAULT_SUCCESS_RATES = [

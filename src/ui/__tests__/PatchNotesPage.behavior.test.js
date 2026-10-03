@@ -4,7 +4,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import PatchNotesPage from '../pages/PatchNotesPage.vue';
-import { initI18n } from '../i18n/i18n.js';
+import i18next, { ensureLanguageBundle, initI18n } from '../i18n/i18n.js';
+import { loadPatchNoteCatalog } from '../patchNotes.js';
 
 // jsdom 无原生 IntersectionObserver，用可手动触发回调的 stub 捕获实例，
 // 以便直接驱动 scroll-spy 的可见性状态。
@@ -37,6 +38,9 @@ class IntersectionObserverStub {
 
 beforeAll(async () => {
   await initI18n();
+  // 预热补丁目录：真实启动中由 App 先行加载，页面随后进入时命中缓存；
+  // 测试里预载可避免首个用例与动态 import 冷启动的时序竞争。
+  await loadPatchNoteCatalog();
   vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
   scrollIntoViewMock = vi.fn();
   Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
@@ -117,6 +121,36 @@ describe('PatchNotesPage scroll-spy behavior', () => {
     for (const button of buttons) {
       expect(button.classes()).not.toContain('bg-primary/10');
     }
+
+    wrapper.unmount();
+  });
+});
+
+describe('PatchNotesPage language switch behavior', () => {
+  it('re-resolves entry texts after the language switches', async () => {
+    const wrapper = mount(PatchNotesPage, { attachTo: document.body });
+    await flushPromises();
+
+    // 期望值从目录推导，避免每次发版都要改动测试（与 patchNotes.test.js 同一约定）。
+    const catalog = await loadPatchNoteCatalog();
+    const latestEntryId = Object.keys(catalog)[0];
+    const zhLabel = catalog[latestEntryId].label.zh;
+    const enLabel = catalog[latestEntryId].label.en;
+
+    const firstTitle = () => wrapper.findAll('article h3')[0].text();
+    expect(firstTitle()).toBe(zhLabel);
+
+    await ensureLanguageBundle('en');
+    await i18next.changeLanguage('en');
+    await flushPromises();
+    await nextTick();
+    expect(firstTitle()).toBe(enLabel);
+
+    // 恢复默认语言，保持与其它 scroll-spy 用例的隔离。
+    await i18next.changeLanguage('zh');
+    await flushPromises();
+    await nextTick();
+    expect(firstTitle()).toBe(zhLabel);
 
     wrapper.unmount();
   });
