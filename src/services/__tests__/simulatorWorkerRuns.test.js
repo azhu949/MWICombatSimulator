@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import sharedWorkerClient from '../workerClient.js';
 import {
+  DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE,
   DEDICATED_WORKER_SCOPE_ADVISOR,
   DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
   DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
@@ -717,6 +718,34 @@ describe('dedicated single run keep-alive pool', () => {
     }
   });
 
+  it('raises the per-scope idle capacity to the configured parallel limit', async () => {
+    vi.stubGlobal('Worker', FakeSimulationWorker);
+    try {
+      const scope = DEDICATED_WORKER_SCOPE_EXPERIMENTAL;
+      const poolCapacity = DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE + 4;
+      const runWave = async () => {
+        const promises = Array.from({ length: poolCapacity }, () =>
+          runSingleSimulationPayloadWithDedicatedWorker({ type: 'start_simulation' }, vi.fn(), { scope, poolCapacity }),
+        );
+        expect(FakeSimulationWorker.instances.length).toBe(poolCapacity);
+        for (const worker of Array.from(FakeSimulationWorker.instances)) {
+          worker.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 1 } } });
+        }
+        await Promise.all(promises);
+      };
+
+      await runWave();
+      expect(FakeSimulationWorker.instances.length).toBe(poolCapacity);
+      expect(FakeSimulationWorker.instances.filter((worker) => worker.terminate.mock.calls.length > 0)).toHaveLength(0);
+
+      await runWave();
+      expect(FakeSimulationWorker.instances.length).toBe(poolCapacity);
+      expect(FakeSimulationWorker.instances.filter((worker) => worker.terminate.mock.calls.length > 0)).toHaveLength(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('keeps the injected stub path out of the pool (regression anchor)', async () => {
     const scope = DEDICATED_WORKER_SCOPE_QUEUE;
     const first = runSingleSimulationPayloadWithDedicatedWorker({ type: 'start_simulation' }, vi.fn(), {
@@ -741,34 +770,67 @@ describe('dedicated single run keep-alive pool', () => {
     expect(firstClient.stopSimulation).toHaveBeenCalledTimes(1);
   });
 
-  it('caps the idle pool at four clients per scope (excess not returned)', async () => {
+  it('caps the idle pool per scope and releases excess realms immediately (no parked realms)', async () => {
     vi.stubGlobal('Worker', FakeSimulationWorker);
-    // fake timers：未归还的超上限 client 只能靠 5min 空闲自燃回收，真实 timer 会
-    // 残留到进程生命期 —— fake 掉以保持测试卫生（用例全程消息同步驱动，不依赖 timer）。
-    vi.useFakeTimers();
     try {
       const scope = DEDICATED_WORKER_SCOPE_EXPERIMENTAL;
-      const runFive = async () => {
+      // 2026-10-04 修复锚定：超限归还者必须立即终止回收，不再"既不复用也不终止"地
+      // 悬挂等待 5min 空闲自燃（大批量运行下那会造成未终止 realm 无界累积）。
+      const poolLimit = DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE;
+      const waveSize = poolLimit + 1;
+      const runWave = async () => {
         const promises = [];
-        for (let index = 0; index < 5; index += 1) {
+        for (let index = 0; index < waveSize; index += 1) {
           promises.push(
             runSingleSimulationPayloadWithDedicatedWorker({ type: 'start_simulation' }, vi.fn(), { scope }),
           );
         }
-        // 给当前全部实例派发 result：在跑的 5 场各自结算；未进池的旧实例（若有）
-        // 已被 settled 幂等防护挡住，重复消息只会空转。
+        // 给当前全部实例派发 result：在跑的各自结算；已终止 / 未进池的旧实例已被
+        // settled 幂等防护挡住，重复消息只会空转。
         for (const worker of Array.from(FakeSimulationWorker.instances)) {
           worker.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 1 } } });
         }
         await Promise.all(promises);
       };
 
-      await runFive();
-      expect(FakeSimulationWorker.instances.length).toBe(5);
+      await runWave();
+      expect(FakeSimulationWorker.instances.length).toBe(waveSize);
+      // 第一波恰好 1 个超限归还者被立即终止（其余全部进池保活）。
+      expect(FakeSimulationWorker.instances.filter((worker) => worker.terminate.mock.calls.length > 0).length).toBe(1);
 
-      // 5 个正常完成只归还 4 个（上限）：再并发 5 场 = 4 次复用 + 1 次新建。
-      await runFive();
-      expect(FakeSimulationWorker.instances.length).toBe(6);
+      // 第二波同量并发：poolLimit 次复用 + 1 次新建（新者完成后再被回收），池容量保持。
+      await runWave();
+      expect(FakeSimulationWorker.instances.length).toBe(waveSize + 1);
+      expect(FakeSimulationWorker.instances.filter((worker) => worker.terminate.mock.calls.length > 0).length).toBe(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('releases an idle-expired pooled realm immediately on acquire (lazy expiry path)', async () => {
+    // fake timers：把系统时钟拨过 5min 空闲期而不触发定时器（模拟浏览器节流 / 冻结
+    // 形态下 idle 定时器未跑）——只有 acquire 的惰性检查能发现过期，故必须 fake 时钟。
+    vi.useFakeTimers();
+    vi.stubGlobal('Worker', FakeSimulationWorker);
+    try {
+      const scope = DEDICATED_WORKER_SCOPE_EXPERIMENTAL;
+      const first = runSingleSimulationPayloadWithDedicatedWorker({ type: 'start_simulation' }, vi.fn(), { scope });
+      FakeSimulationWorker.instances[0].onmessage({
+        data: { type: 'simulation_result', simResult: { encounters: 1 } },
+      });
+      await expect(first).resolves.toEqual({ encounters: 1 });
+
+      // 拨快系统时钟越过空闲回收期（setSystemTime 只改时钟，不跑定时器）。
+      vi.setSystemTime(Date.now() + 6 * 60 * 1000);
+
+      const second = runSingleSimulationPayloadWithDedicatedWorker({ type: 'start_simulation' }, vi.fn(), { scope });
+      // acquire 惰性检测到过期：旧 realm 立即终止回收，改为新建 realm（不悬挂等待）。
+      expect(FakeSimulationWorker.instances[0].terminate).toHaveBeenCalledTimes(1);
+      expect(FakeSimulationWorker.instances.length).toBe(2);
+      FakeSimulationWorker.instances[1].onmessage({
+        data: { type: 'simulation_result', simResult: { encounters: 2 } },
+      });
+      await expect(second).resolves.toEqual({ encounters: 2 });
     } finally {
       vi.useRealTimers();
       vi.unstubAllGlobals();

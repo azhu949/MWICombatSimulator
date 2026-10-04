@@ -1,11 +1,13 @@
 import { RUN_SCOPE_SINGLE, computeQueueMetrics, summarizeResult } from './simulationDomain.js';
 import {
+  buildQueueBaselineRoundMetricsMap,
   buildQueueRankedRowsFromSampleState,
   hasAggregatedQueueBaselineMetrics,
   normalizeBaselineSaleSide,
   normalizeParallelWorkerLimit,
   normalizeQueueSettings,
   resolveQueueBaselineMetricsForSettings,
+  resolveQueueRoundSeeds,
 } from './queueScoring.js';
 import {
   buildQueueCostWarnings,
@@ -67,6 +69,10 @@ function createQueueRunContext({
 }) {
   const roundCount = queueSettings.rounds;
   const totalRuns = entries.length * roundCount;
+  // 公共随机数：基准与全部条目逐轮共享同一 seed（基准记录的 seeds 优先），
+  // 基准缺逐轮数据（旧记录）时 delta 回退聚合基准口径。
+  const roundSeeds = resolveQueueRoundSeeds(queueState?.baseline, roundCount);
+  const baselineRoundMetricsByRound = buildQueueBaselineRoundMetricsMap(queueState?.baseline);
   const runProgressByRunKey = new Map();
   const runFailures = [];
   const queueParallelWorkerLimit =
@@ -125,7 +131,11 @@ function createQueueRunContext({
         ...currentBaselineMetrics,
       };
     }
-    syncQueueRawRunDeltas(queueState.rawRuns, isPlainObject(currentBaselineMetrics) ? currentBaselineMetrics : {});
+    syncQueueRawRunDeltas(
+      queueState.rawRuns,
+      isPlainObject(currentBaselineMetrics) ? currentBaselineMetrics : {},
+      baselineRoundMetricsByRound,
+    );
     const realtimeRows = buildQueueRankedRowsFromSampleState({
       entries,
       rawRuns: queueState.rawRuns,
@@ -181,28 +191,41 @@ function createQueueRunContext({
       const { buildPlayersForSimulation } = await loadPlayerMapperModule();
       const playersToSim = buildPlayersForSimulation(buildScenarioPlayers(entry.snapshot));
       const payload = store.buildSingleSimulationPayload(playersToSim, queuePayloadOptions);
+      // 公共随机数：与基准（及其它条目）同轮次共用同一 seed，使逐轮 delta 是配对差。
+      payload.seed = roundSeeds[roundIndex] >>> 0;
+      payload.workerId = `${String(payload.workerId || 'queue-run')}#r${roundIndex + 1}`;
       const runSingle =
         executionMode === 'parallel'
           ? store.runSingleSimulationPayloadWithDedicatedWorker
           : store.runSingleSimulationPayload;
-      const simResult = await runSingle.call(store, payload, (data) => {
+      const onProgress = (data) => {
         if (!isActiveQueueRun()) {
           return;
         }
         runProgressByRunKey.set(runKey, clamp(Number(data.progress || 0), 0, 1));
         updateQueueRunProgress();
-      });
+      };
+      const simResult =
+        executionMode === 'parallel'
+          ? await runSingle.call(store, payload, onProgress, { poolCapacity: queueParallelWorkerLimit })
+          : await runSingle.call(store, payload, onProgress);
 
       ensureCurrentQueueRun();
       const summary = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || {};
       const metrics = computeQueueMetrics(simResult, activePlayerId, pricingOptions);
-      const deltas = computeQueueMetricDeltas(metrics, baselineMetrics);
+      // 配对差：优先用同轮次基准指标（CRN），缺失时回退聚合基准（旧记录 / 基准该轮失败）。
+      const pairedBaselineMetrics = baselineRoundMetricsByRound.get(roundIndex + 1);
+      const deltas = computeQueueMetricDeltas(
+        metrics,
+        isPlainObject(pairedBaselineMetrics) ? pairedBaselineMetrics : baselineMetrics,
+      );
       queueState.rawRuns.push({
         id: entry.id,
         label: entry.label,
         changes: Array.isArray(entry.changes) ? [...entry.changes] : [],
         changeDetails: Array.isArray(entry.changeDetails) ? deepClone(entry.changeDetails) : [],
         round: roundIndex + 1,
+        seed: roundSeeds[roundIndex] >>> 0,
         metrics,
         deltas,
         ...summary,

@@ -8,6 +8,7 @@ import {
 } from './marketPriceService.js';
 import { isUserLockedPriceMethod, mergeConfirmedPricesAndSelections } from './queueUpgradeCost.js';
 import { resolveQueuePerformanceSubweights } from '../shared/queuePerformanceWeights.js';
+import { deriveSeedSet } from './seededRandom.js';
 import {
   computeArithmeticMean,
   computeConfidenceFromValues,
@@ -39,6 +40,15 @@ export const QUEUE_BASELINE_METRIC_KEYS = [
 ];
 export const QUEUE_COST_SCORE_GOLD_METRIC_STRICT = 'strict';
 export const QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE = 'composite';
+// 队列多轮（基准与全部条目）共用的固定基种子：同一组随机流让「条目 − 基准」的逐轮差成为
+// 配对差（公共随机数 / CRN）——同种子下的公共噪声在相减时抵消，且同一配置可复现。
+// deriveSeedSet 是稳定前缀（增删轮次不改变已存在轮次的种子）；改这个值会让既有队列结果
+// 无法复现同一组随机流，非数据迁移不要动。
+export const QUEUE_MULTI_ROUND_SEED_BASE = 20261003;
+// 队列轮次的归一化边界：设置页预设档最低 20、自定义输入最低 10，底层契约下限取 10——
+// 样本低于 10 轮时噪声过大、读数不可靠；旧数据（如 rounds=5）在加载/编辑时会被抬到 10。
+export const QUEUE_MULTI_ROUND_MIN_ROUNDS = 10;
+export const QUEUE_MULTI_ROUND_MAX_ROUNDS = 200;
 export { MANUAL_EQUIPMENT_PRICE_SOURCE, MANUAL_PRICE_WARNING_CODE, OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE };
 
 const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
@@ -269,8 +279,8 @@ export { normalizeBaselineSaleSide };
 
 export function getDefaultQueueRunSettings() {
   return {
+    // 合并后的单一「轮次」：基准与队列项共用同一数值（配对差要求两边轮数对齐）。
     rounds: 30,
-    baselineRounds: 1,
     medianBlend: 0.5,
     weightProfit: 0.5,
     weightXp: 0.3,
@@ -286,8 +296,13 @@ export function getQueuePerformanceMetricWeights(queueSettings = getDefaultQueue
 
 export function normalizeQueueSettings(settings) {
   const defaults = getDefaultQueueRunSettings();
-  const rounds = clamp(Math.floor(toFiniteNumber(settings?.rounds, defaults.rounds)), 1, 200);
-  const baselineRounds = clamp(Math.floor(toFiniteNumber(settings?.baselineRounds, defaults.baselineRounds)), 1, 200);
+  // 历史存储可能残留 baselineRounds 字段：合并后该字段被忽略（不再产出）。
+  // 下限 10：低于 10 轮的样本噪声过大（预设档从 20 起步，自定义最低 10）。
+  const rounds = clamp(
+    Math.floor(toFiniteNumber(settings?.rounds, defaults.rounds)),
+    QUEUE_MULTI_ROUND_MIN_ROUNDS,
+    QUEUE_MULTI_ROUND_MAX_ROUNDS,
+  );
   const medianBlend = clamp(toFiniteNumber(settings?.medianBlend, defaults.medianBlend), 0, 1);
   // 队列性能子权重被刻意归一化到 10 个十分位上。
   const normalizedPerformanceWeights = resolveQueuePerformanceSubweights(settings, defaults);
@@ -298,7 +313,6 @@ export function normalizeQueueSettings(settings) {
 
   return {
     rounds,
-    baselineRounds,
     medianBlend,
     weightProfit: normalizedPerformanceWeights.weightProfit,
     weightXp: normalizedPerformanceWeights.weightXp,
@@ -480,6 +494,38 @@ export function buildQueueBaselineAggregate(roundResults = [], medianBlend = QUE
     metricSummary,
     metrics: buildAggregatedMetricsFromMetricSummary(metricSummary, QUEUE_BASELINE_METRIC_KEYS, medianBlend),
   };
+}
+
+// 基准/条目共用的逐轮种子集：
+//   - buildQueueRoundSeeds：从固定基种子派生 rounds 个种子（与首页多轮同款，稳定前缀）；
+//   - resolveQueueRoundSeeds：优先沿用基准记录里已记录的 seeds（配对不随基种子演化漂移），
+//     缺位回退重新派生——deriveSeedSet 前缀稳定，常见路径下两者逐位相同。
+export function buildQueueRoundSeeds(rounds = 0) {
+  const total = clamp(Math.floor(toFiniteNumber(rounds, 0)), 0, QUEUE_MULTI_ROUND_MAX_ROUNDS);
+  return deriveSeedSet(QUEUE_MULTI_ROUND_SEED_BASE, total);
+}
+
+export function resolveQueueRoundSeeds(baseline = null, rounds = 0) {
+  const total = clamp(Math.floor(toFiniteNumber(rounds, 0)), 0, QUEUE_MULTI_ROUND_MAX_ROUNDS);
+  const storedSeeds = Array.isArray(baseline?.seeds) ? baseline.seeds : [];
+  return buildQueueRoundSeeds(total).map((derivedSeed, index) => {
+    const storedSeed = Number(storedSeeds[index]);
+    return Number.isFinite(storedSeed) ? storedSeed >>> 0 : derivedSeed;
+  });
+}
+
+// 基准逐轮指标索引（round → metrics）：配对差的口径来源。
+// 基准记录缺少逐轮数据（旧数据 / 未逐轮存储）时返回空 Map，调用方回退聚合基准指标。
+export function buildQueueBaselineRoundMetricsMap(baseline = null) {
+  const map = new Map();
+  const roundResults = Array.isArray(baseline?.roundResults) ? baseline.roundResults : [];
+  for (const entry of roundResults) {
+    const round = Math.floor(toFiniteNumber(entry?.round, 0));
+    if (round > 0 && isPlainObject(entry?.metrics)) {
+      map.set(round, entry.metrics);
+    }
+  }
+  return map;
 }
 
 export function resolveQueueBaselineMetricsForSettings(baseline = null, queueSettings = getDefaultQueueRunSettings()) {

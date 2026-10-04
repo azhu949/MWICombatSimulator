@@ -2,10 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   MANUAL_EQUIPMENT_PRICE_SOURCE,
   QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE,
+  QUEUE_MULTI_ROUND_SEED_BASE,
   QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP,
   buildQueueBaselineAggregate,
+  buildQueueBaselineRoundMetricsMap,
   buildQueueItemCostInsights,
   buildQueueRankedRowsFromSampleState,
+  buildQueueRoundSeeds,
   getDefaultQueueRuntimeSettings,
   getDetectedDeviceMemoryGb,
   getParallelWorkerHardMaxForCurrentMachine,
@@ -15,8 +18,10 @@ import {
   rankScoreList,
   resolveAdaptiveParallelWorkerDefault,
   resolveQueueMetricSummaryDeltaPct,
+  resolveQueueRoundSeeds,
   summarizeMetric,
 } from '../queueScoring.js';
+import { deriveSeedSet } from '../seededRandom.js';
 
 function createMetricSummaryEntry(deltaPct, overrides = {}) {
   return {
@@ -53,19 +58,17 @@ function createQueueMetricSummary(deltas = {}) {
 }
 
 describe('queueScoring', () => {
-  it('normalizes queue run and runtime settings with the existing bounds', () => {
+  it('normalizes queue run and runtime settings with the tightened round bounds', () => {
     expect(
       normalizeQueueSettings({
         rounds: 0,
-        baselineRounds: 500,
         medianBlend: 2,
         weightProfit: 0.25,
         weightXp: 0.85,
         executionMode: 'unknown',
       }),
     ).toEqual({
-      rounds: 1,
-      baselineRounds: 200,
+      rounds: 10,
       medianBlend: 1,
       weightProfit: 0.2,
       weightXp: 0.8,
@@ -73,6 +76,12 @@ describe('queueScoring', () => {
       executionMode: 'serial',
       baselineSaleSide: 'bid',
     });
+
+    // 合并后的旧字段不再产出；存储中的遗留 baselineRounds 被忽略。
+    expect(normalizeQueueSettings({ rounds: 12, baselineRounds: 7 })).not.toHaveProperty('baselineRounds');
+    expect(normalizeQueueSettings({ rounds: 12, baselineRounds: 7 }).rounds).toBe(12);
+    // 旧数据 / 低值输入的轮次会被抬到下限：5 -> 10。
+    expect(normalizeQueueSettings({ rounds: 5 }).rounds).toBe(10);
 
     const runtime = normalizeQueueRuntimeSettings({
       finalWeights: {
@@ -410,7 +419,6 @@ describe('queueScoring', () => {
       ],
       queueSettings: {
         rounds: 1,
-        baselineRounds: 1,
         medianBlend: 0.5,
         weightProfit: 0.8,
         weightXp: 0.1,
@@ -500,7 +508,6 @@ describe('queueScoring', () => {
       rawRuns: [...Array.from({ length: 20 }, (_, index) => createRawRun(index + 1, 2400)), createRawRun(21, 24000)],
       queueSettings: {
         rounds: 21,
-        baselineRounds: 1,
         medianBlend: 0,
         weightProfit: 1,
         weightXp: 0,
@@ -609,5 +616,42 @@ describe('queueScoring 并行默认自适应', () => {
     expect(
       normalizeQueueRuntimeSettings({ parallelWorkerLimit: 3 }, { parallelWorkerLimit: 8 }).parallelWorkerLimit,
     ).toBe(3);
+  });
+});
+
+describe('queueScoring 基准/条目共用种子集与配对基建', () => {
+  it('buildQueueRoundSeeds 从固定基种子派生稳定前缀，且与 deriveSeedSet 逐位一致', () => {
+    const seeds = buildQueueRoundSeeds(5);
+    expect(seeds).toHaveLength(5);
+    expect(seeds.every((seed) => Number.isInteger(seed) && seed >= 0 && seed <= 0xffffffff)).toBe(true);
+    expect(buildQueueRoundSeeds(3)).toEqual(seeds.slice(0, 3));
+    expect(buildQueueRoundSeeds(2)).toEqual(deriveSeedSet(QUEUE_MULTI_ROUND_SEED_BASE, 2));
+    expect(buildQueueRoundSeeds(0)).toEqual([]);
+  });
+
+  it('resolveQueueRoundSeeds 优先沿用基准记录里的 seeds，缺位回退派生', () => {
+    const derived = buildQueueRoundSeeds(4);
+    const withStored = resolveQueueRoundSeeds({ seeds: [11, 22] }, 4);
+    expect(withStored.slice(0, 2)).toEqual([11, 22]);
+    expect(withStored.slice(2)).toEqual(derived.slice(2));
+    expect(resolveQueueRoundSeeds(null, 4)).toEqual(derived);
+    expect(resolveQueueRoundSeeds({ seeds: [] }, 0)).toEqual([]);
+  });
+
+  it('buildQueueBaselineRoundMetricsMap 按轮索引基准指标，脏数据被跳过', () => {
+    const metrics = { dps: 100 };
+    const map = buildQueueBaselineRoundMetricsMap({
+      roundResults: [
+        { round: 1, metrics },
+        { round: 3, metrics: { dps: 300 } },
+        { round: 0, metrics: { dps: 0 } },
+        { round: 2, metrics: null },
+      ],
+    });
+    expect(map.get(1)).toBe(metrics);
+    expect(map.get(2)).toBeUndefined();
+    expect(map.get(3)).toEqual({ dps: 300 });
+    expect(map.get(0)).toBeUndefined();
+    expect(buildQueueBaselineRoundMetricsMap(null).size).toBe(0);
   });
 });

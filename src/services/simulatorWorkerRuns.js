@@ -101,17 +101,17 @@ export function hasSharedWorkerRunInProgress() {
   return Boolean(sharedWorkerRunHandle);
 }
 
-// ── 单场专用运行的生产路径保活池（2026-10-02）──
+// ── 单场专用运行的生产路径保活池（2026-10-02；2026-10-04 修复悬挂累积）──
 // 背景：本入口的生产路径此前每场 new 一个 WorkerClient、settle 无条件 stopSimulation，
 // 即每场都重建 realm（worker bundle + wasm 加载/编译，装置实测 ≈0.43s/场，约占单场
 // 墙钟一半）。批量（runSimulationBatchWithDedicatedWorker）与多区域
 // （runMultiSimulationPayloadWithDedicatedWorker）入口已默认走共享保活单例，这里按
 // scope 分池为单场路径补齐同样的复用收益：
 // - acquire：从该 scope 的空闲池 LIFO 取一个可复用 client（canReuseRealm('single')），
-//   跳过并弃掉不可复用的死引用（5min 空闲自燃 terminate 后的空壳、达 maxRuns 上限者、
-//   超空闲期者——其终止/回收均由 client 自身机制完成，无需额外 stop）；池空则 new。
+//   不可复用的死引用（达 maxRuns 上限者、超空闲期者）立即终止回收；池空则 new。
 // - release：仅正常完成（onResult）归还；失败域（取消 / onError / 回调抛错 /
-//   startSimulation 同步抛错）由调用方 stopSimulation 弃置，绝不归还。
+//   startSimulation 同步抛错）由调用方 stopSimulation 弃置，绝不归还；超上限者立即
+//   终止回收（不悬挂等待空闲自燃，理由见下方容量注释）。
 // 「一个 realm 同一时刻只跑一场」不受影响：归还发生在 settle 同步段（真 client 的
 // finishRun 已先行复位 busy），acquire 只会取到非 busy 实例；并发超出池容量的场次
 // 各自 new 新 client。
@@ -120,12 +120,64 @@ export function hasSharedWorkerRunInProgress() {
 // 正确性前提（同 realm 连跑无跨场状态残留）由
 // src/services/__tests__/simulatorRealmReuseParity.test.js 在常规流水线锚定。
 const dedicatedSingleClientPools = new Map();
-// 按作用域的空闲池容量上限：并行 lane 数可能大于保活价值（queue 并行池、评估器
-// 并发），4 个空闲 realm 足以覆盖常见复用且限制驻留内存；超出的实例不归还池，由
-// 该 client 自身的 5min 空闲自动回收兜底释放。
-const DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE = 4;
+const dedicatedSingleClientPoolCapacities = new Map();
+// 每个作用域的空闲池基础容量（2026-10-04 由 4 提至 16，修复大批量运行的悬挂累积）：
+// 队列运行按「轮次批次」并行调度（每轮对全部条目并发一场），批与批之间池被整体
+// 取空——基础容量小于批并发数时，超出部分如果不立即终止就会悬挂等待 5min 空闲自燃，
+// 大批量运行（数百场级）下会造成未终止 realm 无界累积。基础容量 16 继续作为低并发
+// scope 的内存护栏；生产调用方可通过 poolCapacity 报告当前并行工作集，按 scope 将
+// 目标容量提升为 max(16, poolCapacity)，并限制在 64 以内，以覆盖手动高并发档位。
+// 容量降低时先同步裁掉多余 idle realm；失败 / 取消 / 超出当前容量的 client 仍立即终止。
+export const DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE = 16;
+export const DEDICATED_SINGLE_POOL_MAX_CAPACITY = 64;
 
-// 取用：LIFO（栈顶是最近归还者，局部性最好）；不可复用的实例直接弃掉引用。
+function normalizeDedicatedSinglePoolCapacity(value) {
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed)) {
+    return DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE;
+  }
+  return Math.min(Math.max(parsed, DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE), DEDICATED_SINGLE_POOL_MAX_CAPACITY);
+}
+
+function getDedicatedSinglePoolCapacity(scope) {
+  return dedicatedSingleClientPoolCapacities.get(scope) ?? DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE;
+}
+
+// 立即终止并回收一个不再进池的 client（上限溢出 / 过期弃置的统一收尾；幂等）。
+function shutdownDedicatedSingleClient(client) {
+  try {
+    client.stopSimulation();
+  } catch (error) {
+    // 弃置路径忽略终止错误（与 resetDedicatedSingleClientPools 同款语义）。
+  }
+}
+
+// 记录当前 scope 的并行工作集容量，并在配置降低时立即收缩 idle 池。
+function updateDedicatedSinglePoolCapacity(scope, requestedCapacity) {
+  if (requestedCapacity === undefined || requestedCapacity === null) {
+    return;
+  }
+  const parsed = Number(requestedCapacity);
+  if (!Number.isFinite(parsed)) {
+    return;
+  }
+
+  const capacity = normalizeDedicatedSinglePoolCapacity(parsed);
+  dedicatedSingleClientPoolCapacities.set(scope, capacity);
+  const pool = dedicatedSingleClientPools.get(scope);
+  if (!pool) {
+    return;
+  }
+  while (pool.length > capacity) {
+    shutdownDedicatedSingleClient(pool.pop());
+  }
+  if (pool.length === 0) {
+    dedicatedSingleClientPools.delete(scope);
+  }
+}
+
+// 取用：LIFO（栈顶是最近归还者，局部性最好）；不可复用的实例（达 maxRuns 上限 /
+// 空闲过期）立即终止回收，不悬挂等待空闲自燃。
 function acquireDedicatedSingleClient(scope) {
   const pool = dedicatedSingleClientPools.get(scope);
   while (pool && pool.length > 0) {
@@ -133,18 +185,21 @@ function acquireDedicatedSingleClient(scope) {
     if (client.canReuseRealm('single')) {
       return client;
     }
+    shutdownDedicatedSingleClient(client);
   }
   return new WorkerClient();
 }
 
-// 归还：仅 healthy 且池未达上限时 push；否则不归还（失败域已由调用方
-// stopSimulation 弃置；超上限者留给其自身 5min 空闲自动回收）。
+// 归还：仅 healthy 且池未达当前 scope 容量时 push；超限者立即终止回收。
+// 失败域由调用方 stopSimulation 弃置。
 function releaseDedicatedSingleClient(scope, client, { healthy }) {
   if (!healthy) {
+    shutdownDedicatedSingleClient(client);
     return;
   }
   const pool = dedicatedSingleClientPools.get(scope) || [];
-  if (pool.length >= DEDICATED_SINGLE_POOL_MAX_IDLE_PER_SCOPE) {
+  if (pool.length >= getDedicatedSinglePoolCapacity(scope)) {
+    shutdownDedicatedSingleClient(client);
     return;
   }
   pool.push(client);
@@ -164,6 +219,7 @@ export function resetDedicatedSingleClientPools() {
     }
   }
   dedicatedSingleClientPools.clear();
+  dedicatedSingleClientPoolCapacities.clear();
 }
 
 // 单场专用入口：一条 start_simulation payload 跑一场，resolve 该场 simResult。
@@ -188,6 +244,7 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
     } else if (typeof options?.WorkerClientCtor === 'function') {
       dedicatedClient = new options.WorkerClientCtor();
     } else {
+      updateDedicatedSinglePoolCapacity(scope, options?.poolCapacity);
       dedicatedClient = acquireDedicatedSingleClient(scope);
       pooled = true;
     }
@@ -201,10 +258,10 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
 
       settled = true;
 
-      if (pooled && healthy) {
-        // 生产池路径正常完成：不终止 realm，归还池（真 client 的 finishRun 已在
-        // onResult 回调前复位 busy 并挂 5min 空闲自动回收）。
-        releaseDedicatedSingleClient(scope, dedicatedClient, { healthy: true });
+      if (pooled) {
+        // 生产池路径：正常完成归还当前 scope 的 idle 池；失败 / 取消 / 超出容量时由
+        // releaseDedicatedSingleClient 立即终止，不留下悬挂 realm。
+        releaseDedicatedSingleClient(scope, dedicatedClient, { healthy });
       } else {
         try {
           dedicatedClient.stopSimulation();

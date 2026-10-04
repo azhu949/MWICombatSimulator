@@ -180,7 +180,7 @@
 
     <BaseModal
       :open="baselineReminderModalOpen"
-      :title="t('common:queue.baselineReminderTitle', 'Baseline Rounds Reminder')"
+      :title="t('common:queue.baselineReminderTitle', 'Rounds Reminder')"
       initial-focus-selector="[data-baseline-reminder-acknowledge]"
       @close="closeBaselineReminderModal"
     >
@@ -189,7 +189,7 @@
           {{
             t(
               'common:queue.baselineReminderBody',
-              'Fewer baseline rounds can make the result more volatile. Adjust the setting first if you want a more stable baseline.',
+              'Fewer rounds can make the result more volatile. Adjust the setting first if you want more stable results.',
             )
           }}
         </p>
@@ -208,7 +208,7 @@
           {{
             t(
               'common:queue.baselineReminderAggregationHint',
-              'Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.',
+              'Set Baseline runs the configured number of rounds; the baseline and queue items share the same seed set, so each round is paired, and the aggregated result becomes the queue comparison baseline.',
             )
           }}
         </p>
@@ -882,14 +882,14 @@ const activeQueueItemCount = computed(() =>
   Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0,
 );
 const baselineReminderRoundCount = computed(() => {
-  const parsed = Number(activeQueueState.value?.settings?.baselineRounds || 1);
+  const parsed = Number(activeQueueState.value?.settings?.rounds ?? 30);
   if (!Number.isFinite(parsed)) {
-    return 1;
+    return 30;
   }
   return Math.max(1, Math.min(200, Math.floor(parsed)));
 });
 const baselineReminderCurrentRoundsText = computed(() =>
-  t('common:queue.baselineReminderCurrentRounds', `Current baseline rounds: ${baselineReminderRoundCount.value}`, {
+  t('common:queue.baselineReminderCurrentRounds', `Current rounds: ${baselineReminderRoundCount.value}`, {
     count: baselineReminderRoundCount.value,
   }),
 );
@@ -1094,16 +1094,16 @@ async function runTopbarBaselineSimulation() {
   try {
     setTopQueueActionStatus('secondary', t('common:queue.baselineRunning', 'Running baseline simulation...'));
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
-    const baselineRounds = Math.max(
+    const capturedRounds = Math.max(
       1,
-      Math.floor(Number(baseline?.settings?.baselineRounds || activeQueueState.value?.settings?.baselineRounds || 1)),
+      Math.floor(Number(baseline?.settings?.rounds ?? activeQueueState.value?.settings?.rounds ?? 30)),
     );
     setTopQueueActionStatus(
       'success',
       t(
         'common:vue.queue.msgBaselineCaptured',
-        `Baseline captured for active player. Current baseline rounds: ${baselineRounds}. Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.`,
-        { count: baselineRounds },
+        `Baseline captured for active player. Current rounds: ${capturedRounds}. Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.`,
+        { count: capturedRounds },
       ),
     );
   } catch (error) {

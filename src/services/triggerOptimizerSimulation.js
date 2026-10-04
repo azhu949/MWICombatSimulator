@@ -217,7 +217,14 @@ export function aggregateRoundMetrics(samples) {
 // 取消错误原样上抛：调用方用 isWorkerRunCancelledError 判定，不当失败处理。
 export async function evaluatePayload(
   payload,
-  { WorkerClientCtor, pricingOptions, preferredPlayerId, seeds, rounds = TRIGGER_OPTIMIZER_DEFAULT_ROUNDS } = {},
+  {
+    WorkerClientCtor,
+    pricingOptions,
+    preferredPlayerId,
+    seeds,
+    poolCapacity,
+    rounds = TRIGGER_OPTIMIZER_DEFAULT_ROUNDS,
+  } = {},
 ) {
   const resolvedSeeds = resolveEvaluationSeeds(payload, seeds, rounds);
   // 2026-09-27：默认走「一次评估一个 realm」的批量路径 —— 生产端每建一个 realm 都要
@@ -245,6 +252,9 @@ export async function evaluatePayload(
   const samples = [];
   for (let round = 0; round < resolvedSeeds.length; round += 1) {
     const options = { scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER };
+    if (poolCapacity !== undefined) {
+      options.poolCapacity = poolCapacity;
+    }
     if (typeof WorkerClientCtor === 'function') options.WorkerClientCtor = WorkerClientCtor;
     try {
       const simResult = await runSingleSimulationPayloadWithDedicatedWorker(

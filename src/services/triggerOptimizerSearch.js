@@ -492,7 +492,13 @@ export async function optimizeTriggers(input = {}, callbacks = {}) {
     const payload = buildCandidatePayload(config, simulationSettings, extra, candidate, {
       teammates: resolveSearchTeammates(input),
     });
-    return evaluatePayload(payload, { WorkerClientCtor, pricingOptions, preferredPlayerId, seeds });
+    return evaluatePayload(payload, {
+      WorkerClientCtor,
+      pricingOptions,
+      preferredPlayerId,
+      seeds,
+      poolCapacity: workerLimit,
+    });
   };
 
   let phase = 'error';

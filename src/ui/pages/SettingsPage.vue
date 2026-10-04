@@ -283,74 +283,41 @@
               </div>
 
               <div class="mt-4 space-y-4">
-                <div class="grid gap-3 sm:grid-cols-2">
-                  <div class="space-y-2">
-                    <label class="block">
-                      <span class="control-label">{{ t('common:queue.roundCount', 'Rounds') }}</span>
-                      <Select :model-value="queueRunRoundPreset" @update:model-value="onQueueRunRoundPresetChanged">
-                        <SelectTrigger :aria-label="t('common:queue.roundCount', 'Rounds')" />
-                        <SelectContent>
-                          <SelectItem value="5">5</SelectItem>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="20">20</SelectItem>
-                          <SelectItem value="30">30</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                          <SelectItem value="200">200</SelectItem>
-                          <SelectItem value="custom">{{ t('common:queue.roundCustomOption', 'Custom') }}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </label>
-                    <label v-if="queueRunRoundPreset === 'custom'" class="block">
-                      <span class="control-label">{{ t('common:queue.roundCustom', 'Custom Rounds') }}</span>
-                      <input
-                        v-model.number="queueRunDraft.rounds"
-                        type="number"
-                        min="1"
-                        max="200"
-                        step="1"
-                        class="control-input"
-                        @change="applyQueueRunSettings"
-                      />
-                    </label>
-                  </div>
-
-                  <div class="space-y-2">
-                    <label class="block">
-                      <span class="control-label">{{ t('common:queue.baselineRoundCount', 'Baseline Rounds') }}</span>
-                      <Select
-                        :model-value="queueBaselineRoundPreset"
-                        @update:model-value="onQueueBaselineRoundPresetChanged"
-                      >
-                        <SelectTrigger :aria-label="t('common:queue.baselineRoundCount', 'Baseline Rounds')" />
-                        <SelectContent>
-                          <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="5">5</SelectItem>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="20">20</SelectItem>
-                          <SelectItem value="30">30</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                          <SelectItem value="200">200</SelectItem>
-                          <SelectItem value="custom">{{ t('common:queue.roundCustomOption', 'Custom') }}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </label>
-                    <label v-if="queueBaselineRoundPreset === 'custom'" class="block">
-                      <span class="control-label">{{
-                        t('common:queue.baselineRoundCustom', 'Custom Baseline Rounds')
-                      }}</span>
-                      <input
-                        v-model.number="queueRunDraft.baselineRounds"
-                        type="number"
-                        min="1"
-                        max="200"
-                        step="1"
-                        class="control-input"
-                        @change="applyQueueRunSettings"
-                      />
-                    </label>
-                  </div>
+                <div class="space-y-2">
+                  <label class="block">
+                    <span class="control-label">{{ t('common:queue.roundCount', 'Rounds') }}</span>
+                    <Select :model-value="queueRunRoundPreset" @update:model-value="onQueueRunRoundPresetChanged">
+                      <SelectTrigger :aria-label="t('common:queue.roundCount', 'Rounds')" />
+                      <SelectContent>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="30">30</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                        <SelectItem value="200">200</SelectItem>
+                        <SelectItem value="custom">{{ t('common:queue.roundCustomOption', 'Custom') }}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </label>
+                  <label v-if="queueRunRoundPreset === 'custom'" class="block">
+                    <span class="control-label">{{ t('common:queue.roundCustom', 'Custom Rounds') }}</span>
+                    <input
+                      v-model.number="queueRunDraft.rounds"
+                      type="number"
+                      min="10"
+                      max="200"
+                      step="1"
+                      class="control-input"
+                      @change="applyQueueRunSettings"
+                    />
+                    <p class="mt-1 text-xs text-muted-foreground">
+                      {{
+                        t(
+                          'common:queue.roundCustomRangeHint',
+                          'Readings below 20 rounds are noisy; only recommended for quick validation.',
+                        )
+                      }}
+                    </p>
+                  </label>
                 </div>
 
                 <label class="block">
@@ -821,7 +788,6 @@ const queueRuntimeDraft = reactive({
 });
 const queueRunDraft = reactive({
   rounds: 30,
-  baselineRounds: 1,
   medianBlend: 0.5,
   weightProfit: 0.5,
   weightXp: 0.3,
@@ -829,7 +795,6 @@ const queueRunDraft = reactive({
   baselineSaleSide: 'bid',
 });
 const queueRunRoundPreset = ref('30');
-const queueBaselineRoundPreset = ref('1');
 
 const queueSettingsStatus = ref({
   tone: 'secondary',
@@ -1163,26 +1128,19 @@ function syncQueueRuntimeDraft(nextSettings = simulator.queueRuntime) {
 function syncQueueRunDraft(nextSettings = simulator.activeQueueState?.settings) {
   const source = nextSettings || {};
   queueRunDraft.rounds = Number(source.rounds ?? 30);
-  queueRunDraft.baselineRounds = Number(source.baselineRounds ?? 1);
   queueRunDraft.medianBlend = Number(source.medianBlend ?? 0.5);
   queueRunDraft.weightProfit = Number(source.weightProfit ?? 0.5);
   queueRunDraft.weightXp = Number(source.weightXp ?? 0.3);
   queueRunDraft.executionMode = String(source.executionMode || 'parallel') === 'serial' ? 'serial' : 'parallel';
   queueRunDraft.baselineSaleSide = normalizeBaselineSaleSide(source.baselineSaleSide);
-  queueRunRoundPreset.value = ['5', '10', '20', '30', '50', '100', '200'].includes(String(queueRunDraft.rounds))
+  queueRunRoundPreset.value = ['20', '30', '50', '100', '200'].includes(String(queueRunDraft.rounds))
     ? String(queueRunDraft.rounds)
-    : 'custom';
-  queueBaselineRoundPreset.value = ['1', '5', '10', '20', '30', '50', '100', '200'].includes(
-    String(queueRunDraft.baselineRounds),
-  )
-    ? String(queueRunDraft.baselineRounds)
     : 'custom';
 }
 
 function applyQueueRunSettings() {
   const normalized = simulator.updateActiveQueueSettings({
     rounds: queueRunDraft.rounds,
-    baselineRounds: queueRunDraft.baselineRounds,
     medianBlend: queueRunDraft.medianBlend,
     weightProfit: queueRunDraft.weightProfit,
     weightXp: queueRunDraft.weightXp,
@@ -1203,14 +1161,6 @@ function onQueueRunRoundPresetChanged(value) {
   queueRunRoundPreset.value = String(value || '30');
   if (queueRunRoundPreset.value !== 'custom') {
     queueRunDraft.rounds = Number(queueRunRoundPreset.value || 30);
-    applyQueueRunSettings();
-  }
-}
-
-function onQueueBaselineRoundPresetChanged(value) {
-  queueBaselineRoundPreset.value = String(value || '1');
-  if (queueBaselineRoundPreset.value !== 'custom') {
-    queueRunDraft.baselineRounds = Number(queueBaselineRoundPreset.value || 1);
     applyQueueRunSettings();
   }
 }

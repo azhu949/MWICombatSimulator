@@ -9,15 +9,20 @@ describe('SettingsPage baseline round defaults', () => {
     expect(settingsPageSource).not.toContain('sticky top-14');
   });
 
-  it('uses 1 as the default baseline round preset and draft value', () => {
-    expect(settingsPageSource).toContain('baselineRounds: 1,');
-    expect(settingsPageSource).toContain("const queueBaselineRoundPreset = ref('1');");
-    expect(settingsPageSource).toContain('queueRunDraft.baselineRounds = Number(source.baselineRounds ?? 1);');
+  it('merges the baseline rounds control into the single rounds setting', () => {
+    expect(settingsPageSource).not.toContain('baselineRounds');
+    expect(settingsPageSource).not.toContain('queueBaselineRoundPreset');
+    expect(settingsPageSource).toContain("const queueRunRoundPreset = ref('30');");
   });
 
-  it('offers 1 as a selectable preset for baseline rounds', () => {
-    expect(settingsPageSource).toContain('<SelectItem value="1">1</SelectItem>');
-    expect(settingsPageSource).toContain("['1', '5', '10', '20', '30', '50', '100', '200']");
+  it('enforces the queue round floors in the presets and custom input', () => {
+    expect(settingsPageSource).not.toContain('<SelectItem value="5">5</SelectItem>');
+    expect(settingsPageSource).not.toContain('<SelectItem value="10">10</SelectItem>');
+    expect(settingsPageSource).toContain('<SelectItem value="20">20</SelectItem>');
+    expect(settingsPageSource).toContain("['20', '30', '50', '100', '200']");
+    expect(settingsPageSource).toContain('min="10"');
+    expect(settingsPageSource).toContain("'common:queue.roundCustomRangeHint'");
+    expect(settingsPageSource).toContain('Readings below 20 rounds are noisy; only recommended for quick validation.');
   });
 
   it('includes a saved cost score metric control in queue runtime settings', () => {

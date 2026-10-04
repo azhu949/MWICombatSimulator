@@ -368,7 +368,7 @@ export function buildQueueBaselineSettings(simulationSettings = {}, queueSetting
     dungeonHrid,
     difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simulationSettings.difficultyTier, 0))),
     simulationTimeHours: Math.max(1, Math.floor(toFiniteNumber(simulationSettings.simulationTimeHours, 24))),
-    baselineRounds: normalizedQueueSettings.baselineRounds,
+    rounds: normalizedQueueSettings.rounds,
     extra: buildSimulationExtra(simulationSettings),
   };
 }

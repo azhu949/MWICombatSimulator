@@ -15,8 +15,11 @@ export async function loadWasmEngine({ glueUrl, moduleOrPath } = {}) {
       // 传入字节（Node 无法 fetch file:// URL）时用对象参数形式。
       await glue.default(moduleOrPath === undefined ? undefined : { module_or_path: moduleOrPath });
       return glue;
-    } catch {
+    } catch (error) {
       // 缺产物 / 初始化失败都视作该候选不可用，继续尝试下一个。
+      // 失败原因此前静默——engine_unavailable 雪崩时无从定位（只能看到"引擎不可用"）。
+      // 每候选一行 warn：成功路径零输出；2026-10-04 排障后保留，作为下一次的第一现场。
+      console.warn(`[wasm-engine] candidate failed: ${url}`, error);
     }
   }
   return null;

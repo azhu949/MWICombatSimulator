@@ -351,7 +351,10 @@ async function runAdvisorRefinePhase(context, store) {
       const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
         createAdvisorSimulationPayload(row, context.playersToSim, context.simulationTimeLimit, context.extra),
         () => {},
-        { scope: DEDICATED_WORKER_SCOPE_ADVISOR },
+        {
+          scope: DEDICATED_WORKER_SCOPE_ADVISOR,
+          poolCapacity: refineParallelWorkerLimit,
+        },
       );
       context.ensureActiveAdvisorRun();
       const roundMetrics = roundMetricsById.get(row.id) || [];

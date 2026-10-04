@@ -555,7 +555,6 @@ describe('simulatorStorage', () => {
         byPlayer: {
           1: {
             rounds: 12,
-            baselineRounds: 7,
             medianBlend: 0.25,
             weightProfit: 1,
             weightXp: 0,
@@ -564,7 +563,6 @@ describe('simulatorStorage', () => {
           },
           2: {
             rounds: 999,
-            baselineRounds: 0,
             medianBlend: -1,
             executionMode: 'parallel',
           },
@@ -580,7 +578,6 @@ describe('simulatorStorage', () => {
     expect(loadedSettings).toMatchObject({
       1: {
         rounds: 12,
-        baselineRounds: 7,
         medianBlend: 0.25,
         weightProfit: 1,
         weightXp: 0,
@@ -589,7 +586,6 @@ describe('simulatorStorage', () => {
       },
       2: {
         rounds: 200,
-        baselineRounds: 1,
         medianBlend: 0,
         weightProfit: 0.5,
         weightXp: 0.3,

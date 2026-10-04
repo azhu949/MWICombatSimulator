@@ -19,6 +19,7 @@ import {
   runSimulationBatchWithDedicatedWorker,
 } from '../../services/simulatorWorkerRuns.js';
 import { HOME_MULTI_ROUND_SEED_BASE } from '../../services/homeMultiRoundSimulation.js';
+import { buildQueueRoundSeeds } from '../../services/queueScoring.js';
 import { deriveSeedSet } from '../../services/seededRandom.js';
 import { summarizeSeries } from '../../services/robustStats.js';
 import marketHistoryService from '../../services/marketHistoryService.js';
@@ -1031,7 +1032,6 @@ describe('simulatorStore', () => {
 
     const normalized = simulator.updateActiveQueueSettings({
       rounds: 999,
-      baselineRounds: 999,
       medianBlend: 2,
       weightProfit: 2,
       weightXp: 3,
@@ -1040,7 +1040,6 @@ describe('simulatorStore', () => {
     });
 
     expect(normalized.rounds).toBe(200);
-    expect(normalized.baselineRounds).toBe(200);
     expect(normalized.medianBlend).toBe(1);
     expect(normalized.weightProfit).toBeCloseTo(0.4, 6);
     expect(normalized.weightXp).toBeCloseTo(0.6, 6);
@@ -1057,7 +1056,6 @@ describe('simulatorStore', () => {
     expect(zeroed.weightProfit).toBe(0);
     expect(zeroed.weightXp).toBe(0);
     expect(zeroed.weightDeathSafety).toBe(1);
-    expect(zeroed.baselineRounds).toBe(200);
     expect(zeroed.executionMode).toBe('serial');
 
     const rounded = simulator.updateActiveQueueSettings({
@@ -1071,12 +1069,11 @@ describe('simulatorStore', () => {
 
     const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || '{}');
     expect(persisted.byPlayer?.['1']?.rounds).toBe(200);
-    expect(persisted.byPlayer?.['1']?.baselineRounds).toBe(200);
     expect(persisted.byPlayer?.['1']?.weightProfit).toBeCloseTo(0.2, 6);
     expect(persisted.byPlayer?.['1']?.weightXp).toBeCloseTo(0.8, 6);
   });
 
-  it('loads stored queue run settings and migrates missing baselineRounds from rounds', () => {
+  it('loads stored queue run settings and drops the legacy baselineRounds field', () => {
     global.localStorage.setItem(
       QUEUE_RUN_SETTINGS_STORAGE_KEY,
       JSON.stringify({
@@ -1098,15 +1095,15 @@ describe('simulatorStore', () => {
     const simulator = useSimulatorStore();
 
     expect(simulator.activeQueueState.settings.rounds).toBe(12);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(1);
+    expect(simulator.activeQueueState.settings.baselineRounds).toBeUndefined();
     expect(simulator.activeQueueState.settings.executionMode).toBe('serial');
   });
 
-  it('defaults baselineRounds to 1 for new queue settings', () => {
+  it('defaults the merged rounds setting to 30 for new queue settings', () => {
     const simulator = useSimulatorStore();
 
     expect(simulator.activeQueueState.settings.rounds).toBe(30);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(1);
+    expect(simulator.activeQueueState.settings.baselineRounds).toBeUndefined();
   });
 
   it('keeps queue settings editable when queue run settings cannot be persisted', () => {
@@ -1118,13 +1115,11 @@ describe('simulatorStore', () => {
     expect(() =>
       simulator.updateActiveQueueSettings({
         rounds: 20,
-        baselineRounds: 5,
         executionMode: 'serial',
       }),
     ).not.toThrow();
 
     expect(simulator.activeQueueState.settings.rounds).toBe(20);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(5);
     expect(simulator.activeQueueState.settings.executionMode).toBe('serial');
   });
 
@@ -1133,7 +1128,6 @@ describe('simulatorStore', () => {
 
     simulator.updateActiveQueueSettings({
       rounds: 99,
-      baselineRounds: 7,
       medianBlend: 0.9,
       weightProfit: 0.1,
       weightXp: 0.8,
@@ -1143,7 +1137,7 @@ describe('simulatorStore', () => {
     const reset = simulator.resetActiveQueueSettings();
 
     expect(reset.rounds).toBe(30);
-    expect(reset.baselineRounds).toBe(1);
+    expect(reset.baselineRounds).toBeUndefined();
     expect(reset.medianBlend).toBeCloseTo(0.5, 6);
     expect(reset.weightProfit).toBeCloseTo(0.5, 6);
     expect(reset.weightXp).toBeCloseTo(0.3, 6);
@@ -1152,7 +1146,7 @@ describe('simulatorStore', () => {
 
     const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || '{}');
     expect(persisted.byPlayer?.['1']?.rounds).toBe(30);
-    expect(persisted.byPlayer?.['1']?.baselineRounds).toBe(1);
+    expect(persisted.byPlayer?.['1']?.baselineRounds).toBeUndefined();
     expect(persisted.byPlayer?.['1']?.medianBlend).toBeCloseTo(0.5, 6);
     expect(persisted.byPlayer?.['1']?.weightProfit).toBeCloseTo(0.5, 6);
     expect(persisted.byPlayer?.['1']?.weightXp).toBeCloseTo(0.3, 6);
@@ -1188,7 +1182,6 @@ describe('simulatorStore', () => {
 
     simulator.updateActiveQueueSettings({
       rounds: 99,
-      baselineRounds: 7,
       medianBlend: 0.9,
       weightProfit: 0.25,
       weightXp: 0.35,
@@ -1203,7 +1196,6 @@ describe('simulatorStore', () => {
     expect(result.ok).toBe(false);
     expect(result.messageKey).toBe('common:settingsPage.queueSaveErrorStorage');
     expect(simulator.activeQueueState.settings.rounds).toBe(99);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
     expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
     expect(simulator.activeQueueState.settings.weightProfit).toBeCloseTo(0.3, 6);
     expect(simulator.activeQueueState.settings.weightXp).toBeCloseTo(0.4, 6);
@@ -1225,7 +1217,6 @@ describe('simulatorStore', () => {
     ).toBe(true);
     simulator.updateActiveQueueSettings({
       rounds: 99,
-      baselineRounds: 7,
       medianBlend: 0.9,
       weightProfit: 0.25,
       weightXp: 0.35,
@@ -1264,7 +1255,6 @@ describe('simulatorStore', () => {
     expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
     expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe('composite');
     expect(simulator.activeQueueState.settings.rounds).toBe(99);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
     expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
     expect(simulator.activeQueueState.settings.executionMode).toBe('serial');
   });
@@ -1283,7 +1273,6 @@ describe('simulatorStore', () => {
     ).toBe(true);
     simulator.updateActiveQueueSettings({
       rounds: 99,
-      baselineRounds: 7,
       medianBlend: 0.9,
       weightProfit: 0.25,
       weightXp: 0.35,
@@ -1309,7 +1298,6 @@ describe('simulatorStore', () => {
     expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
     expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe('composite');
     expect(simulator.activeQueueState.settings.rounds).toBe(99);
-    expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
     expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
     expect(simulator.activeQueueState.settings.weightProfit).toBeCloseTo(0.3, 6);
     expect(simulator.activeQueueState.settings.weightXp).toBeCloseTo(0.4, 6);
@@ -1324,7 +1312,6 @@ describe('simulatorStore', () => {
 
     const persistedQueueSettings = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || '{}');
     expect(persistedQueueSettings.byPlayer?.['1']?.rounds).toBe(99);
-    expect(persistedQueueSettings.byPlayer?.['1']?.baselineRounds).toBe(7);
     expect(persistedQueueSettings.byPlayer?.['1']?.medianBlend).toBeCloseTo(0.9, 6);
     expect(persistedQueueSettings.byPlayer?.['1']?.weightProfit).toBeCloseTo(0.3, 6);
     expect(persistedQueueSettings.byPlayer?.['1']?.weightXp).toBeCloseTo(0.4, 6);
@@ -1431,7 +1418,7 @@ describe('simulatorStore', () => {
     expect(expensiveItems).toHaveLength(1);
 
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 0,
@@ -1481,7 +1468,7 @@ describe('simulatorStore', () => {
     const cheaperVariantId = cheaperItems[0].id;
     const rowsBeforeWeightChange = await simulator.runActiveQueue();
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(20);
     expect(rowsBeforeWeightChange).toHaveLength(2);
     expect(rowsBeforeWeightChange[0].id).toBe(expensiveVariantId);
 
@@ -1496,7 +1483,7 @@ describe('simulatorStore', () => {
     const expensiveRow = rerankedRows.find((row) => row.id === expensiveVariantId);
 
     expect(saved.ok).toBe(true);
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(20);
     expect(rerankedRows).toHaveLength(2);
     expect(rerankedRows[0].id).toBe(cheaperVariantId);
     expect(Number(cheaperRow?.costInsights?.totalUpgradeCost)).toBeLessThan(
@@ -1541,7 +1528,7 @@ describe('simulatorStore', () => {
       }).ok,
     ).toBe(true);
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 0,
@@ -1812,7 +1799,7 @@ describe('simulatorStore', () => {
     expect(addedItems).toHaveLength(1);
 
     simulator.updateActiveQueueSettings({
-      rounds: 2,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.4,
       weightProfit: 1,
@@ -1843,15 +1830,79 @@ describe('simulatorStore', () => {
     const rows = await simulator.runActiveQueue();
     const variantRow = rows[0];
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(10);
     expect(rows).toHaveLength(1);
     expect(variantRow).toBeTruthy();
-    expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
+    expect(simulator.activeQueueState.rawRuns).toHaveLength(10);
     expect(simulator.activeQueueState.ranking).toHaveLength(1);
     expect(simulator.activeQueueState.progress).toBe(1);
     expect(simulator.runtime.isRunning).toBe(false);
     expect(simulator.activeQueueState.isRunning).toBe(false);
     expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
+  });
+
+  it('pairs queue rounds against the baseline seed set and per-round metrics', async () => {
+    const simulator = useSimulatorStore();
+    simulator.setImportedProfileState('1', true);
+    simulator.updateActiveQueueSettings({ rounds: 10, executionMode: 'serial' });
+
+    const baselineRoundResults = Array.from({ length: 10 }, (_, index) => ({
+      simulatedTime: ONE_HOUR,
+      encounters: 100 + index * 100,
+      experienceGained: { player1: { stamina: 1000 + index * 1000 } },
+      deaths: { player1: 0 },
+      consumablesUsed: {},
+    }));
+    const baselinePayloads = [];
+    simulator.runSingleSimulationPayload = vi.fn(async (payload, onProgress) => {
+      baselinePayloads.push(payload);
+      onProgress?.({ progress: 1 });
+      return baselineRoundResults.shift();
+    });
+
+    const seeds = buildQueueRoundSeeds(10);
+    const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+    expect(baselinePayloads.map((payload) => payload.seed)).toEqual(seeds);
+    expect(baseline?.seeds).toEqual(seeds);
+    expect(baseline?.roundResults?.map((entry) => entry.round)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+    simulator.activePlayer.levels.stamina += 5;
+    expect(simulator.addActivePlayerToQueue()).toHaveLength(1);
+
+    const entryPayloads = [];
+    simulator.runSingleSimulationPayload = vi.fn(async (payload, onProgress) => {
+      entryPayloads.push(payload);
+      onProgress?.({ progress: 1 });
+      return {
+        simulatedTime: ONE_HOUR,
+        encounters: 110,
+        experienceGained: { player1: { stamina: 1100 } },
+        deaths: { player1: 0 },
+        consumablesUsed: {},
+      };
+    });
+
+    await simulator.runActiveQueue();
+
+    // 条目与基准逐轮共用同一 seed（CRN），条目记录也带 seed 供审计。
+    expect(entryPayloads.map((payload) => payload.seed)).toEqual(seeds);
+    const rawRuns = simulator.activeQueueState.rawRuns;
+    expect(rawRuns).toHaveLength(10);
+    expect(rawRuns.map((run) => run.seed)).toEqual(seeds);
+
+    // 配对差：第 i 轮 delta = 条目第 i 轮指标 − 基准第 i 轮指标（不是聚合基准）。
+    for (const run of rawRuns) {
+      const pairedBaselineMetrics = baseline.roundResults.find((entry) => entry.round === run.round)?.metrics;
+      expect(pairedBaselineMetrics).toBeTruthy();
+      for (const metricKey of Object.keys(run.deltas)) {
+        expect(Object.prototype.hasOwnProperty.call(pairedBaselineMetrics, metricKey)).toBe(true);
+        const currentValue = Number(run.metrics[metricKey]);
+        const baselineValue = Number(pairedBaselineMetrics[metricKey]);
+        const expectedDelta =
+          (Number.isFinite(currentValue) ? currentValue : 0) - (Number.isFinite(baselineValue) ? baselineValue : 0);
+        expect(run.deltas[metricKey].abs).toBeCloseTo(expectedDelta, 6);
+      }
+    }
   });
 
   it('runs queued variants with the baseline target settings snapshot', async () => {
@@ -1895,7 +1946,7 @@ describe('simulatorStore', () => {
     simulator.simulationSettings.mooPass = true;
     simulator.simulationSettings.comExp = 88;
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -1913,7 +1964,7 @@ describe('simulatorStore', () => {
     const rows = await simulator.runActiveQueue();
 
     expect(rows).toHaveLength(1);
-    expect(payloads).toHaveLength(1);
+    expect(payloads).toHaveLength(10);
     expect(payloads[0].zone).toEqual({
       zoneHrid: baselineDungeon,
       difficultyTier: 2,
@@ -1941,7 +1992,7 @@ describe('simulatorStore', () => {
     expect(addedItems.length).toBeGreaterThanOrEqual(2);
 
     simulator.updateActiveQueueSettings({
-      rounds: 2,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -1965,7 +2016,7 @@ describe('simulatorStore', () => {
     });
 
     const rows = await simulator.runActiveQueue();
-    const expectedRunCount = addedItems.length * 2;
+    const expectedRunCount = addedItems.length * 10;
 
     expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(expectedRunCount);
     expect(simulator.activeQueueState.rawRuns).toHaveLength(expectedRunCount - 1);
@@ -2687,7 +2738,7 @@ describe('simulatorStore', () => {
     simulator.addActivePlayerToQueue();
     simulator.queueRuntime.parallelWorkerLimit = 2;
     simulator.updateActiveQueueSettings({
-      rounds: 2,
+      rounds: 10,
       executionMode: 'parallel',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -2715,9 +2766,9 @@ describe('simulatorStore', () => {
 
     const rows = await simulator.runActiveQueue();
 
-    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(10);
     expect(rows).toHaveLength(1);
-    expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
+    expect(simulator.activeQueueState.rawRuns).toHaveLength(10);
     expect(simulator.activeQueueState.progress).toBe(1);
     expect(simulator.activeQueueState.settings.executionMode).toBe('parallel');
   });
@@ -2735,7 +2786,7 @@ describe('simulatorStore', () => {
 
     simulator.queueRuntime.parallelWorkerLimit = 2;
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'parallel',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -2760,9 +2811,9 @@ describe('simulatorStore', () => {
 
     const rows = await simulator.runActiveQueue();
 
-    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(addedItems.length);
-    expect(simulator.activeQueueState.rawRuns).toHaveLength(addedItems.length - 1);
-    expect(rows).toHaveLength(addedItems.length - 1);
+    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(addedItems.length * 10);
+    expect(simulator.activeQueueState.rawRuns).toHaveLength(addedItems.length * 10 - 1);
+    expect(rows).toHaveLength(addedItems.length);
     expect(simulator.activeQueueState.lastRunStatus).toBe('partial');
     expect(simulator.activeQueueState.error).toContain('parallel worker dropped');
     expect(simulator.activeQueueState.progress).toBe(1);
@@ -3305,7 +3356,7 @@ describe('simulatorStore', () => {
     expect(addedItems).toHaveLength(1);
     simulator.queueRuntime.parallelWorkerLimit = 2;
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'parallel',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -3321,7 +3372,7 @@ describe('simulatorStore', () => {
     const rows = await simulator.runActiveQueue();
 
     expect(rows).toHaveLength(1);
-    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(1);
+    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(10);
     expect(simulator.activeQueueState.lastRunStatus).toBe('completed');
     expect(stopSpy).not.toHaveBeenCalled();
   });
@@ -3329,7 +3380,7 @@ describe('simulatorStore', () => {
   it('does not terminate the shared keep-alive realm when a baseline simulation completes (§reuse)', async () => {
     const simulator = useSimulatorStore();
     simulator.setImportedProfileState('1', true);
-    simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: 'serial' });
+    simulator.updateActiveQueueSettings({ rounds: 10, executionMode: 'serial' });
     simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
       onProgress?.({ progress: 1 });
       return createQueueSimulationResult();
@@ -3338,8 +3389,8 @@ describe('simulatorStore', () => {
 
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
-    expect(baseline?.completedRounds).toBe(1);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(10);
+    expect(baseline?.completedRounds).toBe(10);
     expect(simulator.activeQueueState.isRunning).toBe(false);
     expect(stopSpy).not.toHaveBeenCalled();
   });
@@ -3828,7 +3879,7 @@ describe('simulatorStore', () => {
     expect(addedItems[0].changeDetails?.[0]?.kind).toBe('ability');
 
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -3855,7 +3906,7 @@ describe('simulatorStore', () => {
     const rows = await simulator.runActiveQueue();
     const variantRow = rows[0];
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(10);
     expect(variantRow).toBeTruthy();
     expect(global.fetch).toHaveBeenCalledTimes(0);
     expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(0);
@@ -3911,7 +3962,7 @@ describe('simulatorStore', () => {
       cost: 1,
     };
     simulator.updateActiveQueueSettings({
-      rounds: 1,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
       weightProfit: 1,
@@ -3937,7 +3988,7 @@ describe('simulatorStore', () => {
 
     const rowsBeforeRefresh = await simulator.runActiveQueue();
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(20);
     expect(rowsBeforeRefresh).toHaveLength(2);
     expect(rowsBeforeRefresh[0].id).toBe(expensiveVariantId);
     expect(rowsBeforeRefresh[0].costInsights?.totalUpgradeCost).toBeNull();
@@ -3949,7 +4000,7 @@ describe('simulatorStore', () => {
     const refreshedExpensiveRow = refreshedRows.find((row) => row.id === expensiveVariantId);
 
     expect(refreshResult?.loaded).toBe(true);
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(20);
     expect(global.fetch).toHaveBeenCalledTimes(0);
     expect(refreshedRows).toHaveLength(2);
     expect(refreshedRows[0].id).toBe(cheaperVariantId);
@@ -4155,49 +4206,40 @@ describe('simulatorStore', () => {
     const simulator = useSimulatorStore();
     simulator.setImportedProfileState('1', true);
     simulator.updateActiveQueueSettings({
-      baselineRounds: 2,
+      rounds: 10,
       executionMode: 'serial',
     });
-    const baselineResults = [
-      {
-        simulatedTime: ONE_HOUR,
-        encounters: 120,
-        experienceGained: {
-          player1: {
-            stamina: 1200,
-          },
+    const baselineResults = Array.from({ length: 10 }, () => ({
+      simulatedTime: ONE_HOUR,
+      encounters: 120,
+      experienceGained: {
+        player1: {
+          stamina: 1200,
         },
-        deaths: {
-          player1: 0,
-        },
-        consumablesUsed: {},
       },
-      {
-        simulatedTime: ONE_HOUR,
-        encounters: 240,
-        experienceGained: {
-          player1: {
-            stamina: 2400,
-          },
-        },
-        deaths: {
-          player1: 0,
-        },
-        consumablesUsed: {},
+      deaths: {
+        player1: 0,
       },
-    ];
-    simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+      consumablesUsed: {},
+    }));
+    const baselinePayloads = [];
+    simulator.runSingleSimulationPayload = vi.fn(async (payload, onProgress) => {
+      baselinePayloads.push(payload);
       onProgress?.({ progress: 0.999 });
       return baselineResults.shift();
     });
 
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
-    expect(baseline?.completedRounds).toBe(2);
-    expect(baseline?.metrics?.totalXpPerHour).toBe(1800);
-    expect(baseline?.metrics?.killsPerHour).toBe(180);
-    expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(10);
+    expect(baseline?.completedRounds).toBe(10);
+    expect(baseline?.metrics?.totalXpPerHour).toBe(1200);
+    expect(baseline?.metrics?.killsPerHour).toBe(120);
+    expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(10);
+    // CRN：基准逐轮注入固定派生种子，并连同逐轮指标写入记录（配对基建）。
+    expect(baselinePayloads.map((payload) => payload.seed)).toEqual(buildQueueRoundSeeds(10));
+    expect(baseline?.seeds).toEqual(buildQueueRoundSeeds(10));
+    expect(baseline?.roundResults?.map((entry) => entry.round)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(simulator.activeQueueState.isRunning).toBe(false);
     expect(simulator.runtime.progress).toBe(1);
   });
@@ -4221,7 +4263,7 @@ describe('simulatorStore', () => {
     simulator.simulationSettings.simulationTimeHours = 12;
     simulator.simulationSettings.mooPass = false;
     simulator.updateActiveQueueSettings({
-      baselineRounds: 2,
+      rounds: 10,
       executionMode: 'serial',
     });
 
@@ -4241,13 +4283,14 @@ describe('simulatorStore', () => {
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
     expect(baseline?.settings?.zoneHrid).toBe(baselineZone);
-    expect(payloads).toHaveLength(2);
-    expect(payloads.map((payload) => payload.zone)).toEqual([
-      { zoneHrid: baselineZone, difficultyTier: 1 },
-      { zoneHrid: baselineZone, difficultyTier: 1 },
-    ]);
-    expect(payloads.map((payload) => payload.simulationTimeLimit)).toEqual([12 * ONE_HOUR, 12 * ONE_HOUR]);
-    expect(payloads.map((payload) => payload.extra.mooPass)).toEqual([false, false]);
+    expect(payloads).toHaveLength(10);
+    expect(payloads.map((payload) => payload.zone)).toEqual(
+      Array.from({ length: 10 }, () => ({ zoneHrid: baselineZone, difficultyTier: 1 })),
+    );
+    expect(payloads.map((payload) => payload.simulationTimeLimit)).toEqual(
+      Array.from({ length: 10 }, () => 12 * ONE_HOUR),
+    );
+    expect(payloads.map((payload) => payload.extra.mooPass)).toEqual(Array.from({ length: 10 }, () => false));
   });
 
   it('runs multi-round baseline simulation with parallel dedicated workers', async () => {
@@ -4255,7 +4298,7 @@ describe('simulatorStore', () => {
     simulator.setImportedProfileState('1', true);
     simulator.queueRuntime.parallelWorkerLimit = 2;
     simulator.updateActiveQueueSettings({
-      baselineRounds: 3,
+      rounds: 10,
       executionMode: 'parallel',
       medianBlend: 0.5,
     });
@@ -4285,10 +4328,10 @@ describe('simulatorStore', () => {
 
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
-    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(3);
+    expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(10);
     expect(maxActiveRuns).toBeGreaterThan(1);
-    expect(baseline?.completedRounds).toBe(3);
-    expect(baseline?.metricSummary?.totalXpPerHour?.sampleCount).toBe(3);
+    expect(baseline?.completedRounds).toBe(10);
+    expect(baseline?.metricSummary?.totalXpPerHour?.sampleCount).toBe(10);
     expect(simulator.runtime.workerMode).toBe('multi');
     expect(simulator.activeQueueState.progress).toBe(1);
     expect(simulator.runtime.progress).toBe(1);
@@ -4298,7 +4341,7 @@ describe('simulatorStore', () => {
     const simulator = useSimulatorStore();
     simulator.setImportedProfileState('1', true);
     simulator.updateActiveQueueSettings({
-      baselineRounds: 3,
+      rounds: 10,
       executionMode: 'serial',
       medianBlend: 0.5,
     });
@@ -4313,15 +4356,15 @@ describe('simulatorStore', () => {
       }
 
       return createQueueSimulationResult({
-        encounters: callCount === 1 ? 100 : 300,
-        staminaXp: callCount === 1 ? 1000 : 3000,
+        encounters: 300,
+        staminaXp: 3000,
       });
     });
 
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
-    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(3);
-    expect(baseline?.completedRounds).toBe(2);
+    expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(10);
+    expect(baseline?.completedRounds).toBe(9);
     expect(baseline?.status).toBe('partial');
     expect(baseline?.failedRounds).toEqual([
       {
@@ -4331,10 +4374,10 @@ describe('simulatorStore', () => {
     ]);
     expect(baseline?.failureSummary).toMatchObject({
       failedRounds: 1,
-      requestedRounds: 3,
+      requestedRounds: 10,
     });
-    expect(baseline?.metrics?.totalXpPerHour).toBe(2000);
-    expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(2);
+    expect(baseline?.metrics?.totalXpPerHour).toBe(3000);
+    expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(9);
     expect(simulator.activeQueueState.error).toContain('baseline worker reset');
     expect(simulator.activeQueueState.progress).toBe(1);
     expect(simulator.runtime.progress).toBe(1);
@@ -4343,7 +4386,7 @@ describe('simulatorStore', () => {
   it('captures selected party snapshot when baseline simulation runs', async () => {
     const simulator = useSimulatorStore();
     simulator.setImportedProfileState('1', true);
-    simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: 'serial' });
+    simulator.updateActiveQueueSettings({ rounds: 1, executionMode: 'serial' });
     simulator.players[1].selected = true;
     simulator.players[1].name = 'Support';
     simulator.players[1].levels.stamina = 77;
@@ -4403,7 +4446,7 @@ describe('simulatorStore', () => {
     const queueIdsBefore = simulator.activeQueueState.items.map((item) => item.id);
 
     simulator.setImportedProfileState('1', true);
-    simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: 'serial' });
+    simulator.updateActiveQueueSettings({ rounds: 1, executionMode: 'serial' });
     simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
       onProgress?.({ progress: 1 });
       return {
@@ -4434,7 +4477,7 @@ describe('simulatorStore', () => {
     expect(appended).toHaveLength(1);
 
     simulator.setImportedProfileState('1', true);
-    simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: 'serial' });
+    simulator.updateActiveQueueSettings({ rounds: 1, executionMode: 'serial' });
     simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
       onProgress?.({ progress: 1 });
       return {

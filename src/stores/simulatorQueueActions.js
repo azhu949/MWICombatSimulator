@@ -19,7 +19,9 @@ import {
 import {
   MANUAL_EQUIPMENT_PRICE_SOURCE,
   buildQueueBaselineAggregate,
+  buildQueueBaselineRoundMetricsMap,
   buildQueueRankedRowsFromSampleState,
+  buildQueueRoundSeeds,
   getDefaultQueueRunSettings,
   haveQueueRunRankingSettingsChanged,
   normalizeBaselineSaleSide,
@@ -217,7 +219,9 @@ function computeQueueMetricDeltas(metrics = {}, baselineMetrics = {}) {
   return deltas;
 }
 
-function syncQueueRawRunDeltas(rawRuns = [], baselineMetrics = {}) {
+// 重算 rawRuns 的 delta：有基准逐轮数据时按「同轮次配对」相减（公共随机数），
+// 缺配对轮次（旧基准记录 / 基准该轮失败）回退聚合基准指标。
+function syncQueueRawRunDeltas(rawRuns = [], baselineMetrics = {}, baselineRoundMetricsByRound = null) {
   if (!Array.isArray(rawRuns)) {
     return rawRuns;
   }
@@ -226,7 +230,13 @@ function syncQueueRawRunDeltas(rawRuns = [], baselineMetrics = {}) {
     if (!isPlainObject(rawRun)) {
       continue;
     }
-    rawRun.deltas = computeQueueMetricDeltas(rawRun.metrics, baselineMetrics);
+    const round = Math.floor(toFiniteNumber(rawRun?.round, 0));
+    const pairedBaselineMetrics =
+      round > 0 && baselineRoundMetricsByRound instanceof Map ? baselineRoundMetricsByRound.get(round) : null;
+    rawRun.deltas = computeQueueMetricDeltas(
+      rawRun.metrics,
+      isPlainObject(pairedBaselineMetrics) ? pairedBaselineMetrics : baselineMetrics,
+    );
   }
 
   return rawRuns;
@@ -409,7 +419,9 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
 
       const queueSettings = normalizeQueueSettings(queueState.settings);
       queueState.settings = queueSettings;
-      const baselineRoundCount = queueSettings.baselineRounds;
+      // 合并后的单一「轮次」同时决定基准与队列项的场数；基准与全部条目共享同一组种子（CRN）。
+      const baselineRoundCount = queueSettings.rounds;
+      const baselineRoundSeeds = buildQueueRoundSeeds(baselineRoundCount);
       const executionMode = queueSettings.executionMode === 'parallel' ? 'parallel' : 'serial';
       const baselineSettings = buildQueueBaselineSettings(this.simulationSettings, queueSettings);
       const baselineSnapshot = deepClone(activePlayer);
@@ -505,13 +517,21 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
 
           try {
             const payload = this.buildSingleSimulationPayload(playersToSim, baselinePayloadOptions);
-            const simResult = await runSingle(payload, (data) => {
+            // 公共随机数：第 roundIndex 轮固定用种子集里的第 roundIndex 个种子，
+            // 队列项按同一规则逐轮配对；workerId 后缀仅供日志区分轮次。
+            payload.seed = baselineRoundSeeds[roundIndex] >>> 0;
+            payload.workerId = `${String(payload.workerId || 'queue-baseline')}#r${roundIndex + 1}`;
+            const onProgress = (data) => {
               if (!isBaselineRunActive()) {
                 return;
               }
               runProgressByRunKey.set(runKey, clamp(Number(data.progress || 0), 0, 1));
               updateBaselineRunProgress();
-            });
+            };
+            const simResult =
+              executionMode === 'parallel'
+                ? await runSingle(payload, onProgress, { poolCapacity: queueParallelWorkerLimit })
+                : await runSingle(payload, onProgress);
 
             ensureBaselineRunNotCancelled();
             const summaryRow = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || null;
@@ -594,6 +614,10 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
           simResult: representativeSimResult,
           completedRounds: sortedRoundResults.length,
           metricSummary: baselineAggregate.metricSummary,
+          // 配对基建：逐轮指标 + 当次种子集写入基准记录；条目运行据此按轮配对（CRN），
+          // 也让「同配置重跑基准」完全可复现。
+          roundResults: sortedRoundResults.map((entry) => ({ round: entry.round, metrics: { ...entry.metrics } })),
+          seeds: baselineRoundSeeds.slice(),
           sampleMetadata: sampleMetadata.slice().sort((left, right) => left.round - right.round),
           ...partialFailureOverrides,
         });
@@ -1128,7 +1152,11 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
           ...baselineMetrics,
         };
       }
-      syncQueueRawRunDeltas(queueState.rawRuns, isPlainObject(baselineMetrics) ? baselineMetrics : {});
+      syncQueueRawRunDeltas(
+        queueState.rawRuns,
+        isPlainObject(baselineMetrics) ? baselineMetrics : {},
+        buildQueueBaselineRoundMetricsMap(queueState?.baseline),
+      );
       const rankedRows = buildQueueRankedRowsFromSampleState({
         entries,
         rawRuns: queueState.rawRuns,

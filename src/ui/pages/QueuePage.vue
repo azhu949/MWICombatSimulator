@@ -359,8 +359,8 @@ const baselineSummaryRows = computed(() => {
       value: resolveBaselineDurationText(baseline),
     },
     {
-      key: 'baselineRounds',
-      label: t('common:queue.baselineRoundCount', 'Baseline Rounds'),
+      key: 'rounds',
+      label: t('common:queue.roundCount', 'Rounds'),
       value: resolveBaselineConfiguredRoundsText(baseline),
     },
     {
@@ -1117,7 +1117,7 @@ function resolveBaselineDurationText(baseline) {
 }
 
 function resolveBaselineConfiguredRoundsText(baseline) {
-  const configuredRounds = Number(baseline?.settings?.baselineRounds);
+  const configuredRounds = Number(baseline?.settings?.rounds);
   if (Number.isFinite(configuredRounds) && configuredRounds > 0) {
     return `${Math.max(1, Math.floor(configuredRounds))}`;
   }

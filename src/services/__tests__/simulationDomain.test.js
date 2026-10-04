@@ -484,7 +484,7 @@ describe('simulationDomain', () => {
           simulationTimeHours: '7.5',
         },
         {
-          baselineRounds: 5,
+          rounds: 10,
         },
       ),
     ).toMatchObject({
@@ -494,7 +494,7 @@ describe('simulationDomain', () => {
       dungeonHrid: '/actions/combat/dungeon',
       difficultyTier: 4,
       simulationTimeHours: 7,
-      baselineRounds: 5,
+      rounds: 10,
     });
 
     expect(

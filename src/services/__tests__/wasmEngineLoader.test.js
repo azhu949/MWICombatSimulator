@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getGlueUrlCandidates, loadWasmEngine } from '../wasmEngineLoader.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -13,8 +13,15 @@ const wasmPackageBuilt = existsSync(gluePath) && existsSync(wasmPath);
 
 describe('wasmEngineLoader', () => {
   it('returns null instead of throwing when the wasm package is unavailable (JS fallback path)', async () => {
-    const engine = await loadWasmEngine({ glueUrl: new URL('./missing-wasm-package.js', import.meta.url).href });
-    expect(engine).toBeNull();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const engine = await loadWasmEngine({ glueUrl: new URL('./missing-wasm-package.js', import.meta.url).href });
+      expect(engine).toBeNull();
+      // 失败原因必须落日志（此前静默导致 engine_unavailable 雪崩无从定位）。
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('missing-wasm-package.js'), expect.anything());
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it.runIf(wasmPackageBuilt)('loads the built wasm package and exposes the bridge probe', async () => {
