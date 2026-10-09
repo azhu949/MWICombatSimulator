@@ -234,7 +234,9 @@ export async function evaluatePayload(
   //（rounds = 1）没有可摊薄的固定开销，也走原路径。
   if (resolvedSeeds.length > 1 && supportsSimulationBatch(WorkerClientCtor)) {
     const batchPayloads = resolvedSeeds.map((seed, round) => buildSeededPayload(payload, seed, round));
+    // scope 级保活池容量与并行工作集对齐（批量入口按 scope 池化，2026-10-04）。
     const batchOptions = { scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER };
+    if (poolCapacity !== undefined) batchOptions.poolCapacity = poolCapacity;
     if (typeof WorkerClientCtor === 'function') batchOptions.WorkerClientCtor = WorkerClientCtor;
     const batch = await runSimulationBatchWithDedicatedWorker(batchPayloads, () => {}, batchOptions);
     const batchSamples = [];

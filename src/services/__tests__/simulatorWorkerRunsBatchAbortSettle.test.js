@@ -8,6 +8,7 @@ import sharedWorkerClient from '../workerClient.js';
 import {
   DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
   cancelDedicatedWorkerRuns,
+  resetDedicatedSingleClientPools,
   runSimulationBatchWithDedicatedWorker,
 } from '../simulatorWorkerRuns.js';
 
@@ -89,6 +90,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
   cancelDedicatedWorkerRuns();
   sharedWorkerClient.stopSimulation();
+  // 池化（2026-10-04）：无注入的生产路径批量调用经 scope 级保活池，跨用例必须清池。
+  resetDedicatedSingleClientPools();
 });
 
 describe('simulatorWorkerRuns batch realm-rebuild failure', () => {

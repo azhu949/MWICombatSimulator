@@ -432,6 +432,47 @@ describe('trigger optimizer page', () => {
     expect(wrapper.get('[data-trigger-optimizer-choice]').text()).toContain('保持当前配置');
   });
 
+  // 「立即释放」的搜索起点必须由报告快照如实还原（2026-10-07 修复）：候选生成器对 []
+  // 不产「当前配置」锚点，旧口径把它渲染成「游戏默认触发器」，还因「默认条目 vs 空列表」
+  // 伪造出一次改动（原始 = 默认 / 最优 = 立即释放），而实际配置根本没变。
+  it('restores a [] (always-fire) search start from the report snapshot instead of faking a change', async () => {
+    const { wrapper, store } = await mountPage(readySetup);
+    const result = makeResult(store);
+    result.baselineTriggerMap = { [ABILITY_HRID]: [] };
+    result.bestTriggerMap = { [ABILITY_HRID]: [] };
+    result.adoptedSlots = [];
+    store.triggerOptimizer.results = result;
+    await flushPromises();
+
+    const original = wrapper.get('[data-trigger-optimizer-original]');
+    // 不再是「游戏默认触发器」说明行，而是「立即释放」一行。
+    expect(original.find('[data-trigger-optimizer-original-default]').exists()).toBe(false);
+    expect(original.text()).toContain('立即释放');
+    expect(original.findAll('[data-trigger-optimizer-line-changed="true"]')).toHaveLength(0);
+    // 两侧一致 → 明说「与当前配置相同」，不再伪造改动。
+    const best = wrapper.get('[data-trigger-optimizer-best]');
+    expect(best.text()).toContain('与当前配置相同');
+    expect(best.findAll('[data-trigger-optimizer-line-changed="true"]')).toHaveLength(0);
+  });
+
+  // 「配置恰好等价于游戏默认」的搜索起点：快照有键 → 原始面板不再挂「游戏默认触发器」
+  // 说明行（用户确实配置了这些条目），条目本身按真实默认列表展开。
+  it('keeps the snapshot wording when the search start matches the game defaults', async () => {
+    const { wrapper, store } = await mountPage(readySetup);
+    const result = makeResult(store);
+    const defaults = abilityDetailMap[ABILITY_HRID].defaultCombatTriggers;
+    result.baselineTriggerMap = { [ABILITY_HRID]: defaults };
+    result.bestTriggerMap = { [ABILITY_HRID]: defaults };
+    result.adoptedSlots = [];
+    store.triggerOptimizer.results = result;
+    await flushPromises();
+
+    const original = wrapper.get('[data-trigger-optimizer-original]');
+    expect(original.find('[data-trigger-optimizer-original-default]').exists()).toBe(false);
+    expect(original.findAll('[data-trigger-optimizer-line-changed="true"]')).toHaveLength(0);
+    expect(wrapper.get('[data-trigger-optimizer-best]').text()).toContain('与当前配置相同');
+  });
+
   // 候选表按分数降序（2026-09-22 用户要求）：读表的目的是「哪个候选更好」，
   // 报告里没有分数记录的候选垫底（`—` 不能与「0 分」混为一谈）。
   it('sorts the candidate table by score, highest first', async () => {
@@ -1038,10 +1079,14 @@ describe('trigger optimizer page', () => {
   // 集合写进设置（进输入指纹）。
   it('lists the other players as party teammates and writes the selection into settings', async () => {
     const { wrapper, store } = await mountPage(readySetup);
+    // 队友候选只列已导入的槽位（2026-10-04 对齐幽灵队友防御）：默认玩家表 1..5，
+    // 主角 1 排除，只有标记导入的槽位才出现在 chips 里 —— 未导入空槽位不给出无效勾选。
+    store.setImportedProfileState('2', true);
+    await flushPromises();
 
     const party = wrapper.get('[data-trigger-optimizer-party]');
-    // 玩家 2..5（默认玩家表 1..5，主角 1 不在候选里）。
-    expect(party.findAll('[data-trigger-optimizer-party-player]')).toHaveLength(4);
+    expect(party.findAll('[data-trigger-optimizer-party-player]')).toHaveLength(1);
+    expect(party.get('[data-trigger-optimizer-party-player="2"]'));
     expect(party.text()).toContain('模拟载荷');
 
     await party.get('[data-trigger-optimizer-party-player="2"] input').setValue(true);

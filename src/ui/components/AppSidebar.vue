@@ -114,6 +114,7 @@ import {
   Sparkles,
   Sword,
   Utensils,
+  Wallet,
   X,
 } from '@lucide/vue';
 import { Button } from '@/ui/components/ui/button/index.js';
@@ -156,6 +157,7 @@ const iconByRoute = {
   enhancement: ShieldPlus,
   skilling: Sword,
   'trigger-optimizer': SlidersHorizontal,
+  'budget-optimizer': Wallet,
   queue: ListChecks,
   'multi-results': ChartNoAxesColumnIncreasing,
   settings: Settings,

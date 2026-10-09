@@ -58,7 +58,8 @@ export function buildTriggerOptimizerReportSheets({ report, summaryRows, statusB
 
   const abilityRows = choices.map((choice) => {
     const chosen = choice?.chosen ?? null;
-    const originalTriggers = resolveOriginalTriggers(choice);
+    // 原始配置优先取报告的搜索起点快照（baselineTriggerMap）；旧报告回退候选表锚点。
+    const originalTriggers = resolveOriginalTriggers(choice, report?.baselineTriggerMap);
     const bestTriggers = resolveBestTriggers(report?.bestTriggerMap, choice?.abilityHrid, originalTriggers);
     const entry = resolveCandidateEntry(report, choice, chosen);
     return {

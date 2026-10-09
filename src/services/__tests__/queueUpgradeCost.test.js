@@ -717,6 +717,52 @@ describe('queueUpgradeCost', () => {
     }
   });
 
+  it('estimated book price only applies when the market resolves nothing (vendor fallback wins)', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const globalRef = globalThis;
+    const previousTable = globalRef.jigsLevelExperienceTable;
+    const previousBookMap = globalRef.jigsSpellBookXpByName;
+
+    try {
+      globalRef.jigsLevelExperienceTable = [0, 0, 100, 250];
+      globalRef.jigsSpellBookXpByName = {};
+      const base = { abilityHrid: abilityBookInfo.abilityHrid, level: 1 };
+      const books = Math.ceil(250 / abilityBookInfo.xpPerBook);
+      // 价格表无书：resolveItemPriceFromPricingState 走 vendor 卖店价兜底（视为有价），
+      // fallbackBookPrice 不触发——估值只在原链完全无价（null）时兜底。
+      const unpriced = buildPricingState({ dropMode: PRICE_MODE_BID, priceTable: {} });
+      const vendorPrice = Math.max(0, Number(itemDetailIndex?.[abilityBookInfo.itemHrid]?.sellPrice) || 0);
+      expect(vendorPrice).toBeGreaterThan(0);
+      expect(computeDefaultAbilityUpgradeCost(base, 3, unpriced)).toBe(books * vendorPrice);
+      expect(computeDefaultAbilityUpgradeCost(base, 3, unpriced, { fallbackBookPrice: 5 })).toBe(books * vendorPrice);
+      // 原链有市场价（bid=7）时估值同样绝不覆盖实价。
+      const priced = buildPricingState({
+        dropMode: PRICE_MODE_BID,
+        priceTable: {
+          [abilityBookInfo.itemHrid]: {
+            ask: 9,
+            bid: 7,
+            vendor: 1,
+          },
+        },
+      });
+      expect(computeDefaultAbilityUpgradeCost(base, 3, priced, { fallbackBookPrice: 1 })).toBe(books * 7);
+    } finally {
+      if (previousTable === undefined) {
+        delete globalRef.jigsLevelExperienceTable;
+      } else {
+        globalRef.jigsLevelExperienceTable = previousTable;
+      }
+      if (previousBookMap === undefined) {
+        delete globalRef.jigsSpellBookXpByName;
+      } else {
+        globalRef.jigsSpellBookXpByName = previousBookMap;
+      }
+    }
+  });
+
   it('combines equipment, custom ability, and house-room costs for queue items', () => {
     const equipmentHrid = findEquipmentForSlot('head');
     const abilityBookInfo = findAbilityBookInfo();

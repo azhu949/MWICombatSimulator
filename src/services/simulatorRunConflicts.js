@@ -17,6 +17,7 @@
 // 专属条件，保持原样并由自身维护；触发器服务层看不到 store，其入口双检查由
 // triggerOptimizerSearch 内的 assertTriggerOptimizerEntranceClear 承担（同样单点化）。
 import { hasHomeMultiRoundWorkerRunInProgress, hasSharedWorkerRunInProgress } from './simulatorWorkerRuns.js';
+import { hasBudgetOptimizerRunInProgress } from './budgetOptimizerRunRegistry.js';
 
 // 仅 store 内的运行态（全部是响应式字段，UI computed 与 store 闸门共用）。
 // options.ignoreAdvisorScanInFlight：advisor 自身扫描进入 executeAdvisorScan 时
@@ -31,13 +32,19 @@ export function isReactiveSimulationBusy(store, options = {}) {
     store.advisor?.runtime?.isRunning ||
     (!ignoreAdvisorScanInFlight && store.advisor?.runtime?.scanInFlight) ||
     store.foodOptimizer?.runtime?.isRunning ||
-    store.triggerOptimizer?.runtime?.isRunning,
+    store.triggerOptimizer?.runtime?.isRunning ||
+    // 预算优化（2026-10-04 登记）：store 运行态是响应式字段，UI computed 与 store 闸门共用。
+    store.budgetOptimizer?.runtime?.isRunning,
   );
 }
 
-// 完整版：store 运行态 + 模块级 worker realm 句柄（共享运行句柄 / 首页多轮批运行）。
+// 完整版：store 运行态 + 模块级 worker realm 句柄（共享运行句柄 / 首页多轮批运行 / 预算优化注册表）。
 export function isSimulationBusy(store, options = {}) {
   return (
-    isReactiveSimulationBusy(store, options) || hasSharedWorkerRunInProgress() || hasHomeMultiRoundWorkerRunInProgress()
+    isReactiveSimulationBusy(store, options) ||
+    hasSharedWorkerRunInProgress() ||
+    hasHomeMultiRoundWorkerRunInProgress() ||
+    // 预算优化注册表：搜索进行中 = 专属 worker 池占用（模块级普通变量，与其它句柄同列）。
+    hasBudgetOptimizerRunInProgress()
   );
 }

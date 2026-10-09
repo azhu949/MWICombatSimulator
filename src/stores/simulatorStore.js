@@ -96,6 +96,12 @@ import {
   snapshotTriggerOptimizerInput,
 } from './simulatorTriggerOptimizerActions.js';
 import { createTriggerOptimizerInputSignature } from '../services/triggerOptimizerDomain.js';
+import {
+  createBudgetOptimizerActions,
+  createBudgetOptimizerState,
+  snapshotBudgetOptimizerInput,
+} from './simulatorBudgetOptimizerActions.js';
+import { createBudgetOptimizerInputSignature } from '../services/budgetOptimizerDomain.js';
 
 const ABILITY_BOOK_CATEGORY_HRID = '/item_categories/ability_book';
 
@@ -278,6 +284,7 @@ export const useSimulatorStore = defineStore('simulator', {
       },
       foodOptimizer: createFoodOptimizerState(),
       triggerOptimizer: createTriggerOptimizerState(),
+      budgetOptimizer: createBudgetOptimizerState(),
       queue: {
         byPlayer: createQueueStateByPlayer(playerList, persistedQueueRunSettingsByPlayer),
         importedProfileByPlayer: createImportedProfileByPlayer(),
@@ -315,6 +322,17 @@ export const useSimulatorStore = defineStore('simulator', {
         results?.createdAt &&
         (results.stale ||
           this.triggerOptimizerInputSignature !== (results.appliedInputSignature || results.inputSignature)),
+      );
+    },
+    budgetOptimizerInputSignature() {
+      return createBudgetOptimizerInputSignature(snapshotBudgetOptimizerInput(this));
+    },
+    budgetOptimizerReportStale(state) {
+      const results = state.budgetOptimizer.results;
+      return Boolean(
+        results?.createdAt &&
+        (results.stale ||
+          this.budgetOptimizerInputSignature !== (results.appliedInputSignature || results.inputSignature)),
       );
     },
     activePlayer(state) {
@@ -717,8 +735,9 @@ export const useSimulatorStore = defineStore('simulator', {
             return resolved || player;
           });
           this.persistPlayerAchievements();
-          // 快照恢复同样整体替换玩家配置，触发器优化结果随之失效。
+          // 快照恢复同样整体替换玩家配置，触发器/预算优化结果随之失效。
           this.resetTriggerOptimizerResults();
+          this.resetBudgetOptimizerResults();
 
           const nextSimulationSettings = preferredSimulationSettings || fallbackSimulationSettings;
           if (nextSimulationSettings) {
@@ -1080,8 +1099,9 @@ export const useSimulatorStore = defineStore('simulator', {
           this.setImportedProfileState(player.id, true);
           this.setImportedBaselineSnapshot(player.id, player);
         });
-        // 玩家配置被整体替换，既有触发器优化结果不再对应任何当前输入。
+        // 玩家配置被整体替换，既有触发器/预算优化结果不再对应任何当前输入。
         this.resetTriggerOptimizerResults();
+        this.resetBudgetOptimizerResults();
         this.simulationSettings = {
           ...this.simulationSettings,
           ...result.simulationSettings,
@@ -1137,8 +1157,9 @@ export const useSimulatorStore = defineStore('simulator', {
         this.persistPlayerAchievements();
         this.setImportedProfileState(targetId, true);
         this.setImportedBaselineSnapshot(targetId, result.player);
-        // 玩家配置被替换，既有触发器优化结果不再对应任何当前输入。
+        // 玩家配置被替换，既有触发器/预算优化结果不再对应任何当前输入。
         this.resetTriggerOptimizerResults();
+        this.resetBudgetOptimizerResults();
         this.simulationSettings = {
           ...this.simulationSettings,
           ...result.simulationSettings,
@@ -1202,6 +1223,7 @@ export const useSimulatorStore = defineStore('simulator', {
     ...createPricingActions(),
     ...createFoodOptimizerActions({ loadPlayerMapperModule }),
     ...createTriggerOptimizerActions({ loadPlayerMapperModule }),
+    ...createBudgetOptimizerActions({ loadPlayerMapperModule }),
     ...createAdvisorActions({
       loadPlayerMapperModule,
     }),

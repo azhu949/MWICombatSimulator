@@ -40,6 +40,18 @@ const routes = [
     },
   },
   {
+    path: '/budget-optimizer',
+    name: 'budget-optimizer',
+    component: () => import('../pages/BudgetOptimizerPage.vue'),
+    meta: {
+      showCombatToolbar: false,
+      navLabelKey: 'common:menu.budgetOptimizer',
+      navLabel: 'Budget Optimizer',
+      navGroup: 'simulation',
+      navOrder: 2.7,
+    },
+  },
+  {
     path: '/enhancement',
     name: 'enhancement',
     component: () => import('../pages/EnhancementPage.vue'),

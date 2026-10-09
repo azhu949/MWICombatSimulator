@@ -16,6 +16,7 @@ import {
   isFoodOptimizerLabyrinth,
 } from '../services/foodOptimizerTarget.js';
 import { hasSharedWorkerRunInProgress } from '../services/simulatorWorkerRuns.js';
+import { hasBudgetOptimizerRunInProgress } from '../services/budgetOptimizerRunRegistry.js';
 import { normalizeParallelWorkerLimit } from '../services/queueScoring.js';
 import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
 import { createFoodOptimizerReportCache } from '../services/foodOptimizerReportCache.js';
@@ -94,6 +95,10 @@ export function foodOptimizerBusy(store) {
     store.advisor.runtime?.isRunning ||
     store.advisor.runtime?.scanInFlight ||
     store.triggerOptimizer?.runtime?.isRunning ||
+    // 预算优化器（2026-10-04 登记）：与食物优化器同抢 worker 池，运行时禁止开跑
+    //（store 运行态 + 模块级注册表双查，与 trigger 的登记同款）。
+    store.budgetOptimizer?.runtime?.isRunning ||
+    hasBudgetOptimizerRunInProgress() ||
     store.pricing.isLoading ||
     hasSharedWorkerRunInProgress()
   );

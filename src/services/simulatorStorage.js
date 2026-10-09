@@ -39,6 +39,7 @@ import {
   normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
 import { normalizeTriggerOptimizerSettings } from './triggerOptimizerDomain.js';
+import { normalizeBudgetOptimizerSettings } from './budgetOptimizerDomain.js';
 import { clampSimulationRounds, HOME_MULTI_ROUND_DEFAULT_ROUNDS } from './homeMultiRoundSimulation.js';
 
 const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
@@ -61,6 +62,10 @@ const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
 const PLAYER_ACHIEVEMENTS_STORAGE_VERSION = 1;
 const TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY = 'mwi.triggerOptimizer.report.v1';
 const TRIGGER_OPTIMIZER_REPORT_STORAGE_VERSION = 1;
+const BUDGET_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.budgetOptimizer.settings.v1';
+const BUDGET_OPTIMIZER_SETTINGS_STORAGE_VERSION = 1;
+const BUDGET_OPTIMIZER_REPORT_STORAGE_KEY = 'mwi.budgetOptimizer.report.v1';
+const BUDGET_OPTIMIZER_REPORT_STORAGE_VERSION = 1;
 const QUEUE_PLAYER_IDS = ['1', '2', '3', '4', '5'];
 
 function hasJsonStorageChanged(before, after) {
@@ -754,12 +759,16 @@ export function persistFoodOptimizerSettingsToStorage(settings) {
 
 // 触发器优化器设置（键名带版本，脏数据回落到产品默认）。
 // 归一化口径由 triggerOptimizerDomain 独占，本层只负责版本闸门与序列化。
+// partyPlayerIds（队友勾选）不持久化（2026-10-04）：队友配置数据本身是会话级的
+// （导入数据刷新即丢），勾选状态若持久化会出现「刷新后勾选还在、队友槽位已空」的
+// 幽灵队友 —— 整队模拟会把空配置玩家塞进载荷。两侧生命周期必须一致：勾选只在当前
+// 会话内有效，persist 落盘空、load 强制清空（旧存档里已有勾选也一并丢弃）。
 export function loadTriggerOptimizerSettingsFromStorage() {
   const parsed = readJsonStorage(TRIGGER_OPTIMIZER_SETTINGS_STORAGE_KEY);
   if (!isPlainObject(parsed) || parsed.version !== TRIGGER_OPTIMIZER_SETTINGS_STORAGE_VERSION) {
     return normalizeTriggerOptimizerSettings({});
   }
-  return normalizeTriggerOptimizerSettings(parsed);
+  return normalizeTriggerOptimizerSettings({ ...parsed, partyPlayerIds: [] });
 }
 
 export function persistTriggerOptimizerSettingsToStorage(settings) {
@@ -768,6 +777,7 @@ export function persistTriggerOptimizerSettingsToStorage(settings) {
     version: TRIGGER_OPTIMIZER_SETTINGS_STORAGE_VERSION,
     savedAt: Date.now(),
     ...normalized,
+    partyPlayerIds: [],
   });
   return normalized;
 }
@@ -807,6 +817,66 @@ export function persistTriggerOptimizerReportToStorage(report) {
 
 export function clearTriggerOptimizerReportFromStorage() {
   return removeStorageItem(TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY);
+}
+
+// 预算优化器设置（键名带版本，脏数据回落到产品默认）。
+// 归一化口径由 budgetOptimizerDomain 独占，本层只负责版本闸门与序列化。
+// partyPlayerIds（队友勾选）不持久化（2026-10-04，与触发器优化器同款）：队友配置数据
+// 是会话级的（导入数据刷新即丢），勾选状态若持久化会出现「刷新后勾选还在、队友槽位
+// 已空」的幽灵队友 —— 整队模拟会把空配置玩家塞进载荷。勾选只在当前会话内有效：
+// persist 落盘空、load 强制清空（旧存档里已有勾选也一并丢弃）。
+export function loadBudgetOptimizerSettingsFromStorage() {
+  const parsed = readJsonStorage(BUDGET_OPTIMIZER_SETTINGS_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== BUDGET_OPTIMIZER_SETTINGS_STORAGE_VERSION) {
+    return normalizeBudgetOptimizerSettings({});
+  }
+  return normalizeBudgetOptimizerSettings({ ...parsed, partyPlayerIds: [] });
+}
+
+export function persistBudgetOptimizerSettingsToStorage(settings) {
+  const normalized = normalizeBudgetOptimizerSettings(settings);
+  setJsonStorage(BUDGET_OPTIMIZER_SETTINGS_STORAGE_KEY, {
+    version: BUDGET_OPTIMIZER_SETTINGS_STORAGE_VERSION,
+    savedAt: Date.now(),
+    ...normalized,
+    partyPlayerIds: [],
+  });
+  return normalized;
+}
+
+// 预算优化报告落盘：最近一份报告自动持久化，刷新/崩溃/重进后由 store 的 state 工厂
+// hydrate 回来。版本闸门同 settings.v1 —— 脏数据/版本不符一律静默回落 null。
+// 形状闸门（createdAt 必须是正时间戳）：空结果（createdAt: 0）不能被当成一份报告存/取。
+export function loadBudgetOptimizerReportFromStorage() {
+  const parsed = readJsonStorage(BUDGET_OPTIMIZER_REPORT_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== BUDGET_OPTIMIZER_REPORT_STORAGE_VERSION) {
+    return null;
+  }
+  const report = parsed.report;
+  const createdAt = isPlainObject(report) ? Number(report.createdAt) : NaN;
+  if (!Number.isFinite(createdAt) || createdAt <= 0) {
+    return null;
+  }
+  // 深拷贝解耦：store 会往 results 上原地写 stale / appliedInputSignature 等字段，
+  // 不能让内存报告与存储共享引用（否则每次原地写都间接改到存档对象）。
+  return JSON.parse(JSON.stringify(report));
+}
+
+export function persistBudgetOptimizerReportToStorage(report) {
+  const createdAt = isPlainObject(report) ? Number(report.createdAt) : NaN;
+  // 与 load 同一口径：只有「真报告」（createdAt 正时间戳）才落盘；空结果不写不删。
+  if (!Number.isFinite(createdAt) || createdAt <= 0) {
+    return false;
+  }
+  return setJsonStorage(BUDGET_OPTIMIZER_REPORT_STORAGE_KEY, {
+    version: BUDGET_OPTIMIZER_REPORT_STORAGE_VERSION,
+    savedAt: Date.now(),
+    report,
+  });
+}
+
+export function clearBudgetOptimizerReportFromStorage() {
+  return removeStorageItem(BUDGET_OPTIMIZER_REPORT_STORAGE_KEY);
 }
 
 export function loadQueueRunSettingsByPlayerFromStorage() {

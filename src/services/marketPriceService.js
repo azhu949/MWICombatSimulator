@@ -21,7 +21,7 @@ export const MANUAL_PRICE_WARNING_CODE = 'manual_price';
 // 为 4%；袋装 10 牛铃为 18%）。
 // 市场 API 不暴露单物品费率，因此特殊费率在此按 hrid 维护。
 // 若 API 将来暴露单物品税率字段，应改回数据驱动查询，而不使用此映射。
-// 2026-09-04 牛铃 18% 修订（.snow/research/cowbell-18pct-tax-model-design.md）：
+// 2026-09-04 牛铃 18% 修订：
 // 单颗牛铃与铃袋按 18%、coin 与 3 种宝箱按 0 计入费率表——coin 免税与牛铃按铃袋
 // 口径 18% 是用户产品决策；宝箱 0 = 宝箱合成价已逐内容内嵌税费、卖出不再二次
 // 征税（防 18%+4% 复合）。
@@ -36,7 +36,7 @@ export const BAG_OF_10_COWBELLS_HRID = '/items/bag_of_10_cowbells';
 // 链解析到 vendor → isMarketSaleSource('vendor')===false → 免税——vendor 列本身
 // 即来源标记，零新标记机制；用户手动 override 后写 ask/bid 按市场来源计税为
 // 语义 A 的正确行为，无需特判。牛铃 18% 修订后，resolve 层「vendor 来源免税」
-// 语义不变（直接解析牛铃无利润链消费点，见设计文档 §7），但宝箱合成层对该
+// 语义不变（直接解析牛铃无利润链消费点），但宝箱合成层对该
 // 注入值改按 hrid 费率净额计价（B 案扁平费率，见 computeChestExpectedValue）。
 export const COWBELL_HRID = '/items/cowbell';
 export const MIRROR_OF_PROTECTION_HRID = '/items/mirror_of_protection';
@@ -77,8 +77,7 @@ const TREASURE_CHEST_HRIDS = [
   '/items/large_treasure_chest',
 ];
 
-// 特殊市场费率表（牛铃 18% 修订 §1.2b，2026-09-04 用户产品决策：
-// .snow/research/cowbell-18pct-tax-model-design.md）：
+// 特殊市场费率表（牛铃 18% 修订 §1.2b，2026-09-04 用户产品决策）：
 // - 铃袋/单颗牛铃 0.18：牛铃计价按铃袋口径保守计税（决策①）；宝箱内容物是
 //   单颗牛铃而非铃袋，铃袋键够不到箱内牛铃，故必须新增牛铃键（修订 §2.2 验证②）；
 // - coin 0：金币免税（决策③）——resolve 层与宝箱合成层共用同一费率，两档统一；
@@ -269,8 +268,8 @@ export function resolveMarketSalePrice(priceTable, itemHrid, mode = PRICE_MODE_B
   return applyMarketSaleFee(resolved.price, hrid);
 }
 
-// 宝箱期望值 = Σ 内容项净额 × dropRate × 期望数（牛铃 18% 修订 §1.2a/§2 B 案：
-// .snow/research/cowbell-18pct-tax-model-design.md）。'none' 档税前聚合
+// 宝箱期望值 = Σ 内容项净额 × dropRate × 期望数（牛铃 18% 修订 §1.2a/§2 B 案）。
+// 'none' 档税前聚合
 //（毛利口径，= pre-feature 合成公式）；'market' 档对每个内容项按其 hrid
 // 费率折净额（扁平因子、不区分来源：牛铃/铃袋 ×0.82、coin/宝箱 ×1、其余 ×0.96）
 // ——「牛铃在宝箱内也按 18%」（决策④）的唯一落点就在此处：宝箱合成价是宝箱
@@ -329,8 +328,7 @@ function addSyntheticEntries(table, options = {}) {
     // ask 是买入价，用于估值「持有的牛铃」方向乐观，与「bid=可立即变现」的注入
     // 口径冲突；与脚本侧 convertMarketDataToItemValues（单边公允价兜底，MWITools
     // getFairValue 同口径）的差异是有意的保守选择，行为由 T2 显式锚定。未来若
-    // 放宽，须同步修订 T2/T3 与设计文档定案（non-tradable-valuation-design.md
-    // §6 测试矩阵 T2/T3 定义；验收 non-tradable-valuation-acceptance.md）。
+    // 放宽，须同步修订 T2/T3 测试矩阵的定案。
     const bagBid = toFiniteNumber(table[BAG_OF_10_COWBELLS_HRID]?.bid, -1);
     if (bagBid > 0) {
       table[COWBELL_HRID] = { ask: -1, bid: -1, vendor: Math.round(bagBid / 10) };

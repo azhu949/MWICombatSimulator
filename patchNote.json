@@ -1,4 +1,28 @@
 {
+  "2026年10月9日（v3.1.0）": {
+    "label": {
+      "zh": "2026年10月9日（v3.1.0）",
+      "en": "October 9, 2026 (v3.1.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "新增「预算优化」：设定预算后自动逐条购入性价比最高的升级项（装备 / 技能书 / 房子）直到预算花完，结果自动写回配置，可一键撤销。"
+      ],
+      "en": [
+        "New Budget Optimizer: set a budget and it buys the best value-per-coin upgrades (gear / ability books / houses) one by one until the budget is spent, then writes the result back to your character with one-click undo."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复触发器优化器把「立即释放」误显示为默认触发器的问题。",
+        "修复触发器优化器队友勾选在刷新后残留的问题。"
+      ],
+      "en": [
+        "Fixed the trigger optimizer showing an 'instant cast' configuration as the default triggers.",
+        "Fixed stale teammate selections in the trigger optimizer persisting across reloads."
+      ]
+    }
+  },
   "2026年10月4日（v3.0.8）": {
     "label": {
       "zh": "2026年10月4日（v3.0.8）",

@@ -93,6 +93,9 @@ afterEach(() => {
   FakeWorkerClient.instances = [];
   cancelDedicatedWorkerRuns();
   cancelSharedWorkerRun();
+  // 池化（2026-10-04）：生产路径的批量/单场调用都会经 scope 级保活池，跨用例必须清池
+  // （终止池内 client），防模块级池状态泄漏到后续用例。
+  resetDedicatedSingleClientPools();
 });
 
 describe('simulatorWorkerRuns', () => {
@@ -544,28 +547,58 @@ describe('simulatorWorkerRuns', () => {
     expect(client.stopSimulation).toHaveBeenCalledTimes(1);
   });
 
-  it('defaults to the shared keep-alive client for batches (§reuse)', async () => {
-    const startSpy = vi.spyOn(sharedWorkerClient, 'startSimulationBatch').mockImplementation(() => {});
-    const stopSpy = vi.spyOn(sharedWorkerClient, 'stopSimulation');
+  it('defaults to the scope keep-alive pool for batches and reuses the realm (§reuse)', async () => {
+    vi.stubGlobal('Worker', FakeSimulationWorker);
     try {
-      const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }], vi.fn(), {
-        scope: DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
-      });
-      expect(startSpy).toHaveBeenCalledTimes(1);
-      const handlers = startSpy.mock.calls[0][1];
+      const scope = DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND;
+      const first = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }], vi.fn(), { scope });
+      const firstWorker = FakeSimulationWorker.instances[0];
+      expect(firstWorker).toBeTruthy();
 
-      handlers.onResult({ encounters: 1 }, 0);
-      handlers.onResult({ encounters: 2 }, 1);
-      handlers.onComplete();
-
-      await expect(promise).resolves.toEqual({
+      firstWorker.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 1 } } });
+      firstWorker.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 2 } } });
+      await expect(first).resolves.toEqual({
         simResults: [{ encounters: 1 }, { encounters: 2 }],
         errors: [null, null],
       });
-      expect(stopSpy).not.toHaveBeenCalled();
+      // 正常完成：realm 保活归还池（不 terminate）。
+      expect(firstWorker.terminate).not.toHaveBeenCalled();
+
+      // 第二个串行批量：复用归还的空闲 realm，不新建 worker。
+      const second = runSimulationBatchWithDedicatedWorker([{ id: 3 }], vi.fn(), { scope });
+      expect(FakeSimulationWorker.instances).toHaveLength(1);
+      firstWorker.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 3 } } });
+      await expect(second).resolves.toEqual({ simResults: [{ encounters: 3 }], errors: [null] });
+      expect(firstWorker.terminate).not.toHaveBeenCalled();
     } finally {
-      startSpy.mockRestore();
-      stopSpy.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('isolates concurrent batch calls on the production pool (no cross-supersede) (§pool)', async () => {
+    vi.stubGlobal('Worker', FakeSimulationWorker);
+    try {
+      // 同一 scope 的两个并发批量调用各自持有一实例：后到的绝不抢占先到的
+      //（池化前二者共享「共享保活单例」，后者会把前者以 cancelled supersede 掉）。
+      const scope = 'test-batch-concurrency';
+      const promiseA = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), { scope });
+      const promiseB = runSimulationBatchWithDedicatedWorker([{ id: 2 }], vi.fn(), { scope });
+
+      const workerA = FakeSimulationWorker.instances[0];
+      const workerB = FakeSimulationWorker.instances[1];
+      expect(workerA).toBeTruthy();
+      expect(workerB).toBeTruthy();
+
+      workerA.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 1 } } });
+      workerB.onmessage({ data: { type: 'simulation_result', simResult: { encounters: 2 } } });
+
+      await expect(promiseA).resolves.toEqual({ simResults: [{ encounters: 1 }], errors: [null] });
+      await expect(promiseB).resolves.toEqual({ simResults: [{ encounters: 2 }], errors: [null] });
+      // 两个运行都没有被对方抢占终止。
+      expect(workerA.terminate).not.toHaveBeenCalled();
+      expect(workerB.terminate).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 
@@ -573,10 +606,13 @@ describe('simulatorWorkerRuns', () => {
     const originalWorker = global.Worker;
     global.Worker = FakeSimulationWorker;
     try {
-      const firstPromise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), {});
+      // 注入路径显式共享同一实例：锚定「同一实例被两个运行先后使用」时旧 promise 被显式取消
+      // 收尾、绝不挂起（生产路径已池化，并发批量不再共享实例——见并发隔离用例）。
+      const options = { workerClient: sharedWorkerClient };
+      const firstPromise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), options);
       const firstWorker = FakeSimulationWorker.instances[0];
-      // 后到的运行（同一共享保活单例）抢占：旧 promise 必须被显式取消收尾，而不是永久挂起。
-      const secondPromise = runSimulationBatchWithDedicatedWorker([{ id: 2 }, { id: 3 }], vi.fn(), {});
+      // 后到的运行（同一实例）抢占：旧 promise 必须被显式取消收尾，而不是永久挂起。
+      const secondPromise = runSimulationBatchWithDedicatedWorker([{ id: 2 }, { id: 3 }], vi.fn(), options);
 
       await expect(firstPromise).rejects.toMatchObject({ code: 'cancelled' });
       expect(firstWorker.terminate).toHaveBeenCalledTimes(1);
@@ -606,7 +642,11 @@ describe('simulatorWorkerRuns', () => {
         {},
       );
       const firstWorker = FakeSimulationWorker.instances[0];
-      const secondPromise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), {});
+      // 注入路径显式共享同一实例发起后续运行：多区域入口仍走共享保活单例（批量生产路径已
+      // 池化、不再与多区域共享实例），本用例锚定「共享实例被抢占」的 supersede 防御。
+      const secondPromise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), {
+        workerClient: sharedWorkerClient,
+      });
 
       await expect(firstPromise).rejects.toMatchObject({ code: 'cancelled' });
       expect(firstWorker.terminate).toHaveBeenCalledTimes(1);

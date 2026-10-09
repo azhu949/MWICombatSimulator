@@ -1447,7 +1447,7 @@ export function resolveAbilityBookPriceFromPricingState(pricingState, abilityHri
   return Number.isFinite(marketPrice) ? Math.max(0, marketPrice) : null;
 }
 
-export function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState) {
+export function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState, options = {}) {
   const abilityHrid = String(baseAbility?.abilityHrid || '');
   const fromLevel = Math.max(1, Math.floor(toFiniteNumber(baseAbility?.level, 1)));
   const targetLevel = Math.max(1, Math.floor(toFiniteNumber(toLevel, 1)));
@@ -1476,7 +1476,14 @@ export function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingSt
     return 0;
   }
 
-  const pricePerBook = resolveAbilityBookPriceFromPricingState(pricingState, abilityHrid);
+  let pricePerBook = resolveAbilityBookPriceFromPricingState(pricingState, abilityHrid);
+  // 缺书价回退（2026-10-08，预算优化估值口径）：技能书在 pricingState 无 ask/bid/vendor 时，
+  // 允许调用方传入估值单价（MWITools 装备价值口径：官方估算 → 挂单中价 → 成交均价 → 商店价）
+  // 兜底参与计算。估值是「价值」口径而非买入实价，方向无保证（可能低于、也可能高于实际买价）；
+  // 只在原链完全无价（无 ask/bid/vendor）时生效，原链有价时绝不覆盖实价。
+  if ((!Number.isFinite(pricePerBook) || pricePerBook < 0) && toFiniteNumber(options?.fallbackBookPrice, 0) > 0) {
+    pricePerBook = toFiniteNumber(options.fallbackBookPrice, 0);
+  }
   if (!Number.isFinite(pricePerBook) || pricePerBook < 0) {
     return null;
   }

@@ -1126,9 +1126,13 @@ const searchableSlotCount = computed(() => abilitySlots.value.filter((slot) => !
 // 候选 = 除主角外的已保存玩家（引擎按勾选顺序把队友挂成 player2 / player3…）。
 // 勾选集合存 settings.partyPlayerIds：空集合 = 单人载荷（现状，零行为变化）；它进输入指纹，
 // 因此「换队友」会让既有报告立即过期（与锁定集合同款语义）。
+// 2026-10-04 对齐幽灵队友防御：候选只列 importedProfileByPlayer 标记为 true 的槽位 ——
+// players 2-5 常驻但默认空配置，未导入槽位既无数据也永远不会进整队载荷，列出来只会
+// 让用户勾到永远无效的假队友。
 const partyCandidates = computed(() =>
   (simulator.players || [])
     .filter((player) => String(player.id ?? '') !== String(simulator.activePlayerId ?? ''))
+    .filter((player) => simulator.queue?.importedProfileByPlayer?.[String(player.id ?? '')] === true)
     .map((player) => ({ id: String(player.id ?? ''), name: String(player.name || player.id || '') }))
     .filter((player) => player.id !== ''),
 );
@@ -1355,11 +1359,12 @@ const hasCompositeCandidate = computed(() =>
 // ── 每技能卡片：当前配置 vs 模拟最优配置 + 详情弹窗 ──────────────────────────
 // 两侧都取自**报告**，不读玩家当前的 triggerMap：应用结果后那份配置已经被改写成最优配置，
 // 拿它当「原始配置」会让对比的两边同时变成新配置（这张卡片也就没用了）。
-//   原始配置 = 候选表里的「当前配置」锚点（生成器在用户配置非空时必然产出）——
-//              没有该锚点即当时是游戏默认触发器（null 表示，[] 表示「立即释放」）。
+//   原始配置 = 报告自带的 baselineTriggerMap 快照（搜索起点；权威口径 —— 键不存在 = 游戏默认，
+//              [] = 立即释放）。旧报告没有该字段时回退到候选表里的「当前配置」锚点，而该锚点
+//              对「配置与默认等价」「[]（立即释放）」两种形态都有缺口（见 triggerOptimizerText）。
 //   最优配置 = 报告终态 bestTriggerMap 里该技能的键（键不存在 = 删键 = 游戏默认触发器）。
 function originalTriggersFor(choice) {
-  return resolveOriginalTriggers(choice);
+  return resolveOriginalTriggers(choice, results.value?.baselineTriggerMap);
 }
 function bestTriggersFor(choice) {
   return resolveBestTriggers(results.value?.bestTriggerMap, choice?.abilityHrid, originalTriggersFor(choice));

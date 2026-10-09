@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { isReactiveSimulationBusy, isSimulationBusy } from '../simulatorRunConflicts.js';
 import { hasHomeMultiRoundWorkerRunInProgress, hasSharedWorkerRunInProgress } from '../simulatorWorkerRuns.js';
+import { hasBudgetOptimizerRunInProgress } from '../budgetOptimizerRunRegistry.js';
 
 // 判定函数对模块级句柄的依赖在这里 mock 固定：本文件只测判定矩阵与选项语义；
 // 真实句柄注册路径（runSimulationBatchWithDedicatedWorker → 句柄可见）由
@@ -8,6 +9,9 @@ import { hasHomeMultiRoundWorkerRunInProgress, hasSharedWorkerRunInProgress } fr
 vi.mock('../simulatorWorkerRuns.js', () => ({
   hasHomeMultiRoundWorkerRunInProgress: vi.fn(() => false),
   hasSharedWorkerRunInProgress: vi.fn(() => false),
+}));
+vi.mock('../budgetOptimizerRunRegistry.js', () => ({
+  hasBudgetOptimizerRunInProgress: vi.fn(() => false),
 }));
 
 function createStore(overrides = {}) {
@@ -17,6 +21,7 @@ function createStore(overrides = {}) {
     advisor: { runtime: { isRunning: false, scanInFlight: false } },
     foodOptimizer: { runtime: { isRunning: false } },
     triggerOptimizer: { runtime: { isRunning: false } },
+    budgetOptimizer: { runtime: { isRunning: false } },
     ...overrides,
   };
 }
@@ -25,6 +30,7 @@ describe('simulatorRunConflicts unified busy predicate', () => {
   beforeEach(() => {
     hasSharedWorkerRunInProgress.mockReturnValue(false);
     hasHomeMultiRoundWorkerRunInProgress.mockReturnValue(false);
+    hasBudgetOptimizerRunInProgress.mockReturnValue(false);
   });
 
   it('reports not busy for an idle store with no module-level realm handles', () => {
@@ -39,6 +45,7 @@ describe('simulatorRunConflicts unified busy predicate', () => {
     ['advisor.runtime.scanInFlight', { advisor: { runtime: { isRunning: false, scanInFlight: true } } }],
     ['foodOptimizer.runtime.isRunning', { foodOptimizer: { runtime: { isRunning: true } } }],
     ['triggerOptimizer.runtime.isRunning', { triggerOptimizer: { runtime: { isRunning: true } } }],
+    ['budgetOptimizer.runtime.isRunning', { budgetOptimizer: { runtime: { isRunning: true } } }],
   ])('detects store flag %s', (_label, overrides) => {
     expect(isSimulationBusy(createStore(overrides))).toBe(true);
     expect(isReactiveSimulationBusy(createStore(overrides))).toBe(true);
@@ -51,6 +58,12 @@ describe('simulatorRunConflicts unified busy predicate', () => {
 
     hasSharedWorkerRunInProgress.mockReturnValue(false);
     hasHomeMultiRoundWorkerRunInProgress.mockReturnValue(true);
+    expect(isSimulationBusy(createStore())).toBe(true);
+    expect(isReactiveSimulationBusy(createStore())).toBe(false);
+
+    // 预算优化注册表（2026-10-04 登记）：与非响应式句柄同款 —— 完整版可见、响应式版不可见。
+    hasHomeMultiRoundWorkerRunInProgress.mockReturnValue(false);
+    hasBudgetOptimizerRunInProgress.mockReturnValue(true);
     expect(isSimulationBusy(createStore())).toBe(true);
     expect(isReactiveSimulationBusy(createStore())).toBe(false);
   });

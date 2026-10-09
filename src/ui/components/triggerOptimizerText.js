@@ -10,12 +10,30 @@ import { TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS } from '../../services/triggerOp
 import { TRIGGER_OPTIMIZER_METRIC_KEYS } from '../../services/triggerOptimizerDomain.js';
 import { getDefaultTriggerDtosForHrid } from '../../services/triggerMapper.js';
 
-// 原始配置（搜索起点）在报告里的位置：候选表里的「当前配置」锚点——生成器在用户配置
-// 非空时必然产出它（锚点排在最前，candidateLimit 截断不会切掉）。
-// 返回 null 表示「当时没有自定义配置」＝游戏默认触发器；返回 [] 表示「立即释放」。
+// 原始配置（搜索起点）在报告里的位置（2026-10-07 修正）：
+//   ① 报告自带的 baselineTriggerMap 快照（搜索层收尾时把「搜索起点的 triggerMap」深拷贝进
+//      报告；与 bestTriggerMap 完全对称）：键不存在 = 删键 = 游戏默认触发器；[] = 立即释放；
+//      数组 = 自定义条目。这是权威口径 —— 它**逐字等于**搜索起点，不依赖候选生成的细节。
+//   ② 旧报告（没有该字段）回退：候选表里的「当前配置」锚点。该锚点有两个已知缺口，
+//      不能当唯一口径：用户配置与游戏默认**行为等价**时会被生成器的等价去重删掉
+//      （「配置就是默认」的技能拿不到锚点）；用户配置是 []（立即释放）时生成器不产锚点
+//      （current 锚点只对非空列表产出）。两者都会把「用户当时的配置」误渲染成
+//      「游戏默认触发器」——实测：[] 配置的技能在卡片上被标成
+//      「原始 = 默认条目 / 最优 = 立即释放」的假改动。
 // 注意：不要改读玩家当前的 triggerMap —— 应用结果后那份配置已经被改写成最优配置，
 // 拿它当「原始配置」会让对比两边同时变成新配置（本页最重要的一行就此失效）。
-export function resolveOriginalTriggers(choice) {
+export function resolveOriginalTriggers(choice, baselineTriggerMap = null) {
+  const map =
+    baselineTriggerMap && typeof baselineTriggerMap === 'object' && !Array.isArray(baselineTriggerMap)
+      ? baselineTriggerMap
+      : null;
+  if (map) {
+    const hrid = String(choice?.abilityHrid || '');
+    if (!hrid) return null;
+    if (!Object.prototype.hasOwnProperty.call(map, hrid)) return null;
+    const triggers = map[hrid];
+    return Array.isArray(triggers) ? triggers : null;
+  }
   const candidates = Array.isArray(choice?.candidates) ? choice.candidates : [];
   const anchor = candidates.find((candidate) => candidate?.labelKey === TRIGGER_OPTIMIZER_CANDIDATE_LABEL_KEYS.current);
   if (!anchor) return null;

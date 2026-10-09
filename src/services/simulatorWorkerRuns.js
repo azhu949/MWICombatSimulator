@@ -7,6 +7,8 @@ export const DEDICATED_WORKER_SCOPE_EXPERIMENTAL = 'experimental';
 export const DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER = 'trigger-optimizer';
 // 首页单目标「多轮模拟」：全部播种轮次收进一个专用 realm（批量入口）跑完，由 store 聚合。
 export const DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND = 'home-multi-round';
+// 预算优化：每个候选评估的整组种子收进一个专用 realm（批量入口），与搜索层的配对随机数配合。
+export const DEDICATED_WORKER_SCOPE_BUDGET_OPTIMIZER = 'budget-optimizer';
 
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
@@ -68,11 +70,26 @@ export function stopHomeMultiRoundWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND);
 }
 
+// 用户点「停止」时由 store 调用：取消预算优化的专用批运行（整批以 code:'cancelled' 拒绝）。
+export function stopBudgetOptimizerWorkerRuns() {
+  cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_BUDGET_OPTIMIZER);
+}
+
 // 首页多轮批运行是否在途：startSimulation 的防重入检查使用——批运行不在共享运行句柄里，
 // 若不加这一项，多轮运行期间再点「开始」会并发启动第二个批运行。
 export function hasHomeMultiRoundWorkerRunInProgress() {
   for (const workerRunHandle of dedicatedWorkerRuns) {
     if (workerRunHandle.scope === DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// 预算优化批运行是否在途：并入 store 的运行互斥闸门（照上款语义）。
+export function hasBudgetOptimizerWorkerRunInProgress() {
+  for (const workerRunHandle of dedicatedWorkerRuns) {
+    if (workerRunHandle.scope === DEDICATED_WORKER_SCOPE_BUDGET_OPTIMIZER) {
       return true;
     }
   }
@@ -101,11 +118,13 @@ export function hasSharedWorkerRunInProgress() {
   return Boolean(sharedWorkerRunHandle);
 }
 
-// ── 单场专用运行的生产路径保活池（2026-10-02；2026-10-04 修复悬挂累积）──
+// ── 单场专用运行的生产路径保活池（2026-10-02；2026-10-04 修复悬挂累积；同日并入批量入口）──
 // 背景：本入口的生产路径此前每场 new 一个 WorkerClient、settle 无条件 stopSimulation，
 // 即每场都重建 realm（worker bundle + wasm 加载/编译，装置实测 ≈0.43s/场，约占单场
-// 墙钟一半）。批量（runSimulationBatchWithDedicatedWorker）与多区域
-// （runMultiSimulationPayloadWithDedicatedWorker）入口已默认走共享保活单例，这里按
+// 墙钟一半）。批量入口（runSimulationBatchWithDedicatedWorker）已并入本池（2026-10-04：
+// 此前走「共享保活单例」，而单实例「busy 时新请求 supersede 旧运行」的硬约束会让并发
+// 批量调用互相抢占——预算/触发器优化的并发评估因此互杀）；多区域入口
+// （runMultiSimulationPayloadWithDedicatedWorker）仍走共享保活单例，这里按
 // scope 分池为单场路径补齐同样的复用收益：
 // - acquire：从该 scope 的空闲池 LIFO 取一个可复用 client（canReuseRealm('single')），
 //   不可复用的死引用（达 maxRuns 上限者、超空闲期者）立即终止回收；池空则 new。
@@ -334,6 +353,10 @@ export function supportsSimulationBatch(WorkerClientCtor) {
 // 「realm 只建一次」—— 生产端每建一个 realm 都要付一次模块加载（装置实测 ≈0.43s/场，占单场
 // 墙钟约一半），而一次评估的 N 场本来就是串行跑的，收进同一个 realm 不改变任何样本
 // （装置 parity 16/16 逐位一致）。
+// realm 复用（2026-10-04 池化）：生产路径与单场入口共用 scope 级保活池 —— 并发批量调用
+// 各持一实例（互不 supersede），串行调用总是复用归还的空闲实例；此前一律共享「共享保活
+// 单例」，而单实例的「busy 时新请求 supersede 旧运行」会让并行批量互相抢占（预算/触发器
+// 优化的并发评估被误判为取消）。注入路径（workerClient / WorkerClientCtor）保持专用实例语义。
 // 返回 Promise<{ simResults, errors }>：与 payloads 等长；失败位 simResults[i] = null、
 // errors[i] = 失败原因（调用方按 createDegenerateMetrics 处置，与逐场路径的 catch 分支同款）。
 // realm 级崩溃：把在飞的那一条记为失败，换一个新 realm 接着跑剩下的 —— 与「每场新建 realm」
@@ -352,9 +375,26 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
     const errors = new Array(list.length).fill(null);
     let settled = false;
     let nextIndex = 0;
-    // realm 复用（2026-10-01）：默认共享保活单例 —— 正常完成后 realm 保活（下次调用复用）；
-    // Ctor 注入是测试桩路径（每次 new 专用实例，语义不变）。
-    let client = resolveRunWorkerClient(options);
+    // 客户端来源（与单场入口同款三分支）：
+    // 1) workerClient 实例注入（测试）：专用实例，settle 时弃置、不进池；
+    // 2) WorkerClientCtor 注入（旧测试桩）：每次 new 专用实例，同上；
+    // 3) 生产路径：scope 级保活池 acquire / release（见文件上方池注释块）。
+    // 池化根因（2026-10-04）：生产端此前一律共享「共享保活单例」，而 WorkerClient 的硬约束
+    // 是「一个 realm 同一时刻只跑一场」——busy 时的新请求会以 cancelled supersede 旧运行并
+    // 终止重建；预算优化 / 触发器优化的并发评估（workerLimit 个批量调用并发）因此互相抢占，
+    // 搜索被误判为「已停止」。池化后并发调用各持一实例互不干扰；串行调用仍总是复用同一空闲
+    // 实例（与旧「共享单例」行为等价）。
+    let client;
+    let pooled = false;
+    if (options?.workerClient) {
+      client = options.workerClient;
+    } else if (typeof options?.WorkerClientCtor === 'function') {
+      client = new options.WorkerClientCtor();
+    } else {
+      updateDedicatedSinglePoolCapacity(scope, options?.poolCapacity);
+      client = acquireDedicatedSingleClient(scope);
+      pooled = true;
+    }
     let workerRunHandle = null;
 
     const settle = (callback, value, { discardRealm = false } = {}) => {
@@ -363,7 +403,12 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
       }
       settled = true;
 
-      if (discardRealm) {
+      if (pooled) {
+        // 生产池路径：正常完成归还当前 scope 的 idle 池（healthy）；失败 / 取消 / 超容量时由
+        // releaseDedicatedSingleClient 立即终止，不留下悬挂 realm（与单场路径同款）。
+        // 注意：换 realm 续跑时 client 已被替换为新借用实例——归还的总是当前持有者。
+        releaseDedicatedSingleClient(scope, client, { healthy: !discardRealm });
+      } else if (discardRealm) {
         try {
           client.stopSimulation();
         } catch (error) {
@@ -457,9 +502,13 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
           // 资源耗尽 / 桩构造失败），且此处已无看门狗兜底（finishRun 已清除）——必须收敛为
           // 整批拒绝，否则异常逃逸出本回调，批 promise 永久挂起（与下方初次调用同款处理）。
           try {
-            // 共享保活单例：终止后复用同一客户端实例（其内部在下次请求时自动重建 realm）；
-            // Ctor 注入（测试桩路径）保留「换新实例」的既有语义。
-            if (typeof options?.WorkerClientCtor === 'function' || options?.workerClient) {
+            if (pooled) {
+              // 生产池路径：弃置崩溃的实例，另借一个续跑（池内空闲实例即拿即用；池空则新建，
+              // 下次请求时自动重建 realm）。
+              releaseDedicatedSingleClient(scope, client, { healthy: false });
+              client = acquireDedicatedSingleClient(scope);
+            } else if (typeof options?.WorkerClientCtor === 'function' || options?.workerClient) {
+              // 注入路径保留「换新实例」的既有语义（Ctor 每次 new；实例注入原样复用）。
               client =
                 typeof options?.WorkerClientCtor === 'function' ? new options.WorkerClientCtor() : options.workerClient;
             }
@@ -480,10 +529,11 @@ export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () 
   });
 }
 
-// 运行客户端解析（2026-10-01 realm 复用）：显式注入的 workerClient 实例优先（测试）；
-// 其次 WorkerClientCtor（旧测试桩注入，每次 new 一个专用实例）；否则共享保活单例 ——
-// 复用「空闲且健康」的 realm，省掉每次调用重建 realm 的固定开销（engine 的加载 / 编译；
-// 复用一致性由 simulatorRealmReuseParity.test.js 锚定）。
+// 运行客户端解析：多区域入口（runMultiSimulationPayloadWithDedicatedWorker）专用 —— 显式注入的
+// workerClient 实例优先（测试）；其次 WorkerClientCtor（旧测试桩注入，每次 new 一个专用实例）；
+// 否则共享保活单例 —— 复用「空闲且健康」的 realm，省掉每次调用重建 realm 的固定开销
+// （engine 的加载 / 编译；复用一致性由 simulatorRealmReuseParity.test.js 锚定）。
+// 批量入口已于 2026-10-04 改为走 scope 级保活池（见文件上方池注释块），不再经过本解析。
 function resolveRunWorkerClient(options) {
   if (options?.workerClient) {
     return options.workerClient;

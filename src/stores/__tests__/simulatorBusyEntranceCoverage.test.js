@@ -9,6 +9,11 @@ import {
   runSimulationBatchWithDedicatedWorker,
   stopHomeMultiRoundWorkerRuns,
 } from '../../services/simulatorWorkerRuns.js';
+import {
+  hasBudgetOptimizerRunInProgress,
+  registerBudgetOptimizerRun,
+  unregisterBudgetOptimizerRun,
+} from '../../services/budgetOptimizerRunRegistry.js';
 
 // 防漏项覆盖：统一忙碌判定（simulatorRunConflicts.isSimulationBusy）在各运行入口的
 // 拦截。用「首页多轮批运行在途」句柄作代表性占用 —— 它是最近一次补漏涉及的标志
@@ -124,5 +129,24 @@ describe('unified busy predicate entrance coverage (home multi-round handle)', (
     expect(rows).toEqual([]);
     expect(simulator.activeQueueState.error).toBe('common:queue.errorBusy');
     expect(simulator.activeQueueState.isRunning).toBe(false);
+  });
+
+  // 预算优化注册表（2026-10-04 登记）：与非响应式句柄同款，统一忙碌判定必须拦住手动模拟入口。
+  // 这里用**真实注册路径**（搜索层在 optimizeBudgetUpgrades 里就是 registerBudgetOptimizerRun
+  // 这一调用）让判定可见，而不是直接 mock 判定函数。
+  it('manual simulation entry is rejected while a budget optimizer run is in flight', async () => {
+    const simulator = createStore();
+    const run = { cancelRequested: false };
+    registerBudgetOptimizerRun(run);
+    try {
+      expect(hasBudgetOptimizerRunInProgress()).toBe(true);
+
+      await simulator.startSimulation();
+
+      expect(simulator.runtime.error).toBe('common:simulation.errorAnotherRunInProgress');
+      expect(simulator.runtime.isRunning).toBe(false);
+    } finally {
+      unregisterBudgetOptimizerRun(run);
+    }
   });
 });

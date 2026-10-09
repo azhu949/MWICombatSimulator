@@ -357,7 +357,7 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
     // variant 2/3 的 a>0 且 b≤0 即 ask-only 单边（脚本侧 convertMarketDataToItemValues
     // 此时会兜底取单边公允价）；本项目刻意不兜底（审计 S-4 定案：ask 是买入价，
     // 估值「持有的牛铃」偏乐观），保持「诚实缺价」现口径——若放宽须同步修订本
-    // 测试、T3 与设计文档定案。
+    // 测试与 T3。
     const variants = [
       { '/items/raw_bass': { 0: { a: 300, b: 250 } } }, // 袋条目缺失
       { [BAG_OF_10_COWBELLS_HRID]: { 0: { a: 1090000, b: -1 } } }, // ask-only 单边（bid=-1）

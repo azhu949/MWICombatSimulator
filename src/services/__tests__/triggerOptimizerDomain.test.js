@@ -149,7 +149,7 @@ describe('triggerOptimizerDomain', () => {
   });
 
   describe('normalizeTriggerOptimizerSettings', () => {
-    it('accepts the design-doc field names as persistence aliases', () => {
+    it('accepts the legacy field names as persistence aliases', () => {
       const normalized = normalizeTriggerOptimizerSettings({
         maxPasses: 5,
         maxCandidatesPerAbility: 6,

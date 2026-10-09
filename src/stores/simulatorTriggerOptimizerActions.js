@@ -47,6 +47,7 @@ import {
   cancelTriggerOptimizerRun,
   hasTriggerOptimizerRunInProgress,
 } from '../services/triggerOptimizerRunRegistry.js';
+import { hasBudgetOptimizerRunInProgress } from '../services/budgetOptimizerRunRegistry.js';
 import { buildSimulationExtra, resolveAdjacentDifficultyTier, RUN_SCOPE_SINGLE } from '../services/simulationDomain.js';
 import {
   isTriggerOptimizerResultRejected,
@@ -77,13 +78,17 @@ function storeKey(store) {
 
 // 队伍载荷（2026-09-27）：把设置里的 partyPlayerIds 解析成**冻结队友配置**（顺序按
 // 勾选顺序；主角自身永不入队 —— 它在载荷里固定是 player1）。找不到的 id 静默跳过：玩家被删后
-// 报告会因为指纹变化自然过期，这里不报错、也不阻断运行。
-// 返回 deepClone 出来的普通对象（Pinia 的响应式代理不能进 worker 的序列化）。
+// 报告会因为指纹变化自然过期，这里不报错、也不阻断运行。未导入的槽位同样跳过（2026-10-04
+// 防幽灵队友，与预算优化器同款）：players 槽位 2-5 常驻存在但默认是空配置（等级 1 / 无装备
+// 技能），只有 importedProfileByPlayer 标记为 true 的槽位才有真数据 —— 勾选若指向未导入
+// 槽位（如刷新后勾选残留、而队友数据已丢），空配置队友会静默混进整队模拟污染结果，这里
+// 直接过滤掉。返回 deepClone 出来的普通对象（Pinia 的响应式代理不能进 worker 的序列化）。
 export function resolveTriggerOptimizerTeammates(store) {
   const settings = store?.triggerOptimizer?.settings;
   const ids = Array.isArray(settings?.partyPlayerIds) ? settings.partyPlayerIds : [];
   if (ids.length === 0) return [];
   const activeId = String(store?.activePlayerId ?? '');
+  const importedByPlayer = store?.queue?.importedProfileByPlayer;
   const byId = new Map(
     (Array.isArray(store?.players) ? store.players : []).map((player) => [String(player.id ?? ''), player]),
   );
@@ -92,7 +97,7 @@ export function resolveTriggerOptimizerTeammates(store) {
     const key = String(id ?? '');
     if (!key || key === activeId) continue;
     const player = byId.get(key);
-    if (player) teammates.push(deepClone(player));
+    if (player && importedByPlayer?.[key] === true) teammates.push(deepClone(player));
   }
   return teammates;
 }
@@ -186,6 +191,11 @@ function otherRunsBusy(store) {
     Boolean(store.advisor?.runtime?.isRunning) ||
     Boolean(store.advisor?.runtime?.scanInFlight) ||
     Boolean(store.foodOptimizer?.runtime?.isRunning) ||
+    // 预算优化器（2026-10-04 登记）：与触发器同抢专属 worker 池与行情口径，运行时禁止开跑。
+    // store 运行态（响应式，覆盖 UI 重算）+ 模块级注册表（覆盖收尾窗口）双查，与其它模块级
+    // 句柄（hasSharedWorkerRunInProgress）同一模式。
+    Boolean(store.budgetOptimizer?.runtime?.isRunning) ||
+    hasBudgetOptimizerRunInProgress() ||
     Boolean(store.pricing?.isLoading) ||
     hasSharedWorkerRunInProgress()
   );
@@ -511,7 +521,7 @@ export function createTriggerOptimizerActions({ loadPlayerMapperModule }) {
           runtime.phase = 'error';
         }
       } finally {
-        // ⚠️ 必须在这里清（而不是在 stop 里）：服务层的清理（注册表注销 / worker 停表）发生在
+        // 注意：必须在这里清（而不是在 stop 里）：服务层的清理（注册表注销 / worker 停表）发生在
         // 异步收尾里，本标志是页面「忙」计算属性的响应式锚点 —— 它的这一次写入会让计算属性在
         // **标志真正清空之后**再算一次（实测：缺少它时停止复核后「开始搜索」永久禁用）。
         runtime.serviceRunInFlight = false;

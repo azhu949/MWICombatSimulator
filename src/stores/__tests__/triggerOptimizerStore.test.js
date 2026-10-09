@@ -363,6 +363,9 @@ describe('trigger optimizer store', () => {
   // **冻结副本**随 payload 传入；主角自身永不入队、未知 id 静默跳过（报告靠指纹变化自然过期）。
   it('resolves party teammates from settings and binds them into the run and fingerprint', async () => {
     const store = importedStore();
+    // 队友槽位须先导入真数据：players 2-5 常驻但默认空配置，幽灵队友防御只认
+    // importedProfileByPlayer 标记为 true 的槽位（见下一用例）。
+    store.setImportedProfileState('2', true);
     expect(store.setTriggerOptimizerPartyPlayers(['2', '2', '1', '9'])).toBe(true);
     // 归一化：去重 + 保序；主角（'1'）与未知 id（'9'）允许留在集合里，解析时排除。
     expect(store.triggerOptimizer.settings.partyPlayerIds).toEqual(['2', '1', '9']);
@@ -382,6 +385,42 @@ describe('trigger optimizer store', () => {
     expect(store.setTriggerOptimizerPartyPlayers(['2', '3'])).toBe(true);
     expect(store.triggerOptimizerReportStale).toBe(true);
   }, 30000);
+
+  // 幽灵队友防御（2026-10-04，与预算优化器同款）：勾选残留但队友槽位未导入
+  //（刷新后数据已丢）时，空配置玩家不得混进整队模拟 —— resolve 直接过滤。
+  it('skips unimported party slots when resolving teammates (ghost teammate guard)', () => {
+    const store = importedStore();
+    expect(store.setTriggerOptimizerPartyPlayers(['2', '3'])).toBe(true);
+
+    const teammates = resolveTriggerOptimizerTeammates(store);
+    expect(teammates).toEqual([]);
+  });
+
+  // 勾选不落盘（2026-10-04）：队友配置数据是会话级的，勾选状态随会话丢弃；
+  // 刷新后 store 从存储 hydrate，partyPlayerIds 必为空（残留的旧存档也被清空）。
+  it('does not persist party player selection across sessions', () => {
+    const store = importedStore();
+    store.setImportedProfileState('2', true);
+    expect(store.setTriggerOptimizerPartyPlayers(['2'])).toBe(true);
+    expect(store.triggerOptimizer.settings.partyPlayerIds).toEqual(['2']);
+
+    const raw = JSON.parse(global.localStorage.getItem('mwi.triggerOptimizer.settings.v1'));
+    expect(raw.partyPlayerIds).toEqual([]);
+
+    // 新会话（同一 localStorage、新 Pinia）hydrate：勾选回落空（= 单人）。
+    setActivePinia(createPinia());
+    const fresh = useSimulatorStore();
+    expect(fresh.triggerOptimizer.settings.partyPlayerIds).toEqual([]);
+
+    // 旧存档里手工塞入勾选（模拟升级前的残留），load 也强制清空。
+    global.localStorage.setItem(
+      'mwi.triggerOptimizer.settings.v1',
+      JSON.stringify({ ...raw, partyPlayerIds: ['2', '3'], version: 1 }),
+    );
+    setActivePinia(createPinia());
+    const legacy = useSimulatorStore();
+    expect(legacy.triggerOptimizer.settings.partyPlayerIds).toEqual([]);
+  });
 
   // 时长自适应轮数（2026-09-20 重定）：每档预设自带一张「时长 → 轮数」表。
   // 用户改时长时，若当前三元组命中某档预设，就把该档在新时长下的有效轮数写回；
