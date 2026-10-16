@@ -716,3 +716,70 @@ describe('non-tradable valuation and tax modes（设计 §6 T1-T9）', () => {
     expect(hydratePriceTableWithMarketData(marketData, offTable, { nonTradableValuation: false })).toEqual(freshOff);
   });
 });
+
+// ===== 牛铃不计算收益（对齐工具箱 574037；默认关 = 现状保守口径）=====
+// 注：页面开关已由「牛铃按卖出侧取袋价」替换为「牛铃不计算收益」（2026-10-12 用户裁决）；
+// sellSide 机制保留在服务层（供对账脚本与历史锚点），本段只覆盖清零口径。
+describe('cowbell excluded from profit（对齐 574037）', () => {
+  it('T24 excludeCowbellValue：牛铃三列清零，大宝箱合成价按牛铃 0 计价（箱内牛铃被扣除）', () => {
+    const excluded = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, {
+      nonTradableValuation: true,
+      excludeCowbellValue: true,
+    });
+
+    // 牛铃清零（三列），保守注入被完全覆盖。
+    expect(excluded[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+
+    // 大宝箱合成价 = 保守注入口径 − 箱内牛铃价值（清零后逐内容按 0 计）。
+    const conservative = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, { nonTradableValuation: true });
+    for (const chestHrid of TREASURE_CHEST_KEYS) {
+      for (const mode of ['ask', 'bid', 'vendor']) {
+        expect(excluded[chestHrid][mode]).toBe(expectedChestValueWithCowbell(conservative, chestHrid, mode, 0));
+      }
+    }
+    // 大箱差额 = 保守注入（单颗净额 86,920 × 1.35）与现状口径（税前 100,700 × 1.35，
+    // 经合成层 4% 折净）之差 = 117,342（= 13,780 × 1.35），实测锚定。
+    const expectedDelta = 117342;
+    expect(conservative['/items/large_treasure_chest'].bid - excluded['/items/large_treasure_chest'].bid).toBe(
+      expectedDelta,
+    );
+  });
+
+  it('T25 excludeCowbellValue 优先级与幂等：覆盖 sellSide / 保守注入，重复 rebuild 逐位不变', () => {
+    // 与 sellSide 同开：清零优先（牛铃仍为 0）。
+    const withSide = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, {
+      cowbellSidePricing: 'sellSide',
+      excludeCowbellValue: true,
+    });
+    expect(withSide[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+
+    // rebuild 幂等：同 options 重复重导出逐位一致。
+    const snapshot = JSON.stringify(withSide);
+    rebuildSyntheticEntriesInTable(withSide, { excludeCowbellValue: true });
+    expect(JSON.stringify(withSide)).toBe(snapshot);
+
+    // 切回默认档（无 excludeCowbellValue）→ 牛铃退回保守 vendor 注入、宝箱合成回保守口径。
+    const conservative = hydratePriceTableWithMarketData(BAG_MARKET_DATA, undefined, { nonTradableValuation: true });
+    rebuildSyntheticEntriesInTable(withSide, { nonTradableValuation: true });
+    expect(withSide[COWBELL_HRID]).toEqual({ ask: -1, bid: -1, vendor: 106000 });
+    for (const chestHrid of TREASURE_CHEST_KEYS) {
+      expect(withSide[chestHrid]).toEqual(conservative[chestHrid]);
+    }
+  });
+
+  it('T26 excludeCowbellValue 不改写铃袋与镜（防污染不变量 §1.4），披风段仍独立', () => {
+    const both = hydratePriceTableWithMarketData({ ...BAG_MARKET_DATA, ...MIRROR_MARKET_DATA }, undefined, {
+      nonTradableValuation: true,
+      excludeCowbellValue: true,
+    });
+
+    // 铃袋/镜只读不写：报价原样保留（袋的「按 0」由页面建表层另行对齐）。
+    expect(both[BAG_OF_10_COWBELLS_HRID]).toEqual({ ask: 1090000, bid: 1060000, vendor: 0 });
+    expect(both[MIRROR_OF_PROTECTION_HRID]).toEqual({ ask: 150000, bid: 123456, vendor: 200000 });
+    expect(both[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+    // 披风段不受牛铃开关影响（仍按镜 bid 保守注入）。
+    for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+      expect(both[capeHrid]).toEqual({ ask: -1, bid: -1, vendor: 123456 });
+    }
+  });
+});

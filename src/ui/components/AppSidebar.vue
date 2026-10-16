@@ -102,6 +102,7 @@ import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import {
   BookOpen,
+  Castle,
   ChartNoAxesColumnIncreasing,
   GitFork,
   House,
@@ -155,6 +156,7 @@ const iconByRoute = {
   advisor: Sparkles,
   'food-optimizer': Utensils,
   enhancement: ShieldPlus,
+  'dungeon-calculator': Castle,
   skilling: Sword,
   'trigger-optimizer': SlidersHorizontal,
   'budget-optimizer': Wallet,

@@ -308,6 +308,14 @@ function computeChestExpectedValue(table, chestHrid, mode, taxMode = TAX_MODE_MA
 // 函数幂等（G-1 修复）：coin/宝箱无条件重写，牛铃/披风先无条件复位基础形态再按
 // 开关注入——以「开关开」时期构建的表为 baseTable 再以关闭档调用（hydrate 路径）
 // 时，旧注入值被清除而非静默流入宝箱合成；产物与同行情同档 fresh 表逐位一致。
+// options.cowbellSidePricing === 'sellSide'（默认关 = 现状保守口径，对齐脚本侧口径）：
+// 牛铃改按铃袋卖出侧取价——ask/bid = 袋 a/b ÷ 10（原始值不 round），
+// vendor = round(有价侧)；命中时牛铃不再走 nonTradableValuation 的保守 vendor 分支
+//（互斥），披风段仍独立由 nonTradableValuation 控制。页面已不再暴露该口径
+//（2026-10-12 用户裁决：开关替换为「牛铃不计算收益」），机制保留供对账与测试锚定。
+// options.excludeCowbellValue === true（对齐工具箱 574037「牛铃不计算收益」）：
+// 牛铃三列清零，且因位于宝箱合成之前，大宝箱合成价中的牛铃部分一并归零
+//（优先级高于 sellSide 与 nonTradableValuation；铃袋不改写，见该分支注释）。
 function addSyntheticEntries(table, options = {}) {
   const taxMode = normalizeTaxMode(options.taxMode);
   table[COIN_HRID] = { ask: 1, bid: 1, vendor: 1 };
@@ -321,8 +329,27 @@ function addSyntheticEntries(table, options = {}) {
     resetSyntheticEntryToBase(table, hrid);
   }
 
-  if (options.nonTradableValuation === true) {
-    // 牛铃：铃袋缺价 / bid ≤ 0 → 跳过注入，保持基础形态 {ask:-1,bid:-1,vendor:0}
+  // 牛铃段（三档互斥，优先级：不计算收益 > 侧价对齐 > 保守 vendor 注入）：
+  // - excludeCowbellValue（对齐工具箱 574037「牛铃不计算收益」）：牛铃三列直接清零；
+  //   必须位于下方宝箱合成循环【之前】——大宝箱内容物含单颗牛铃，清零后合成价按
+  //   牛铃 0 计价，箱内那部分牛铃价值被自动扣除（与工具箱勾选后一致）。
+  //   刻意【不】改写铃袋条目（§1.4 防污染不变量：本函数只读袋/镜、永不写）；
+  //   铃袋在本项目地牢产物链中不出现，其「按 0」语义由页面建表层另行对齐。
+  if (options.excludeCowbellValue === true) {
+    table[COWBELL_HRID] = { ask: 0, bid: 0, vendor: 0 };
+  } else if (options.cowbellSidePricing === 'sellSide') {
+    // 侧价注入（对齐脚本侧口径）：ask/bid = 袋 a/b ÷ 10——原始值不 round
+    //（与脚本 0.135×袋价逐位一致）；vendor = round(有价侧) 供 vendor 取价模式兜底。
+    // 两侧均缺价（a ≤ 0 且 b ≤ 0）→ 跳过注入，保持基础形态（诚实缺价，不伪造）。
+    const bagAsk = toFiniteNumber(table[BAG_OF_10_COWBELLS_HRID]?.ask, -1);
+    const bagBid = toFiniteNumber(table[BAG_OF_10_COWBELLS_HRID]?.bid, -1);
+    const ask = bagAsk > 0 ? bagAsk / 10 : -1;
+    const bid = bagBid > 0 ? bagBid / 10 : -1;
+    if (ask > 0 || bid > 0) {
+      table[COWBELL_HRID] = { ask, bid, vendor: bid > 0 ? Math.round(bid) : Math.round(ask) };
+    }
+  } else if (options.nonTradableValuation === true) {
+    // 牛铃（保守口径）：铃袋缺价 / bid ≤ 0 → 跳过注入，保持基础形态 {ask:-1,bid:-1,vendor:0}
     //（诚实缺价，不伪造）。读取的是袋的原始市场 bid（水合产物），只读不写（§1.4）。
     // 审计 S-4（2026-09-05）定案：ask-only 单边（a>0、b≤0）刻意【不】兜底取 ask——
     // ask 是买入价，用于估值「持有的牛铃」方向乐观，与「bid=可立即变现」的注入
@@ -333,9 +360,12 @@ function addSyntheticEntries(table, options = {}) {
     if (bagBid > 0) {
       table[COWBELL_HRID] = { ask: -1, bid: -1, vendor: Math.round(bagBid / 10) };
     }
+  }
 
-    // 披风：镜缺价 / bid ≤ 0 → 跳过注入，7 件保持基础形态 {…,vendor:100000}
-    //（itemDetail 静态收购价，即现状兜底）。与牛铃注入相互独立（两段独立 if）。
+  // 披风段：与牛铃注入相互独立（仍由 nonTradableValuation 控制，sellSide 不接管）。
+  // 镜缺价 / bid ≤ 0 → 跳过注入，7 件保持基础形态 {…,vendor:100000}
+  //（itemDetail 静态收购价，即现状兜底）。
+  if (options.nonTradableValuation === true) {
     const mirrorBid = toFiniteNumber(table[MIRROR_OF_PROTECTION_HRID]?.bid, -1);
     if (mirrorBid > 0) {
       for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
@@ -370,6 +400,8 @@ export function rebuildSyntheticEntriesInTable(table, options = {}) {
   for (const hrid of SYNTHETIC_ENTRY_HRIDS) {
     resetSyntheticEntryToBase(table, hrid);
   }
+  // options（nonTradableValuation / taxMode / cowbellSidePricing / excludeCowbellValue）
+  // 原样透传 addSyntheticEntries。
   addSyntheticEntries(table, options);
   return table;
 }

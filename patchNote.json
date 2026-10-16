@@ -1,4 +1,34 @@
 {
+  "2026年10月16日（v3.2.0）": {
+    "label": {
+      "zh": "2026年10月16日（v3.2.0）",
+      "en": "October 16, 2026 (v3.2.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "新增「地下城收益计算器」：核算四个地下城各难度档的宝箱收益，含市场税费、钥匙成本与掉落加成，支持手动改价。",
+        "新增「地牢总览」：按「地牢 × 档位」设置每轮分钟，以「购买 / 制作」双口径对比每日成本与收益，可排序、可点行切换。",
+        "支持用导入队伍一键模拟全部 12 个组合，按平均每轮时长与实测消耗写回配置。",
+        "新增「牛铃不计算收益」「披风不计算收益」开关，并展示当前游戏数据版本。"
+      ],
+      "en": [
+        "New Dungeon Profit Calculator: chest income across all four dungeons and tiers, including market fees, key costs and drop buffs, with manual price overrides.",
+        "New Dungeon Overview: minutes per run per dungeon and tier, with Buy / Craft daily cost and profit comparison, sortable and click-to-switch.",
+        "Simulate all 12 combinations from your imported party, writing back the average minutes per run and the measured consumables cost.",
+        "New Exclude cowbell and Exclude cape profit switches, plus a game data version display."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "计算器批量模拟纳入统一运行互斥：运行期间其它模拟入口显示繁忙，「停止全部模拟」会一并停止。",
+        "补充官方动作图标（地牢图标）加载，与物品图标同源。"
+      ],
+      "en": [
+        "The calculator's batch simulation joins the shared busy gate: other simulation entries report busy while it runs, and Stop all simulations also stops it.",
+        "Added official action icon loading (dungeon icons), sharing the source with item icons."
+      ]
+    }
+  },
   "2026年10月9日（v3.1.0）": {
     "label": {
       "zh": "2026年10月9日（v3.1.0）",

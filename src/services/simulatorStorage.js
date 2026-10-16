@@ -8,7 +8,9 @@ import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from '../shared/playerConfig.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
 import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import {
+  BAG_OF_10_COWBELLS_HRID,
   createDefaultPriceTable,
+  NON_TRADABLE_CAPE_HRIDS,
   normalizePriceMode,
   normalizeTaxMode,
   PRICE_MODE_ASK,
@@ -482,6 +484,64 @@ export function applyPriceOverridesToTable(basePriceTable, overrides) {
 export function rehydratePricingTable(pricingState) {
   const source = pricingState && typeof pricingState === 'object' ? pricingState : {};
   source.priceTable = applyPriceOverridesToTable(source.basePriceTable, source.overrides);
+}
+
+// 地牢收益建表：在克隆表上叠加两项可选口径（默认关 = 现状口径，零行为变化）：
+// - excludeCowbellValue === true：牛铃不计算收益（对齐工具箱 574037 同名选项）——
+//   走 rebuild 的合成层分支：牛铃三列清零，且因清零位于宝箱合成之前，大宝箱合成价中
+//   的牛铃部分一并归零；另把牛铃袋条目按 0 写入（脚本 isCowbellItem 语义：袋与牛铃
+//   同属牛铃收益，一并排除，避免口径分裂）；
+// - excludeCapeValue === true：7 件披风按 0 估值（对齐工具箱 574037「披风不计算收益」）——
+//   ask/bid/vendor 三列全部写 0，使任何取价模式都得到 0 价（对齐脚本「单价直接按 0 计，
+//   也不记为缺价」语义；代币估值链本就排除披风，不受影响）。
+// 顺序陷阱：披风清零必须在 rebuild 之后——rebuildSyntheticEntriesInTable 会先复位
+// 全部合成键（含 7 件披风，见 marketPriceService SYNTHETIC_ENTRY_HRIDS），反序清零的
+// 三列会被清回基础形态（实测反序披风退回 {ask:-1,bid:-1,vendor:静态收购价}）。
+// 牛铃清零走 rebuild 内部（无此陷阱），且必须在宝箱合成之前——故由 rebuild 承担。
+// 已知边界（2026-10-16 记录；行为由 simulatorStorage.test.js 锚定，彻底修复需产品裁决暂缓）：
+// excludeCowbellValue === true 的 rebuild 会复位全部合成键（coin/3 宝箱/牛铃/7 披风），
+// 因此入参表上这些键的「已烘焙全局改价」——simulator.pricing.priceTable 由
+// applyPriceOverridesToTable 把全局 override 烘焙进 ask/bid（rehydratePricingTable /
+// createPricingState 两处路径，本文件同函数）——
+// 会被无差别重算覆盖：用户在全局定价页对大宝箱 / coin 等合成条目的改价，在本页开启
+// 「牛铃不计算收益」后丢失。excludeCapeValue 单独开不触发 rebuild，合成键既有值（含全局
+// 改价）保留，仅 7 件披风被按键清零。调用方若需保留全局改价，应在建表产物上再次叠加
+// overrides（applyPriceOverridesToTable 为纯克隆，可安全复用）。
+// 克隆语义：不修改入参 basePriceTable；无口径选项时零开销直通（返回原引用）。
+// options：{ excludeCowbellValue?: boolean, excludeCapeValue?: boolean,
+//   nonTradableValuation?: boolean, taxMode?: string }——后两项线程化给 rebuild
+//（nonTradableValuation 只影响披风/牛铃保守注入，与两个清零选项互斥）。
+export function buildDungeonAlignedPriceTable(basePriceTable, options = {}) {
+  const excludeCowbellValue = options.excludeCowbellValue === true;
+  const excludeCapeValue = options.excludeCapeValue === true;
+
+  if (excludeCowbellValue !== true && excludeCapeValue !== true) {
+    // 无口径选项：零开销直通（返回原引用，调用方按现状语义使用）。
+    return basePriceTable;
+  }
+
+  const table = cloneBasePriceTable(basePriceTable);
+
+  if (excludeCowbellValue === true) {
+    rebuildSyntheticEntriesInTable(table, {
+      nonTradableValuation: options.nonTradableValuation === true,
+      taxMode: options.taxMode,
+      excludeCowbellValue: true,
+    });
+    // 铃袋按 0（脚本口径：袋与牛铃同属牛铃收益）；rebuild 刻意不改写袋（防污染不变量），
+    // 故清零在本层补写——袋不参与大宝箱合成，仅影响其自身条目的取价。
+    table[BAG_OF_10_COWBELLS_HRID] = { ask: 0, bid: 0, vendor: 0 };
+  }
+
+  if (excludeCapeValue === true) {
+    // 必须位于 rebuild 之后（顺序陷阱）：rebuild 会复位全部合成键（含 7 件披风），
+    // 反序清零的三列会被清回基础形态。
+    for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+      table[capeHrid] = { ask: 0, bid: 0, vendor: 0 };
+    }
+  }
+
+  return table;
 }
 
 export function normalizePricingSettings(raw) {

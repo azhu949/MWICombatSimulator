@@ -31,6 +31,7 @@ import {
   runSharedSingleSimulationPayload,
   runSimulationBatchWithDedicatedWorker,
   runSingleSimulationPayloadWithDedicatedWorker,
+  stopDungeonCalculatorWorkerRuns,
   stopHomeMultiRoundWorkerRuns,
   stopQueueWorkerClients,
   stopTriggerOptimizerWorkerRuns,
@@ -237,6 +238,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       stopQueueWorkerClients();
       stopTriggerOptimizerWorkerRuns();
       stopHomeMultiRoundWorkerRuns();
+      stopDungeonCalculatorWorkerRuns();
       if (manualRunInProgress) {
         this.runtime.isRunning = false;
         this.runtime.progress = 0;

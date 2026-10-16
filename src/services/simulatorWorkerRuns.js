@@ -9,6 +9,9 @@ export const DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER = 'trigger-optimizer';
 export const DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND = 'home-multi-round';
 // 预算优化：每个候选评估的整组种子收进一个专用 realm（批量入口），与搜索层的配对随机数配合。
 export const DEDICATED_WORKER_SCOPE_BUDGET_OPTIMIZER = 'budget-optimizer';
+// 地下城收益计算器「模拟每轮时长」：默认 3 轮 × 24h 的播种批收进一个专用 realm 跑完，
+// 由 dungeonCalculatorStore 聚合平均每轮时长后写回配置。
+export const DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR = 'dungeon-calculator';
 
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
@@ -73,6 +76,23 @@ export function stopHomeMultiRoundWorkerRuns() {
 // 用户点「停止」时由 store 调用：取消预算优化的专用批运行（整批以 code:'cancelled' 拒绝）。
 export function stopBudgetOptimizerWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_BUDGET_OPTIMIZER);
+}
+
+// 用户点「停止」时由 dungeonCalculatorStore 调用：取消计算器「模拟每轮时长」的专用批运行
+// （整批以 code:'cancelled' 拒绝，store 端静默收尾）。
+export function stopDungeonCalculatorWorkerRuns() {
+  cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR);
+}
+
+// 计算器批运行是否在途：并入统一忙碌判定（simulatorRunConflicts.isSimulationBusy），
+// 与首页多轮句柄 / 预算优化注册表同列。
+export function hasDungeonCalculatorWorkerRunInProgress() {
+  for (const workerRunHandle of dedicatedWorkerRuns) {
+    if (workerRunHandle.scope === DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // 首页多轮批运行是否在途：startSimulation 的防重入检查使用——批运行不在共享运行句柄里，

@@ -64,6 +64,18 @@ const routes = [
     },
   },
   {
+    path: '/dungeon-calculator',
+    name: 'dungeon-calculator',
+    component: () => import('../pages/DungeonCalculatorPage.vue'),
+    meta: {
+      showCombatToolbar: false,
+      navLabelKey: 'common:menu.dungeonCalculator',
+      navLabel: 'Dungeon Calculator',
+      navGroup: 'tools',
+      navOrder: 3.5,
+    },
+  },
+  {
     path: '/skilling',
     name: 'skilling',
     component: () => import('../pages/SkillingPage.vue'),

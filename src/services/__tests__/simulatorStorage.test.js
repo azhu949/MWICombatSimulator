@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  applyPriceOverridesToTable,
+  buildDungeonAlignedPriceTable,
   clearTriggerOptimizerReportFromStorage,
+  cloneBasePriceTable,
   createPricingState,
   createProfitPricingOptions,
   getStorageItem,
@@ -27,6 +30,14 @@ import {
   removeStorageItem,
   setJsonStorage,
 } from '../simulatorStorage.js';
+import {
+  BAG_OF_10_COWBELLS_HRID,
+  COWBELL_HRID,
+  createDefaultPriceTable,
+  MIRROR_OF_PROTECTION_HRID,
+  NON_TRADABLE_CAPE_HRIDS,
+  rebuildSyntheticEntriesInTable,
+} from '../marketPriceService.js';
 import { FOOD_OPTIMIZER_DEFAULT_ROUNDS, getFoodOptimizerCatalogHrids } from '../foodOptimizerDomain.js';
 
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
@@ -1037,6 +1048,151 @@ describe('simulatorStorage', () => {
       expect(persistTriggerOptimizerReportToStorage({ noCreatedAt: true })).toBe(false);
       // 空结果（createEmptyResult 自带 createdAt: 0）不是报告：不落盘，否则开跑清空会覆盖好报告。
       expect(persistTriggerOptimizerReportToStorage({ createdAt: 0, perAbilityChoices: [] })).toBe(false);
+    });
+  });
+
+  describe('buildDungeonAlignedPriceTable 地牢收益建表（工具箱 574037 口径，默认关）', () => {
+    const CAPE_BASE_VENDOR = 100000;
+
+    function createAlignedBaseTable() {
+      const table = createDefaultPriceTable();
+      table[BAG_OF_10_COWBELLS_HRID] = { ask: 1090000, bid: 1060000, vendor: 0 };
+      table[MIRROR_OF_PROTECTION_HRID] = { ask: 150000, bid: 123456, vendor: 200000 };
+      return table;
+    }
+    it('无口径选项：零开销直通返回原引用（逐位不变）', () => {
+      const base = createAlignedBaseTable();
+      expect(buildDungeonAlignedPriceTable(base)).toBe(base);
+      expect(buildDungeonAlignedPriceTable(base, {})).toBe(base);
+      expect(buildDungeonAlignedPriceTable(base, { excludeCowbellValue: false, excludeCapeValue: false })).toBe(base);
+      // 仅 nonTradableValuation / taxMode（非口径项）也直通：这两项只在线程化给 rebuild 时生效。
+      expect(buildDungeonAlignedPriceTable(base, { nonTradableValuation: true, taxMode: 'none' })).toBe(base);
+    });
+
+    it('excludeCowbellValue：牛铃与铃袋按 0，大宝箱合成价扣除箱内牛铃，入参表未被修改', () => {
+      const base = createAlignedBaseTable();
+      const snapshot = JSON.stringify(base);
+      const aligned = buildDungeonAlignedPriceTable(base, { excludeCowbellValue: true });
+
+      expect(aligned).not.toBe(base);
+      expect(aligned[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      // 铃袋同属牛铃收益（脚本 isCowbellItem 语义）：一并按 0。
+      expect(aligned[BAG_OF_10_COWBELLS_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+
+      // 大宝箱合成价吃到清零后的牛铃：等于「保守注入口径」再按牛铃 0 复算（箱内牛铃被扣除）。
+      const conservative = rebuildSyntheticEntriesInTable(cloneBasePriceTable(base), { nonTradableValuation: true });
+      expect(conservative['/items/large_treasure_chest'].bid - aligned['/items/large_treasure_chest'].bid).toBe(117342);
+
+      // 克隆语义：入参表逐位未被修改（袋/镜行情与合成值原样保留）。
+      expect(JSON.stringify(base)).toBe(snapshot);
+    });
+
+    it('excludeCapeValue：7 件披风 ask/bid/vendor 三列全部按 0 估值，入参表未被修改', () => {
+      const base = createAlignedBaseTable();
+      const aligned = buildDungeonAlignedPriceTable(base, { excludeCapeValue: true });
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(aligned[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
+      // 镜本身不受影响（仍保留行情），披风清零只作用于 7 件披风键。
+      expect(aligned[MIRROR_OF_PROTECTION_HRID]).toEqual({ ask: 150000, bid: 123456, vendor: 200000 });
+      // 入参表未被修改（镜与披风保持原状）。
+      expect(base[MIRROR_OF_PROTECTION_HRID]).toEqual({ ask: 150000, bid: 123456, vendor: 200000 });
+      expect(base['/items/chance_cape']).toEqual({ ask: -1, bid: -1, vendor: CAPE_BASE_VENDOR });
+    });
+
+    it('两口径同开：披风清零在 rebuild 之后（顺序正确），牛铃/袋同为零', () => {
+      const base = createAlignedBaseTable();
+      const aligned = buildDungeonAlignedPriceTable(base, {
+        excludeCowbellValue: true,
+        excludeCapeValue: true,
+      });
+      // 顺序陷阱：若先清零再 rebuild，披风三列会被复位为基础形态（ask/bid=-1、vendor 兜底）。
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(aligned[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
+      expect(aligned[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      expect(aligned[BAG_OF_10_COWBELLS_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+
+      // 叠加 nonTradableValuation=true：rebuild 的保守注入（披风 vendor=round(镜 bid)）先执行、
+      // 随后被清零覆盖，披风与牛铃三列仍为 0。
+      const withConservative = buildDungeonAlignedPriceTable(base, {
+        excludeCowbellValue: true,
+        excludeCapeValue: true,
+        nonTradableValuation: true,
+      });
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(withConservative[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
+      expect(withConservative[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+    });
+
+    it('披风清零不依赖镜行情：镜无价 / 仅一侧有价时同样按 0 估值', () => {
+      // 镜无行情（默认表 ask/bid = -1）→ 仍清零。
+      const noMirror = buildDungeonAlignedPriceTable(createDefaultPriceTable(), { excludeCapeValue: true });
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(noMirror[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
+
+      // 仅 ask 侧有价：同样三列全 0。
+      const askOnlyBase = createDefaultPriceTable();
+      askOnlyBase[MIRROR_OF_PROTECTION_HRID] = { ask: 150000, bid: -1, vendor: 200000 };
+      const askOnly = buildDungeonAlignedPriceTable(askOnlyBase, { excludeCapeValue: true });
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(askOnly[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
+    });
+
+    it('牛铃清零不受 nonTradableValuation 影响，且与披风段相互独立', () => {
+      const base = createAlignedBaseTable();
+      const aligned = buildDungeonAlignedPriceTable(base, {
+        excludeCowbellValue: true,
+        nonTradableValuation: false,
+      });
+      expect(aligned[COWBELL_HRID]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      // 披风段独立：nonTradableValuation=false → 披风保持基础形态（静态收购价兜底）。
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(aligned[capeHrid]).toEqual({ ask: -1, bid: -1, vendor: CAPE_BASE_VENDOR });
+      }
+      // 入参表未被修改（清零只存在于克隆表）。
+      expect(base[COWBELL_HRID]).toEqual({ ask: -1, bid: -1, vendor: 0 });
+    });
+
+    // 已知边界锚定（2026-10-16）：excludeCowbellValue 的 rebuild 会复位全部合成键，
+    // 入参表上这些键的「已烘焙全局改价」（simulatorStore 的 priceTable 产物）被重算覆盖；
+    // excludeCapeValue 单独开不触发 rebuild，合成键既有值保留。彻底修复需产品裁决，暂不做。
+    it('已知边界：excludeCowbellValue 复位合成键上的全局改价，excludeCapeValue 单独开不复位', () => {
+      const withGlobalOverrides = applyPriceOverridesToTable(createAlignedBaseTable(), {
+        '/items/large_treasure_chest': { ask: 999000, bid: 888000 },
+        '/items/coin': { bid: 7 },
+      });
+
+      // excludeCowbellValue 开：大宝箱 / coin 的全局改价被 rebuild 重算覆盖——
+      // 产物与「无改价基表同档 rebuild」逐位一致（复位是整体性的，不是仅宝箱单侧）。
+      const aligned = buildDungeonAlignedPriceTable(withGlobalOverrides, { excludeCowbellValue: true });
+      const rebakedFromPlainBase = buildDungeonAlignedPriceTable(createAlignedBaseTable(), {
+        excludeCowbellValue: true,
+      });
+      expect(aligned['/items/large_treasure_chest']).toEqual(rebakedFromPlainBase['/items/large_treasure_chest']);
+      expect(aligned['/items/coin']).toEqual({ ask: 1, bid: 1, vendor: 1 });
+
+      // 调用方保留全局改价的姿势：在建表产物上再次叠加 overrides（纯克隆，可安全复用）。
+      const restored = applyPriceOverridesToTable(aligned, {
+        '/items/large_treasure_chest': { ask: 999000, bid: 888000 },
+      });
+      expect(restored['/items/large_treasure_chest'].ask).toBe(999000);
+      expect(restored['/items/large_treasure_chest'].bid).toBe(888000);
+
+      // excludeCapeValue 单独开：不触发 rebuild，大宝箱 / coin 的全局改价保留，仅 7 件披风清零。
+      const capeOnly = buildDungeonAlignedPriceTable(withGlobalOverrides, { excludeCapeValue: true });
+      expect(capeOnly['/items/large_treasure_chest']).toEqual({
+        ask: 999000,
+        bid: 888000,
+        vendor: withGlobalOverrides['/items/large_treasure_chest'].vendor,
+      });
+      expect(capeOnly['/items/coin'].bid).toBe(7);
+      for (const capeHrid of NON_TRADABLE_CAPE_HRIDS) {
+        expect(capeOnly[capeHrid]).toEqual({ ask: 0, bid: 0, vendor: 0 });
+      }
     });
   });
 });

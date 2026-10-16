@@ -16,7 +16,11 @@
 // 子运行态（robustness / verifyAppend / serviceRunInFlight）与 pricing.isLoading 等
 // 专属条件，保持原样并由自身维护；触发器服务层看不到 store，其入口双检查由
 // triggerOptimizerSearch 内的 assertTriggerOptimizerEntranceClear 承担（同样单点化）。
-import { hasHomeMultiRoundWorkerRunInProgress, hasSharedWorkerRunInProgress } from './simulatorWorkerRuns.js';
+import {
+  hasDungeonCalculatorWorkerRunInProgress,
+  hasHomeMultiRoundWorkerRunInProgress,
+  hasSharedWorkerRunInProgress,
+} from './simulatorWorkerRuns.js';
 import { hasBudgetOptimizerRunInProgress } from './budgetOptimizerRunRegistry.js';
 
 // 仅 store 内的运行态（全部是响应式字段，UI computed 与 store 闸门共用）。
@@ -44,6 +48,9 @@ export function isSimulationBusy(store, options = {}) {
     isReactiveSimulationBusy(store, options) ||
     hasSharedWorkerRunInProgress() ||
     hasHomeMultiRoundWorkerRunInProgress() ||
+    // 计算器「模拟每轮时长」批运行（2026-10-10 登记）：模块级句柄，与首页多轮同列
+    //（UI 侧运行反馈由计算器页面自身的响应式运行态承担）。
+    hasDungeonCalculatorWorkerRunInProgress() ||
     // 预算优化注册表：搜索进行中 = 专属 worker 池占用（模块级普通变量，与其它句柄同列）。
     hasBudgetOptimizerRunInProgress()
   );

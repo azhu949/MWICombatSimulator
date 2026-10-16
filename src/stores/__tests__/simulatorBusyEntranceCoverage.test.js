@@ -4,9 +4,11 @@ import { useSimulatorStore } from '../simulatorStore.js';
 import { createQueueActions } from '../simulatorQueueActions.js';
 import { RUN_SCOPE_SINGLE } from '../../services/simulationDomain.js';
 import {
+  DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR,
   DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
   hasHomeMultiRoundWorkerRunInProgress,
   runSimulationBatchWithDedicatedWorker,
+  stopDungeonCalculatorWorkerRuns,
   stopHomeMultiRoundWorkerRuns,
 } from '../../services/simulatorWorkerRuns.js';
 import {
@@ -30,6 +32,15 @@ const pendingBatches = [];
 function startHangingHomeMultiRoundBatch() {
   const batch = runSimulationBatchWithDedicatedWorker([{ id: 1 }], () => {}, {
     scope: DEDICATED_WORKER_SCOPE_HOME_MULTI_ROUND,
+    WorkerClientCtor: HangingBatchWorkerClient,
+  });
+  pendingBatches.push(batch.catch(() => {}));
+}
+
+// 地下城计算器「模拟每轮时长」批运行（2026-10-10 登记）：与首页多轮同款句柄，走真实注册入口。
+function startHangingDungeonCalculatorBatch() {
+  const batch = runSimulationBatchWithDedicatedWorker([{ id: 1 }], () => {}, {
+    scope: DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR,
     WorkerClientCtor: HangingBatchWorkerClient,
   });
   pendingBatches.push(batch.catch(() => {}));
@@ -59,6 +70,7 @@ describe('unified busy predicate entrance coverage (home multi-round handle)', (
 
   afterEach(async () => {
     stopHomeMultiRoundWorkerRuns();
+    stopDungeonCalculatorWorkerRuns();
     await Promise.all(pendingBatches.splice(0));
     vi.restoreAllMocks();
   });
@@ -148,5 +160,16 @@ describe('unified busy predicate entrance coverage (home multi-round handle)', (
     } finally {
       unregisterBudgetOptimizerRun(run);
     }
+  });
+
+  // 地下城计算器批运行句柄（2026-10-10 登记）：与非响应式句柄同款，统一忙碌判定必须拦住手动模拟入口。
+  it('manual simulation entry is rejected while a dungeon-calculator batch is in flight', async () => {
+    const simulator = createStore();
+    startHangingDungeonCalculatorBatch();
+
+    await simulator.startSimulation();
+
+    expect(simulator.runtime.error).toBe('common:simulation.errorAnotherRunInProgress');
+    expect(simulator.runtime.isRunning).toBe(false);
   });
 });

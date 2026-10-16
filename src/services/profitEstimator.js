@@ -8,7 +8,9 @@ import {
   resolveMarketSalePrice,
 } from './marketPriceService.js';
 
-const PLAYER_IDS = new Set(['player1', 'player2', 'player3', 'player4', 'player5']);
+// 引擎输出的玩家槽位白名单（player1-5）：本文件与 dungeonCalculatorStore（死亡键兜底判定 /
+// consumablesUsed 键匹配归因）共用的单一事实源；引擎键口径若变更，只需修订此处。
+export const PLAYER_IDS = new Set(['player1', 'player2', 'player3', 'player4', 'player5']);
 
 function toFiniteNumber(value, fallback = 0) {
   const parsed = Number(value);

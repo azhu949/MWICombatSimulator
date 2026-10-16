@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { isReactiveSimulationBusy, isSimulationBusy } from '../simulatorRunConflicts.js';
-import { hasHomeMultiRoundWorkerRunInProgress, hasSharedWorkerRunInProgress } from '../simulatorWorkerRuns.js';
+import {
+  hasDungeonCalculatorWorkerRunInProgress,
+  hasHomeMultiRoundWorkerRunInProgress,
+  hasSharedWorkerRunInProgress,
+} from '../simulatorWorkerRuns.js';
 import { hasBudgetOptimizerRunInProgress } from '../budgetOptimizerRunRegistry.js';
 
 // 判定函数对模块级句柄的依赖在这里 mock 固定：本文件只测判定矩阵与选项语义；
 // 真实句柄注册路径（runSimulationBatchWithDedicatedWorker → 句柄可见）由
 // src/stores/__tests__/simulatorBusyEntranceCoverage.test.js 锚定。
 vi.mock('../simulatorWorkerRuns.js', () => ({
+  hasDungeonCalculatorWorkerRunInProgress: vi.fn(() => false),
   hasHomeMultiRoundWorkerRunInProgress: vi.fn(() => false),
   hasSharedWorkerRunInProgress: vi.fn(() => false),
 }));
@@ -31,6 +36,7 @@ describe('simulatorRunConflicts unified busy predicate', () => {
     hasSharedWorkerRunInProgress.mockReturnValue(false);
     hasHomeMultiRoundWorkerRunInProgress.mockReturnValue(false);
     hasBudgetOptimizerRunInProgress.mockReturnValue(false);
+    hasDungeonCalculatorWorkerRunInProgress.mockReturnValue(false);
   });
 
   it('reports not busy for an idle store with no module-level realm handles', () => {
@@ -64,6 +70,12 @@ describe('simulatorRunConflicts unified busy predicate', () => {
     // 预算优化注册表（2026-10-04 登记）：与非响应式句柄同款 —— 完整版可见、响应式版不可见。
     hasHomeMultiRoundWorkerRunInProgress.mockReturnValue(false);
     hasBudgetOptimizerRunInProgress.mockReturnValue(true);
+    expect(isSimulationBusy(createStore())).toBe(true);
+    expect(isReactiveSimulationBusy(createStore())).toBe(false);
+
+    // 地下城计算器批运行（2026-10-10 登记）：与非响应式句柄同款。
+    hasBudgetOptimizerRunInProgress.mockReturnValue(false);
+    hasDungeonCalculatorWorkerRunInProgress.mockReturnValue(true);
     expect(isSimulationBusy(createStore())).toBe(true);
     expect(isReactiveSimulationBusy(createStore())).toBe(false);
   });
