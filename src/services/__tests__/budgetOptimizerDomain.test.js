@@ -936,6 +936,137 @@ describe('buildBudgetCandidates - 装备候选', () => {
     expect(result.candidates).toHaveLength(3);
     expect(result.diagnostics.skippedNoPrice).toBe(6);
     expect(result.diagnostics.fallbackFairValue).toBe(0);
+    // resolver 给不出值（null）属「完全缺价」：子计数为 0，明细保持旧形状（不带 reason）。
+    expect(result.diagnostics.skippedFairValueBelowSale).toBe(0);
+    expect(result.diagnostics.skippedNoPriceDetails.every((item) => item.reason === undefined)).toBe(true);
+  });
+
+  it('估值回退来源门（2026-10-16 下沉）：vendor 非买入口径被域层拒绝，白名单估值照旧参与（魔术师帽★ +20 回归）', () => {
+    // 真实事故（2026-10-16）：魔术师帽★ +12 → +20 的买入侧全链缺价，估值回退落商店
+    // 卖店价（真实 itemDetailMap.sellPrice = 350 万），再减 +12 的实价卖出抵扣后被钳成 0
+    // —— 链按「免费项」定选（效率 +Infinity）、界面显示「花费 0」。两道修复：(1) 域层
+    // 来源门拒绝 vendor 等非买入口径来源（(a)/(c)，缺 source 放行见专项用例）；(2) 白名单
+    // 估值仍只在估值 > 卖出抵扣（净支出为正）时成立，估值不足以支撑正净支出时按缺价跳过
+    //（(d) 等于边界，严格大于才通过）。
+    // pricingState 可覆盖：缺省 = 旧件（+2）有实价卖单（卖出抵扣 9.6 亿）；(c) 传入旧件
+    // 全缺价的定价表（卖出抵扣 0），锚定来源门拦截与抵扣大小无关。
+    const createArgs = (resolver, pricingStateOverride) => ({
+      playerConfig: createPlayer({ equipment: { head: { itemHrid: CORSAIR_REFINED, enhancementLevel: 2 } } }),
+      pricingState:
+        pricingStateOverride ||
+        createPricing({
+          priceTable: { ...createQuietPriceTable(), [CORSAIR_REFINED]: { ask: -1, bid: -1, vendor: 0 } },
+          // 旧件（+2）有实价卖单：卖出抵扣 = 10 亿 × (1 − 4% 市场税) = 9.6 亿。
+          enhancementQuotesByItem: { [CORSAIR_REFINED]: { 2: { ask: 1_000_000_000, bid: -1 } } },
+        }),
+      settings: {
+        budgetCoins: 2_000_000_000,
+        bandRatio: 0.2,
+        maxLevelUp: 3,
+        enableAbilities: false,
+        enableHouses: false,
+      },
+      fairValueResolver: resolver,
+    });
+
+    // (a) vendor（商店卖店价）估值 350 万：域层来源门先于数值门拒绝（拒绝与抵扣大小无关），
+    // 按完全缺价记账（skippedNoPrice + 明细无 reason，不计入 fallbackFairValue，也不计入
+    // 「估值不足」子计数——那是买入口径估值的专属语义，见 (d)）。
+    const skipped = buildBudgetCandidates(
+      createArgs((hrid) => (hrid === CORSAIR_REFINED ? { price: 3_500_000, source: 'vendor' } : null)),
+    );
+    expect(candidateById(skipped, equipId('head', CORSAIR_REFINED, 3))).toBeNull();
+    expect(candidateById(skipped, equipId('head', CORSAIR_REFINED, 4))).toBeNull();
+    expect(candidateById(skipped, equipId('head', CORSAIR_REFINED, 5))).toBeNull();
+    expect(skipped.diagnostics.fallbackFairValue).toBe(0);
+    expect(skipped.diagnostics.skippedNoPrice).toBe(3);
+    // 2026-10-16 来源门下沉：vendor 被域层拒绝后不进数值门 →「估值不足」子计数为 0，
+    // 明细条目保持旧形状（无 reason 标记）。
+    expect(skipped.diagnostics.skippedFairValueBelowSale).toBe(0);
+    expect(skipped.diagnostics.skippedNoPriceDetails.every((item) => item.reason === undefined)).toBe(true);
+
+    // (b) 估值 20 亿 > 抵扣 9.6 亿：照常参与，净支出 = 估值 − 抵扣（严格为正）。
+    const kept = buildBudgetCandidates(
+      createArgs((hrid) => (hrid === CORSAIR_REFINED ? { price: 2_000_000_000, source: 'official_estimate' } : null)),
+    );
+    const candidate = candidateById(kept, equipId('head', CORSAIR_REFINED, 3));
+    expect(candidate?.cost).toBe(2_000_000_000 - 960_000_000);
+    expect(candidate?.costDetail).toMatchObject({
+      targetAsk: null,
+      saleValue: 960_000_000,
+      priceSource: 'official_estimate',
+      estimatedByFairValue: true,
+    });
+    expect(kept.diagnostics.fallbackFairValue).toBe(3);
+    expect(kept.diagnostics.skippedNoPrice).toBe(0);
+    // 估值通过数值门 → 既不是缺价，也不进「估值不足」子计数。
+    expect(kept.diagnostics.skippedFairValueBelowSale).toBe(0);
+
+    // (c) 来源门锚定（2026-10-16 下沉；原 2026-10-16「域层不做来源判定」契约已按本段预留的
+    // 迁移要求反转）：同一 vendor 估值在旧件完全缺价（卖出抵扣 0）时同样被域层来源门拒绝
+    // ——按完全缺价记账（无 reason、不计 fallbackFairValue、不计「估值不足」子计数）。
+    // 若把来源门回退为「域层不判来源」旧行为，本段会失败并提示契约回退——届时必须同步
+    // 回滚 budgetOptimizerDomain 函数头 fairValueResolver 的 JSDoc 与估值分支旁注。
+    const vendorRejected = buildBudgetCandidates(
+      createArgs(
+        (hrid) => (hrid === CORSAIR_REFINED ? { price: 3_500_000, source: 'vendor' } : null),
+        createPricing({
+          priceTable: { ...createQuietPriceTable(), [CORSAIR_REFINED]: { ask: -1, bid: -1, vendor: 0 } },
+          // 旧件（+2）无任何实价卖单：卖出抵扣按 0（保守口径，不低估净支出）。
+          enhancementQuotesByItem: {},
+        }),
+      ),
+    );
+    expect(vendorRejected.candidates).toHaveLength(0);
+    for (let level = 3; level <= 5; level += 1) {
+      expect(candidateById(vendorRejected, equipId('head', CORSAIR_REFINED, level))).toBeNull();
+    }
+    expect(vendorRejected.diagnostics.fallbackFairValue).toBe(0);
+    expect(vendorRejected.diagnostics.skippedNoPrice).toBe(3);
+    expect(vendorRejected.diagnostics.skippedFairValueBelowSale).toBe(0);
+    expect(vendorRejected.diagnostics.skippedNoPriceDetails.every((item) => item.reason === undefined)).toBe(true);
+
+    // (d) 边界：估值恰等于旧件卖出抵扣（数值门要求严格大于）→ 同样按「估值不足」记账，不产生免费项。
+    const equalEdge = buildBudgetCandidates(
+      createArgs((hrid) => (hrid === CORSAIR_REFINED ? { price: 960_000_000, source: 'official_estimate' } : null)),
+    );
+    expect(equalEdge.candidates).toHaveLength(0);
+    expect(equalEdge.diagnostics.skippedNoPrice).toBe(3);
+    expect(equalEdge.diagnostics.skippedFairValueBelowSale).toBe(3);
+  });
+
+  it('来源门放行缺 source 的 resolver 返回值（2026-10-16 契约：缺 source 不判来源，防误收紧）', () => {
+    const result = buildBudgetCandidates({
+      playerConfig: createPlayer({ equipment: { head: { itemHrid: CORSAIR_REFINED, enhancementLevel: 2 } } }),
+      pricingState: createPricing({
+        priceTable: { ...createQuietPriceTable(), [CORSAIR_REFINED]: { ask: -1, bid: -1, vendor: 0 } },
+        // 旧件（+2）无实价卖单：卖出抵扣 0，净支出 = 估值本身。
+        enhancementQuotesByItem: {},
+      }),
+      settings: {
+        budgetCoins: 2_000_000_000,
+        bandRatio: 0.2,
+        maxLevelUp: 3,
+        enableAbilities: false,
+        enableHouses: false,
+      },
+      // 返回值不带 source：域层不作来源判定，估值照常救回参与搜索
+      //（契约只约定 resolver「只应返回」买入口径来源、未强制 source 必填）。
+      fairValueResolver: (hrid) => (hrid === CORSAIR_REFINED ? { price: 500_000 } : null),
+    });
+    for (let level = 3; level <= 5; level += 1) {
+      const kept = candidateById(result, equipId('head', CORSAIR_REFINED, level));
+      expect(kept?.cost).toBe(500_000);
+      expect(kept?.costDetail).toMatchObject({
+        targetAsk: null,
+        saleValue: 0,
+        priceSource: 'fair_value',
+        estimatedByFairValue: true,
+      });
+    }
+    expect(result.diagnostics.fallbackFairValue).toBe(3);
+    expect(result.diagnostics.skippedNoPrice).toBe(0);
+    expect(result.diagnostics.skippedFairValueBelowSale).toBe(0);
   });
 
   it('净支出计入旧件卖出抵扣（含市场手续费），下限 0', () => {

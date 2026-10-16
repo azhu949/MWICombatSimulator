@@ -43,6 +43,7 @@ import {
 } from '../services/simulatorWorkerRuns.js';
 import { buildSimulationExtra, RUN_SCOPE_SINGLE } from '../services/simulationDomain.js';
 import { normalizeParallelWorkerLimit } from '../services/queueScoring.js';
+import { ASSET_SCORE_SOURCES } from '../services/assetScorePresentation.js';
 import { clamp, deepClone, isPlainObject, normalizeBaselineSaleSide } from '../services/utils.js';
 import { effectScope, toRaw, watch } from 'vue';
 
@@ -583,9 +584,26 @@ export function createBudgetOptimizerActions({ loadPlayerMapperModule }) {
               context?.kind === 'equipment'
                 ? resolveEquipmentAssetValue(this.pricing, hrid, level, String(context?.slotKey || ''))
                 : resolveAssetItemValue(this.pricing, hrid, level);
+            // 缺 source 透传缺 source，不臆造 'fair_value' 哨兵（2026-10-16 契约修复）：域层来源门
+            // 白名单（BUY_SIDE_ASSET_SCORE_SOURCES）不含 'fair_value'，臆造会把「有价无 source」的
+            // 返回值静默归入「完全缺价」；而域层契约（budgetOptimizerDomain.js 函数头 JSDoc +
+            // 「来源门放行缺 source」测试）明确缺 source 放行。显示侧不受影响：costDetail.priceSource
+            // 的 'fair_value' 由域层在采纳估值时自行兜底生成，不依赖本出口的 source。
+            const source = valued?.source ? String(valued.source) : '';
             const price = Number(valued?.price);
-            if (Number.isFinite(price) && price > 0) {
-              result = { price, source: String(valued?.source || 'fair_value') };
+            // vendor（商店卖店价）源不是买入成本，按不可得处理（2026-10-16 修复）：
+            // 估值的用途是「买入支出」估计，sellPrice 是资产残值/回收价语义——既不是市场
+            // 公允价，也不代表任何可获得路径（与 resolveSingleCoinShopPrice 的 isTradable
+            // 门控同款原则：价值应由市场公允价决定，缺价判缺）。真实事故：魔术师帽★ +20
+            // 买入侧全链缺价 → 落 vendor（sellPrice = 350 万）→ domain 再减旧件 +12 的实价
+            // 卖出抵扣 → 净支出钳 0 → 链按「免费项」定选、界面显示「花费 0」的 +12 → +20。
+            // 波及范围（2026-10-16 复核确认）：本过滤不区分 context.kind，equipment 与 ability
+            //（resolveAssetItemValue 技能书链）统一生效，属已确认接受的口径；ability 原链自身的
+            // vendor 兜底（resolveItemPriceFromPricingState）不属估值链、不受本过滤影响，
+            // 冷门技能书（无行情、仅商店有卖价）的书价仍由原链兜底给出。
+            if (Number.isFinite(price) && price > 0 && source !== ASSET_SCORE_SOURCES.VENDOR) {
+              // 有 source 才带 source：缺 source 时省略该键，域层按缺 source 放行。
+              result = source ? { price, source } : { price };
             }
           } catch {
             result = null;

@@ -13,6 +13,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 
 import { buildBudgetCandidates, ensureBudgetOptimizerCostReference } from '../../services/budgetOptimizerDomain.js';
+import { resolveAssetItemValue, resolveEquipmentAssetValue } from '../../services/assetScoreService.js';
 import { cancelSharedWorkerRun, runSharedSingleSimulationPayload } from '../../services/simulatorWorkerRuns.js';
 import { resolveBudgetOptimizerTeammates } from '../simulatorBudgetOptimizerActions.js';
 import { useSimulatorStore } from '../simulatorStore.js';
@@ -26,6 +27,25 @@ vi.mock('../../services/budgetOptimizerSearch.js', () => ({
     });
   },
 }));
+
+// 估值链出口注入点（默认直通真实实现）：真实估值链全部分支恒带 source，「有价无 source」
+// 只能从模块边界注入；用于锚定 store resolver 的出口归一（缺 source 透传，不臆造哨兵）。
+const assetValueOverrides = vi.hoisted(() => ({ resolveEquipment: null, resolveItem: null }));
+
+vi.mock('../../services/assetScoreService.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    resolveEquipmentAssetValue(...args) {
+      if (assetValueOverrides.resolveEquipment) return assetValueOverrides.resolveEquipment(...args);
+      return actual.resolveEquipmentAssetValue(...args);
+    },
+    resolveAssetItemValue(...args) {
+      if (assetValueOverrides.resolveItem) return assetValueOverrides.resolveItem(...args);
+      return actual.resolveAssetItemValue(...args);
+    },
+  };
+});
 
 function storageMock() {
   const data = new Map();
@@ -56,6 +76,8 @@ beforeEach(() => {
   vi.stubGlobal('localStorage', storageMock());
   setActivePinia(createPinia());
   controls.calls = [];
+  assetValueOverrides.resolveEquipment = null;
+  assetValueOverrides.resolveItem = null;
 });
 
 afterEach(async () => {
@@ -262,6 +284,109 @@ describe('budget optimizer store', () => {
     expect(controls.calls.at(-1).input.saleSide).toBe('ask');
     controls.calls.at(-1).resolve(makeResult());
     await askPending;
+  }, 30000);
+
+  it('估值回退 resolver 拒绝 vendor（商店卖店价）源：卖店价不是买入成本（魔术师帽★ 回归）', async () => {
+    const store = importedStore();
+    // 空行情：魔术师帽★ +20 买入侧除「商店卖店价」外全链无价（真实事故场景）。
+    store.pricing.priceTable = {};
+    store.pricing.basePriceTable = {};
+    store.pricing.enhancementQuotesByItem = {};
+    store.pricing.marketItemValues = {};
+
+    const { pending } = await startPending(store);
+    const resolver = controls.calls.at(-1).input.fairValueResolver;
+    expect(typeof resolver).toBe('function');
+
+    // 佐证底层估值链确实会给出 vendor 卖店价（真实 itemDetailMap.sellPrice = 350 万）：
+    // 修复前 resolver 原样透传该伪价，domain 再减旧件实价卖出抵扣后钳成 0 → 「花费 0」假免费。
+    expect(resolveEquipmentAssetValue(store.pricing, '/items/magicians_hat_refined', 20, 'head')).toEqual({
+      price: 3_500_000,
+      source: 'vendor',
+    });
+
+    // 修复后：vendor 源按不可得处理 → null（domain 走缺价跳过，不再进入成本计算）。
+    expect(resolver('/items/magicians_hat_refined', 20, { kind: 'equipment', slotKey: 'head' })).toBeNull();
+
+    // 非 vendor 源不受影响：官方估算照常返回（+19 档，避开 resolver 的 per-run 记忆化缓存）。
+    store.pricing.marketItemValues = { '/items/magicians_hat_refined': { 19: 12345 } };
+    const official = resolver('/items/magicians_hat_refined', 19, { kind: 'equipment', slotKey: 'head' });
+    expect(official).toMatchObject({ price: 12345, source: 'official_estimate' });
+
+    controls.calls.at(-1).resolve(makeResult());
+    await pending;
+  }, 30000);
+
+  it('估值回退 resolver 的 vendor 拒绝对 ability（技能书）分链同样生效：与 equipment 过滤口径一致', async () => {
+    const store = importedStore();
+    // 空行情：berserk 技能书除「商店卖店价」外估值链全无价（冷门书无行情的典型形态）。
+    store.pricing.priceTable = {};
+    store.pricing.basePriceTable = {};
+    store.pricing.enhancementQuotesByItem = {};
+    store.pricing.marketItemValues = {};
+
+    const { pending } = await startPending(store);
+    const resolver = controls.calls.at(-1).input.fairValueResolver;
+    expect(typeof resolver).toBe('function');
+
+    // 佐证底层估值链对技能书同样会落到 vendor 卖店价出口（bookPrice 取真实
+    // itemDetailMap.sellPrice，数值随游戏数据版本变化，不锚定具体金额）。
+    const vendorValue = resolveAssetItemValue(store.pricing, '/items/berserk', 0);
+    expect(vendorValue).toMatchObject({ source: 'vendor' });
+    expect(vendorValue.price).toBeGreaterThan(0);
+
+    // 2026-10-16 魔术师帽★修复的 vendor 过滤不区分 context.kind：ability 分链（domain 携
+    // { kind: 'ability', abilityHrid }，取价走 resolveAssetItemValue）同样按不可得返回 null
+    //（与 equipment 分链的 vendor 拒绝断言同款口径），显式锚定该波及已确认接受。
+    expect(resolver('/items/berserk', 0, { kind: 'ability', abilityHrid: '/abilities/berserk' })).toBeNull();
+
+    controls.calls.at(-1).resolve(makeResult());
+    await pending;
+
+    // 反向锚定（防过度过滤）：过滤只拦 vendor 源。注入官方估算后重开一轮取新 resolver
+    //（绕开上一轮闭包的 per-run 记忆化缓存——同键首次估值结果已固定为 null），ability
+    // 分链对非 vendor 源的估值救回能力照常存在。
+    store.pricing.marketItemValues = { '/items/berserk': { 0: 12345 } };
+    const { pending: secondPending } = await startPending(store);
+    const freshResolver = controls.calls.at(-1).input.fairValueResolver;
+    const official = freshResolver('/items/berserk', 0, { kind: 'ability', abilityHrid: '/abilities/berserk' });
+    expect(official).toMatchObject({ price: 12345, source: 'official_estimate' });
+
+    controls.calls.at(-1).resolve(makeResult());
+    await secondPending;
+  }, 30000);
+
+  it('估值 resolver 缺 source 透传缺 source（不臆造 fair_value 哨兵）：与域层「缺 source 放行」契约一致', async () => {
+    const store = importedStore();
+    // 空行情：候选买入侧全链缺价（不是本用例关注点，估值由下方注入强制接管）。
+    store.pricing.priceTable = {};
+    store.pricing.basePriceTable = {};
+    store.pricing.enhancementQuotesByItem = {};
+    store.pricing.marketItemValues = {};
+
+    // 强制估值链出口「有价无 source」（真实链全出口恒带 source，此形状为防御分支注入）。
+    assetValueOverrides.resolveEquipment = () => ({ price: 1_234_567 });
+
+    const { pending } = await startPending(store);
+    const resolver = controls.calls.at(-1).input.fairValueResolver;
+    const valued = resolver('/items/magicians_hat_refined', 20, { kind: 'equipment', slotKey: 'head' });
+
+    // 出口原样透传缺 source（而非 { price, source: 'fair_value' }）：域层来源门白名单
+    //（BUY_SIDE_ASSET_SCORE_SOURCES 六成员，不含 'fair_value'）只拒绝「非空且不在白名单」的
+    // source；臆造哨兵会把缺 source 静默归入「完全缺价」，与 budgetOptimizerDomain.test.js
+    //「来源门放行缺 source 的 resolver 返回值」锚定相反。
+    expect(valued).toEqual({ price: 1_234_567 });
+    expect(valued?.source).toBeUndefined();
+
+    // 反向锚定（防过度修复）：带 source 的出口照常透传（换 level 绕开 per-run 记忆化）。
+    assetValueOverrides.resolveEquipment = () => ({ price: 999, source: 'market_quote' });
+    expect(resolver('/items/magicians_hat_refined', 19, { kind: 'equipment', slotKey: 'head' })).toEqual({
+      price: 999,
+      source: 'market_quote',
+    });
+
+    controls.calls.at(-1).resolve(makeResult());
+    await pending;
   }, 30000);
 
   it('rejects a second start while its own run is in flight', async () => {

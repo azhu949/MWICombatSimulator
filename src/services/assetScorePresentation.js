@@ -38,6 +38,21 @@ export const ASSET_SCORE_SOURCES = Object.freeze({
   MISSING: 'missing',
 });
 
+// 预算优化器「买入成本口径」来源白名单（2026-10-16 契约边界下沉配套）：估值回退的用途是买入
+// 支出估计，vendor（卖店价）是资产残值/回收价语义、missing 表示无数据，均不能作为买入成本口径。
+// 列举式六成员、以 key 引用构造（防字符串漂移）；未来新增「非买入」来源默认不进集合（安全缺省）。
+// 使用者：budgetOptimizerDomain 估值分支来源门兜底（buildBudgetCandidates JSDoc 契约边界）。
+export const BUY_SIDE_ASSET_SCORE_SOURCES = Object.freeze(
+  new Set([
+    ASSET_SCORE_SOURCES.OFFICIAL_ESTIMATE,
+    ASSET_SCORE_SOURCES.SYNTHETIC_MID,
+    ASSET_SCORE_SOURCES.MARKET_QUOTE,
+    ASSET_SCORE_SOURCES.MARKET_TRADE,
+    ASSET_SCORE_SOURCES.COST,
+    ASSET_SCORE_SOURCES.ACQUISITION,
+  ]),
+);
+
 // —— 输入归一与通用小工具（轻/重两侧共用：此处定义，assetScoreService 引用）——
 export function toFiniteNumber(value, fallback = 0) {
   const parsed = Number(value);

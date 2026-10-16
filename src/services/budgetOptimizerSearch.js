@@ -524,6 +524,8 @@ export async function optimizeBudgetUpgrades(input = {}, callbacks = {}) {
   let firstStepSkippedNoPriceDetails = [];
   let firstStepSkippedNoPriceDetailsTruncated = 0; // 第一步缺价明细超上限被截掉的条数（报告透传）
   let firstStepFallbackFairValue = 0; // 第一步估值救回的候选数（缺价但按估值参与搜索）
+  // 第一步「估值不足」跳过的候选数（skippedNoPrice 的子集；2026-10-16 诊断分流，报告透传）。
+  let firstStepSkippedFairValueBelowSale = 0;
   let chainBaselineMetrics = null; // 链起点基线（报告 baseline 字段）
   // 第一步基线缓存（{ all, screen }）：链起点基线与第一步基线是同一次评估（2026-10-08 合并），
   // 主循环前算出；step0 的 screen 基线取 all 的样本子集（前 screenSeeds 场），不重复评估。
@@ -735,6 +737,7 @@ export async function optimizeBudgetUpgrades(input = {}, callbacks = {}) {
         : [];
       firstStepSkippedNoPriceDetailsTruncated = toFiniteNumber(built.diagnostics?.skippedNoPriceDetailsTruncated, 0);
       firstStepFallbackFairValue = toFiniteNumber(built.diagnostics?.fallbackFairValue, 0);
+      firstStepSkippedFairValueBelowSale = toFiniteNumber(built.diagnostics?.skippedFairValueBelowSale, 0);
     }
     stages.push({
       stage: 'costing',
@@ -1222,6 +1225,9 @@ export async function optimizeBudgetUpgrades(input = {}, callbacks = {}) {
       skippedNoPrice: firstStepSkippedNoPrice,
       skippedNoPriceDetails: firstStepSkippedNoPriceDetails,
       skippedNoPriceDetailsTruncated: firstStepSkippedNoPriceDetailsTruncated,
+      // 「估值不足」子集计数（2026-10-16）：skippedNoPrice 里估值可得但无法支撑正净支出的条数，
+      // 与「完全缺价」区分（明细条目的 reason 标记为同一分流的逐条口径）。
+      skippedFairValueBelowSale: firstStepSkippedFairValueBelowSale,
       fallbackFairValue: firstStepFallbackFairValue,
       candidateCount: firstStepCandidateCount,
       stages: [...stages],

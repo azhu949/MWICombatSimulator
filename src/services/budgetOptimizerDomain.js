@@ -37,6 +37,8 @@ import {
   resolveEquipmentTransitionPricing,
 } from './queueUpgradeCost.js';
 import { deriveSeedSet, hashSeed } from './seededRandom.js';
+// 买入口径来源白名单（2026-10-16 契约边界下沉）：估值分支来源门兜底使用（见 buildBudgetCandidates JSDoc）。
+import { BUY_SIDE_ASSET_SCORE_SOURCES } from './assetScorePresentation.js';
 import { deepClone, isPlainObject, normalizeBaselineSaleSide, toFiniteNumber } from './utils.js';
 
 // ── 常量 ──────────────────────────────────────────────────────────────
@@ -87,6 +89,10 @@ export const BUDGET_OPTIMIZER_STEP_CANDIDATES_LIMIT = 15;
 // 不丢弃计数 —— diagnostics.skippedNoPrice 仍为全量，超限条数记入 skippedNoPriceDetailsTruncated，
 // UI 据此提示「另有 N 条未展示」。
 export const BUDGET_OPTIMIZER_SKIPPED_DETAILS_LIMIT = 60;
+// 缺价跳过的原因标记（2026-10-16）：装备分支里「估值可得但不足以支撑正净支出」与「完全无价」是两类
+// 原因，共用同一条 skippedNoPrice 通道（总数语义不变）；明细条目只在非默认原因上携带 reason 标记
+// （结构化 token，文案由 UI 按当前语言现场解析，不固化进 domain/报告），旧条目 / 旧报告不带该字段。
+export const BUDGET_OPTIMIZER_SKIP_REASON_FAIR_VALUE_BELOW_SALE = 'fair-value-below-sale';
 
 // 优化目标（设置字段 objective）：利润（每日无随机利润）/ DPS / 经验（每小时经验）。
 export const BUDGET_OPTIMIZER_OBJECTIVE_DPS = 'dps';
@@ -362,7 +368,11 @@ function recordSkippedNoPriceDetail(diagnostics, entry) {
  * 生成全部候选。返回 { candidates, diagnostics }：
  *   candidates: [{ id, groupKey, kind, label, fromLabel, toLabel, cost, costDetail, effect }]
  *   diagnostics:{ skippedNoPrice, skippedNoPriceDetails, skippedNoPriceDetailsTruncated,
- *                 fallbackFairValue, totalCandidates, counts:{equipment,ability,house} }
+ *                 skippedFairValueBelowSale, fallbackFairValue, totalCandidates,
+ *                 counts:{equipment,ability,house} }
+ *   其中 skippedNoPrice = 因缺可用成本被丢弃的候选总数（语义不变）；
+ *   skippedFairValueBelowSale = 其中的子集：「估值可得，但估值 ≤ 旧件卖出抵扣、无法支撑正净支出」
+ *   （2026-10-16 诊断分流），其余为完全缺价；子集条目同时带 reason 标记（见下方常量）。
  *
  * 可选参数（升级链模式）：
  *   - budgetHighOverride：剩余额度剪枝（单候选成本必须 ≤ min(bandHigh, 剩余额度)）。
@@ -373,7 +383,17 @@ function recordSkippedNoPriceDetail(diagnostics, entry) {
  *   - fairValueResolver（估值回退，2026-10-08）：(itemHrid, enhancementLevel, context) =>
  *     { price, source } | null。装备/技能候选在买入侧完全缺价（cost 不可得）时，改按
  *     MWITools 装备价值口径估值（官方估算 → 挂单中价 → 成交均价 → 强化成本法 → …）参与
- *     搜索，尽量不因缺价跳过；估值仍不可得时照旧跳过。缺省（未注入）行为与旧版完全一致。
+ *     搜索，尽量不因缺价跳过；估值仍不可得、或（装备）估值 ≤ 旧件卖出抵扣无法支撑正净
+ *     支出（2026-10-16 修复，假免费防线）时照旧跳过。缺省（未注入）行为与旧版完全一致。
+ *     契约边界（2026-10-16 起来源门下沉为域层兜底）：resolver 返回值带非空 source 时，域层按
+ *     「买入成本口径」白名单 BUY_SIDE_ASSET_SCORE_SOURCES（ASSET_SCORE_SOURCES 六成员：
+ *     official_estimate / synthetic_mid（官方估算与其合成中价标记）、market_quote（挂单中价）、
+ *     market_trade（成交均价）、cost（强化成本法）、acquisition（获取成本））做来源门：
+ *     不在白名单内的来源（如 vendor 商店卖店价——资产残值/回收价语义，不是买入成本）按
+ *     「估值不可得」照旧跳过，绝不进数值门。缺 source（空串/undefined）放行——本契约只约定
+ *     resolver「只应返回」买入口径来源（提示性约束，未强制 source 必填），而真实估值链全部
+ *     分支必带 source，缺 source 不构成假买入价风险。调用方（store 侧 resolver 工厂）的
+ *     vendor 过滤由此降级为双保险保留（详见下方估值分支旁注）。
  *     context: { kind: 'equipment', slotKey } | { kind: 'ability' }（供 resolver 区分取价函数）。
  *   - saleSide：装备候选旧件卖出抵扣的取价口径（'bid'/'ask'，经 normalizeBaselineSaleSide
  *     归一化，脏值回退 'bid'）。2026-10-09 接通全局 baselineSaleSide 设置：store 组装 input
@@ -408,6 +428,9 @@ export function buildBudgetCandidates({
     skippedNoPriceDetailsTruncated: 0,
     // 估值救回计数：买入侧缺价但 fairValueResolver 给出估值、得以参与搜索的候选数。
     fallbackFairValue: 0,
+    // 「估值不足」跳过计数（2026-10-16）：skippedNoPrice 的子集 —— 估值可得但估值 ≤ 旧件卖出抵扣、
+    // 无法支撑正净支出。与「完全缺价」区分开，供 UI 与事后排查分辨两类原因。
+    skippedFairValueBelowSale: 0,
     totalCandidates: 0,
     counts: { equipment: 0, ability: 0, house: 0 },
   };
@@ -501,22 +524,51 @@ function buildEquipmentCandidates({
       let cost = directCostAvailable ? Math.max(0, Number(pricing.cost)) : null;
       let priceSource = directCostAvailable ? String(pricing.targetPriceSource || '') : '';
       let estimatedByFairValue = false;
+      // 「估值可得但不足以支撑正净支出」标记（2026-10-16 诊断分流）：只在下方的数值门未过时置真；
+      // fairPrice === 0（resolver 也给不出值）仍算完全缺价，不置真。
+      let fairValueBelowSale = false;
       if (cost == null && typeof fairValueResolver === 'function') {
         const fair = fairValueResolver(hrid, level, { kind: 'equipment', slotKey });
-        const fairPrice = toFiniteNumber(fair?.price, 0);
-        if (fairPrice > 0) {
-          cost = Math.max(0, fairPrice - saleValue);
+        // 来源门兜底（2026-10-16 契约边界下沉）：带非空 source 且不在买入白名单内的返回值（如
+        // vendor 商店卖店价——资产残值语义，非买入成本）视同「估值不可得」，按 0 价走下方
+        // 完全缺价记账，不进数值门、不置 fairValueBelowSale（「估值不足」子计数语义只属于
+        // 「估值可得但数值不足」，见 diagnostics 字段声明）。缺 source 放行：契约未强制
+        // source 必填，真实估值链全部分支必带 source（理由详见函数头 JSDoc）。
+        const fairSource = String(fair?.source || '');
+        const buySideSource = !fairSource || BUY_SIDE_ASSET_SCORE_SOURCES.has(fairSource);
+        const fairPrice = buySideSource ? toFiniteNumber(fair?.price, 0) : 0;
+        // 估值分支要求净支出为正（2026-10-16 修复）：`估值 − 旧件卖出抵扣 ≤ 0` 只在两侧
+        // 都是可成交实价时才构成「免费/白赚」证据；估值不是买入报价，低失真估值会得出
+        // 「估值 ≤ 旧件实价」的假免费（真实事故：魔术师帽★ +20 落商店卖店价 350 万 ≤
+        // +12 实价卖出抵扣 → 净支出钳 0 → 搜索层按「免费项」定选、界面显示花费 0）。
+        // 估值不足以支撑正净支出时按缺价跳过（该估值无法支撑任何成本结论）。
+        // 旁注（2026-10-16 来源门已下沉为域层兜底）：本分支对带非空 source 的返回值按买入
+        // 白名单来源门拦截，vendor 被拒后不再触发「估值不足」记账，数值校验只对白名单
+        // 来源生效（详见函数头 JSDoc）。测试「估值回退来源门…」的 (a)/(c) 段锚定拦截行为。
+        if (fairPrice > saleValue) {
+          cost = fairPrice - saleValue;
           priceSource = String(fair?.source || 'fair_value');
           estimatedByFairValue = true;
           diagnostics.fallbackFairValue += 1;
+        } else if (fairPrice > 0) {
+          // 估值可得但估值 ≤ 旧件卖出抵扣（含相等：数值门要求严格大于）→ 该估值支撑不了任何成本
+          // 结论，按缺价跳过；这与「完全无价」不是同一原因，留给下方记账分流。
+          fairValueBelowSale = true;
         }
       }
       if (cost == null) {
         diagnostics.skippedNoPrice += 1;
-        recordSkippedNoPriceDetail(diagnostics, {
+        // 原因分流（2026-10-16）：skippedNoPrice 仍为「因缺可用成本被丢弃」的总数；「估值不足」子集
+        // 另计数并给明细打 reason 标记，完全缺价的条目保持旧形状（仅 kind + effect）。
+        const skippedDetail = {
           kind: 'equipment',
           effect: { type: 'equipment', slotKey, itemHrid: hrid, enhancementLevel: level },
-        });
+        };
+        if (fairValueBelowSale) {
+          diagnostics.skippedFairValueBelowSale += 1;
+          skippedDetail.reason = BUDGET_OPTIMIZER_SKIP_REASON_FAIR_VALUE_BELOW_SALE;
+        }
+        recordSkippedNoPriceDetail(diagnostics, skippedDetail);
         return;
       }
       if (cost > budgetHigh) return;
@@ -603,7 +655,11 @@ function buildAbilityCandidates({
         // 口径（官方估算 → 挂单中价 → 成交均价 → 商店价）估书价，参与搜索。原链有价时
         // computeDefaultAbilityUpgradeCost 直接成功，不走这里（估值绝不覆盖实价）。
         const fair = fairValueResolver(bookItemHrid, 0, { kind: 'ability', abilityHrid });
-        const bookPrice = toFiniteNumber(fair?.price, 0);
+        // 来源门兜底（同装备估值分支，2026-10-16 下沉）：非买入口径来源（如 vendor 商店价）视同
+        // 估值不可得，bookPrice 为 0 时下方不触发、走缺价记账；缺 source 放行（理由见函数头 JSDoc）。
+        const fairSource = String(fair?.source || '');
+        const buySideSource = !fairSource || BUY_SIDE_ASSET_SCORE_SOURCES.has(fairSource);
+        const bookPrice = buySideSource ? toFiniteNumber(fair?.price, 0) : 0;
         if (bookPrice > 0) {
           const fallbackCost = computeDefaultAbilityUpgradeCost(
             { abilityHrid, level: fromLevel },

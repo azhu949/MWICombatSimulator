@@ -669,11 +669,29 @@
                 >
                   {{ skippedMaterialsText(item) }}
                 </p>
+                <p
+                  v-if="skippedReasonText(item)"
+                  class="mt-0.5 text-xs text-muted-foreground"
+                  data-budget-optimizer-skipped-reason
+                >
+                  {{ skippedReasonText(item) }}
+                </p>
               </li>
             </ul>
           </div>
         </div>
         <p v-else class="text-sm text-muted-foreground">{{ t('common:budgetOptimizer.skippedDetailsEmpty') }}</p>
+        <p
+          v-if="skippedFairValueBelowSale > 0"
+          class="mt-2 text-xs text-muted-foreground"
+          data-budget-optimizer-skipped-fair-value
+        >
+          {{
+            t('common:budgetOptimizer.skippedFairValueBelowSale', '', {
+              count: number(skippedFairValueBelowSale, 0),
+            })
+          }}
+        </p>
         <p
           v-if="skippedDetailsTruncated > 0"
           class="mt-2 text-xs text-muted-foreground"
@@ -712,6 +730,7 @@ import {
   BUDGET_OPTIMIZER_PRESET_FAST,
   BUDGET_OPTIMIZER_PRESET_FINE,
   BUDGET_OPTIMIZER_PRESET_STANDARD,
+  BUDGET_OPTIMIZER_SKIP_REASON_FAIR_VALUE_BELOW_SALE,
   BUDGET_OPTIMIZER_STEP_CANDIDATES_LIMIT,
   BUDGET_OPTIMIZER_STEP_LIMIT_MODE_CUSTOM,
   BUDGET_OPTIMIZER_STEP_LIMIT_MODE_PRESET,
@@ -828,6 +847,9 @@ const skippedDetails = computed(() =>
 );
 // 缺价明细超上限被截掉的条数（旧报告无该字段 → 0，不显示提示）。
 const skippedDetailsTruncated = computed(() => Number(results.value?.diagnostics?.skippedNoPriceDetailsTruncated) || 0);
+// 「估值不足」跳过计数（diagnostics.skippedFairValueBelowSale，skippedNoPrice 的子集：估值可得但
+// 估值 ≤ 旧件卖出抵扣）；旧报告无该字段 → 0，不显示提示（与 fallbackFairValue 同款回退）。
+const skippedFairValueBelowSale = computed(() => Number(results.value?.diagnostics?.skippedFairValueBelowSale) || 0);
 const skippedOpen = ref(false);
 // 弹窗列表按槽位 / 技能 / 房间分组（组名同样现场解析，解析不出时回退 hrid 本身）。
 const skippedGroups = computed(() => {
@@ -860,6 +882,13 @@ function skippedMaterialsText(item) {
     .map((hrid) => getItemName(String(hrid || ''), String(hrid || '')))
     .join(separator);
   return t('common:budgetOptimizer.skippedUnpricedMaterials', '', { materials });
+}
+// 明细条目的原因行（domain 结构化 token）：只有「估值不足以支撑正净支出」这一非默认原因携带
+// reason；完全缺价条目 / 旧报告条目没有该字段 → 返回空串不渲染（与 unpricedMaterials 同款
+// 「字段存在才渲染」模式，向后兼容）。
+function skippedReasonText(item) {
+  if (String(item?.reason || '') !== BUDGET_OPTIMIZER_SKIP_REASON_FAIR_VALUE_BELOW_SALE) return '';
+  return t('common:budgetOptimizer.skippedReasonFairValueBelowSale');
 }
 // 「已应用」= 有应用时刻的输入指纹（撤销/换输入会清空，与触发优化器同款语义）。
 const applied = computed(() => Boolean(results.value?.appliedInputSignature));

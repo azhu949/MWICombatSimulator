@@ -544,6 +544,8 @@ describe('optimizeBudgetUpgrades 小池链（池 ≤ 8：跳过粗筛、直接�
     // skippedNoPrice（0..6 共 7 档；不参与搜索），明细结构化 effect 一并透传。
     expect(report.diagnostics.candidateCount).toBe(6);
     expect(report.diagnostics.skippedNoPrice).toBe(7);
+    // 本用例未注入 fairValueResolver：7 条全部是「完全缺价」，「估值不足」子计数为 0（字段透传锚点）。
+    expect(report.diagnostics.skippedFairValueBelowSale).toBe(0);
     expect(report.diagnostics.skippedNoPriceDetails).toHaveLength(7);
     expect(
       report.diagnostics.skippedNoPriceDetails.every(
@@ -601,6 +603,40 @@ describe('optimizeBudgetUpgrades 小池链（池 ≤ 8：跳过粗筛、直接�
     expect(onSteps).toHaveLength(2);
     expect(onSteps[0].candidate.id).toBe(HEAD_ID(1));
     expect(onSteps[1].candidate.id).toBe(HEAD_ID(6));
+  });
+
+  it('估值不足跳过与完全缺价分流：报告透传子计数与 reason 标记（2026-10-16）', async () => {
+    // 构造：head 0 档挂高买单（priceTable 是 0 档取价来源）→ 旧件卖出抵扣 96000；
+    // +1 档无任何报价 → 走估值回退，估值 500 ≤ 96000 →「估值不足」跳过（子计数 + 明细 reason）；
+    // +2 档报 100 → 净支出钳 0（免费项，仍参与搜索，保证链有正常候选）；
+    // 精炼家族（0..2 档）无报价且 resolver 返回 null →「完全缺价」跳过（不带 reason）。
+    const input = createInput({ maxLevelUp: 2 });
+    input.pricing.pricingState.priceTable[CORSAIR] = { ask: -1, bid: 100000, vendor: 0 };
+    input.pricing.pricingState.enhancementQuotesByItem[CORSAIR] = { 2: { ask: 100, bid: -1 } };
+    input.fairValueResolver = (hrid) => (hrid === CORSAIR ? { price: 500, source: 'official_estimate' } : null);
+    stub.responder = buildResponder({ gainFor: linearGains });
+
+    const report = await optimizeBudgetUpgrades(input);
+
+    // 链正常走步：+2 是额度内唯一候选（免费项），买后无更多档位 → 正常收尾。
+    expect(report.steps).toHaveLength(1);
+    expect(report.steps[0].candidate.id).toBe(HEAD_ID(2));
+    expect(report.stopReason).toBe(BUDGET_OPTIMIZER_STOP_EXHAUSTED);
+    expect(report.diagnostics.candidateCount).toBe(1);
+
+    // 首步记账：总缺价 4 = 估值不足 1（+1 档）+ 完全缺价 3（精炼 0..2 档）—— 总数语义不变。
+    expect(report.diagnostics.skippedNoPrice).toBe(4);
+    expect(report.diagnostics.skippedFairValueBelowSale).toBe(1);
+    expect(report.diagnostics.fallbackFairValue).toBe(0);
+    expect(report.diagnostics.skippedNoPriceDetails).toHaveLength(4);
+    const flagged = report.diagnostics.skippedNoPriceDetails.filter((item) => item.reason === 'fair-value-below-sale');
+    expect(flagged).toHaveLength(1);
+    expect(flagged[0]).toMatchObject({
+      kind: 'equipment',
+      effect: { type: 'equipment', slotKey: 'head', itemHrid: CORSAIR, enhancementLevel: 1 },
+    });
+    // 完全缺价条目保持旧形状：不带 reason 字段（旧报告的精确匹配解析不受影响）。
+    expect(report.diagnostics.skippedNoPriceDetails.filter((item) => item.reason === undefined)).toHaveLength(3);
   });
 
   it('免费项（净支出 0 的正提升）参与定选：被选中、快照单列免费项档（2026-10-09）', async () => {

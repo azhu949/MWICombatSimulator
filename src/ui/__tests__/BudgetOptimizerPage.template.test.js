@@ -1089,6 +1089,56 @@ describe('budget optimizer page', () => {
     expect(document.body.querySelector('[data-budget-optimizer-skipped-truncated]')).toBeNull();
   });
 
+  // 「估值不足」跳过（2026-10-16 诊断分流）：明细条目带结构化 reason → 渲染原因行；弹窗底部另有
+  // 子计数行（skippedNoPrice 的子集），与截断提示同款「计数 > 0 才显示」模式。
+  it('marks fair-value-below-sale rows and shows the sub-count note', async () => {
+    const { wrapper, store } = await mountPage(readySetup);
+    const results = makeResult(store);
+    results.diagnostics.skippedNoPrice = 2;
+    results.diagnostics.skippedFairValueBelowSale = 1;
+    results.diagnostics.skippedNoPriceDetails = [
+      {
+        kind: 'equipment',
+        effect: { type: 'equipment', slotKey: 'weapon', itemHrid: '/items/regal_sword_refined', enhancementLevel: 12 },
+        reason: 'fair-value-below-sale',
+      },
+      {
+        kind: 'equipment',
+        effect: { type: 'equipment', slotKey: 'weapon', itemHrid: '/items/regal_sword', enhancementLevel: 3 },
+      },
+    ];
+    store.budgetOptimizer.results = results;
+    await flushPromises();
+
+    await wrapper.get('[data-budget-optimizer-skipped]').trigger('click');
+    await flushPromises();
+    const dialog = document.body.querySelector('[data-budget-optimizer-skipped-dialog]');
+    expect(dialog.querySelectorAll('[data-budget-optimizer-skipped-row]')).toHaveLength(2);
+    // 原因行只出现在带 reason 的条目下（完全缺价条目保持原样）。
+    const reasonRows = dialog.querySelectorAll('[data-budget-optimizer-skipped-reason]');
+    expect(reasonRows).toHaveLength(1);
+    expect(reasonRows[0].textContent).toContain('估值不足以支撑正净支出');
+    // 子计数行：计数派生自 diagnostics.skippedFairValueBelowSale。
+    const note = dialog.querySelector('[data-budget-optimizer-skipped-fair-value]');
+    expect(note).toBeTruthy();
+    expect(note.textContent).toContain('其中 1 条是「估值不足以支撑正净支出」');
+  });
+
+  it('keeps legacy skipped details (no reason / no sub-count field) unchanged', async () => {
+    const { wrapper, store } = await mountPage(readySetup);
+    // 旧报告形态：明细条目不带 reason、diagnostics 不含 skippedFairValueBelowSale
+    // → 不渲染原因行与子计数行，既有明细行与材料行不受影响。
+    store.budgetOptimizer.results = makeResult(store);
+    await flushPromises();
+
+    await wrapper.get('[data-budget-optimizer-skipped]').trigger('click');
+    await flushPromises();
+    const dialog = document.body.querySelector('[data-budget-optimizer-skipped-dialog]');
+    expect(dialog.querySelectorAll('[data-budget-optimizer-skipped-row]')).toHaveLength(3);
+    expect(dialog.querySelectorAll('[data-budget-optimizer-skipped-reason]')).toHaveLength(0);
+    expect(dialog.querySelector('[data-budget-optimizer-skipped-fair-value]')).toBeNull();
+  });
+
   it('shows the empty-chain notice and zero totals for a report without steps', async () => {
     const { wrapper, store } = await mountPage(readySetup);
     store.budgetOptimizer.results = makeResult(store, {

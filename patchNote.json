@@ -1,4 +1,26 @@
 {
+  "2026年10月16日（v3.2.1）": {
+    "label": {
+      "zh": "2026年10月16日（v3.2.1）",
+      "en": "October 16, 2026 (v3.2.1)"
+    },
+    "bugFixes": {
+      "zh": [
+        "修复预算优化器把「估值不足以抵扣旧件卖出」的低估值升级项误当免费项选中（界面显示花费 0）的问题，现改按缺价跳过。",
+        "修复预算优化器用商店卖店价充当买入成本估值的问题。"
+      ],
+      "en": [
+        "Fixed the budget optimizer wrongly selecting upgrades whose estimate cannot out-value the old item's sale credit as free picks (shown as costing 0); they are now skipped as unpriced.",
+        "Fixed the budget optimizer using shop sell prices as buy-side cost estimates."
+      ]
+    },
+    "improvements": {
+      "zh": ["缺价候选明细新增原因说明：区分「完全无价」与「估值不足以支撑正净支出」。"],
+      "en": [
+        "Skipped-candidate details now distinguish a truly missing price from an estimate that cannot support a positive net spend."
+      ]
+    }
+  },
   "2026年10月16日（v3.2.0）": {
     "label": {
       "zh": "2026年10月16日（v3.2.0）",
