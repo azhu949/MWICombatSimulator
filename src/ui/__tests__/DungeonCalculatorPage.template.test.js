@@ -1,9 +1,16 @@
+// @vitest-environment jsdom
+// 地下城收益页模板测试：路由注册断言走真实 appRouter（createWebHashHistory 需要 location），
+// 故本文件在 jsdom 环境下运行（模式照 BudgetOptimizerPage.template.test.js）。
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import appRouter from '../router/index.js';
 import enCommon from '../../../locales/en/common.json';
 import zhCommon from '../../../locales/zh/common.json';
 
-const pageSource = readFileSync(new URL('../pages/DungeonCalculatorPage.vue', import.meta.url), 'utf8');
+// Vite 会静态转换字面量 new URL('...', import.meta.url)，在 jsdom 下以 window.location 为基址得到 http: 资源 URL，
+// 导致 readFileSync 失败；改用项目根相对路径绕过该转换（vitest 以项目根为 cwd）。
+const pageSource = readFileSync(resolve(process.cwd(), 'src/ui/pages/DungeonCalculatorPage.vue'), 'utf8');
 
 describe('DungeonCalculatorPage number presentation', () => {
   it('formats every money column with the shared compact k/m/b amount formatter', () => {
@@ -923,5 +930,22 @@ describe('DungeonCalculatorPage toolbar slimming', () => {
       expect(zhCommon?.dungeonCalculator?.[key]).toBeTruthy();
       expect(enCommon?.dungeonCalculator?.[key]).toBeTruthy();
     }
+  });
+});
+
+describe('DungeonCalculatorPage navigation registration', () => {
+  it('registers a lazy simulation route right below the budget optimizer', () => {
+    const route = appRouter.getRoutes().find((entry) => entry.name === 'dungeon-calculator');
+    const budgetRoute = appRouter.getRoutes().find((entry) => entry.name === 'budget-optimizer');
+    expect(route.path).toBe('/dungeon-calculator');
+    expect(typeof route.components.default).toBe('function');
+    expect(route.meta).toMatchObject({
+      showCombatToolbar: false,
+      navLabelKey: 'common:menu.dungeonCalculator',
+      navGroup: 'simulation',
+      navOrder: 2.8,
+    });
+    // 菜单顺序（2026-10-16 用户要求）：地下城收益排在预算优化正下方。
+    expect(route.meta.navOrder).toBeGreaterThan(budgetRoute.meta.navOrder);
   });
 });

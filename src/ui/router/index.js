@@ -71,8 +71,8 @@ const routes = [
       showCombatToolbar: false,
       navLabelKey: 'common:menu.dungeonCalculator',
       navLabel: 'Dungeon Calculator',
-      navGroup: 'tools',
-      navOrder: 3.5,
+      navGroup: 'simulation',
+      navOrder: 2.8,
     },
   },
   {
