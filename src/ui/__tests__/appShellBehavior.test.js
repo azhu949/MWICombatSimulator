@@ -28,6 +28,18 @@ function createTestRouter() {
         meta: { navLabelKey: 'queue', navLabel: 'Queue', navGroup: 'support', navOrder: 2 },
       },
       {
+        path: '/enhancement',
+        name: 'enhancement',
+        component: EmptyPage,
+        meta: { navLabelKey: 'enhancement', navLabel: 'Enhancement', navGroup: 'tools', navOrder: 3 },
+      },
+      {
+        path: '/multi-results',
+        name: 'multi-results',
+        component: EmptyPage,
+        meta: { navLabelKey: 'multiResults', navLabel: 'Multi-round', navGroup: 'support', navOrder: 4 },
+      },
+      {
         path: '/patch-notes',
         name: 'patch-notes',
         component: EmptyPage,
@@ -79,6 +91,197 @@ describe('application shell behavior', () => {
 
     const queueLink = wrapper.findAll('a').find((link) => link.text().includes('Queue'));
     expect(queueLink.classes()).toContain('bg-sidebar-accent');
+  });
+
+  it('expands only the simulation accordion group by default', async () => {
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    // 默认仅展开「模拟」组：Home 链接在 DOM 中；support 组收起时 content 不渲染（reka Presence），
+    // 所以 Queue 链接不应出现在 DOM 里。
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Home'))).toBe(true);
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
+  });
+
+  it('keeps the simulation group expanded when the current route matches no navigation group', async () => {
+    // /patch-notes 无 navGroup（navHidden）：watch immediate 不会补入任何组，展开状态只可能来自初值——
+    // 这是唯一能区分「初值 ref(['simulation'])」与「watch 按路由补入」的时序。真实场景：以
+    // #/patch-notes 深链打开或在该页刷新；首个渲染早于路由懒加载完成时同理。回归意义：把初值改为
+    // ref([]) 后，本用例失败（Home 消失）而其余用例仍通过。
+    const router = createTestRouter();
+    await router.push('/patch-notes');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Home'))).toBe(true);
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
+  });
+
+  it('toggles the navigation group accordion open and closed from its trigger', async () => {
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    // 组标题是 AccordionTrigger（渲染为 button）：点击展开出现 Queue 链接，
+    // 再点收起后 content 卸载、Queue 链接消失（reka 双向 toggle）。
+    const supportTrigger = wrapper.findAll('button').find((button) => button.text().includes('Support'));
+    expect(supportTrigger).toBeTruthy();
+
+    await supportTrigger.trigger('click');
+    await nextTick();
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(true);
+
+    await supportTrigger.trigger('click');
+    await nextTick();
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
+  });
+
+  it('expands the current group when navigation completes after mount', async () => {
+    // 真实启动顺序（main.js）：同步 mount 后，router install 才发起首次导航，且路由全部懒加载。
+    // 不预导航、不 await isReady，锁死 mount 先于导航完成时序下的分组自动展开。
+    const router = createTestRouter();
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    await router.push('/queue');
+    await flushPromises();
+
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(true);
+    const queueLink = wrapper.findAll('a').find((link) => link.text().includes('Queue'));
+    expect(queueLink.classes()).toContain('bg-sidebar-accent');
+  });
+
+  it('expands the tools group when a tools route becomes active', async () => {
+    const router = createTestRouter();
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    await router.push('/enhancement');
+    await flushPromises();
+
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Enhancement'))).toBe(true);
+  });
+
+  it('marks the active route in the collapsed icon list', async () => {
+    // SidebarProvider setup 从 localStorage（'mwi.ui.sidebar.v1' = 'collapsed'）恢复折叠态；
+    // 折叠分支无文字，用 title 定位链接。
+    localStorage.setItem('mwi.ui.sidebar.v1', 'collapsed');
+    const router = createTestRouter();
+    await router.push('/queue');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    const queueLink = wrapper.findAll('a').find((link) => String(link.attributes('title')).includes('Queue'));
+    expect(queueLink).toBeTruthy();
+    expect(queueLink.classes()).toContain('bg-sidebar-accent');
+    expect(queueLink.classes()).toContain('text-sidebar-accent-foreground');
+  });
+
+  it('keeps a manually collapsed group closed until the route group changes', async () => {
+    // 无特判统一语义：watch 源是当前路由分组。同组内导航分组值不变，手动收起不弹开；
+    // 跨组后切回才重新并入展开。用户手动收起动作本身不触发 watch。
+    const router = createTestRouter();
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    await router.push('/queue');
+    await flushPromises();
+    const supportTrigger = wrapper.findAll('button').find((button) => button.text().includes('Support'));
+    expect(supportTrigger).toBeTruthy();
+    await supportTrigger.trigger('click');
+    await nextTick();
+
+    // 同组另一路由（/multi-results 同属 support）：不弹开。
+    await router.push('/multi-results');
+    await flushPromises();
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Multi-round'))).toBe(false);
+
+    // 跨组经 simulation 再切回 support：重新展开。
+    await router.push('/home');
+    await flushPromises();
+    await router.push('/multi-results');
+    await flushPromises();
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Multi-round'))).toBe(true);
+  });
+
+  it('keeps the current group identifiable while its content is manually collapsed', async () => {
+    // 收起当前分组后，组内高亮链接随 content 卸载（reka Presence）。补偿：当前分组的 trigger
+    // 始终带 aria-current，键盘/读屏用户在收起状态下仍能识别当前位置。
+    const router = createTestRouter();
+    await router.push('/queue');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    const findTrigger = (label) => wrapper.findAll('button').find((button) => button.text().includes(label));
+
+    // 展开状态下：当前组（support）带标记，非当前组不带。
+    expect(findTrigger('Support').attributes('aria-current')).toBe('true');
+    expect(findTrigger('Simulation').attributes('aria-current')).toBeUndefined();
+
+    // 手动收起当前组：高亮链接从 DOM 消失，但标记仍可被识别。
+    await findTrigger('Support').trigger('click');
+    await nextTick();
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
+    expect(findTrigger('Support').attributes('aria-current')).toBe('true');
+
+    // 切换页面到另一组：标记跟随当前路由移动。
+    await router.push('/home');
+    await flushPromises();
+    expect(findTrigger('Simulation').attributes('aria-current')).toBe('true');
+    expect(findTrigger('Support').attributes('aria-current')).toBeUndefined();
   });
 
   it('links to patch notes and exposes the semantic unread indicator', async () => {

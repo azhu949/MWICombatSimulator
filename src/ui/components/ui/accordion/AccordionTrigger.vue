@@ -1,6 +1,7 @@
 <template>
   <AccordionHeader class="flex">
     <AccordionTrigger
+      v-bind="$attrs"
       data-slot="accordion-trigger"
       :class="
         cn(
@@ -23,4 +24,9 @@ import { AccordionHeader, AccordionTrigger as RekaAccordionTrigger } from 'reka-
 import { cn } from '@/ui/lib/utils.js';
 const AccordionTrigger = RekaAccordionTrigger;
 const props = defineProps({ class: { type: [String, Array, Object], default: '' } });
+
+// 未声明的透传属性（aria-current 等）默认落到根元素 AccordionHeader（h3）上；可访问性语义需要
+// 挂在真正可聚焦的 trigger 按钮上，故关闭自动继承并显式转发给内层 reka AccordionTrigger
+// （class 已声明为 prop、经 cn 合并，不参与透传）。
+defineOptions({ inheritAttrs: false });
 </script>

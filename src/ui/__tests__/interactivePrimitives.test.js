@@ -2,7 +2,7 @@
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, nextTick, ref } from 'vue';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion/index.js';
 import { SearchCombobox } from '../components/ui/combobox/index.js';
 import { NativeSelect } from '../components/ui/native-select/index.js';
@@ -115,6 +115,59 @@ describe('interactive shadcn-vue primitives', () => {
 
     expect(wrapper.text()).toContain('Anchor links');
     expect(wrapper.get('[data-slot="accordion-trigger"]').attributes('data-state')).toBe('open');
+  });
+
+  it('keeps Accordion open state controlled through v-model:model-value', async () => {
+    const Host = defineComponent({
+      components: { Accordion, AccordionContent, AccordionItem, AccordionTrigger },
+      setup() {
+        const openItems = ref([]);
+        return { openItems };
+      },
+      template: `
+        <Accordion type="multiple" v-model:model-value="openItems">
+          <AccordionItem value="guide">
+            <AccordionTrigger>Guide contents</AccordionTrigger>
+            <AccordionContent>Anchor links</AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      `,
+    });
+    const wrapper = mount(Host, { attachTo: document.body });
+
+    // 受控：外部列表为空时不展开。
+    expect(wrapper.text()).not.toContain('Anchor links');
+
+    // 外部写入 → 面板跟随展开（v-model 透传一旦断链，这里会红）。
+    wrapper.vm.openItems = ['guide'];
+    await nextTick();
+    await flushPromises();
+    expect(wrapper.text()).toContain('Anchor links');
+
+    // 点击触发器 → 反向回写外部列表。
+    await wrapper.get('[data-slot="accordion-trigger"]').trigger('click');
+    await flushPromises();
+    expect(wrapper.vm.openItems).toEqual([]);
+  });
+
+  it('forwards extra trigger attributes to the button rather than the header element', () => {
+    const Host = defineComponent({
+      components: { Accordion, AccordionContent, AccordionItem, AccordionTrigger },
+      template: `
+        <Accordion type="single" collapsible>
+          <AccordionItem value="guide">
+            <AccordionTrigger aria-current="true">Guide contents</AccordionTrigger>
+            <AccordionContent>Anchor links</AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      `,
+    });
+    const wrapper = mount(Host);
+
+    // 可访问性语义（aria-*）与 data-* 必须落在可聚焦的 trigger 按钮上；包装层根元素是
+    // AccordionHeader（h3），关闭自动继承后不应再吞掉调用方透传的属性。
+    expect(wrapper.get('[data-slot="accordion-trigger"]').attributes('aria-current')).toBe('true');
+    expect(wrapper.get('h3').attributes('aria-current')).toBeUndefined();
   });
 
   it('updates Number Field values without exceeding the configured bounds', async () => {
