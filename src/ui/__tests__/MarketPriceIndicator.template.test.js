@@ -10,8 +10,9 @@ const presentationSource = readFileSync(new URL('../marketPriceStatusPresentatio
 describe('MarketPriceIndicator shell contracts', () => {
   it('mounts the market price indicator in the global header before the theme toggle', () => {
     expect(appSource).toContain("import MarketPriceIndicator from './components/MarketPriceIndicator.vue';");
-    expect(appSource).toContain('<MarketPriceIndicator />');
-    const indicatorIndex = appSource.indexOf('<MarketPriceIndicator />');
+    // 铁牛模式下模拟器功能未开发：行情指示器随战斗工具栏一并隐藏（v-if 门控）。
+    expect(appSource).toContain('<MarketPriceIndicator v-if="!isIroncowMode" />');
+    const indicatorIndex = appSource.indexOf('<MarketPriceIndicator');
     const themeToggleIndex = appSource.indexOf(':aria-label="themeToggleAriaLabel"');
     expect(indicatorIndex).toBeGreaterThan(-1);
     expect(themeToggleIndex).toBeGreaterThan(indicatorIndex);

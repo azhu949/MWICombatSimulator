@@ -7,6 +7,26 @@ const commandBarSource = readFileSync(new URL('../components/CombatCommandBar.vu
 const routerSource = readFileSync(new URL('../router/index.js', import.meta.url), 'utf8');
 const stylesSource = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
+// 铁牛模式源 watcher 的定向契约（2026-10-19）：替代原 `not.toContain('watch(isIroncowMode,')`
+// 全局字面负断言——后者只拦「单行 hug」一种书写形态，getter 形态（() => isIroncowMode.value）
+// 与带 options / async 回调的折行形态都能绕过，且会一并拒绝以模式为源的其它自然 watcher
+//（清理定时器、关闭其它弹窗、埋点）。这里收窄为「模式源 watcher 块内不得出现完成弹窗清扫」：
+// 允许自然写法，继续禁止「模式切换 → 清扫完成弹窗」的补偿回补（删除依据：关闭分支经
+// 遮罩+单向锁+抑制条件三重堵截不可达，见 App.vue 完成通知 watch 注释）。
+const ironcowSourcedWatchPattern = /watch\(\s*(?:\(\s*\)\s*=>\s*)?isIroncowMode(?:\.value)?\s*,/g;
+function expectNoIroncowWatchClearsCompletionDialog(source) {
+  const matches = [...source.matchAll(ironcowSourcedWatchPattern)];
+  matches.forEach((match, index) => {
+    // 切片到本 watch 调用结尾与下一个模式源 watch 起点中的较近者（后者兜底防跨块）。
+    const callEnd = source.indexOf('});', match.index);
+    const nextStart = matches[index + 1]?.index ?? source.length;
+    const blockEnd = Math.min(callEnd === -1 ? source.length : callEnd + 3, nextStart);
+    const block = source.slice(match.index, blockEnd);
+    expect(block).not.toContain('closeSimulationCompleteModal');
+    expect(block).not.toContain('simulationCompleteModalOpen');
+  });
+}
+
 describe('App shell contracts', () => {
   it('uses the responsive sidebar shell and contextual command bar', () => {
     expect(appSource).toContain('<SidebarProvider>');
@@ -110,6 +130,114 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('languageToggleLabel');
     expect(appSource).toContain('common:vue.app.switchToLightTheme');
     expect(appSource).toContain('common:vue.app.switchToDarkTheme');
+  });
+
+  it('keeps the global game mode switch (standard / ironcow) accessible from the header', () => {
+    // 顶栏模式切换契约：显示当前模式名、点击切到另一模式、铁牛态主色提示；
+    // 状态与持久化由 store 承载（setGameMode → mwi.gameMode.v1）。
+    expect(appSource).toContain("import { GAME_MODE_IRONCOW, GAME_MODE_STANDARD } from '../services/gameMode.js';");
+    expect(appSource).toContain('const isIroncowMode = computed(() => simulator.gameMode === GAME_MODE_IRONCOW);');
+    expect(appSource).toContain('data-game-mode-toggle');
+    expect(appSource).toContain(':aria-label="gameModeToggleAriaLabel"');
+    expect(appSource).toContain('@click="toggleGameMode"');
+    expect(appSource).toContain('{{ gameModeLabel }}');
+    expect(appSource).toContain("isIroncowMode ? 'text-primary' : ''");
+    // 顶栏模式按钮的成对自定义图标（沿用 lucide 风格的 2px 圆头描边）：铁牛 → 牛头，
+    // 标准 → 天平；以 data-game-mode-icon 区分两种模式。
+    expect(appSource).toContain('data-game-mode-icon="ironcow"');
+    expect(appSource).toContain('data-game-mode-icon="standard"');
+    expect(appSource).toContain('simulator.setGameMode(isIroncowMode.value ? GAME_MODE_STANDARD : GAME_MODE_IRONCOW);');
+    expect(appSource).toContain('common:vue.app.gameModeStandard');
+    expect(appSource).toContain('common:vue.app.gameModeIroncow');
+    expect(appSource).toContain('common:vue.app.switchToStandardMode');
+    expect(appSource).toContain('common:vue.app.switchToIroncowMode');
+    // 运行中切往铁牛的单向锁定：按钮以 gameModeSwitchLocked 禁用；判定必须保留
+    // !isIroncowMode 方向门（只锁标准 → 铁牛，防止把用户锁死在铁牛态）。
+    expect(appSource).toContain(':disabled="gameModeSwitchLocked"');
+    // 判定表达式（prettier 折行，按块级定位断言）：方向门（!isIroncowMode）保留 +
+    // 响应式版忙碌清单 + 计算器运行态响应式锚点（跨 store 桥接，见下）。
+    const lockedComputedIndex = appSource.indexOf('const gameModeSwitchLocked = computed(');
+    expect(lockedComputedIndex).toBeGreaterThanOrEqual(0);
+    const lockedComputedBlock = appSource.slice(lockedComputedIndex, appSource.indexOf(');', lockedComputedIndex));
+    expect(lockedComputedBlock).toContain('!isIroncowMode.value');
+    expect(lockedComputedBlock).toContain('isReactiveSimulationBusy(simulator)');
+    // 启动准备窗口（动态导入 playerMapper，isRunning 尚未置位）：直读 runtime.preparing，
+    // 窗口内同样真实禁用按钮。
+    expect(lockedComputedBlock).toContain('simulator.runtime?.preparing');
+    expect(lockedComputedBlock).toContain('dungeonCalculatorRunInFlight.value');
+    // 触发器优化器子运行窗口（2026-10-17 登记）：换难度复核 / 追加复验 / 服务收尾只写
+    // runtime 子状态，不在统一忙碌清单内 —— 顶栏计算式必须直读三个子状态收口。
+    expect(lockedComputedBlock).toContain('robustness?.isRunning');
+    expect(lockedComputedBlock).toContain('verifyAppend?.isRunning');
+    expect(lockedComputedBlock).toContain('triggerOptimizer?.runtime?.serviceRunInFlight');
+    // 预算优化停止收尾窗口（2026-10-19 登记）：与 trigger 同名字段分属两个 runtime 切片，
+    // 必须显式断言全路径，防止后人只保留 generic 'serviceRunInFlight' 断言而误删其一。
+    expect(lockedComputedBlock).toContain('budgetOptimizer?.runtime?.serviceRunInFlight');
+    expect(appSource).toContain('if (gameModeSwitchLocked.value) {');
+    expect(appSource).toContain('common:vue.app.gameModeSwitchLocked');
+    expect(appSource).not.toContain(
+      'const gameModeSwitchLocked = computed(() => isReactiveSimulationBusy(simulator));',
+    );
+    expect(appSource).not.toContain(
+      'const gameModeSwitchLocked = computed(() => !isIroncowMode.value && isReactiveSimulationBusy(simulator));',
+    );
+    // 点击时刻非响应式完整兜底（拦截预算优化注册表收尾等纯模块级窗口）及其配套 import
+    // 的源码契约：运行冲突模块 import 已并入计算器运行态锚点（锚点不许并入统一忙碌
+    // 判定，只由顶栏按钮消费）；import 行随 prettier 折行，按模块路径尾行向前窗口定位。
+    const runConflictsImportIndex = appSource.indexOf("from '../services/simulatorRunConflicts.js';");
+    expect(runConflictsImportIndex).toBeGreaterThanOrEqual(0);
+    const runConflictsImportHead = appSource.slice(Math.max(0, runConflictsImportIndex - 220), runConflictsImportIndex);
+    expect(runConflictsImportHead).toContain('dungeonCalculatorRunInFlight');
+    expect(runConflictsImportHead).toContain('isSimulationBusy');
+    expect(runConflictsImportHead).toContain('isReactiveSimulationBusy');
+    expect(appSource).toContain('if (!isIroncowMode.value && isSimulationBusy(simulator)) {');
+    // 兜底拦截分支的用户可见提示（响应式锚点之外残余窗口的「点击静默」缺口修复）：
+    // 块级定位 toggleGameMode，提示走既有状态条通道 + 既有锁定文案键，不得返回静默。
+    const toggleGameModeIndex = appSource.indexOf('function toggleGameMode() {');
+    expect(toggleGameModeIndex).toBeGreaterThanOrEqual(0);
+    const toggleGameModeBlock = appSource.slice(toggleGameModeIndex, appSource.indexOf('\n}', toggleGameModeIndex));
+    expect(toggleGameModeBlock).toContain('setTopQueueActionStatus(');
+    expect(toggleGameModeBlock).toContain("t('common:vue.app.gameModeSwitchLocked'");
+    expect(toggleGameModeBlock).toContain("'warning',");
+    // 启动准备窗口的点击兜底（disabled 之外的同步求值路径）：与 disabled 同源判定。
+    expect(toggleGameModeBlock).toContain('simulator.runtime?.preparing');
+    // 触发器优化器运行注册表（两版统一清单外）的兜底接线与其配套 import（2026-10-17 登记）：
+    // 兜底必须保留方向门并列判定、复用既有提示通道，防止后人改回无兜底形态。
+    expect(appSource).toContain(
+      "import { hasTriggerOptimizerRunInProgress } from '../services/triggerOptimizerRunRegistry.js';",
+    );
+    expect(toggleGameModeBlock).toContain('if (!isIroncowMode.value && hasTriggerOptimizerRunInProgress()) {');
+  });
+
+  it('renders an empty placeholder instead of pages while in ironcow mode', () => {
+    // 铁牛模式空态契约：模拟器功能尚未开发——主内容区替换为极简占位（仅补丁说明页
+    // 例外）；战斗工具栏与市场价指示器隐藏；侧边栏分组导航整体不渲染，只保留
+    // 底部三个通用入口（补丁说明 / GitHub / 反馈）。
+    expect(appSource).toContain(
+      'const showCombatToolbar = computed(() => !isIroncowMode.value && route.meta?.showCombatToolbar !== false);',
+    );
+    expect(appSource).toContain("isIroncowMode && route.name !== 'patch-notes'");
+    expect(appSource).toContain('data-ironcow-placeholder');
+    expect(appSource).toContain('common:vue.app.ironcowInProgress');
+    expect(appSource).toContain('common:vue.app.ironcowJoinGroup');
+    expect(appSource).toContain('FALLBACK_IRONCOW_JOIN_GROUP');
+    expect(appSource).toContain('<MarketPriceIndicator v-if="!isIroncowMode" />');
+    expect(appSource).toContain(':ironcow-mode="isIroncowMode"');
+    expect(sidebarSource).toContain('ironcowMode: { type: Boolean, default: false }');
+    expect(sidebarSource).toContain('v-if="!ironcowMode && collapsed"');
+    expect(sidebarSource).toContain('v-if="!ironcowMode && !collapsed"');
+  });
+
+  it('suppresses the simulation complete dialog in ironcow mode without a switch-cleanup watcher', () => {
+    // 铁牛模式完成弹窗契约：完成通知 watch 追加 isIroncowMode 抑制（铁牛态下引导
+    // 按钮必然落空）。切入铁牛的完成弹窗清扫 watcher 已删除，不得回补（删除依据：
+    // 关闭分支经遮罩+单向锁+抑制条件三重堵截不可达，详见 App.vue 注释）；本用例的
+    // 定向断言只禁止「模式源 + 完成弹窗清扫」组合，不禁止以模式为源的其它自然
+    // watcher（清理定时器、关闭其它弹窗、埋点）。
+    expect(appSource).toContain(
+      "if (nextId <= prevId || !hasSimulationResults.value || route.name === 'home' || isIroncowMode.value) {",
+    );
+    expectNoIroncowWatchClearsCompletionDialog(appSource);
   });
 
   it('keeps queue actions and mobile overflow behavior in the command bar', () => {
@@ -323,5 +451,66 @@ describe('App shell contracts', () => {
     // App.vue 当前唯一 deep: true 即旧资产分触发器；拆除后不应再现（若未来新增
     // 合理的 deep watch，应把本断言改为块级定位而非全局负断言）。
     expect(appSource).not.toContain('deep: true');
+  });
+
+  it('gates the ironcow-mode startup market fetch and asset score chain behind the game mode', () => {
+    // 铁牛态启动门控（本条目）：铁牛语义禁用玩家市场（见 services/gameMode.js 自述），
+    // 且铁牛态无行情/资产分消费方（主内容区占位、市场价指示器、顶栏资产分徽章与
+    // 导入导出下拉均不挂载）——启动链路整体跳过，切回标准态由触发向量补一次重算。
+    // (1) 延迟初始化：行情强制拉取门控；升级参考数据（本地 bundle 参考数据 + 队列
+    //     结果刷新，无网络请求）保持不门控。
+    expect(appSource).toMatch(
+      /if \(!isIroncowMode\.value\) \{\n\s*simulator\.ensureMarketPricesLoaded\(true\);\n\s*\}/,
+    );
+    expect(appSource).toContain('simulator.ensureAbilityUpgradeReferenceDataLoaded();');
+    // (2) onMounted 初算同门控；降级告警文本保持原样（不得回退为空 catch）。
+    expect(appSource).toMatch(
+      /if \(!isIroncowMode\.value\) \{\n\s*void simulator\.refreshAssetScores\(\)\.catch\(\(error\) => \{\n\s*console\.warn\('\[assetScore\] refresh failed \(onMounted\):', error\);\n\s*\}\);\n\s*\}/,
+    );
+    // (3) 防抖清理先于铁牛态提前返回：标准 → 铁牛 时必须取消已排程的定时器（否则
+    //     残留回调仍会触发全量资产分重算）；铁牛态同时不得排新的定时器。切片终点取
+    //     setTimeout 排程点，避免 indexOf 误命中 onUnmounted 的同形清理块。
+    const watchStart = appSource.indexOf('watch(assetScoreRefreshTrigger, () => {');
+    expect(watchStart).toBeGreaterThanOrEqual(0);
+    const scheduleStart = appSource.indexOf('assetScoreRefreshTimer = setTimeout(', watchStart);
+    expect(scheduleStart).toBeGreaterThan(watchStart);
+    const watchHead = appSource.slice(watchStart, scheduleStart);
+    const cleanupIndex = watchHead.indexOf('if (assetScoreRefreshTimer != null) {');
+    const ironcowGateIndex = watchHead.indexOf('if (isIroncowMode.value) {');
+    expect(cleanupIndex).toBeGreaterThanOrEqual(0);
+    expect(ironcowGateIndex).toBeGreaterThan(cleanupIndex);
+    expect(watchHead).toContain('clearTimeout(assetScoreRefreshTimer);');
+    expect(watchHead).toContain('assetScoreRefreshTimer = null;');
+    expect(watchHead).toContain('return;');
+    // (4) 触发向量新增模式依赖：模式是资产分可见性条件，切回标准态触发一次重算；
+    //     实现口径为触发向量依赖项（isIroncowMode.value,），不另挂模式源 watch。
+    const triggerStart = appSource.indexOf('const assetScoreRefreshTrigger = computed(() => [');
+    const triggerEnd = appSource.indexOf('\n]);', triggerStart);
+    expect(triggerStart).toBeGreaterThanOrEqual(0);
+    expect(triggerEnd).toBeGreaterThan(triggerStart);
+    expect(appSource.slice(triggerStart, triggerEnd)).toContain('isIroncowMode.value,');
+    // (5) 切回补偿：启动被门控跳过的行情强制拉取由「铁牛 → 标准」方向的 gameMode
+    //     getter watch 补拉（watcher 不使用 deep / immediate）。块级定位锁定：方向门
+    //     与强制拉取共现于同一 watcher。
+    //     （先做空白规范化以抗 Prettier 对 watch( 的折行变形；锚点对单行/折行两种
+    //     形态均成立。）
+    const normalizedAppSource = appSource.replace(/\s+/g, ' ');
+    const gameModeWatchIndex = normalizedAppSource.indexOf('() => simulator.gameMode, (nextMode, prevMode) => {');
+    expect(gameModeWatchIndex).toBeGreaterThanOrEqual(0);
+    const gameModeWatchEnd = normalizedAppSource.indexOf('});', gameModeWatchIndex);
+    expect(gameModeWatchEnd).toBeGreaterThan(gameModeWatchIndex);
+    const gameModeWatchBlock = normalizedAppSource.slice(gameModeWatchIndex, gameModeWatchEnd);
+    expect(gameModeWatchBlock).toContain('GAME_MODE_IRONCOW');
+    expect(gameModeWatchBlock).toContain('GAME_MODE_STANDARD');
+    expect(gameModeWatchBlock).toContain('simulator.ensureMarketPricesLoaded(true)');
+    // (6) 切回补偿的 60s 尝试冷却（2026-10-19）：补偿前复用
+    //     wasMarketPriceRefreshAttemptedRecently（与队列准备同源判定）——
+    //     运行态闸门只锁「标准 → 铁牛」，切回方向不受约束：冷却判定必须与
+    //     强制拉取共现于同一 watcher 块内，防空载往复切换持续打接口。
+    expect(appSource).toContain(
+      "import { wasMarketPriceRefreshAttemptedRecently } from '../stores/simulatorPricingActions.js';",
+    );
+    expect(gameModeWatchBlock).toContain('wasMarketPriceRefreshAttemptedRecently(simulator)');
+    expectNoIroncowWatchClearsCompletionDialog(appSource);
   });
 });

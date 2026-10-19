@@ -25,6 +25,7 @@ import {
   normalizeIroncowWeights,
 } from './advisorScoring.js';
 import { normalizeAdvisorFilters } from './advisorDomain.js';
+import { normalizeGameMode } from './gameMode.js';
 import {
   getDefaultQueueRuntimeSettings,
   normalizeQueueRuntimeSettings,
@@ -48,6 +49,7 @@ const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
 const PRICE_MARKET_CACHE_STORAGE_KEY = 'mwi.price.marketCache.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
+const GAME_MODE_STORAGE_KEY = 'mwi.gameMode.v1';
 const QUEUE_SETTINGS_STORAGE_KEY = 'mwi.queue.settings.v1';
 const QUEUE_SETTINGS_STORAGE_VERSION = 1;
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
@@ -215,6 +217,20 @@ export function loadSimulationUiSettingsFromStorage() {
 export function persistSimulationUiSettingsToStorage(settings) {
   const normalized = normalizeSimulationUiSettings(settings);
   setJsonStorage(SIMULATION_UI_STORAGE_KEY, normalized);
+}
+
+// —— 全局游戏模式（标准 / 铁牛）——
+// 独立存储键承载账号级模式状态：不随 simulationSettings（本次模拟的运行输入）
+// 或导入导出载荷流转；切换即落盘，刷新后保留。形状 { mode: 'standard'|'ironcow' }。
+export function loadGameModeFromStorage() {
+  const payload = readJsonStorage(GAME_MODE_STORAGE_KEY);
+  return normalizeGameMode(payload?.mode);
+}
+
+export function persistGameModeToStorage(mode) {
+  const normalized = normalizeGameMode(mode);
+  setJsonStorage(GAME_MODE_STORAGE_KEY, { mode: normalized });
+  return normalized;
 }
 
 export function normalizeAchievementFlags(rawAchievements) {

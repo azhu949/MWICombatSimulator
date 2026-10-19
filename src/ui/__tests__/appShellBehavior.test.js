@@ -112,6 +112,28 @@ describe('application shell behavior', () => {
     expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
   });
 
+  it('hides the grouped navigation but keeps the bottom utility entries in ironcow mode', async () => {
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" ironcow-mode /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    // 铁牛模式（模拟器功能尚未开发）：分组导航整体不渲染……
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Home'))).toBe(false);
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Queue'))).toBe(false);
+    // ……仅保留底部三个通用入口（补丁说明 / GitHub / 反馈）。
+    expect(wrapper.findAll('a').some((link) => link.text().includes('Patch Notes'))).toBe(true);
+    expect(wrapper.findAll('a').some((link) => link.text().includes('GitHub'))).toBe(true);
+    expect(wrapper.text()).toContain('Feedback');
+  });
+
   it('keeps the simulation group expanded when the current route matches no navigation group', async () => {
     // /patch-notes 无 navGroup（navHidden）：watch immediate 不会补入任何组，展开状态只可能来自初值——
     // 这是唯一能区分「初值 ref(['simulation'])」与「watch 按路由补入」的时序。真实场景：以

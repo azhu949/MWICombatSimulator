@@ -30,7 +30,7 @@ import {
 import { buildMultiRoundPayloads } from '../services/homeMultiRoundSimulation.js';
 import { PLAYER_IDS } from '../services/profitEstimator.js';
 import { buildSingleSimulationPayload } from '../services/simulationDomain.js';
-import { isSimulationBusy } from '../services/simulatorRunConflicts.js';
+import { isSimulationBusy, setDungeonCalculatorRunInFlight } from '../services/simulatorRunConflicts.js';
 import {
   DEDICATED_WORKER_SCOPE_DUNGEON_CALCULATOR,
   isWorkerRunCancelledError,
@@ -349,6 +349,16 @@ export const useDungeonCalculatorStore = defineStore('dungeonCalculator', () => 
     error: '',
     lastResult: null,
   });
+
+  // 顶栏「标准 → 铁牛」闸门的响应式锚点镜像：跟随 simulation.isRunning 的整个运行区间
+  //（含导入窗口、批运行、finally 复位，以及句柄未注册的收尾窗口），App 顶层据此禁用
+  // 模式按钮而不必 import 本 store（避免把 dungeonProfitCalculator 的游戏数据 JSON 拉进
+  // 主包）。锚点不并入统一忙碌判定，说明见 services/simulatorRunConflicts.js 文件末尾。
+  watch(
+    () => simulation.isRunning,
+    (value) => setDungeonCalculatorRunInFlight(value),
+    { immediate: true },
+  );
 
   // 「模拟每轮时长」取消意图（闭包变量，不进响应式公开面）：专用运行句柄要到批入口调用时
   // 才由 simulatorWorkerRuns 注册，导入窗口（await loadPlayers，首次进入页面时 chunk 仍需

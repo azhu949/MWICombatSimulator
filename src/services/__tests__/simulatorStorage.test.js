@@ -13,6 +13,7 @@ import {
   loadSimulationUiSettingsFromStorage,
   loadEquipmentSetsFromStorage,
   loadFoodOptimizerSettingsFromStorage,
+  loadGameModeFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
   loadTriggerOptimizerReportFromStorage,
   normalizeAdvisorSettings,
@@ -24,6 +25,7 @@ import {
   normalizeStoredPlayerDataMap,
   persistAdvisorSettingsToStorage,
   persistFoodOptimizerSettingsToStorage,
+  persistGameModeToStorage,
   persistSimulationUiSettingsToStorage,
   persistTriggerOptimizerReportToStorage,
   readJsonStorage,
@@ -45,6 +47,7 @@ const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
 const PRICE_MARKET_CACHE_STORAGE_KEY = 'mwi.price.marketCache.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
+const GAME_MODE_STORAGE_KEY = 'mwi.gameMode.v1';
 const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
 const FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.foodOptimizer.settings.v1';
 const TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY = 'mwi.triggerOptimizer.report.v1';
@@ -294,6 +297,27 @@ describe('simulatorStorage', () => {
     persistSimulationUiSettingsToStorage({ simulationRounds: 12 });
     expect(JSON.parse(storage.data.get(SIMULATION_UI_STORAGE_KEY)).simulationRounds).toBe(12);
     expect(loadSimulationUiSettingsFromStorage().simulationRounds).toBe(12);
+  });
+
+  it('persists the global game mode independently and falls back to standard for invalid values', () => {
+    const storage = createMemoryStorage();
+    vi.stubGlobal('localStorage', storage);
+    // 无存储默认标准模式。
+    expect(loadGameModeFromStorage()).toBe('standard');
+
+    expect(persistGameModeToStorage('ironcow')).toBe('ironcow');
+    expect(JSON.parse(storage.data.get(GAME_MODE_STORAGE_KEY)).mode).toBe('ironcow');
+    expect(loadGameModeFromStorage()).toBe('ironcow');
+
+    // 非法持久化值回落标准；非规范写法（大小写）容忍。
+    storage.data.set(GAME_MODE_STORAGE_KEY, JSON.stringify({ mode: 'bogus' }));
+    expect(loadGameModeFromStorage()).toBe('standard');
+    storage.data.set(GAME_MODE_STORAGE_KEY, JSON.stringify({ mode: 'IRONCOW' }));
+    expect(loadGameModeFromStorage()).toBe('ironcow');
+
+    // 存储损坏（非 JSON）时同样回落标准模式，不抛错。
+    storage.data.set(GAME_MODE_STORAGE_KEY, '{broken');
+    expect(loadGameModeFromStorage()).toBe('standard');
   });
 
   it('throws the existing unavailable-storage error when requested for writes', () => {

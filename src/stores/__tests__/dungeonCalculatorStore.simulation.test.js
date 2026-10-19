@@ -4,9 +4,11 @@
 // 零通关组合保留、失败轮剔除、空队伍 / 忙碌 / 重入 / 取消，以及每轮分钟映射的持久化与迁移。
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { nextTick } from 'vue';
 import { useSimulatorStore } from '../simulatorStore.js';
 import { normalizeDungeonCalculatorPersistedState, useDungeonCalculatorStore } from '../dungeonCalculatorStore.js';
 import { cancelDedicatedWorkerRuns } from '../../services/simulatorWorkerRuns.js';
+import { dungeonCalculatorRunInFlight } from '../../services/simulatorRunConflicts.js';
 
 const NANOSECONDS_PER_MINUTE = 60 * 1_000_000_000;
 const NANOSECONDS_PER_HOUR = 3_600 * 1_000_000_000;
@@ -148,6 +150,12 @@ describe('dungeonCalculatorStore party simulation (minutes per run, all dungeons
     const pending = startSimulation(calculator);
     const client = await waitForBatchClient();
 
+    // 顶栏模式闸门的响应式锚点必须覆盖整个批运行窗口（store 侧镜像 watch 的行为锁）。
+    // 镜像 watch 默认 flush 'pre'，置位后需等一次 flush 才可见；运行期这条 true 是唯一能抓住
+    // 镜像被删 / 错位的守护（复位侧的 false 在 watch 缺失时也会通过）。
+    await nextTick();
+    expect(dungeonCalculatorRunInFlight.value).toBe(true);
+
     // 批规模：12 组合 × 3 轮；总进度同步登记。
     expect(calculator.simulation.totalRounds).toBe(EXPECTED_TARGETS * ROUNDS);
     expect(client.payloads).toHaveLength(EXPECTED_TARGETS * ROUNDS);
@@ -176,6 +184,10 @@ describe('dungeonCalculatorStore party simulation (minutes per run, all dungeons
 
     calculator.stopRunMinutesSimulation();
     await expect(pending).resolves.toBe(false);
+
+    // 运行区间收尾：锚点回落、顶栏按钮恢复可用（flush 'pre' 下同样需等一次 flush 才可见）。
+    await nextTick();
+    expect(dungeonCalculatorRunInFlight.value).toBe(false);
   });
 
   it('writes back the per-target average minutes when every target clears', async () => {
@@ -469,6 +481,10 @@ describe('dungeonCalculatorStore party simulation (minutes per run, all dungeons
 
     // 运行态在首个 await 之前同步置位：页面此刻显示的就是「停止」按钮。
     expect(calculator.simulation.isRunning).toBe(true);
+    // 同一时刻锚点尚不可见（镜像 watch 默认 flush 'pre'，需等一次 flush）：导入窗口内专用句柄
+    // 尚未登记，这里的置位侧 true 是顶栏按钮在该窗口的唯一守卫。
+    await nextTick();
+    expect(dungeonCalculatorRunInFlight.value).toBe(true);
     expect(calculator.stopRunMinutesSimulation()).toBe(true);
 
     releaseMapper();
@@ -477,6 +493,9 @@ describe('dungeonCalculatorStore party simulation (minutes per run, all dungeons
     // 关键断言：批入口未被提交（无 client 实例），取消按「静默收尾」口径落地。
     expect(StubBatchWorkerClient.instances).toHaveLength(0);
     expect(calculator.simulation.isRunning).toBe(false);
+    // 静默收尾后锚点同样回落（flush 'pre' 下需等一次 flush 才可见）。
+    await nextTick();
+    expect(dungeonCalculatorRunInFlight.value).toBe(false);
     expect(calculator.simulation.error).toBe('');
     expect(calculator.simulation.lastResult).toBeNull();
 

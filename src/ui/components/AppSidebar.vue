@@ -25,8 +25,10 @@
     </div>
 
     <nav class="min-h-0 flex-1 overflow-y-auto px-2 py-3" aria-label="Primary navigation">
+      <!-- 铁牛模式（全局）：模拟器功能尚未开发——分组导航整体不渲染，
+           仅保留底部三个通用入口（补丁说明 / GitHub / 反馈）。 -->
       <!-- 折叠态（桌面图标模式）：保持原平面图标列表，不渲染手风琴。 -->
-      <template v-if="collapsed">
+      <template v-if="!ironcowMode && collapsed">
         <div v-for="group in navigationGroups" :key="group.id" class="mb-4 last:mb-0">
           <div class="space-y-1">
             <RouterLink
@@ -44,7 +46,7 @@
         </div>
       </template>
       <!-- 展开态（桌面展开 + 移动端抽屉，两者 collapsed 恒为 false）：手风琴分组导航。 -->
-      <Accordion v-else type="multiple" v-model:model-value="expandedGroups">
+      <Accordion v-if="!ironcowMode && !collapsed" type="multiple" v-model:model-value="expandedGroups">
         <AccordionItem v-for="group in navigationGroups" :key="group.id" :value="group.id" class="border-b-0">
           <!-- 当前分组：收起时组内高亮链接随 content 卸载（reka Presence），trigger 上的
                aria-current 让「我在哪个分组」在收起状态下仍可被识别。 -->
@@ -150,6 +152,7 @@ import logoUrl from '../assets/logo-256.png';
 
 const props = defineProps({
   version: { type: String, required: true },
+  ironcowMode: { type: Boolean, default: false },
   unreadPatchNotesCount: { type: Number, default: 0 },
   patchNotesLabel: { type: String, default: 'Patch Notes' },
 });

@@ -37,6 +37,7 @@ import {
   stopTriggerOptimizerWorkerRuns,
 } from '../services/simulatorWorkerRuns.js';
 import { isSimulationBusy } from '../services/simulatorRunConflicts.js';
+import { GAME_MODE_IRONCOW } from '../services/gameMode.js';
 import { clamp, toFiniteNumber } from '../services/utils.js';
 
 // 运行期失败上报的 error 可能是 worker 结构化克隆传回的 Error 实例（worker.js 的
@@ -286,16 +287,35 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
+      // 铁牛态没有模拟停止入口（命令栏与页面均不渲染），入口先同步拒绝；动态导入
+      // 窗口内切换模式的情况由下方 await 后的复查兜底。
+      if (this.gameMode === GAME_MODE_IRONCOW) {
+        this.runtime.error = 'common:simulation.errorIroncowMode';
+        return;
+      }
+
       // 入口段兜底：动态导入/玩家构建失败统一转入 runtime.error（本函数其余
       // 校验失败的同一错误通道：App.vue 的 runtime.error watch → 全局错误弹窗
       // 对 i18n key 翻译 + CombatCommandBar「Details」红字按钮）。此前异常直接
       // 逃逸——调用方为模板事件直连，Vue 仅 console.error，用户端完全静默
       //（且函数开头已清空旧错误，连先前的提示都不剩）。
+      // preparing 覆盖唯一挂起点（动态导入）：finally 复位所有成功/失败路径，
+      // 顶栏模式按钮据此在窗口内真实禁用。
       let buildPlayersForSimulation;
+      this.runtime.preparing = true;
       try {
         ({ buildPlayersForSimulation } = await loadPlayerMapperModule());
       } catch (loadError) {
         this.runtime.error = 'common:simulation.errorLoadModule';
+        return;
+      } finally {
+        this.runtime.preparing = false;
+      }
+
+      // 窗口内模式可能已被程序化切换（UI 路径已由模式按钮禁用挡住）：铁牛态拒绝
+      // 启动，runtime.error 走全局错误弹窗（铁牛态仍可见）。
+      if (this.gameMode === GAME_MODE_IRONCOW) {
+        this.runtime.error = 'common:simulation.errorIroncowMode';
         return;
       }
 

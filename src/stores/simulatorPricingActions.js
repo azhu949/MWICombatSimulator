@@ -97,7 +97,10 @@ function isPricingMutationBlocked(store) {
   );
 }
 
-function wasMarketPriceRefreshAttemptedRecently(store, nowMs = Date.now()) {
+// 导出口径（2026-10-19）：App.vue「铁牛 → 标准」切回补偿（自动通道）复用同款
+// 60s 尝试冷却，防空载往复切换把冷却窗内的重复切回变成真实行情请求；与
+// ensureQueueMarketPriceSnapshot 的判定同源。
+export function wasMarketPriceRefreshAttemptedRecently(store, nowMs = Date.now()) {
   const lastAttemptAt = Math.max(
     Math.max(0, toFiniteNumber(store?.pricing?.lastFetchedAt, 0)),
     Math.max(0, toFiniteNumber(marketPriceRefreshAttemptTimes.get(store), 0)),

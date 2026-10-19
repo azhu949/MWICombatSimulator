@@ -36,6 +36,7 @@ import {
 } from '../services/queueVariants.js';
 import { buildChangedEquipmentKeys, buildSelectionKey } from '../services/queuePriceSelection.js';
 import { executeActiveQueueRun } from '../services/queueRunExecution.js';
+import { GAME_MODE_IRONCOW } from '../services/gameMode.js';
 import { isSimulationBusy } from '../services/simulatorRunConflicts.js';
 import { runParallelWorkerPool } from '../services/workerPool.js';
 import {
@@ -417,6 +418,12 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         throw new Error('common:queue.errorBaselineNoLabyrinth');
       }
 
+      // 铁牛态没有队列运行入口（命令栏与页面均不渲染），运行路径先同步拒绝；
+      // 动态导入窗口内切换模式的情况由下方 await 后的复查兜底。
+      if (this.gameMode === GAME_MODE_IRONCOW) {
+        throw new Error('common:queue.errorIroncowMode');
+      }
+
       const queueSettings = normalizeQueueSettings(queueState.settings);
       queueState.settings = queueSettings;
       // 合并后的单一「轮次」同时决定基准与队列项的场数；基准与全部条目共享同一组种子（CRN）。
@@ -433,11 +440,22 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       // 由调用方（App.vue 顶栏基线流程 / SettingsPage 导入流程）catch 后本地化
       // 显示，而非把浏览器原生错误文本（如 "Failed to fetch dynamically
       // imported module: ..."）透传给用户。此 throw 位于状态置位之前，无残留。
+      // preparing 覆盖唯一挂起点（动态导入）：finally 复位所有成功/失败路径，
+      // 顶栏模式按钮据此在窗口内真实禁用。
       let buildPlayersForSimulation;
+      this.runtime.preparing = true;
       try {
         ({ buildPlayersForSimulation } = await loadPlayerMapperModule());
       } catch (loadError) {
         throw new Error('common:queue.errorLoadModule');
+      } finally {
+        this.runtime.preparing = false;
+      }
+
+      // 窗口内模式可能已被程序化切换（UI 路径已由模式按钮禁用挡住）：铁牛态
+      // 拒绝运行队列基准，保持本动作的 throw 契约。
+      if (this.gameMode === GAME_MODE_IRONCOW) {
+        throw new Error('common:queue.errorIroncowMode');
       }
 
       let playersToSim;

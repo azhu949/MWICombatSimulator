@@ -314,6 +314,22 @@ describe('common locale resources', () => {
     expect(zhCommon?.vue?.results?.multiRound?.wipeEventsNotRecorded).toContain('1 轮');
   });
 
+  it('keeps the ironcow game mode copy using the established Iron Cow spelling', () => {
+    // 铁牛的英文文案必须统一沿用既有译法 Iron Cow（见 advisor.presetIroncow /
+    // scoreExplainIroncow*），不允许再次漂移为 Ironcow 连写造成英文界面两种拼法。
+    const appCopy = enCommon?.vue?.app || {};
+    const ironcowCopyValues = [
+      appCopy.gameModeIroncow,
+      appCopy.switchToIroncowMode,
+      appCopy.gameModeSwitchLocked,
+      appCopy.ironcowInProgress,
+    ];
+    for (const value of ironcowCopyValues) {
+      expect(value).toContain('Iron Cow');
+      expect(value).not.toMatch(/Ironcow/);
+    }
+  });
+
   it('keeps every t() fallback string in English across the UI source', () => {
     // t(key, fallback) 的 fallback 是键完全缺失时的最终兜底文案：与 fallbackLng: 'en'
     // 同口径统一为英文，避免中文兜底漏进英文界面（controls.cancel 双语言包缺键时，

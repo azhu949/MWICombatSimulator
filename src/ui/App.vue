@@ -2,6 +2,7 @@
   <SidebarProvider>
     <AppSidebar
       :version="appVersion"
+      :ironcow-mode="isIroncowMode"
       :unread-patch-notes-count="patchNotesUnreadCount"
       :patch-notes-label="patchNotesButtonAriaLabel"
       @feedback="openFeedbackModal"
@@ -29,7 +30,64 @@
             />
           </template>
           <div class="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-          <MarketPriceIndicator />
+          <MarketPriceIndicator v-if="!isIroncowMode" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            :disabled="gameModeSwitchLocked"
+            :class="isIroncowMode ? 'text-primary' : ''"
+            :aria-label="gameModeToggleAriaLabel"
+            :title="gameModeToggleAriaLabel"
+            data-game-mode-toggle
+            @click="toggleGameMode"
+          >
+            <!-- 模式图标为成对自定义 SVG（沿用 lucide 风格的 2px 圆头描边，尺寸由 Button
+                 的 [&_svg]:size-4 统一约束）：铁牛 → 牛头（铁牛本牛）；标准 → 天平（衡量
+                 基准，对应市场开放的常规玩法）。描边取 currentColor，铁牛态自动染主色。 -->
+            <svg
+              v-if="isIroncowMode"
+              data-game-mode-icon="ironcow"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6.3 8.1C5 7.3 4.2 5.7 4.5 3.9" />
+              <path d="M17.7 8.1C19 7.3 19.8 5.7 19.5 3.9" />
+              <path
+                d="M8.5 7.5H15.5C17.8 7.5 19 9.4 19 11.5C19 15.5 16 19 12 19C8 19 5 15.5 5 11.5C5 9.4 6.2 7.5 8.5 7.5Z"
+              />
+              <path d="M9.9 14.8h.01" />
+              <path d="M14.1 14.8h.01" />
+            </svg>
+            <svg
+              v-else
+              data-game-mode-icon="standard"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M10.5 3h3" />
+              <path d="M12 3v18" />
+              <path d="M8.5 21h7" />
+              <path d="M5 7.5h14" />
+              <path d="M5 7.5l-2.3 5.1" />
+              <path d="M5 7.5l2.3 5.1" />
+              <path d="M2.7 12.6a2.3 2.3 0 0 0 4.6 0" />
+              <path d="M19 7.5l-2.3 5.1" />
+              <path d="M19 7.5l2.3 5.1" />
+              <path d="M16.7 12.6a2.3 2.3 0 0 0 4.6 0" />
+            </svg>
+            {{ gameModeLabel }}
+          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -92,7 +150,21 @@
       />
 
       <main class="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-5">
-        <RouterView />
+        <!-- 铁牛模式筹备中：主内容区替换为极简空态（引导加入 QQ 群讨论）；
+             补丁说明页（唯一保留的通用信息页）仍正常渲染，其余路由一律不渲染。 -->
+        <div
+          v-if="isIroncowMode && route.name !== 'patch-notes'"
+          class="flex min-h-[50vh] items-center justify-center"
+          data-ironcow-placeholder
+        >
+          <div class="space-y-1 text-center text-sm text-muted-foreground">
+            <p>{{ t('common:vue.app.ironcowInProgress', 'Iron Cow mode is in preparation') }}</p>
+            <p>
+              {{ t('common:vue.app.ironcowJoinGroup', FALLBACK_IRONCOW_JOIN_GROUP, { group: QQ_GROUP_NUMBER }) }}
+            </p>
+          </div>
+        </div>
+        <RouterView v-else />
       </main>
     </SidebarInset>
 
@@ -732,8 +804,17 @@ import PatchNoteSections from './components/PatchNoteSections.vue';
 import { Button } from './components/ui/button/index.js';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar/index.js';
 import { useSimulatorStore } from '../stores/simulatorStore.js';
+import { wasMarketPriceRefreshAttemptedRecently } from '../stores/simulatorPricingActions.js';
 import { formatCompactAmountForLocale } from '../services/amountFormatting.js';
-import { isReactiveSimulationBusy } from '../services/simulatorRunConflicts.js';
+import { GAME_MODE_IRONCOW, GAME_MODE_STANDARD } from '../services/gameMode.js';
+import {
+  dungeonCalculatorRunInFlight,
+  isSimulationBusy,
+  isReactiveSimulationBusy,
+} from '../services/simulatorRunConflicts.js';
+// 顶栏模式切换兜底专用：触发器优化器运行注册表在两版统一忙碌清单之外（轻量模块，仅依赖
+// simulatorWorkerRuns，可安全静态引入，无主包体积风险）。
+import { hasTriggerOptimizerRunInProgress } from '../services/triggerOptimizerRunRegistry.js';
 import { useGameDataText } from './composables/useGameDataText.js';
 import { useI18nText } from './composables/useI18nText.js';
 import { useTheme } from './composables/useTheme.js';
@@ -771,6 +852,9 @@ const FEEDBACK_EMAIL = '596846069@qq.com';
 const FALLBACK_MIRROR_PRICE_AUTO = 'Auto: {{price}}';
 const FALLBACK_MARKET_UPDATED_CURRENT = 'Now: {{price}}';
 const FALLBACK_MIRROR_VS_DIRECT = 'direct {{price}}';
+// 铁牛模式空态的"加群讨论"文案（{{group}} 为 QQ 群号插值，与反馈弹窗共用
+// QQ_GROUP_NUMBER 常量，避免群号两处维护）。
+const FALLBACK_IRONCOW_JOIN_GROUP = 'Join the QQ group to discuss: {{group}}';
 const simulator = useSimulatorStore();
 const router = useRouter();
 const route = useRoute();
@@ -819,7 +903,11 @@ const topQueueActionStatus = ref({
 const { language, setLanguage, t } = useI18nText();
 const { getAbilityName, getActionName, getEquipmentSlotName, getHouseRoomName, getItemName, getSkillName } =
   useGameDataText();
-const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
+// 全局游戏模式（标准 / 铁牛）：铁牛模式下模拟器功能尚未开发——主内容区替换为
+// 空态占位、战斗工具栏与市场价指示器隐藏、侧边栏只留底部通用入口；状态与
+// 持久化由 store 承载（simulator.gameMode / setGameMode）。
+const isIroncowMode = computed(() => simulator.gameMode === GAME_MODE_IRONCOW);
+const showCombatToolbar = computed(() => !isIroncowMode.value && route.meta?.showCombatToolbar !== false);
 const showHomeSimulationActions = computed(() => route.name === 'home');
 const showAdvisorActions = computed(() => route.name === 'advisor');
 const advisorRunning = computed(() => Boolean(simulator.advisor.runtime?.isRunning));
@@ -857,6 +945,86 @@ const languageToggleAriaLabel = computed(() =>
     ? t('common:vue.app.switchToEnglish', 'Switch to English')
     : t('common:vue.app.switchToChinese', 'Switch to Chinese'),
 );
+// 顶栏模式按钮：显示当前模式名，点击切到另一模式；铁牛态用主色文案提示当前
+// 处于非默认模式（isIroncowMode 定义见上方 showCombatToolbar 前）。
+const gameModeLabel = computed(() =>
+  isIroncowMode.value
+    ? t('common:vue.app.gameModeIroncow', 'Iron Cow Mode')
+    : t('common:vue.app.gameModeStandard', 'Standard Mode'),
+);
+// 顶栏模式切换的运行态闸门：只锁「标准 → 铁牛」方向——运行中切入铁牛会卸载命令栏与
+// 页面组件（主内容区替换为占位），使运行中任务失去一切停止入口；反向保持可点，保证
+// 铁牛态残留运行时仍能切回标准恢复入口。按钮 disabled / aria 展示用响应式版
+// isReactiveSimulationBusy（运行态单一事实源；模块级 worker 句柄变化不触发 computed
+// 重算，完整版会缓存陈旧值，见 services/simulatorRunConflicts.js 顶部说明；首页多轮批
+// 运行期间 runtime.isRunning 持续为真，已被该响应式清单覆盖，不算盲区）。
+// 启动准备窗口（runtime.preparing：loadPlayerMapperModule 动态导入期间，isRunning 尚未
+// 置位，手动模拟与队列基线共用）不属于运行态清单，由下方计算式直读准备标志收口。
+// 计算器「模拟每轮时长」运行态属于 dungeonCalculatorStore、不在该清单内，且 App 顶层不得
+// import 该 store（dungeonProfitCalculator 的 6 份游戏数据 JSON 会进主包），故并入
+// dungeonCalculatorRunInFlight 响应式锚点（镜像 simulation.isRunning 的整个运行区间，含
+// 导入窗口与收尾复位）。预算优化停止收尾窗口由下方计算式直读其 runtime.serviceRunInFlight
+// 响应式锚点（stop 已把 isRunning 置假、搜索 promise 尚未结算，此前的可点失真即该窗口）。
+// 残余盲区还剩两类：一是预算优化「注册表已登记但两个 store 标志均为假」的纯模块级窗口（仅
+// 登记非响应式句柄/注册表，由 toggleGameMode 的点击时刻兜底以完整版 isSimulationBusy（非
+// 响应式）拦截，事件处理器内同步求值，不受 computed 缓存陈旧影响）；二是触发器优化器子运行
+// 窗口（换难度复核 / 追加复验 / 服务收尾只写 runtime 子状态、其运行登记在专属注册表，两版
+// 统一清单均不含，由下方计算式直读子状态、兜底判定注册表专项收口）。拦截分支补状态条提示
+// （回应「点击静默」缺口）。可见性局限：状态条随 CombatCommandBar 渲染，计算器 / 预算优化
+// 等 showCombatToolbar: false 的页面看不到该提示——这些页面的主盲区已由锚点真实禁用覆盖。
+const gameModeSwitchLocked = computed(
+  () =>
+    !isIroncowMode.value &&
+    (isReactiveSimulationBusy(simulator) ||
+      Boolean(simulator.runtime?.preparing) ||
+      dungeonCalculatorRunInFlight.value ||
+      Boolean(simulator.triggerOptimizer?.runtime?.robustness?.isRunning) ||
+      Boolean(simulator.triggerOptimizer?.runtime?.verifyAppend?.isRunning) ||
+      Boolean(simulator.triggerOptimizer?.runtime?.serviceRunInFlight) ||
+      // 预算优化停止收尾窗口：stop 已把 isRunning 置假、搜索 promise 尚未结算。
+      // 与上一行是两个独立 runtime 的同名字段，必须写全路径区分。
+      Boolean(simulator.budgetOptimizer?.runtime?.serviceRunInFlight)),
+);
+const gameModeToggleAriaLabel = computed(() => {
+  if (gameModeSwitchLocked.value) {
+    return t('common:vue.app.gameModeSwitchLocked', 'Stop the running task before switching to Iron Cow Mode');
+  }
+  return isIroncowMode.value
+    ? t('common:vue.app.switchToStandardMode', 'Switch to Standard Mode')
+    : t('common:vue.app.switchToIroncowMode', 'Switch to Iron Cow Mode');
+});
+function toggleGameMode() {
+  // 点击时刻的非响应式兜底，拦截两类响应式清单不可见 / 失真的窗口：完整版
+  // isSimulationBusy 拦预算优化注册表收尾等非响应式模块级窗口（只登记非响应式句柄 /
+  // 注册表，disabled 展示可能失真）；触发器优化器运行注册表（搜索 / 复核 / 追加复验
+  // 服务层登记，含停止后收尾）在两版统一清单之外，另行并列判定。事件处理器内同步求值，
+  // 不受 computed 缓存陈旧影响。保持单向锁定：铁牛态必须始终能切回标准恢复入口（兜底
+  // 只在标准态生效，铁牛 → 标准不拦）。计算器运行区间已由响应式锚点提前真实禁用按钮，
+  // 正常路径到不了这里；命中即补状态条提示，不留「点了没反应」的静默缺口（tone 取
+  // warning：可恢复的临时占用，与既有 warning 用例同款）。提示复用既有锁定键，fallback
+  // 与 gameModeToggleAriaLabel 逐字一致。
+  const notifyModeSwitchLocked = () => {
+    setTopQueueActionStatus(
+      'warning',
+      t('common:vue.app.gameModeSwitchLocked', 'Stop the running task before switching to Iron Cow Mode'),
+    );
+  };
+  // 启动准备窗口（动态导入 playerMapper）：运行标志尚未置位，但任务已在启动路径上，
+  // 此时切入铁牛会把它带进无停止入口的占位态。disabled 已覆盖正常点击，这里同步兜底。
+  if (!isIroncowMode.value && simulator.runtime?.preparing) {
+    notifyModeSwitchLocked();
+    return;
+  }
+  if (!isIroncowMode.value && isSimulationBusy(simulator)) {
+    notifyModeSwitchLocked();
+    return;
+  }
+  if (!isIroncowMode.value && hasTriggerOptimizerRunInProgress()) {
+    notifyModeSwitchLocked();
+    return;
+  }
+  simulator.setGameMode(isIroncowMode.value ? GAME_MODE_STANDARD : GAME_MODE_IRONCOW);
+}
 
 const activeQueueState = computed(() => simulator.activeQueueState || null);
 const activeQueuePartyStatus = computed(
@@ -983,7 +1151,16 @@ const actionNameFallbackMap = computed(() => {
 });
 
 function runDeferredInitialization() {
-  simulator.ensureMarketPricesLoaded(true);
+  // 铁牛态门控：铁牛语义禁用玩家市场（见 src/services/gameMode.js 自述），且铁牛态
+  // 无行情消费方（主内容区替换为占位、MarketPriceIndicator 已按 v-if 卸载）——
+  // ensureMarketPricesLoaded(true) 不经新鲜度短路、必发网络请求，故整体跳过。
+  // 铁牛态启动缺失的该次强制拉取由 gameMode watch 的切回补偿覆盖（见下方资产分
+  // 触发器 watch 旁）：「铁牛 → 标准」时补拉一次，标准态启动路径不变。
+  // ensureAbilityUpgradeReferenceDataLoaded 不门控：本地 bundle 参考数据 + 队列结果
+  // 刷新，无网络请求。
+  if (!isIroncowMode.value) {
+    simulator.ensureMarketPricesLoaded(true);
+  }
   simulator.ensureAbilityUpgradeReferenceDataLoaded();
 }
 
@@ -1112,6 +1289,10 @@ async function runTopbarBaselineSimulation() {
       return;
     }
     setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
+    // 铁牛态命令栏与页面均已卸载，状态条不可见：拒绝启动的原因改走全局错误弹窗。
+    if (isIroncowMode.value) {
+      openGlobalError('runtime', resolveQueueActionErrorMessage(error));
+    }
   }
 }
 
@@ -2307,12 +2488,19 @@ watch(
   },
 );
 
+// 完成通知弹窗：铁牛模式下抑制——铁牛态主内容区固定渲染占位（页面组件不渲染，见上方
+// main 区模板），弹窗引导按钮（前往首页结果 / 多轮结果）点击后必然落空，只会形成死路。
+// 上方 runtime.error 全局错误弹窗属合理豁免（错误任何时候都必须可见），维持现状。
+// 切换入口无需另做清扫：完成弹窗开启时 BaseModal 遮罩（fixed inset-0 z-50）阻断顶栏（sticky top-0 z-40）
+// 点击，backdrop 点击会先关闭弹窗，标准→铁牛方向的运行中切换又被 gameModeSwitchLocked 单向锁定，
+// UI 路径无法带着残留弹窗切入铁牛；若未来新增程序化切换或深链等模式切换入口，须在该入口
+// 统一关闭完成弹窗与队列完成弹窗（queueCompleteModalOpen）。
 watch(
   () => simulator.runtime.completionNoticeId,
   (nextNoticeId, prevNoticeId) => {
     const nextId = Number(nextNoticeId || 0);
     const prevId = Number(prevNoticeId || 0);
-    if (nextId <= prevId || !hasSimulationResults.value || route.name === 'home') {
+    if (nextId <= prevId || !hasSimulationResults.value || route.name === 'home' || isIroncowMode.value) {
       return;
     }
     simulationCompleteModalOpen.value = true;
@@ -2365,6 +2553,10 @@ watch(
 // 不会与写入形成循环。
 let assetScoreRefreshTimer = null;
 const assetScoreRefreshTrigger = computed(() => [
+  // 铁牛态门控：模式是资产分可见性条件（铁牛态主内容区占位、顶栏徽章与导入导出
+  // 下拉均不挂载）——onMounted 初算与防抖回调按 isIroncowMode 提前跳过；把模式纳入
+  // 触发向量，使「铁牛 → 标准」切回时补一次重算，避免切回后徽章滞留空快照。
+  isIroncowMode.value,
   simulator.players.map((player) => computeAssetScoreConfigSignature(player)),
   simulator.pricing?.marketItemValues ?? null,
   simulator.pricing?.marketItemValueSources ?? null,
@@ -2376,8 +2568,16 @@ const assetScoreRefreshTrigger = computed(() => [
   simulator.pricing?.lastFetchedAt ?? 0,
 ]);
 watch(assetScoreRefreshTrigger, () => {
+  // 先取消可能已排程的防抖：标准 → 铁牛 时触发向量会重跑，若在提前返回前不清，
+  // 残留定时器仍会执行 refreshAssetScores（全量重算 + 按需加载）。
   if (assetScoreRefreshTimer != null) {
     clearTimeout(assetScoreRefreshTimer);
+    assetScoreRefreshTimer = null;
+  }
+  // 铁牛态门控：无行情/资产分消费方——不排新的 250ms 防抖定时器；
+  // 切回标准态由触发向量内的 isIroncowMode 依赖重新拉起。
+  if (isIroncowMode.value) {
+    return;
   }
   assetScoreRefreshTimer = setTimeout(() => {
     assetScoreRefreshTimer = null;
@@ -2390,14 +2590,42 @@ watch(assetScoreRefreshTrigger, () => {
   }, 250);
 });
 
+// 「铁牛 → 标准」切回补偿：启动行情强制拉取只随延迟初始化执行一次（上方
+// runDeferredInitialization），铁牛态启动被门控跳过后本会话不再有自动行情拉取，
+// 顶栏指示器（切回后重新挂载）将滞留「未获取市场数据」或本地缓存旧快照——切回
+// 标准态时在此补一次强制拉取，与资产分触发向量的切回补偿（isIroncowMode 依赖）
+// 语义对齐。watcher 用 gameMode getter 形态以直接比较 GAME_MODE_IRONCOW /
+// GAME_MODE_STANDARD 常量，方向语义自明；方向门只认「铁牛 → 标准」，其余方向提前
+// 返回；补偿前复用 MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS 同款 60s 尝试冷却
+//（wasMarketPriceRefreshAttemptedRecently，与 ensureQueueMarketPriceSnapshot 同源）
+// ——运行态闸门（gameModeSwitchLocked）只锁「标准 → 铁牛」方向，切回方向不受其约束，
+// 空载往复切换不得把冷却窗内的重复切回变成真实行情请求（本补偿原是该自动通道里
+// 唯一无冷却者）；无 deep / immediate；生命周期同 setup 作用域，随组件卸载自动清理。
+watch(
+  () => simulator.gameMode,
+  (nextMode, prevMode) => {
+    if (prevMode !== GAME_MODE_IRONCOW || nextMode !== GAME_MODE_STANDARD) {
+      return;
+    }
+    if (wasMarketPriceRefreshAttemptedRecently(simulator)) {
+      return;
+    }
+    simulator.ensureMarketPricesLoaded(true);
+  },
+);
+
 onMounted(() => {
   void initializePatchNotesData();
   scheduleDeferredInitialization();
   // 初算同走按需加载 + 降级告警：onMounted 不等待刷新（失败由后续资产分 watch
   // 触发或导入导出前的刷新重试），仅 console.warn 留痕。
-  void simulator.refreshAssetScores().catch((error) => {
-    console.warn('[assetScore] refresh failed (onMounted):', error);
-  });
+  // 铁牛态门控：无资产分消费方（顶栏徽章与导入导出下拉均不挂载）——跳过初算；
+  // 切回标准态由触发向量内的 isIroncowMode 依赖拉起一次重算。
+  if (!isIroncowMode.value) {
+    void simulator.refreshAssetScores().catch((error) => {
+      console.warn('[assetScore] refresh failed (onMounted):', error);
+    });
+  }
   window.addEventListener('error', onWindowError);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
 });

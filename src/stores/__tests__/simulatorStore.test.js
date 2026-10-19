@@ -38,6 +38,7 @@ import {
 const ONE_HOUR = 60 * 60 * 1e9;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
+const GAME_MODE_STORAGE_KEY = 'mwi.gameMode.v1';
 const QUEUE_SETTINGS_STORAGE_KEY = 'mwi.queue.settings.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const ACHIEVEMENT_HRID = '/achievements/total_level_100';
@@ -7547,6 +7548,45 @@ describe('simulatorStore', () => {
       setActivePinia(createPinia());
       const restarted = useSimulatorStore();
       expect(restarted.simulationSettings.simulationRounds).toBe(12);
+    });
+  });
+
+  describe('global game mode switch（标准 / 铁牛）', () => {
+    it('defaults to standard without persisted storage', () => {
+      const simulator = useSimulatorStore();
+
+      expect(simulator.gameMode).toBe('standard');
+    });
+
+    it('restores the persisted mode on store creation', () => {
+      global.localStorage.setItem(GAME_MODE_STORAGE_KEY, JSON.stringify({ mode: 'ironcow' }));
+
+      const simulator = useSimulatorStore();
+
+      expect(simulator.gameMode).toBe('ironcow');
+    });
+
+    it('switches and persists immediately, surviving a store restart', () => {
+      const simulator = useSimulatorStore();
+
+      simulator.setGameMode('ironcow');
+      expect(simulator.gameMode).toBe('ironcow');
+      expect(JSON.parse(global.localStorage.getItem(GAME_MODE_STORAGE_KEY)).mode).toBe('ironcow');
+
+      // 重启（新 pinia）：模式从 mwi.gameMode.v1 恢复而非回落标准。
+      setActivePinia(createPinia());
+      const restarted = useSimulatorStore();
+      expect(restarted.gameMode).toBe('ironcow');
+    });
+
+    it('falls back to standard for invalid input and persisted garbage', () => {
+      global.localStorage.setItem(GAME_MODE_STORAGE_KEY, JSON.stringify({ mode: 'bogus' }));
+      const simulator = useSimulatorStore();
+      expect(simulator.gameMode).toBe('standard');
+
+      simulator.setGameMode('nope');
+      expect(simulator.gameMode).toBe('standard');
+      expect(JSON.parse(global.localStorage.getItem(GAME_MODE_STORAGE_KEY)).mode).toBe('standard');
     });
   });
 });

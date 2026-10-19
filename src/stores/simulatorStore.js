@@ -25,6 +25,7 @@ import {
   getStorageItem,
   loadAdvisorSettingsFromStorage,
   loadEquipmentSetsFromStorage,
+  loadGameModeFromStorage,
   loadPlayerAchievementsFromStorage,
   loadPlayerDataSnapshotFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
@@ -32,6 +33,7 @@ import {
   loadSimulationUiSettingsFromStorage,
   parsePlayerSnapshotSummary,
   persistEquipmentSetsToStorage,
+  persistGameModeToStorage,
   persistPlayerAchievementsToStorage,
   savePlayerDataSnapshotToStorage,
   upsertPlayerDataSnapshotToStorage,
@@ -211,6 +213,9 @@ export const useSimulatorStore = defineStore('simulator', {
     return {
       players: playerList,
       activePlayerId: '1',
+      // 全局游戏模式（标准 / 铁牛）：账号级状态，切换即持久化（mwi.gameMode.v1）；
+      // 铁牛模式的计算差异（市场价口径、收益估值等）由后续功能逐步接入。
+      gameMode: loadGameModeFromStorage(),
       options: {
         equipmentBySlot: getEquipmentOptionsBySlot(),
         food: getConsumableOptions('/item_categories/food'),
@@ -254,6 +259,10 @@ export const useSimulatorStore = defineStore('simulator', {
       },
       runtime: {
         isRunning: false,
+        // 启动准备窗口（loadPlayerMapperModule 动态导入期间）：isRunning 尚未置位，
+        // 仅供顶栏模式闸门判忙，不并入统一忙碌判定——两个启动动作在 await 后仍会用
+        // isSimulationBusy 自查，并入会把自己拦下（并破坏既有抢占语义）。
+        preparing: false,
         progress: 0,
         error: '',
         startedAt: 0,
@@ -1047,6 +1056,11 @@ export const useSimulatorStore = defineStore('simulator', {
     },
     setLanguage(language) {
       this.ui.language = language === 'zh' ? 'zh' : 'en';
+    },
+    // 全局游戏模式切换：归一化后写入 state 并立即落盘（persistGameModeToStorage
+    // 返回归一化值，非法输入回落标准模式）。
+    setGameMode(mode) {
+      this.gameMode = persistGameModeToStorage(mode);
     },
     async exportGroupConfig() {
       // 备忘录 0364491149911703552（2026-10-03）：导出前刷新失败不阻断导出，但置位 runtime

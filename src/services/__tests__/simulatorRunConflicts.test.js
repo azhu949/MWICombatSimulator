@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { isReactiveSimulationBusy, isSimulationBusy } from '../simulatorRunConflicts.js';
+import {
+  dungeonCalculatorRunInFlight,
+  isReactiveSimulationBusy,
+  isSimulationBusy,
+  setDungeonCalculatorRunInFlight,
+} from '../simulatorRunConflicts.js';
 import {
   hasDungeonCalculatorWorkerRunInProgress,
   hasHomeMultiRoundWorkerRunInProgress,
@@ -97,5 +102,18 @@ describe('simulatorRunConflicts unified busy predicate', () => {
   it('treats a missing store defensively as not busy', () => {
     expect(isSimulationBusy(null)).toBe(false);
     expect(isReactiveSimulationBusy(undefined)).toBe(false);
+  });
+
+  it('exposes the dungeon calculator run anchor without feeding the busy predicates', () => {
+    // 跨 store 运行态的响应式锚点（顶栏模式按钮消费）：写入 / 复位语义，以及
+    //「不并入统一忙碌判定」的契约——计算器入口自身闸门引用两份判定，并入会在其
+    // 运行期间自我判忙而自锁。
+    expect(dungeonCalculatorRunInFlight.value).toBe(false);
+    setDungeonCalculatorRunInFlight(true);
+    expect(dungeonCalculatorRunInFlight.value).toBe(true);
+    expect(isSimulationBusy(createStore())).toBe(false);
+    expect(isReactiveSimulationBusy(createStore())).toBe(false);
+    setDungeonCalculatorRunInFlight(false);
+    expect(dungeonCalculatorRunInFlight.value).toBe(false);
   });
 });

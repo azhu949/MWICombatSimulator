@@ -16,12 +16,16 @@
 // 子运行态（robustness / verifyAppend / serviceRunInFlight）与 pricing.isLoading 等
 // 专属条件，保持原样并由自身维护；触发器服务层看不到 store，其入口双检查由
 // triggerOptimizerSearch 内的 assertTriggerOptimizerEntranceClear 承担（同样单点化）。
+// 例外：文件末尾的 dungeonCalculatorRunInFlight 响应式锚点（2026-10-17 登记）不并入
+// 上述两份判定——计算器自身入口闸门引用它们，并入会在其运行期间自我判忙；该锚点只服务
+// 顶栏模式按钮的 disabled 展示，写入侧由 dungeonCalculatorStore 镜像、消费侧见 App.vue。
 import {
   hasDungeonCalculatorWorkerRunInProgress,
   hasHomeMultiRoundWorkerRunInProgress,
   hasSharedWorkerRunInProgress,
 } from './simulatorWorkerRuns.js';
 import { hasBudgetOptimizerRunInProgress } from './budgetOptimizerRunRegistry.js';
+import { ref } from 'vue';
 
 // 仅 store 内的运行态（全部是响应式字段，UI computed 与 store 闸门共用）。
 // options.ignoreAdvisorScanInFlight：advisor 自身扫描进入 executeAdvisorScan 时
@@ -54,4 +58,19 @@ export function isSimulationBusy(store, options = {}) {
     // 预算优化注册表：搜索进行中 = 专属 worker 池占用（模块级普通变量，与其它句柄同列）。
     hasBudgetOptimizerRunInProgress()
   );
+}
+
+// 计算器「模拟每轮时长」运行态的响应式锚点（2026-10-17 登记，顶栏模式切换盲区修复）：
+// 该运行态是 dungeonCalculatorStore.simulation.isRunning（另一个 store 的响应式字段），
+// 不在上面的响应式清单内。顶栏模式按钮若直接 import 该 store 消费它，会把它依赖的
+// services/dungeonProfitCalculator.js（6 份游戏数据 JSON）一并拉进主包，故以本 ref 桥接：
+//   · 写入侧（dungeonCalculatorStore）：watch 跟随 simulation.isRunning 镜像整个运行区间
+//     （导入窗口 / 批运行 / finally 复位全覆盖），行内不得手工散补；
+//   · 消费侧（App.vue 顶栏模式按钮）：并入 gameModeSwitchLocked 的 disabled 计算。
+// 契约：本锚点不并入 isReactiveSimulationBusy / isSimulationBusy（理由见文件头注释），
+// 模块级句柄登记与点击时刻完整版兜底保持原样。
+export const dungeonCalculatorRunInFlight = ref(false);
+
+export function setDungeonCalculatorRunInFlight(value) {
+  dungeonCalculatorRunInFlight.value = value === true;
 }
