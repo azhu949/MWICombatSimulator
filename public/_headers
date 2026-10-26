@@ -3,3 +3,16 @@
 # index.html 与其余无哈希资源保持 Pages 默认（每次重验证），发版即生效。
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# 主站导入脚本随站点分发（见 scripts/sync-userscript-to-public.mjs）：
+# 不缓存，保证「站点刚发新版、用户点安装就拿到新版」。
+/userscript/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# MIME 必须按实际类型声明：只有 .user.js 是用户脚本，同目录的 .meta.json 是版本/校验
+# 元数据，不能被目录通配误标成脚本，否则严格校验 Content-Type 的读取方会拿到错误类型。
+/userscript/*.user.js
+  Content-Type: application/javascript; charset=utf-8
+
+/userscript/*.meta.json
+  Content-Type: application/json; charset=utf-8

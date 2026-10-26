@@ -1,4 +1,36 @@
 {
+  "2026年10月26日（v3.2.2）": {
+    "label": {
+      "zh": "2026年10月26日（v3.2.2）",
+      "en": "October 26, 2026 (v3.2.2)"
+    },
+    "newFeatures": {
+      "zh": [
+        "主站导入脚本改为随站点分发，导航栏新增脚本安装状态与更新渠道选择。",
+        "首页新增配装切换，可一键套用主站导入的装备、食物、饮品、技能与触发器。"
+      ],
+      "en": [
+        "The main-site import script is now hosted on this site, with an install-status row and update-channel picker in the sidebar.",
+        "New loadout switcher on Home: apply the equipment, food, drinks, abilities and triggers imported from the main site in one click."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "导入弹窗展示站内脚本版本与 SHA-256，构建时自动同步脚本并校验分发副本一致性。",
+        "导入脚本更新到 0.1.51：透传配装与全量技能等级，并跟随配装增删改。"
+      ],
+      "en": [
+        "The import dialog now shows the site script version and SHA-256; builds sync the script automatically and verify the distributed copy byte for byte.",
+        "Import script updated to 0.1.51: carries loadouts and full ability levels, and follows loadout updates."
+      ]
+    },
+    "bugFixes": {
+      "zh": ["修复切换配装后，不在当前槽位的技能等级回落到 1 级的问题。"],
+      "en": [
+        "Fixed ability levels falling back to level 1 after switching loadouts when the ability is not in the current slots."
+      ]
+    }
+  },
   "2026年10月16日（v3.2.1）": {
     "label": {
       "zh": "2026年10月16日（v3.2.1）",

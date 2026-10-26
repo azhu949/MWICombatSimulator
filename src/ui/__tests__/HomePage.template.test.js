@@ -11,6 +11,7 @@ const sources = {
   simulation: readSource('../components/home/HomeSimulationPanel.vue'),
   equipment: readSource('../components/home/HomeEquipmentPanel.vue'),
   loadout: readSource('../components/home/HomeLoadoutPanels.vue'),
+  loadoutSelect: readSource('../components/home/HomeLoadoutSelect.vue'),
   combatAttributes: readSource('../components/home/HomeCombatAttributesPanel.vue'),
   guildBuffs: readSource('../components/home/HomeGuildBuffsModal.vue'),
   playerSnapshot: readSource('../components/home/HomePlayerSnapshotModal.vue'),
@@ -90,6 +91,7 @@ describe('Home workspace tabs', () => {
   });
 
   it('groups build controls in base and isolates derived attributes', () => {
+    // 配装切换控件嵌在 HomeSimulationPanel 的角色档案区块内（不占 HomePage 的 base 挂载位）。
     expect(sources.page.match(/activeWorkspaceTab === 'base'/g)).toHaveLength(3);
     expect(sources.page).toContain("activeWorkspaceTab === 'advanced'");
     expect(sources.page).not.toContain("activeWorkspaceTab === 'build'");
@@ -103,6 +105,15 @@ describe('Home workspace tabs', () => {
     expect(sources.page).toContain('<AsyncSimulationResultsView v-if="homeHasResults" />');
     expect(sources.page).toContain('v-if="activeWorkspaceTab !== \'results\'"');
     expect(sources.page).not.toContain('completeResultsExpanded');
+  });
+
+  it('lists only combat-capable loadouts in the home loadout dropdown', () => {
+    // 生活技能配装与战斗配装同池，而套用配装会整体覆盖装备/食物/饮品/技能/触发器：
+    // 下拉必须渲染过滤后的可见配装，且默认选中不依赖运行期不存在的 ordinal。
+    expect(sources.loadoutSelect).toContain('data-loadout-controls');
+    expect(sources.loadoutSelect).toContain('v-for="loadout in visibleLoadouts"');
+    expect(sources.loadoutSelect).toContain("COMBAT_ACTION_TYPE_HRID = '/action_types/combat'");
+    expect(sources.loadoutSelect).toContain('pickDefaultLoadoutId');
   });
 
   it('keeps the workspace column shrinkable so wide result tables scroll inside their own panels', () => {

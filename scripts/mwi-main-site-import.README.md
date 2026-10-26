@@ -2,12 +2,76 @@
 
 Tampermonkey 脚本，用于把 Milky Way Idle 主站数据导入 MWI Combat Simulator。
 
+## 安装
+
+推荐从**模拟器站点自身**安装（国内可直接访问）：
+
+1. 打开模拟器，点右下角侧栏的「未安装导入脚本」或首页「导入/导出」弹窗里的「安装脚本」。
+2. 若脚本管理器没有自动弹出安装页，直接下载站点上的
+   [`userscript/mwi-main-site-import.user.js`](../../public/userscript/mwi-main-site-import.user.js)
+   并在 Tampermonkey 里「添加新脚本」粘贴内容。
+
+侧栏检测到「导入脚本待更新 / 可更新」时不会直接跳转，而是先弹出渠道选择：可以选
+**站点下载**（推荐，国内可用）或 **GreasyFork（海外备用）**，由用户决定从哪个来源更新。
+
+海外用户或站点不可用时，可改用 [GreasyFork](https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5) 安装。
+
+脚本头部刻意不声明 `@updateURL` / `@downloadURL`：Tampermonkey 在缺少更新指令时会把
+「安装来源 URL」记录为更新源。因此从**站点镜像**安装的用户会自动从该镜像检查更新（国内可达，
+`userscript/` 已配置不缓存、发版即生效），从 **GreasyFork** 安装的用户自动从 GreasyFork 更新——
+两条渠道的自动更新都成立，且不依赖写死的单一地址（站点有 GitHub Pages / Cloudflare Pages 双镜像）。
+
+> 注意：已安装旧版（头部带 GreasyFork 地址）的用户，其 Tampermonkey 更新源仍停留在 GreasyFork
+> （脚本管理器不会自动跟随头部变更），需在侧栏「更新渠道」里选一次「站点下载」重新安装，
+> 之后才会自动从站点更新。
+
+> 脚本随站点构建一起发布（`scripts/sync-userscript-to-public.mjs` → `public/userscript/`）：
+> `npm run dev` / `npm run build` / `npm start` 会**先执行该同步脚本**，因此**改完本文件后重新构建/启动**即可，
+> 不需要手动拷贝；GreasyFork 需要手动另行上传。
+> 侧栏的「导入脚本 vX.Y.Z / 待更新」正是靠脚本写入的版本标记判断，两处版本务必保持一致。
+
+## 自定义域名 / 自建镜像部署
+
+脚本头部 `@match` 只覆盖官方部署地址（GitHub Pages、Cloudflare Pages）、两个本地开发端口
+与 Milky Way Idle 主站。站点部署到其他域名时，脚本管理器不会在该页面注入脚本，因此：
+
+- 侧栏状态行会退化为「导入脚本不适用于当前域名」的中性说明，不再显示「未安装」，
+  也不提供安装入口——在本站点装官方分发的脚本不会生效，按原样安装只会陷入
+  「下载 → 装上 → 仍报未安装」的循环；
+- 首页「导入/导出」弹窗里的安装按钮同样下载官方分发的脚本，不能解决域名不匹配的问题。
+
+自建部署若要使用导入功能，需要**同时**调整脚本的以下两处，并自行分发该副本：
+
+1. 头部 `@match`：补充你的站点地址（含部署子路径，例如
+   `// @match        https://example.com/MWICombatSimulator/*`）；
+2. `isSimulatorPage()` 的 origin 白名单（脚本内约 1675 行）：把该地址加入，
+   否则脚本虽然会写安装标记，但不会注入模拟器页的导入按钮。
+
+模拟器侧可直接把 `VITE_MAIN_SITE_IMPORT_SCRIPT_URL` 指向你自建的脚本地址（见
+`src/ui/config/importScriptDistribution.js`），让安装入口下载到这份适配过的副本。
+侧栏与安装入口展示的版本 / SHA-256 始终来自**你构建时使用的脚本源文件**，改完脚本后
+按 `npm run dev` / `npm run build` 重新构建即可。
+
+## 信任边界
+
+脚本经模拟器站点同源分发（`userscript/mwi-main-site-import.user.js`），并带 Tampermonkey 权限运行在主站页面上，
+因此站点静态资源的完整性直接决定了用户装到的是什么。项目为此提供两级可见性：
+
+- 构建期（`scripts/sync-userscript-to-public.mjs`）按字节计算脚本的 SHA-256，写入随站点分发的
+  `userscript/mwi-main-site-import.meta.json`，并注入模拟器前端；
+- 模拟器「导入/导出」弹窗的安装入口会显示「本站脚本 vX.Y.Z · SHA-256 …」，可与本仓库（或 GreasyFork 页面）
+  的同一版本核对；
+- 部署流水线另有 `npm run verify-pages-build`，独立复算并断言 `dist/userscript/` 副本与 `scripts/` 源文件
+  逐字节一致、meta 的版本与校验值与之匹配。
+
+需要明确的边界：站点资源与展示的校验值出自同一次构建，它们只能用来发现「分发内容与发布内容不一致」，
+不能替代对发布方本身的信任。GreasyFork 是等价可切换的来源（安装入口同时保留），两者版本号保持一致。
+
 ## 使用
 
-1. 安装 [`mwi-main-site-import.user.js`](./mwi-main-site-import.user.js)，或从 [GreasyFork](https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5) 安装。
-2. 打开并登录一个 Milky Way Idle 主站标签页（`.com` 或 `.cn`）。
-3. 打开模拟器的 `Home`、`Enhancement` 或 `Skilling` 页面。
-4. 点击对应的导入按钮。
+1. 打开并登录一个 Milky Way Idle 主站标签页（`.com` 或 `.cn`）。
+2. 打开模拟器的 `Home`、`Enhancement` 或 `Skilling` 页面。
+3. 点击对应的导入按钮。
 
 队伍导入前，需要先在主站手动打开队友资料，让脚本缓存队友 profile。
 

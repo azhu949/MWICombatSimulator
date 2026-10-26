@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { buildAdvisorProgressPercent, buildAdvisorRuntimePhaseText } from '../advisorRuntimePresentation.js';
 import { formatCurrency } from '../components/home/homeFormatters.js';
-import { DEFAULT_MAIN_SITE_IMPORT_SCRIPT_URL, resolveMainSiteImportScriptUrl } from '../config/externalLinks.js';
+import {
+  DEFAULT_MAIN_SITE_IMPORT_SCRIPT_URL,
+  GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL,
+  resolveMainSiteImportScriptUrl,
+} from '../config/externalLinks.js';
+import {
+  IMPORT_SCRIPT_CHANNEL_GREASYFORK,
+  IMPORT_SCRIPT_CHANNEL_SITE,
+  buildImportScriptChannels,
+  resolveLocalImportScriptUrl,
+  resolveMainSiteImportScriptInstallUrl,
+} from '../config/importScriptDistribution.js';
 import { isQueueRunInProgress } from '../multiResultsPresentation.js';
 import { deriveQueueItemStatusName } from '../queueItemStatusPresentation.js';
 import { buildSkillingDrinkStatuses } from '../skillingDrinkPresentation.js';
@@ -33,8 +44,47 @@ describe('home formatters', () => {
 });
 
 describe('external link configuration', () => {
-  it('uses the maintained GreasyFork URL when no override is defined', () => {
+  it('defaults to the site-hosted script in a browser, GreasyFork outside one', () => {
+    // 国内 GreasyFork 常打不开：浏览器里默认入口必须是站内同源下载。
+    // 非浏览器环境（无 location，如 SSR / 本测试）无从拼站内地址，回退 GreasyFork。
+    const browserLocation = {
+      origin: 'https://mwi-combatsi-mulator.pages.dev',
+      href: 'https://mwi-combatsi-mulator.pages.dev/',
+    };
+    const browserUrl = resolveMainSiteImportScriptInstallUrl(browserLocation);
+    expect(browserUrl).toContain('/userscript/mwi-main-site-import.user.js');
+    expect(browserUrl).not.toContain('greasyfork.org');
+
+    expect(resolveMainSiteImportScriptInstallUrl(null)).toBe(GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL);
+
+    // 模块级常量按当前运行环境的 location 求值：二者必须与解析结果一致，不能各说各话。
+    expect(DEFAULT_MAIN_SITE_IMPORT_SCRIPT_URL).toBe(resolveMainSiteImportScriptInstallUrl());
     expect(resolveMainSiteImportScriptUrl(undefined)).toBe(DEFAULT_MAIN_SITE_IMPORT_SCRIPT_URL);
+  });
+
+  it('resolves the site-hosted path under every deployment base', () => {
+    // 三种部署形态都必须落到同一份站内副本：GitHub Pages 子路径 / Cloudflare 根路径 / 本地 dev。
+    const cases = [
+      [
+        { origin: 'https://azhu949.github.io', href: 'https://azhu949.github.io/MWICombatSimulator/#/home' },
+        'https://azhu949.github.io/MWICombatSimulator/userscript/mwi-main-site-import.user.js',
+      ],
+      [
+        { origin: 'https://mwi-combatsi-mulator.pages.dev', href: 'https://mwi-combatsi-mulator.pages.dev/' },
+        'https://mwi-combatsi-mulator.pages.dev/userscript/mwi-main-site-import.user.js',
+      ],
+      [
+        { origin: 'http://localhost:5173', href: 'http://localhost:5173/' },
+        'http://localhost:5173/userscript/mwi-main-site-import.user.js',
+      ],
+    ];
+    for (const [location, expected] of cases) {
+      expect(resolveLocalImportScriptUrl(location)).toBe(expected);
+    }
+  });
+
+  it('falls back to GreasyFork when the site location is unavailable', () => {
+    expect(resolveMainSiteImportScriptInstallUrl(null)).toBe(GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL);
   });
 
   it('accepts a configured HTTP(S) URL', () => {
@@ -52,6 +102,37 @@ describe('external link configuration', () => {
     expect(resolveMainSiteImportScriptUrl('not a URL')).toBe('');
     expect(resolveMainSiteImportScriptUrl('javascript:alert(1)')).toBe('');
     expect(resolveMainSiteImportScriptUrl('false')).toBe('');
+  });
+
+  it('offers site download first and GreasyFork second as update channels', () => {
+    const channels = buildImportScriptChannels({
+      primaryUrl: '  https://mwi-combatsi-mulator.pages.dev/userscript/mwi-main-site-import.user.js  ',
+      greasyforkUrl: GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL,
+    });
+
+    expect(channels).toEqual([
+      {
+        key: IMPORT_SCRIPT_CHANNEL_SITE,
+        url: 'https://mwi-combatsi-mulator.pages.dev/userscript/mwi-main-site-import.user.js',
+      },
+      { key: IMPORT_SCRIPT_CHANNEL_GREASYFORK, url: GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL },
+    ]);
+  });
+
+  it('de-duplicates identical channel URLs and skips blank entries', () => {
+    // 无 location 的 SSR/测试环境里主入口会回退到 GreasyFork：不能显示两个同样的选项。
+    expect(
+      buildImportScriptChannels({
+        primaryUrl: GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL,
+        greasyforkUrl: GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL,
+      }),
+    ).toEqual([{ key: IMPORT_SCRIPT_CHANNEL_SITE, url: GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL }]);
+
+    // 主入口被禁用时只剩 GreasyFork，且必须保持 greasyfork 标识（不能标成站点下载）。
+    expect(buildImportScriptChannels({ primaryUrl: '   ', greasyforkUrl: ' https://greasyfork.org/x ' })).toEqual([
+      { key: IMPORT_SCRIPT_CHANNEL_GREASYFORK, url: 'https://greasyfork.org/x' },
+    ]);
+    expect(buildImportScriptChannels({ primaryUrl: '', greasyforkUrl: '' })).toEqual([]);
   });
 });
 

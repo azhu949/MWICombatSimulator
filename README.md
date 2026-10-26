@@ -48,7 +48,12 @@ npm run dev
 npm run build
 ```
 
-主站导入脚本链接可通过构建变量 `VITE_MAIN_SITE_IMPORT_SCRIPT_URL` 覆盖；未定义时使用项目维护的 GreasyFork 默认地址，设置为空字符串会禁用安装按钮并显示待配置提示。无效或非 HTTP(S) 地址（例如 `false`）同样按禁用处理。
+> `npm run dev` / `npm run build` / `npm start` 会先执行 `node scripts/sync-userscript-to-public.mjs`，
+> 把 `scripts/mwi-main-site-import.user.js` 同步到 `public/userscript/`（站点分发副本 + 版本与校验值元数据），
+> 因此改完主站导入脚本后重新构建/启动即可，无需手动拷贝；站点侧副本的内容、校验值与信任边界见
+> [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)。
+
+主站导入脚本链接可通过构建变量 `VITE_MAIN_SITE_IMPORT_SCRIPT_URL` 覆盖；未定义时优先使用站点自身托管的副本（国内可直接访问），GreasyFork 作为海外备用来源。侧栏检测到「导入脚本待更新 / 可更新」时会先弹出渠道选择，由用户决定从站点还是 GreasyFork 更新。设置为空字符串会禁用安装按钮并显示待配置提示；无效或非 HTTP(S) 地址（例如 `false`）同样按禁用处理。
 
 本地预览构建产物：
 

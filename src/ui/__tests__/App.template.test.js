@@ -77,6 +77,22 @@ describe('App shell contracts', () => {
     expect(sidebarSource).toContain('v{{ version }}');
   });
 
+  it('exposes the main-site import script status marker on the sidebar entry', () => {
+    // 侧栏脚本状态行的状态值经该属性外露（模板测试锚定它不被改名，行为判定见
+    // useMainSiteImportScriptStatus 的单测）。
+    expect(sidebarSource).toContain('data-import-script-status');
+  });
+
+  it('asks for an update channel instead of jumping directly when an update is available', () => {
+    // 待更新/可更新时脚本可能来自站点或 GreasyFork，必须由用户选渠道（弹窗行为见
+    // ImportScriptChannelDialog 的单测）；直链只保留给安装与重装。
+    expect(sidebarSource).toContain('ImportScriptChannelDialog');
+    expect(sidebarSource).toContain('MAIN_SITE_IMPORT_SCRIPT_CHANNELS');
+    expect(sidebarSource).toContain('importScriptNeedsChannelChoice');
+    expect(sidebarSource).toContain("'aria-haspopup': 'dialog'");
+    expect(sidebarSource).toContain('data-import-script-action');
+  });
+
   it('uses the dedicated patch-notes route and clears unread entries on page entry', () => {
     expect(sidebarSource).toContain('to="/patch-notes"');
     expect(sidebarSource).toContain('sidebar-unread-badge');

@@ -8,6 +8,10 @@ import AppSidebar from '../components/AppSidebar.vue';
 import CombatCommandBar from '../components/CombatCommandBar.vue';
 import PlayerCardsStrip from '../components/PlayerCardsStrip.vue';
 import { Sidebar, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar/index.js';
+import {
+  IMPORT_SCRIPT_DETECTED_ATTRIBUTE,
+  IMPORT_SCRIPT_VERSION_ATTRIBUTE,
+} from '../../services/mainSiteImportScriptStatus.js';
 
 const EmptyPage = { template: '<div />' };
 
@@ -68,9 +72,15 @@ function mountPlayerCardsStrip(assetScore) {
 }
 
 describe('application shell behavior', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute(IMPORT_SCRIPT_DETECTED_ATTRIBUTE);
+    document.documentElement.removeAttribute(IMPORT_SCRIPT_VERSION_ATTRIBUTE);
+  });
   afterEach(() => {
     document.body.innerHTML = '';
+    document.documentElement.removeAttribute(IMPORT_SCRIPT_DETECTED_ATTRIBUTE);
+    document.documentElement.removeAttribute(IMPORT_SCRIPT_VERSION_ATTRIBUTE);
     // 复制用例会启用 fake timers；若单用例中途失败，这里兜底恢复真实时钟，
     // 避免假时钟泄漏导致后续用例的 flushPromises（setImmediate 实现）悬挂。
     vi.useRealTimers();
@@ -91,6 +101,41 @@ describe('application shell behavior', () => {
 
     const queueLink = wrapper.findAll('a').find((link) => link.text().includes('Queue'));
     expect(queueLink.classes()).toContain('bg-sidebar-accent');
+  });
+
+  it('opens the import script update channel chooser instead of navigating directly', async () => {
+    // 待更新状态：脚本可能来自站点或 GreasyFork，状态行必须变成弹窗按钮而不是直链。
+    document.documentElement.setAttribute(IMPORT_SCRIPT_DETECTED_ATTRIBUTE, '1');
+    document.documentElement.setAttribute(IMPORT_SCRIPT_VERSION_ATTRIBUTE, '0.0.1');
+
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+    await flushPromises();
+
+    const entry = wrapper.get('[data-main-site-import-script-status]');
+    expect(entry.element.tagName).toBe('BUTTON');
+    expect(entry.attributes('aria-haspopup')).toBe('dialog');
+    expect(entry.attributes('data-import-script-status')).toBe('outdated');
+    expect(entry.attributes('data-import-script-action')).toBe('choose-channel');
+
+    await entry.trigger('click');
+    await flushPromises();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.textContent).toContain('Update Import Script');
+    expect(dialog.querySelectorAll('[data-import-script-channel]')).toHaveLength(2);
+
+    wrapper.unmount();
   });
 
   it('expands only the simulation accordion group by default', async () => {

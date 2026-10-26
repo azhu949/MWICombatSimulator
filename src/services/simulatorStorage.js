@@ -1099,6 +1099,12 @@ function hasMeaningfulModernPlayerData(player) {
   ) {
     return true;
   }
+  if (
+    isPlainObject(player.abilityLevels) &&
+    Object.values(player.abilityLevels).some((level) => toFiniteNumber(level, 1) > 1)
+  ) {
+    return true;
+  }
 
   if (isPlainObject(player.triggerMap) && Object.keys(player.triggerMap).length > 0) {
     return true;

@@ -24,15 +24,39 @@
           <p v-if="!hasMainSiteImportScriptUrl" class="text-xs text-info">
             {{ t('common:vue.settings.mainSiteImportScriptPending', 'Script link pending') }}
           </p>
+          <p v-if="hasMainSiteImportScriptUrl" class="text-xs text-muted-foreground">
+            {{
+              t(
+                'common:vue.settings.mainSiteImportScriptHostedHint',
+                'The script is hosted on this site, so it installs even when GreasyFork is unreachable.',
+              )
+            }}
+          </p>
+          <p v-if="mainSiteImportScriptChecksum" class="text-[11px] font-mono break-all text-muted-foreground">
+            {{ mainSiteImportScriptChecksum }}
+          </p>
         </div>
-        <button
-          type="button"
-          class="button-tool shrink-0"
-          :disabled="!hasMainSiteImportScriptUrl"
-          @click="openMainSiteImportScript"
-        >
-          {{ t('common:vue.settings.installMainSiteImportScript', 'Install Script') }}
-        </button>
+        <div class="flex shrink-0 flex-col gap-2 sm:items-end">
+          <button
+            type="button"
+            class="button-tool"
+            :disabled="!hasMainSiteImportScriptUrl"
+            data-install-import-script
+            @click="openMainSiteImportScript"
+          >
+            {{ t('common:vue.settings.installMainSiteImportScript', 'Install Script') }}
+          </button>
+          <a
+            v-if="greasyforkImportScriptUrl"
+            :href="greasyforkImportScriptUrl"
+            class="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-install-import-script-mirror
+          >
+            {{ t('common:vue.settings.installMainSiteImportScriptMirror', 'GreasyFork (overseas)') }}
+          </a>
+        </div>
       </div>
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="rounded-md border border-border bg-muted/50 p-3 space-y-3">
@@ -132,7 +156,11 @@
 import { computed, ref, watch } from 'vue';
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useI18nText } from '../../composables/useI18nText.js';
-import { MAIN_SITE_IMPORT_SCRIPT_URL } from '../../config/externalLinks.js';
+import { MAIN_SITE_IMPORT_SCRIPT_URL, GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL } from '../../config/externalLinks.js';
+import {
+  MAIN_SITE_IMPORT_SCRIPT_SHA256,
+  MAIN_SITE_IMPORT_SCRIPT_VERSION,
+} from '../../../services/mainSiteImportScriptStatus.js';
 import { formatAssetScoreLabel } from '../../../services/assetScorePresentation.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';
 import BaseModal from '../BaseModal.vue';
@@ -149,6 +177,26 @@ const soloText = ref('');
 const soloTargetPlayerId = ref(String(simulator.activePlayerId || '1'));
 const status = ref({ tone: 'secondary', text: '' });
 const hasMainSiteImportScriptUrl = Boolean(MAIN_SITE_IMPORT_SCRIPT_URL);
+// 备用来源：主入口已是站内下载（国内可用），GreasyFork 仅作海外/异常兜底，
+// 因此只在它确实与主入口不同地址时才展示，避免同一个链接出现两次。
+const greasyforkImportScriptUrl =
+  hasMainSiteImportScriptUrl && GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL !== MAIN_SITE_IMPORT_SCRIPT_URL
+    ? GREASYFORK_MAIN_SITE_IMPORT_SCRIPT_URL
+    : '';
+
+// 站点分发的脚本版本与校验值：供用户把下载到的脚本与仓库/发布说明的同一版本核对
+// （信任边界见 scripts/mwi-main-site-import.README.md）。构建期未注入校验值时整行不渲染，
+// 避免出现「v? · SHA-256 undefined」这类噪音。
+const mainSiteImportScriptChecksum = computed(() => {
+  if (!MAIN_SITE_IMPORT_SCRIPT_SHA256) {
+    return '';
+  }
+
+  return t('common:vue.settings.mainSiteImportScriptChecksum', 'Site script v{{version}} · SHA-256 {{sha256}}', {
+    version: MAIN_SITE_IMPORT_SCRIPT_VERSION || '?',
+    sha256: MAIN_SITE_IMPORT_SCRIPT_SHA256,
+  });
+});
 const statusClass = computed(() => {
   if (status.value.tone === 'success') {
     return 'text-success';

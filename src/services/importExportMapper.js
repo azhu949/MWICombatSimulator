@@ -11,7 +11,9 @@ import {
   createEmptySkillExperienceMap,
   EQUIPMENT_SLOT_KEYS,
   LEVEL_KEYS,
+  normalizeAbilityLevels,
   normalizeHouseRoomLevels,
+  normalizePlayerLoadouts,
 } from '../shared/playerConfig.js';
 import { LABYRINTH_ROOM_LEVEL_DEFAULT, LABYRINTH_ROOM_LEVEL_MIN } from '../shared/labyrinthConfig.js';
 import { combatGuildBuffDetails, getGuildBuffMaxLevel, normalizeGuildBuffLevels } from '../shared/guildBuffs.js';
@@ -198,10 +200,27 @@ function normalizeDrinkSlotValue(rawValue) {
   return isKnownNonCombatDrink(drinkHrid) ? '' : drinkHrid;
 }
 
+// 角色身份判据：仅用于决定「能否沿用 fallback 的已学技能等级表」。
+// 只比较角色名且名字缺失时按同一角色处理（保守保留）——id 在本项目是玩家槽位键
+// （solo 导入在 store 层恒归一为目标槽位 id，group 导入按载荷 id 路由槽位后也恒等），
+// 同一角色换槽位导出/导入时 id 会变，拿它判身份会误清表，反而重新制造截断。
+function isSamePlayerIdentity(source, fallback) {
+  const normalizeName = (value) =>
+    String(value ?? '')
+      .trim()
+      .toLowerCase();
+  const sourceName = normalizeName(source?.name);
+  const fallbackName = normalizeName(fallback?.name);
+  if (!sourceName || !fallbackName) {
+    return true;
+  }
+  return sourceName === fallbackName;
+}
+
 function sanitizePlayerConfig(
   raw,
   fallbackPlayer,
-  { preserveMissingGuildBuffs = false, preserveMissingCombatScrolls = false } = {},
+  { preserveMissingGuildBuffs = false, preserveMissingCombatScrolls = false, explicitAbilityLevels = null } = {},
 ) {
   const fallback = deepClone(fallbackPlayer || createEmptyPlayerConfig(1));
   const source = raw && typeof raw === 'object' ? raw : {};
@@ -240,7 +259,41 @@ function sanitizePlayerConfig(
     };
   });
 
+  // 已学技能等级权威表：技能等级属于技能本身（不随配装走），套用配装按 hrid 查表。
+  // 等级证据分两类：payload 自带的 abilityLevels 表，或槽位条目自身显式携带的等级
+  // （必须由 extractExplicitAbilityLevels 在归一化前提取——normalizeCombatAbilities
+  // 会把缺失等级的槽位回退成 1，缺省 1 不是显式等级证据）。
+  // 只有表级证据才以 payload 为权威整体替换。仅有槽位证据时（旧版导出 / 旧版主站脚本
+  // 载荷 / 缓存队伍档案都没有 characterAbilities）槽位最多 5 条，不足以代表「全量已学
+  // 技能」：整表重建会把「已学但不在当前槽位」的等级截断成 1 级，套用配装后回落 1 级
+  // 并随导出/导入永久固化——正是本改动要修的缺陷。此时按角色身份决定：
+  //   同一角色（名字一致，或载荷未带名字）→ 沿用 fallback 旧表，再与槽位等级取高合并；
+  //   换角色（名字不同）→ 整表重建，避免跨角色残留已学等级。
+  // payload 完全没有任何等级证据时保持原有回退语义。表与槽位冲突时仍取高，避免缺省
+  // 展示值把已学等级降下来。
+  const slotAbilityLevels = explicitAbilityLevels ?? extractExplicitAbilityLevels(source.abilities);
+  const hasAbilityLevelTable =
+    source.abilityLevels !== null && typeof source.abilityLevels === 'object' && !Array.isArray(source.abilityLevels);
+  const hasSlotAbilityEvidence = Object.keys(slotAbilityLevels).length > 0;
+  const reuseFallbackAbilityLevels =
+    !hasAbilityLevelTable && (!hasSlotAbilityEvidence || isSamePlayerIdentity(source, fallback));
+  normalized.abilityLevels = normalizeAbilityLevels(
+    hasAbilityLevelTable ? source.abilityLevels : reuseFallbackAbilityLevels ? (fallback.abilityLevels ?? {}) : {},
+  );
+  for (const [hrid, level] of Object.entries(slotAbilityLevels)) {
+    const known = normalized.abilityLevels[hrid];
+    if (known === undefined || level > known) {
+      normalized.abilityLevels[hrid] = level;
+    }
+  }
+
   normalized.triggerMap = sanitizeTriggerMap(source.triggerMap ?? fallback.triggerMap ?? {});
+
+  // 配装快照：字段缺失（旧版脚本载荷 / 原生 solo 导出无配装）保留现有配置；
+  // 携带时经 shared 层归一化整包覆盖（主站 characterLoadoutMap 是权威快照）。
+  normalized.loadouts = Object.prototype.hasOwnProperty.call(source, 'loadouts')
+    ? normalizePlayerLoadouts(source.loadouts)
+    : deepClone(fallback.loadouts ?? []);
 
   normalized.combatScrolls = resolveImportedCombatScrolls(source, fallback.combatScrolls, preserveMissingCombatScrolls);
 
@@ -475,6 +528,115 @@ function pickShareableCandidateValue(candidates, resolvers, fallbackValue = null
   return fallbackValue;
 }
 
+// 游戏内配装 wearableMap 的值是「characterId::槽位 hrid::物品 hrid::强化等级」
+// 哈希串（Toolasha loadout-state.js parseLoadoutWearable 同款口径）：取以 /items/
+// 开头的段为物品，末段为强化等级（末段以 / 开头 = 无等级段，视为 0）。
+function parseShareableLoadoutWearableHash(wearableHash) {
+  const raw = String(wearableHash || '');
+  if (!raw) {
+    return null;
+  }
+
+  const parts = raw.split('::');
+  const itemHrid = parts.find((part) => part.startsWith('/items/'));
+  if (!itemHrid) {
+    return null;
+  }
+
+  const lastPart = parts[parts.length - 1] || '';
+  const enhancementLevel = lastPart.startsWith('/') ? 0 : clampEnhancementLevel(lastPart);
+
+  return { itemHrid, enhancementLevel };
+}
+
+// 游戏内配装（characterLoadoutMap，init_character_data 与共享档案 profile 均携带）
+// → 玩家 loadouts 快照列表。abilityMap 是「槽位数字串 → 技能 hrid」映射，经
+// normalizeCombatAbilities 统一槽位策略（0/1 起始、特殊技能槽识别），与共享档案
+// equippedAbilities 走同一实现。技能等级不随配装走：条目里无等级信息，套用时
+// 按技能 hrid 从玩家当前配置取等级。
+// 未携带配装字段时返回 undefined（调用方保留现有配置）；携带但为空（玩家未建
+// 配装）返回 [] 整包覆盖。
+function extractShareableLoadouts(loadoutSource) {
+  const loadoutMap =
+    loadoutSource && typeof loadoutSource === 'object' && !Array.isArray(loadoutSource) ? loadoutSource : null;
+  if (!loadoutMap || Object.keys(loadoutMap).length === 0) {
+    return [];
+  }
+
+  const loadouts = [];
+  for (const [loadoutId, rawLoadout] of Object.entries(loadoutMap)) {
+    if (!rawLoadout || typeof rawLoadout !== 'object') {
+      continue;
+    }
+
+    const name = String(rawLoadout.name || '').trim();
+    if (!name) {
+      continue;
+    }
+
+    const equipment = Object.fromEntries(
+      IMPORTABLE_EQUIPMENT_SLOTS.map((slot) => [slot, { itemHrid: '', enhancementLevel: 0 }]),
+    );
+    const wearableMap =
+      rawLoadout.wearableMap && typeof rawLoadout.wearableMap === 'object' && !Array.isArray(rawLoadout.wearableMap)
+        ? rawLoadout.wearableMap
+        : {};
+    for (const [locationHrid, wearableHash] of Object.entries(wearableMap)) {
+      const parsedWearable = parseShareableLoadoutWearableHash(wearableHash);
+      if (!parsedWearable) {
+        continue;
+      }
+
+      const slot = resolveEquipmentSlotFromItemLocationHrid(locationHrid);
+      if (slot) {
+        equipment[slot] = parsedWearable;
+      }
+    }
+
+    const abilityMap =
+      rawLoadout.abilityMap && typeof rawLoadout.abilityMap === 'object' && !Array.isArray(rawLoadout.abilityMap)
+        ? rawLoadout.abilityMap
+        : {};
+    const abilities = normalizeCombatAbilities(
+      Object.entries(abilityMap).map(([slotKey, abilityHrid]) => ({
+        abilityHrid: String(abilityHrid || ''),
+        slot: Number(slotKey),
+      })),
+    );
+
+    const triggerMap = {};
+    for (const rawTriggerMap of [rawLoadout.consumableCombatTriggersMap, rawLoadout.abilityCombatTriggersMap]) {
+      if (!rawTriggerMap || typeof rawTriggerMap !== 'object' || Array.isArray(rawTriggerMap)) {
+        continue;
+      }
+
+      for (const [targetHrid, triggerList] of Object.entries(rawTriggerMap)) {
+        const hrid = String(targetHrid || '').trim();
+        if (!hrid) {
+          continue;
+        }
+        triggerMap[hrid] = sanitizeTriggerList(triggerList);
+      }
+    }
+
+    loadouts.push({
+      id: String(loadoutId),
+      name,
+      actionTypeHrid: String(rawLoadout.actionTypeHrid || ''),
+      isDefault: rawLoadout.isDefault === true,
+      ordinal: Math.floor(toFiniteNumber(rawLoadout.ordinal, 0)),
+      equipment,
+      food: [0, 1, 2].map((index) => String(rawLoadout.foodItemHrids?.[index] || '')),
+      drinks: [0, 1, 2].map((index) => normalizeDrinkSlotValue(rawLoadout.drinkItemHrids?.[index])),
+      abilities,
+      triggerMap,
+    });
+  }
+
+  loadouts.sort((left, right) => left.ordinal - right.ordinal || left.name.localeCompare(right.name));
+  return loadouts;
+}
+
 function toObjectValueList(source) {
   if (Array.isArray(source)) {
     return source;
@@ -485,6 +647,30 @@ function toObjectValueList(source) {
   }
 
   return [];
+}
+
+// 槽位条目的「显式等级证据」：只认条目自身携带且为正数的 level / abilityLevel。
+// 必须在 normalizeCombatAbilities 归一化之前从原始载荷提取——归一化会把缺失等级的
+// 槽位回退成 1（缺省展示值），若拿归一化结果判断，会把「未学过」误当成真实 1 级。
+function extractExplicitAbilityLevels(rawAbilities) {
+  const explicitLevels = {};
+
+  for (const rawAbility of toObjectValueList(rawAbilities)) {
+    if (!rawAbility || typeof rawAbility !== 'object') {
+      continue;
+    }
+
+    const hrid = normalizeAbilityHrid(
+      rawAbility?.abilityHrid || rawAbility?.ability?.abilityHrid || rawAbility?.ability || '',
+    );
+    const rawLevel = rawAbility?.level ?? rawAbility?.abilityLevel;
+    const level = Math.floor(toFiniteNumber(rawLevel, 0));
+    if (hrid && rawLevel != null && level > 0) {
+      explicitLevels[hrid] = Math.min(Math.max(level, 1), 400);
+    }
+  }
+
+  return explicitLevels;
 }
 
 function createEmptyAbilitySlots() {
@@ -755,6 +941,61 @@ function extractCurrentCharacterEquipment(parsed, fallbackPlayer) {
 
 function extractCurrentCharacterAbilities(parsed) {
   return normalizeCombatAbilities(parsed?.combatUnit?.combatAbilities);
+}
+
+// 已学技能等级（abilityLevels 权威表）的提取：主站 init_character_data 顶层
+// characterAbilities 是「全量已学技能等级」数组（【实测确认 2026-10-26】用户导入日志
+// 「imported 34 ability levels from characterAbilities:34」），是「切配装技能变 1 级」
+// 修复实际生效的字段，按用户要求收窄为只读该字段（不再保留多候选字段名兜底）。
+// 当前装备槽（combatAbilities / equippedAbilities）的等级由 normalizeCombatAbilities
+// → sanitizePlayerConfig 从槽位合并，不在此重复提取。
+// 只接受明确的技能等级形状——数组条目 { abilityHrid|hrid|ability, level }，或键为
+// hrid 形状（/ 开头）的对象 { [hrid]: level | { level } }——形状不匹配整体忽略。
+// 返回原始 { [hrid]: level }（字段缺失时返回 undefined 表示「无表级证据」），
+// 由 sanitizePlayerConfig / normalizeAbilityLevels 统一钳制清洗。
+function extractShareableAbilityLevels(source) {
+  // 字段缺失 / 非数组非对象 → undefined（无表级证据），与「字段存在但为空」
+  // 返回 {}（显式空表，权威清空）区分开；调用方据此决定是否沿用 fallback 旧表。
+  const rawAbilities = source?.characterAbilities;
+  if (rawAbilities == null || (!Array.isArray(rawAbilities) && typeof rawAbilities !== 'object')) {
+    return undefined;
+  }
+
+  const result = {};
+
+  if (Array.isArray(rawAbilities)) {
+    for (const entry of rawAbilities) {
+      if (!entry || typeof entry !== 'object') {
+        continue;
+      }
+      const hrid = String(entry.abilityHrid || entry.hrid || entry.ability || '').trim();
+      const level = Math.floor(toFiniteNumber(entry.level, 0));
+      if (hrid && level > 0) {
+        result[hrid] = level;
+      }
+    }
+  } else if (rawAbilities && typeof rawAbilities === 'object') {
+    for (const [key, value] of Object.entries(rawAbilities)) {
+      const hrid = String(key || '').trim();
+      if (!hrid.startsWith('/')) {
+        continue;
+      }
+      const level = Math.floor(toFiniteNumber(value && typeof value === 'object' ? (value.level ?? value) : value, 0));
+      if (level > 0) {
+        result[hrid] = level;
+      }
+    }
+  }
+
+  // 诊断日志：输出实际提取到的已学技能等级条数，供确认 characterAbilities 字段
+  // 仍被主站携带（字段改名/消失时条数变化或不再输出，便于对照「切配装技能变 1 级」）。
+  // 生产构建中 import.meta.env.DEV 被 Vite 静态替换为 false 并被 tree-shaking 移除，
+  // 零开销零副作用（与 patchNotes.js / queueUpgradeCost.js 开发期诊断同款）。
+  if (import.meta.env.DEV && Object.keys(result).length > 0) {
+    console.info(`[abilityLevels] imported ${Object.keys(result).length} ability levels from characterAbilities`);
+  }
+
+  return result;
 }
 
 function extractCurrentCharacterTriggerMap(parsed) {
@@ -1215,10 +1456,21 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
   }
 
   rawPlayer.abilities = normalizeCombatAbilities(profile?.equippedAbilities);
+  // 全量已学技能等级：共享档案 equippedAbilities 可能含超出当前 5 槽的「已学但未装备」
+  // 技能等级，全量提取并入权威表（表级权威替换 + 槽位等级取高合并），
+  // 切换配装按 hrid 查表不再回落 1 级。
+  rawPlayer.abilityLevels = extractShareableAbilityLevels(profile);
 
   const triggerMap = extractShareableTriggerMap(candidateLoadouts, parsed);
   if (hasShareableTriggerPayload(candidateLoadouts, parsed)) {
     rawPlayer.triggerMap = triggerMap;
+  }
+
+  // 配装快照：共享档案 profile.characterLoadoutMap（主站脚本整包透传）。
+  // 字段缺失（旧载荷）时保留 undefined 语义，交由 sanitizePlayerConfig 回退现有配置。
+  const loadouts = extractShareableLoadouts(profile?.characterLoadoutMap);
+  if (profile && Object.prototype.hasOwnProperty.call(profile, 'characterLoadoutMap')) {
+    rawPlayer.loadouts = loadouts;
   }
 
   const houseRooms = extractShareableHouseRooms(profile, fallbackPlayer);
@@ -1242,6 +1494,7 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
+      explicitAbilityLevels: extractExplicitAbilityLevels(profile?.equippedAbilities),
     }),
     simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
     detectedFormat: 'main-site-share-profile',
@@ -1370,6 +1623,9 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     drinks: extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
     craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
     abilities: extractCurrentCharacterAbilities(parsed),
+    // 全量已学技能等级：主站载荷除当前装备槽外可能携带全量映射（含「已学但未装备」
+    // 的技能等级），宽容提取并入权威表，切换配装按 hrid 查表不再回落 1 级。
+    abilityLevels: extractShareableAbilityLevels(parsed),
   };
 
   for (const skill of Array.isArray(parsed?.characterSkills) ? parsed.characterSkills : []) {
@@ -1385,6 +1641,12 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
   const triggerMap = extractCurrentCharacterTriggerMap(parsed);
   if (hasCurrentCharacterTriggerPayload(parsed)) {
     rawPlayer.triggerMap = triggerMap;
+  }
+
+  // 配装快照：单人快照路径经白名单携带 characterLoadoutMap（官方 init_character_data
+  // 内嵌该字段）。旧版脚本载荷缺失该字段时保留现有配置。
+  if (Object.prototype.hasOwnProperty.call(parsed || {}, 'characterLoadoutMap')) {
+    rawPlayer.loadouts = extractShareableLoadouts(parsed.characterLoadoutMap);
   }
 
   const houseRooms = extractShareableHouseRooms(parsed, fallbackPlayer);
@@ -1419,6 +1681,7 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
+      explicitAbilityLevels: extractExplicitAbilityLevels(parsed?.combatUnit?.combatAbilities),
     }),
     simulationSettings,
     detectedFormat: 'main-site-current-character',

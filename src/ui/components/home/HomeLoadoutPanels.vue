@@ -162,6 +162,12 @@
                 type="number"
                 min="1"
                 max="400"
+                @change="
+                  simulator.rememberActivePlayerAbilityLevel(
+                    activePlayer.abilities[slotIndex - 1].abilityHrid,
+                    activePlayer.abilities[slotIndex - 1].level,
+                  )
+                "
               />
             </div>
           </div>

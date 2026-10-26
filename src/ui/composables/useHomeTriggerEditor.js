@@ -183,7 +183,18 @@ export function useHomeTriggerEditor() {
     } else if (kind === 'drink') {
       activePlayer.value.drinks[index] = normalized;
     } else if (kind === 'ability') {
+      // 技能等级属于技能本身（abilityLevels 权威表）：换技能前把旧技能的等级记回表里
+      // （只升不降，见 store 的 rememberAbilityLevelInto），再按新技能 hrid 带出已学等级；
+      // 未学技能（表内无记录）回落 1 级，与套用配装的 applyActivePlayerLoadout 口径一致。
+      const previousHrid = String(activePlayer.value.abilities[index].abilityHrid || '');
+      if (previousHrid) {
+        simulator.rememberActivePlayerAbilityLevel(previousHrid, activePlayer.value.abilities[index].level);
+      }
       activePlayer.value.abilities[index].abilityHrid = normalized;
+      if (normalized) {
+        const knownLevel = simulator.resolveActivePlayerAbilityLevel(normalized);
+        activePlayer.value.abilities[index].level = knownLevel != null ? knownLevel : 1;
+      }
     }
     if (normalized) {
       simulator.ensureActivePlayerTriggerDefaults(normalized);

@@ -5,7 +5,7 @@ import equipmentTypeDetailMap from '../../combatsimulator/data/equipmentTypeDeta
 import itemDetailMap from '../../combatsimulator/data/itemDetailMap.json';
 import skillDetailMap from '../../combatsimulator/data/skillDetailMap.json';
 import { houseRoomHrids, resolveEquipmentComboboxItems, zoneMonsterSpawnIndex } from '../gameDataIndex.js';
-import { ensurePlayerAdvancedState } from '../playerConfig.js';
+import { ensurePlayerAdvancedState, normalizePlayerLoadouts } from '../playerConfig.js';
 
 // 2026-10-03 合并：原 5 个 shared/ 侧薄测试文件（gameDataIndex.drinkOptions /
 // gameDataIndex.equipmentCombobox / gameDataIndex.zoneMonsterSpawn / gameDataIndex.charmOptions /
@@ -332,6 +332,55 @@ describe('gameDataIndex & shared option projections', () => {
       expect(player.houseRooms[knownRoomHrid]).toBe(3);
       expect(player.houseRooms).not.toHaveProperty(unknownRoomHrid);
       expect(Object.keys(player.houseRooms)).toEqual(houseRoomHrids);
+    });
+
+    it('returns an empty list when the loadout payload is not an array', () => {
+      expect(normalizePlayerLoadouts(null)).toEqual([]);
+      expect(normalizePlayerLoadouts(undefined)).toEqual([]);
+      // 主站 characterLoadoutMap 是「id → 配装」映射：未经 reshape 直接喂进来必须是空列表，
+      // 而不是把它当数组遍历出一批无 id 的残条目。
+      expect(normalizePlayerLoadouts({ 'loadout-1': { name: 'Combat Set' } })).toEqual([]);
+    });
+
+    it('normalizes loadout snapshots and drops entries without id or name', () => {
+      const loadouts = normalizePlayerLoadouts([
+        null,
+        'not-an-object',
+        { id: 'loadout-1' },
+        { name: 'No Id' },
+        {
+          id: '  loadout-2  ',
+          name: '  Combat Set  ',
+          actionTypeHrid: '/action_types/combat',
+          isDefault: 'yes',
+          equipment: {
+            head: { itemHrid: '/items/steel_helmet', enhancementLevel: 99 },
+            trinket: { itemHrid: '/items/lucky_clover', enhancementLevel: -3 },
+          },
+          food: ['/items/basic_food', '/items/good_food'],
+          drinks: ['/items/basic_drink'],
+          abilities: [{ abilityHrid: '/abilities/aqua_arrow', level: 0 }],
+          triggerMap: { '/items/basic_food': [] },
+        },
+      ]);
+
+      expect(loadouts).toHaveLength(1);
+
+      const [loadout] = loadouts;
+      expect(loadout.id).toBe('loadout-2');
+      expect(loadout.name).toBe('Combat Set');
+      // isDefault 只认真正的布尔 true（字符串 'yes' 不算）。
+      expect(loadout.isDefault).toBe(false);
+      // 装备槽位覆盖主槽位与 preview-only 饰品槽（trinket），强化等级钳制在 0..20。
+      expect(loadout.equipment.head).toEqual({ itemHrid: '/items/steel_helmet', enhancementLevel: 20 });
+      expect(loadout.equipment.trinket).toEqual({ itemHrid: '/items/lucky_clover', enhancementLevel: 0 });
+      // 食物/饮品固定 3 槽（缺槽补空串），技能固定 5 槽且等级至少为 1。
+      expect(loadout.food).toEqual(['/items/basic_food', '/items/good_food', '']);
+      expect(loadout.drinks).toEqual(['/items/basic_drink', '', '']);
+      expect(loadout.abilities).toHaveLength(5);
+      expect(loadout.abilities[0]).toEqual({ abilityHrid: '/abilities/aqua_arrow', level: 1 });
+      expect(loadout.abilities.slice(1)).toEqual(Array.from({ length: 4 }, () => ({ abilityHrid: '', level: 1 })));
+      expect(loadout.triggerMap).toEqual({ '/items/basic_food': [] });
     });
   });
 });

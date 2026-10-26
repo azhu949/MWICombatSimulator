@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.49
+// @version      0.1.51
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -20,10 +20,13 @@
 // @grant        GM_setValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @grant        GM_info
 // @grant        unsafeWindow
 // @run-at       document-start
-// @downloadURL https://update.greasyfork.org/scripts/568613/MWI%20Combat%20Simulator%20%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5.user.js
-// @updateURL https://update.greasyfork.org/scripts/568613/MWI%20Combat%20Simulator%20%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5.meta.js
+// 刻意不写 @updateURL / @downloadURL：Tampermonkey 在缺少更新指令时会把「安装来源 URL」
+// 记录为更新源。从站点镜像安装的用户自动从该镜像检查更新（国内可达，userscript/ 不缓存），
+// 从 GreasyFork 安装的用户自动从 GreasyFork 更新——两条渠道的自动更新都成立，且不依赖
+// 写死的单一地址（站点有 GitHub Pages / Cloudflare Pages 双镜像，写死任一处都会让另一处失效）。
 // ==/UserScript==
 
 (function () {
@@ -200,6 +203,17 @@
     'actionTypeDrinkSlotsMap',
     'consumableCombatTriggersMap',
     'abilityCombatTriggersMap',
+    // 游戏内配装（Loadout）：官方 init_character_data 内嵌 characterLoadoutMap（含
+    // wearableMap/abilityMap/foodItemHrids/drinkItemHrids/触发器），配装增删改走
+    // loadouts_updated 增量消息（载荷同为 { characterLoadoutMap } 整包）。快照携带后
+    // 随导入载荷透传给模拟器（模拟器侧解析为玩家 loadouts 快照列表，支持配装切换）。
+    'characterLoadoutMap',
+    // 全量已学技能等级字段：官方 init_character_data 顶层的 characterAbilities 是
+    // 「全量已学技能等级」数组（【实测确认 2026-10-26】模拟器导入日志「imported 34
+    // ability levels from characterAbilities:34」），透传给模拟器（模拟器侧
+    // extractShareableAbilityLevels 提取，并入 abilityLevels 权威表，解决「切到含
+    // 未装备技能的配装时等级回落 1 级」）。字段不存在时不携带，零副作用。
+    'characterAbilities',
   ];
   const REQUIRED_CURRENT_CHARACTER_SNAPSHOT_KEYS = ['character', 'characterSkills', 'characterItems', 'combatUnit'];
 
@@ -1666,6 +1680,62 @@
       origin === 'http://localhost:5173' ||
       origin === 'http://127.0.0.1:5173'
     );
+  }
+
+  // 安装标记：模拟器侧栏（AppSidebar 的导入脚本状态行）需要判断「脚本装没装 / 是不是
+  // 最新版」，但网页侧拿不到 GM_* API，只能读脚本写在 <html> 上的属性。写入时机必须在
+  // 应用挂载前（@run-at document-start），侧栏首帧即可读到；若不写，侧栏会一直显示未安装。
+  // 任何 @match 页面都写（而非仅模拟器域名）：模拟器可能部署在自定义域名，按 origin 白名单
+  // 判断会漏写，而该属性在主站页无任何副作用。
+  const IMPORT_SCRIPT_MARKER_ATTRIBUTE = 'data-mwi-tm-import-script';
+  const IMPORT_SCRIPT_VERSION_ATTRIBUTE = 'data-mwi-tm-import-script-version';
+  const IMPORT_SCRIPT_VERSION = (() => {
+    try {
+      return String(GM_info?.script?.version || '').trim();
+    } catch (_error) {
+      // 非用户脚本环境（如直接以普通脚本加载）没有 GM_info：只写安装标记、不写版本，
+      // 侧栏据此降级为「已安装，版本未知」而不是误报未安装。
+      return '';
+    }
+  })();
+
+  function markImportScriptInstalled() {
+    // 全路径容错：@run-at document-start 时 <html> 可能还没解析出来，需要排到之后重试；
+    // 而测试沙箱里的 document 是极简桩（无 setAttribute / 无 window.setTimeout），
+    // 任何一步都不得抛出——否则整个脚本初始化会被打断。
+    function writeMarker() {
+      try {
+        const root = document?.documentElement;
+        if (!root || typeof root.setAttribute !== 'function') {
+          return false;
+        }
+
+        root.setAttribute(IMPORT_SCRIPT_MARKER_ATTRIBUTE, '1');
+        if (IMPORT_SCRIPT_VERSION) {
+          root.setAttribute(IMPORT_SCRIPT_VERSION_ATTRIBUTE, IMPORT_SCRIPT_VERSION);
+        }
+        return true;
+      } catch (_error) {
+        return false;
+      }
+    }
+
+    if (writeMarker()) {
+      return;
+    }
+
+    try {
+      if (typeof document?.addEventListener === 'function') {
+        document.addEventListener('DOMContentLoaded', writeMarker, { once: true });
+        return;
+      }
+    } catch (_error) {}
+
+    try {
+      if (typeof setTimeout === 'function') {
+        setTimeout(writeMarker, 0);
+      }
+    } catch (_error) {}
   }
 
   function normalizeUiLanguage(value) {
@@ -3285,6 +3355,15 @@
 
     if (type === 'combat_triggers_updated') {
       updateCombatTriggerMap(message);
+      return;
+    }
+
+    // 配装增删改的增量消息（载荷 { characterLoadoutMap } 整包）：直接覆盖快照字段，
+    // 下次导入载荷即携带最新配装。旧快照无该字段时（脚本升级后首次收到）同样新建。
+    if (type === 'loadouts_updated') {
+      if (message.characterLoadoutMap && typeof message.characterLoadoutMap === 'object') {
+        updateCurrentCharacterSnapshot({ characterLoadoutMap: message.characterLoadoutMap });
+      }
     }
   }
 
@@ -4743,6 +4822,9 @@
   }
 
   installDebugInterface();
+
+  // 先写安装标记再初始化任何 UI：侧栏状态行依赖它，且必须早于应用挂载完成。
+  markImportScriptInstalled();
 
   if (isMainSitePage()) {
     initMainSiteBridge();

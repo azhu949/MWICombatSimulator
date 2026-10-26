@@ -14,7 +14,7 @@ import {
   soloZoneHrids,
   zoneOptions,
 } from '../shared/gameDataIndex.js';
-import { createEmptyPlayerConfig, ensurePlayerAdvancedState } from '../shared/playerConfig.js';
+import { createEmptyPlayerConfig, ensurePlayerAdvancedState, MAX_ABILITY_LEVEL } from '../shared/playerConfig.js';
 import workerClient from '../services/workerClient.js';
 import {
   applyPersistedAchievementsToPlayers,
@@ -184,6 +184,30 @@ function getZoneOptions() {
 
 function getLabyrinthOptions() {
   return labyrinthOptions;
+}
+
+// 已学技能等级权威表（abilityLevels）的唯一写入口径：只升不降、跳过 1 级。
+// 槽位上的 level 是「当前模拟等级」（可自由调低做 what-if），不是已学等级证据：1 是
+// 「未学过 / 导入归一化回退」的缺省展示值，写进表里没有意义；更低的值只会污染权威表——
+// 套用配装按表解析后再导出/导入，就会把 what-if 值固化成已学等级。批量记住与单条记住共用
+// 本函数，避免两套口径再次分叉（见 store actions 内的权威表注释）。
+function rememberAbilityLevelInto(table, abilityHrid, rawLevel) {
+  const hrid = String(abilityHrid || '').trim();
+  const level = Math.floor(Number(rawLevel));
+  if (!hrid || !Number.isFinite(level)) {
+    return false;
+  }
+  const clamped = clamp(level, 1, MAX_ABILITY_LEVEL);
+  if (clamped <= 1) {
+    return false;
+  }
+  const known = Number(table[hrid]);
+  const hasKnownLevel = Object.prototype.hasOwnProperty.call(table, hrid);
+  if (hasKnownLevel && Number.isFinite(known) && clamped <= known) {
+    return false;
+  }
+  table[hrid] = clamped;
+  return true;
 }
 
 /**
@@ -534,6 +558,117 @@ export const useSimulatorStore = defineStore('simulator', {
         this.ensureActivePlayerTriggerDefaults(hrid);
       }
 
+      return true;
+    },
+    // 套用配装：配装是「装备+食物+饮品+技能+触发器」五件套快照，整体覆盖玩家当前
+    // 配置的对应五项；等级/房屋/公会增益/卷轴/制作茶槽不属于配装，保持不变。
+    // 技能等级按 hrid 从玩家当前技能配置取（配装快照不含等级），缺失时回落 1 级。
+    applyActivePlayerLoadout(loadoutId) {
+      const player = this.activePlayer;
+      const loadout = (player?.loadouts || []).find((entry) => entry.id === String(loadoutId));
+      if (!player || !loadout) {
+        return false;
+      }
+
+      for (const [slot, entry] of Object.entries(loadout.equipment || {})) {
+        if (player.equipment[slot] === undefined) {
+          continue;
+        }
+        player.equipment[slot] = {
+          itemHrid: String(entry.itemHrid || ''),
+          enhancementLevel: clamp(entry.enhancementLevel, 0, 20),
+        };
+      }
+
+      player.food = (loadout.food || []).map((itemHrid) => String(itemHrid || ''));
+      player.drinks = (loadout.drinks || []).map((itemHrid) => String(itemHrid || ''));
+
+      // 技能等级属于技能（角色全局，不随配装走）：套用前先把当前已装备技能的等级并入
+      // 已学等级表（abilityLevels），新槽位按 hrid 从该表取（配装快照不含等级），缺失
+      // 回落 1 级——这样技能哪怕不在当前槽位 / 上个配装里，切回来也不会掉成 1 级。
+      this.rememberActivePlayerAbilityLevels(player);
+      player.abilities = (loadout.abilities || []).map((entry) => {
+        const abilityHrid = String(entry?.abilityHrid || '');
+        return {
+          abilityHrid,
+          level: abilityHrid ? this.resolveActivePlayerAbilityLevelFor(player, abilityHrid) : 1,
+        };
+      });
+      this.rememberActivePlayerAbilityLevels(player);
+
+      player.triggerMap = sanitizeTriggerMap(deepClone(loadout.triggerMap || {}));
+      for (const entry of player.abilities) {
+        if (entry.abilityHrid) {
+          this.ensureActivePlayerTriggerDefaults(entry.abilityHrid);
+        }
+      }
+      for (const itemHrid of [...player.food, ...player.drinks]) {
+        if (itemHrid) {
+          this.ensureActivePlayerTriggerDefaults(itemHrid);
+        }
+      }
+
+      return true;
+    },
+    // —— 技能等级权威表（abilityLevels）——
+    // 技能（Ability）等级属于技能本身（角色全局属性，不随装备槽/配装走）；槽位上的 level
+    // 只是「当前模拟等级」。玩家配置的 abilityLevels（hrid → level）保存「已学技能等级」
+    // 权威表，套用配装与换技能都按 hrid 查表，避免「技能不在当前槽位就掉回 1 级」。
+    // 两个写入口径完全一致（共用模块级 rememberAbilityLevelInto）：只持久化「已学」等级——
+    // 槽位等级为 1 是「未学过 / 导入归一化回退」的缺省展示值，一律跳过、不新建 1 级条目；
+    // 且只升不降，槽位显示值绝不覆盖更高的已学等级。把技能等级调低做 what-if 只改槽位
+    // （当前模拟等级），权威表保持原值——否则套用配装会先按被污染的表把等级改回低值，再随
+    // 导出/导入永久固化（payload 的 abilityLevels 是表级权威证据）。需要调小已学等级时，
+    // 重新导入角色数据（主站载荷携带全量等级表）。
+    rememberActivePlayerAbilityLevels(player = this.activePlayer) {
+      if (!player || !Array.isArray(player.abilities)) {
+        return false;
+      }
+      if (!player.abilityLevels || typeof player.abilityLevels !== 'object') {
+        player.abilityLevels = {};
+      }
+      let changed = false;
+      for (const entry of player.abilities) {
+        if (rememberAbilityLevelInto(player.abilityLevels, entry?.abilityHrid, entry?.level)) {
+          changed = true;
+        }
+      }
+      return changed;
+    },
+    resolveActivePlayerAbilityLevelFor(player, abilityHrid) {
+      const known = Number(player?.abilityLevels?.[String(abilityHrid || '')]);
+      return Number.isFinite(known) && known > 0 ? clamp(Math.floor(known), 1, MAX_ABILITY_LEVEL) : 1;
+    },
+    resolveActivePlayerAbilityLevel(abilityHrid) {
+      const known = Number(this.activePlayer?.abilityLevels?.[String(abilityHrid || '')]);
+      return Number.isFinite(known) && known > 0 ? clamp(Math.floor(known), 1, MAX_ABILITY_LEVEL) : null;
+    },
+    // 单技能版：与批量版同一不变量（只升不降、跳过 1 级）。用户把等级调低做 what-if 时
+    // 只改槽位（当前模拟等级），不会污染权威表；详见上方注释与 rememberAbilityLevelInto。
+    rememberActivePlayerAbilityLevel(abilityHrid, rawLevel) {
+      const player = this.activePlayer;
+      const hrid = String(abilityHrid || '').trim();
+      if (!player || !hrid) {
+        return false;
+      }
+      if (!player.abilityLevels || typeof player.abilityLevels !== 'object') {
+        player.abilityLevels = {};
+      }
+      return rememberAbilityLevelInto(player.abilityLevels, hrid, rawLevel);
+    },
+    setActivePlayerAbilityLevel(slotIndex, rawLevel) {
+      const player = this.activePlayer;
+      const index = normalizeAbilitySlotIndex(slotIndex);
+      if (!player || !Array.isArray(player.abilities) || index < 0 || index >= player.abilities.length) {
+        return false;
+      }
+      const raw = Math.floor(Number(rawLevel));
+      if (!Number.isFinite(raw)) {
+        return false;
+      }
+      const level = clamp(raw, 1, MAX_ABILITY_LEVEL);
+      player.abilities[index].level = level;
+      this.rememberActivePlayerAbilityLevel(player.abilities[index].abilityHrid, level);
       return true;
     },
     ensurePlayerConfig(player = this.activePlayer) {

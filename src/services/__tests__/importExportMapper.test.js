@@ -1577,4 +1577,123 @@ describe('importExportMapper', () => {
     expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 9 });
     expect(result.labyrinthUpgradesImport).toBeUndefined();
   });
+
+  // 游戏内配装（characterLoadoutMap）→ loadouts 快照的解析口径。形状错误（哈希缺段、
+  // abilityMap 稀疏或非法键）既不抛错也不留痕，只会静默产出空槽或错位槽，而套用配装是
+  // 整体覆盖玩家装备/技能，因此把三种哈希形状与两类非法技能槽逐条锚定。
+  describe('main-site shareable loadouts', () => {
+    function importShareProfileWithLoadouts(characterLoadoutMap, playerId = 21) {
+      const fixture = createMainSiteShareProfileFixture({
+        characterName: 'Shareable Loadout Hero',
+        characterLoadoutMap,
+      });
+
+      return importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(playerId), createSimulationSettings());
+    }
+
+    it('parses a four-segment wearable hash into the slot item and its enhancement level', () => {
+      const result = importShareProfileWithLoadouts({
+        'loadout-1': {
+          name: 'Combat Set',
+          actionTypeHrid: '/action_types/combat',
+          isDefault: true,
+          wearableMap: { '/item_locations/head': '101::/item_locations/head::/items/steel_helmet::7' },
+        },
+      });
+
+      expect(result.detectedFormat).toBe('main-site-share-profile');
+      expect(result.player.loadouts).toHaveLength(1);
+
+      const [loadout] = result.player.loadouts;
+      expect(loadout.id).toBe('loadout-1');
+      expect(loadout.name).toBe('Combat Set');
+      expect(loadout.actionTypeHrid).toBe('/action_types/combat');
+      expect(loadout.isDefault).toBe(true);
+      expect(loadout.equipment.head).toEqual({ itemHrid: '/items/steel_helmet', enhancementLevel: 7 });
+    });
+
+    it('treats a hash without a trailing numeric segment as enhancement level zero', () => {
+      // 末段以 '/' 开头（未强化只写三段）＝ 无等级段。当成不可解析会让整件装备被丢弃。
+      const result = importShareProfileWithLoadouts({
+        'loadout-1': {
+          name: 'Unenhanced Set',
+          wearableMap: { '/item_locations/head': '101::/item_locations/head::/items/steel_helmet' },
+        },
+      });
+
+      expect(result.player.loadouts[0].equipment.head).toEqual({
+        itemHrid: '/items/steel_helmet',
+        enhancementLevel: 0,
+      });
+    });
+
+    it('keeps the slot empty and does not throw when the hash carries no item segment', () => {
+      const result = importShareProfileWithLoadouts({
+        'loadout-1': {
+          name: 'Broken Hash Set',
+          wearableMap: {
+            '/item_locations/head': '101::/item_locations/head::not-an-item',
+            '/item_locations/body': '',
+          },
+        },
+      });
+
+      expect(result.player.loadouts[0].equipment.head).toEqual({ itemHrid: '', enhancementLevel: 0 });
+      expect(result.player.loadouts[0].equipment.body).toEqual({ itemHrid: '', enhancementLevel: 0 });
+    });
+
+    it('maps an explicit one-based ability slot to the zero-based slot list', () => {
+      const standardAbilityHrid = findAnotherStandardAbility();
+
+      const result = importShareProfileWithLoadouts({
+        'loadout-1': { name: 'Sparse Ability Set', abilityMap: { 2: standardAbilityHrid } },
+      });
+
+      const [loadout] = result.player.loadouts;
+      expect(loadout.abilities).toHaveLength(5);
+      expect(loadout.abilities[1]).toEqual({ abilityHrid: standardAbilityHrid, level: 1 });
+      // 显式槽位不越界：其余槽位保持为空，不做顺延填充。
+      expect(loadout.abilities[0]).toEqual({ abilityHrid: '', level: 1 });
+      expect(loadout.abilities.slice(2)).toEqual(Array.from({ length: 3 }, () => ({ abilityHrid: '', level: 1 })));
+    });
+
+    it('falls back to the first free standard slot for non-numeric and out-of-range keys', () => {
+      const standardAbilityHrid = findAnotherStandardAbility();
+
+      // 非数字键（Number() 得 NaN）与越界槽位（9 超出 5 槽）都不能抛错，也不能占掉特殊技能槽。
+      const nonNumeric = importShareProfileWithLoadouts({
+        'loadout-1': { name: 'Non Numeric Key Set', abilityMap: { 'slot-one': standardAbilityHrid } },
+      });
+      expect(nonNumeric.player.loadouts[0].abilities[1].abilityHrid).toBe(standardAbilityHrid);
+
+      const outOfRange = importShareProfileWithLoadouts({
+        'loadout-1': { name: 'Out Of Range Key Set', abilityMap: { 9: standardAbilityHrid } },
+      });
+      expect(outOfRange.player.loadouts[0].abilities[1].abilityHrid).toBe(standardAbilityHrid);
+    });
+
+    it('parses loadouts on the current-character snapshot path as well', () => {
+      const fixture = createMainSiteCurrentCharacterFixture({
+        characterName: 'Current Character Loadout Hero',
+        characterLoadoutMap: {
+          'loadout-7': {
+            name: 'Solo Set',
+            wearableMap: { '/item_locations/trinket': '101::/item_locations/trinket::/items/lucky_clover::3' },
+            foodItemHrids: ['/items/basic_food'],
+          },
+        },
+      });
+
+      const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(22), createSimulationSettings());
+
+      expect(result.detectedFormat).toBe('main-site-current-character');
+
+      const [loadout] = result.player.loadouts;
+      expect(loadout.id).toBe('loadout-7');
+      // preview-only 饰品槽经白名单保留（shared 层 LOADOUT_EQUIPMENT_KEYS 含 trinket）。
+      expect(loadout.equipment.trinket).toEqual({ itemHrid: '/items/lucky_clover', enhancementLevel: 3 });
+      // 食物固定 3 槽，缺槽补空串。
+      expect(loadout.food).toEqual(['/items/basic_food', '', '']);
+    });
+  });
 });

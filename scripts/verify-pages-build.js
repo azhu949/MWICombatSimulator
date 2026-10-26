@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -54,6 +55,57 @@ assertCondition(
   fileExists(path.join(enginePkgDir, 'mwi_combat_engine_bg.wasm')),
   'Missing dist/engine/pkg/mwi_combat_engine_bg.wasm (run npm run build:wasm and commit public/engine/pkg).',
 );
+
+// 主站导入脚本随站点分发（国内无法访问 GreasyFork，这是唯一的可用安装入口）：
+// 产物缺失或版本与源文件不一致，都意味着线上「安装脚本」按钮会 404 或装到旧版。
+const userscriptPath = path.join(distDir, 'userscript', 'mwi-main-site-import.user.js');
+const userscriptMetaPath = path.join(distDir, 'userscript', 'mwi-main-site-import.meta.json');
+assertCondition(
+  fileExists(userscriptPath),
+  'Missing dist/userscript/mwi-main-site-import.user.js (run `npm run build`; dev/build sync it from scripts/).',
+);
+assertCondition(
+  fileExists(userscriptMetaPath),
+  'Missing dist/userscript/mwi-main-site-import.meta.json (run `npm run build`).',
+);
+
+if (fileExists(userscriptPath) && fileExists(userscriptMetaPath)) {
+  const userscriptSourcePath = path.resolve(process.cwd(), 'scripts', 'mwi-main-site-import.user.js');
+  const sourceScript = readText(userscriptSourcePath);
+  const deployedScript = readText(userscriptPath);
+  assertCondition(
+    deployedScript === sourceScript,
+    'dist/userscript copy differs from scripts/mwi-main-site-import.user.js — the site would serve a stale script.',
+  );
+
+  // 校验值在这里独立复算（不采信生成方写下的数字）：meta 自述的哈希与实际分发字节不符，
+  // 说明分发链上脚本与元数据已不自洽，用户拿该值核对下载到的脚本必然失败。
+  const sourceSha256 = crypto.createHash('sha256').update(fs.readFileSync(userscriptSourcePath)).digest('hex');
+  const deployedSha256 = crypto.createHash('sha256').update(fs.readFileSync(userscriptPath)).digest('hex');
+  assertCondition(
+    deployedSha256 === sourceSha256,
+    'dist/userscript copy checksum differs from scripts/mwi-main-site-import.user.js.',
+  );
+
+  const sourceVersion = sourceScript.match(/^\/\/\s*@version\s+(\S+)/m)?.[1] || '';
+  let metaVersion = '';
+  let metaSha256 = '';
+  try {
+    const meta = JSON.parse(readText(userscriptMetaPath));
+    metaVersion = String(meta.version || '');
+    metaSha256 = String(meta.sha256 || '').toLowerCase();
+  } catch (error) {
+    errors.push(`dist/userscript meta JSON is not parsable: ${error.message}`);
+  }
+  assertCondition(
+    Boolean(sourceVersion) && metaVersion === sourceVersion,
+    `dist/userscript meta version (${metaVersion || 'empty'}) does not match script @version (${sourceVersion || 'empty'}).`,
+  );
+  assertCondition(
+    Boolean(metaSha256) && metaSha256 === deployedSha256,
+    `dist/userscript meta checksum (${metaSha256 || 'empty'}) does not match the deployed script checksum.`,
+  );
+}
 
 let mainBundlePath = '';
 let workerBundleName = '';

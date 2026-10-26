@@ -1,10 +1,10 @@
 {
   "name": "mwicombatsimulator",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node scripts/sync-userscript-to-public.mjs && vite",
+    "build": "node scripts/sync-userscript-to-public.mjs && vite build",
     "build:wasm": "wasm-pack build engine --target web && node scripts/optimize-wasm.mjs && node scripts/sync-wasm-to-public.mjs",
     "verify:wasm": "node scripts/verify-wasm-build.mjs",
     "verify:jstat-subset": "node scripts/verify-jstat-subset.mjs",
@@ -15,7 +15,7 @@
     "check-dead-keys": "node scripts/check-dead-keys.mjs",
     "verify-pages-build": "node scripts/verify-pages-build.js",
     "preview": "vite preview",
-    "start": "vite",
+    "start": "node scripts/sync-userscript-to-public.mjs && vite",
     "test": "vitest run && prettier --check .",
     "extract-game-data": "node scripts/extract-game-data.js",
     "extract-game-data:official": "node scripts/extract-game-data-from-official.js",
