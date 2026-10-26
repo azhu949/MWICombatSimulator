@@ -84,8 +84,8 @@ describe('App shell contracts', () => {
   });
 
   it('asks for an update channel instead of jumping directly when an update is available', () => {
-    // 待更新/可更新时脚本可能来自站点或 GreasyFork，必须由用户选渠道（弹窗行为见
-    // ImportScriptChannelDialog 的单测）；直链只保留给安装与重装。
+    // 任意状态（未安装 / 已最新 / 待更新 / 旧版）都可能需要选择来源，必须由用户选渠道
+    // （弹窗行为见 ImportScriptChannelDialog 的单测），状态行不再直链下载。
     expect(sidebarSource).toContain('ImportScriptChannelDialog');
     expect(sidebarSource).toContain('MAIN_SITE_IMPORT_SCRIPT_CHANNELS');
     expect(sidebarSource).toContain('importScriptNeedsChannelChoice');

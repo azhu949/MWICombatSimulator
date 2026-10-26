@@ -58,7 +58,9 @@ import { computed } from 'vue';
 import { Download, ExternalLink, Globe2 } from '@lucide/vue';
 import { IMPORT_SCRIPT_CHANNEL_GREASYFORK, IMPORT_SCRIPT_CHANNEL_SITE } from '../config/importScriptDistribution.js';
 import {
+  IMPORT_SCRIPT_STATUS_CURRENT,
   IMPORT_SCRIPT_STATUS_LEGACY,
+  IMPORT_SCRIPT_STATUS_MISSING,
   IMPORT_SCRIPT_STATUS_OUTDATED,
   MAIN_SITE_IMPORT_SCRIPT_SHA256,
   MAIN_SITE_IMPORT_SCRIPT_VERSION,
@@ -76,12 +78,22 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const { t } = useI18nText();
 
-const dialogTitle = computed(() => t('common:vue.app.importScriptChannelDialogTitle', 'Update Import Script'));
+const dialogTitle = computed(() => {
+  if (props.status === IMPORT_SCRIPT_STATUS_MISSING) {
+    return t('common:vue.app.importScriptChannelInstallTitle', 'Install Import Script');
+  }
+
+  if (props.status === IMPORT_SCRIPT_STATUS_CURRENT) {
+    return t('common:vue.app.importScriptChannelReinstallTitle', 'Reinstall Import Script');
+  }
+
+  return t('common:vue.app.importScriptChannelDialogTitle', 'Update Import Script');
+});
 
 const expectedVersionLabel = computed(() => props.expectedVersion || '?');
 
-// 只从侧栏的「待更新 / 可更新」状态进入，因此正文必须说清「旧版是什么、目标是哪版」。
-// legacy 没有可用版本号，单独一套文案，避免出现「已安装 v?」。
+// 侧栏任意安装状态都可进入本弹窗（未安装 / 已最新 / 待更新 / 旧版），正文按状态说清
+// 「当前是什么、目标是什么」。legacy 没有可用版本号，单独一套文案，避免「已安装 v?」。
 const dialogDescription = computed(() => {
   if (props.status === IMPORT_SCRIPT_STATUS_OUTDATED) {
     return t(
@@ -99,6 +111,27 @@ const dialogDescription = computed(() => {
       'common:vue.app.importScriptChannelLegacyDescription',
       'A legacy import script was detected, but it cannot report its version. Latest is v{{expected}}. Choose where to update from:',
       { expected: expectedVersionLabel.value },
+    );
+  }
+
+  // 未安装：没有已安装版本可引用，只报站点当前版本与安装目标。
+  if (props.status === IMPORT_SCRIPT_STATUS_MISSING) {
+    return t(
+      'common:vue.app.importScriptChannelMissingDescription',
+      'No import script detected. Latest is v{{expected}}. Choose where to install from:',
+      { expected: expectedVersionLabel.value },
+    );
+  }
+
+  // 已最新：说清「已装版本 = 最新版本」，并说明这里用于重新安装或切换来源。
+  if (props.status === IMPORT_SCRIPT_STATUS_CURRENT) {
+    return t(
+      'common:vue.app.importScriptChannelCurrentDescription',
+      'Installed v{{installed}}, already at v{{expected}}. Choose a channel to reinstall or switch sources:',
+      {
+        installed: props.installedVersion || '?',
+        expected: expectedVersionLabel.value,
+      },
     );
   }
 

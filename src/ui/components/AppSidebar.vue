@@ -78,10 +78,10 @@
     <div class="shrink-0 space-y-1 border-t border-sidebar-border p-2">
       <!-- 主站导入脚本状态：位于更新日志上方，回答「装没装 / 是不是最新版」。
            证据有两层：脚本写在 <html> 上的版本标记（新版）与脚本注入的导入控件（旧版也有），
-           见 useMainSiteImportScriptStatus。未安装/已最新时保持直链（安装/重装）；
-           待更新或可更新时改为按钮：脚本可能来自站点或 GreasyFork，先让用户选更新渠道，
-           不能直接跳到某一个来源。当前域名不在脚本 @match 内时（自建镜像 / 自定义域名）
-           整行降级为中性说明且不提供安装入口，见 importScriptUnsupported。 -->
+           见 useMainSiteImportScriptStatus。任意安装状态（未安装 / 已最新 / 待更新 / 旧版）
+           点击都先弹渠道选择：脚本可能来自站点或 GreasyFork，不能直接跳到某一个来源。
+           当前域名不在脚本 @match 内时（自建镜像 / 自定义域名）整行降级为中性说明且
+           不提供安装入口，见 importScriptUnsupported。 -->
       <component
         :is="importScriptEntryTag"
         v-bind="importScriptEntryAttrs"
@@ -312,56 +312,35 @@ const importScriptUnsupported = computed(() => importScriptCoverage.value === IM
 const importScriptChannels = importScriptUrl ? MAIN_SITE_IMPORT_SCRIPT_CHANNELS : [];
 const importScriptChannelDialogOpen = ref(false);
 
-// 只有「待更新 / 可更新」才需要弹渠道选择：脚本可能装自站点、也可能装自 GreasyFork，
-// 直接跳某一个来源会把另一边的用户带到打不开的地址。未安装仍是直链安装（默认站点），
-// 已最新仍是直链重装，避免多点一步。
+// 任何可点击状态都先弹渠道选择：脚本可能装自站点、也可能装自 GreasyFork，直接跳
+// 某一个来源会把另一边的用户带到打不开的地址（GreasyFork 国内不可达）。因此未安装、
+// 已最新、待更新、旧版一律先让用户选渠道，状态行本身不再直链下载。
+// 只有「无安装链接（部署方显式禁用）」「当前域名不在脚本 @match 内」「没有可用渠道」
+// 保持不可点击的说明行。
 const importScriptNeedsChannelChoice = computed(
-  () =>
-    !importScriptUnsupported.value &&
-    importScriptChannels.length > 1 &&
-    (importScriptStatus.value === IMPORT_SCRIPT_STATUS_OUTDATED ||
-      importScriptStatus.value === IMPORT_SCRIPT_STATUS_LEGACY),
+  () => Boolean(importScriptUrl) && !importScriptUnsupported.value && importScriptChannels.length > 0,
 );
 
-const importScriptAction = computed(() => {
-  if (!importScriptUrl || importScriptUnsupported.value) {
-    return 'none';
-  }
-  return importScriptNeedsChannelChoice.value ? 'choose-channel' : 'open';
-});
+const importScriptAction = computed(() => (importScriptNeedsChannelChoice.value ? 'choose-channel' : 'none'));
 
-// 同一条状态行在三种语义间切换：无链接（未配置）/ 新窗口直链（安装、重装）/
-// 打开渠道弹窗的按钮（更新）。用动态标签而不是永远用 button，是为了保留直链的
-// 中键新标签、右键复制地址等浏览器原生行为。脚本不覆盖当前站点时只能是不可点击的行。
-const importScriptEntryTag = computed(() => {
-  if (!importScriptUrl || importScriptUnsupported.value) {
-    return 'div';
-  }
-  return importScriptNeedsChannelChoice.value ? 'button' : 'a';
-});
+// 状态行只有两种形态：可点击的弹窗按钮 / 不可点击的说明行。不再区分直链与按钮，
+// 统一走渠道选择，点击行为不随安装状态变化。
+const importScriptEntryTag = computed(() => (importScriptNeedsChannelChoice.value ? 'button' : 'div'));
 
-const importScriptEntryAttrs = computed(() => {
-  if (!importScriptUrl || importScriptUnsupported.value) {
-    return {};
-  }
-  if (importScriptNeedsChannelChoice.value) {
-    return {
-      type: 'button',
-      'aria-haspopup': 'dialog',
-    };
-  }
-  return {
-    href: importScriptUrl,
-    target: '_blank',
-    rel: 'noopener noreferrer',
-  };
-});
+const importScriptEntryAttrs = computed(() =>
+  importScriptNeedsChannelChoice.value
+    ? {
+        type: 'button',
+        'aria-haspopup': 'dialog',
+      }
+    : {},
+);
 
 function handleImportScriptEntryClick(mobile, event) {
-  if (importScriptUnsupported.value || !importScriptNeedsChannelChoice.value) {
+  if (!importScriptNeedsChannelChoice.value) {
     return;
   }
-  // 更新入口是按钮而不是链接，不会有原生跳转；preventDefault 仅用于防御后续误改成 <a>。
+  // 入口是按钮而不是链接，不会有原生跳转；preventDefault 仅用于防御后续误改成 <a>。
   event?.preventDefault?.();
   if (mobile) {
     setMobileOpen(false);
