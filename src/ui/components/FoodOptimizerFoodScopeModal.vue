@@ -33,7 +33,7 @@
         >
           {{ t('common:foodOptimizer.scopeSelectAll', 'Select all') }}
         </Button>
-        <Button type="button" size="sm" variant="outline" :disabled="selection.length === 0" @click="clearAllFoods">
+        <Button type="button" size="sm" variant="outline" :disabled="!hasUnlockedSelection" @click="clearAllFoods">
           {{ t('common:foodOptimizer.scopeClearAll', 'Clear all') }}
         </Button>
       </div>
@@ -78,7 +78,8 @@
           >
             <input
               type="checkbox"
-              :checked="selectedSet.has(item.hrid)"
+              :checked="selectedSet.has(item.hrid) || lockedSet.has(item.hrid)"
+              :disabled="lockedSet.has(item.hrid)"
               :data-food-optimizer-scope-item="item.hrid"
               @change="toggleFood(item.hrid, $event.target.checked)"
             />
@@ -92,6 +93,9 @@
             <span v-if="equippedSet.has(item.hrid)" class="shrink-0 text-xs text-primary">{{
               t('common:foodOptimizer.scopeEquipped', 'Equipped')
             }}</span>
+            <span v-if="lockedSet.has(item.hrid)" class="shrink-0 text-xs text-muted-foreground">
+              {{ t('common:foodOptimizer.locked', 'Locked') }}
+            </span>
           </label>
         </div>
       </section>
@@ -102,14 +106,14 @@
     <p class="text-xs text-muted-foreground" data-food-optimizer-scope-count>
       {{ t('common:foodOptimizer.candidates', 'Candidate count') }}: {{ number(candidateCount, 0) }}
     </p>
-    <p v-if="!selection.length" class="text-sm text-destructive" role="alert">
-      {{ t('common:foodOptimizer.scopeRequired', 'Select at least one food to search.') }}
+    <p v-if="!canConfirm" class="text-sm text-destructive" role="alert">
+      {{ selectionErrorText }}
     </p>
     <div class="flex flex-wrap justify-end gap-2">
       <Button type="button" size="sm" variant="outline" @click="$emit('close')">{{
         t('common:foodOptimizer.cancel', 'Cancel')
       }}</Button>
-      <Button type="button" size="sm" :disabled="!selection.length" data-food-optimizer-scope-start @click="confirm">
+      <Button type="button" size="sm" :disabled="!canConfirm" data-food-optimizer-scope-start @click="confirm">
         <Play />{{ t('common:foodOptimizer.start', 'Start search') }}
       </Button>
     </div>
@@ -131,6 +135,7 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   selected: { type: Array, default: null },
   equippedHrids: { type: Array, default: () => [] },
+  lockedHrids: { type: Array, default: () => [] },
   foodSlots: { type: Number, default: 0 },
 });
 const emit = defineEmits(['close', 'confirm']);
@@ -139,12 +144,23 @@ const { getItemName } = useGameDataText();
 const selection = ref([]);
 const selectedSet = computed(() => new Set(selection.value));
 const equippedSet = computed(() => new Set(props.equippedHrids.map((hrid) => String(hrid || ''))));
+const lockedSet = computed(() => new Set(props.lockedHrids.map((hrid) => String(hrid || ''))));
 const iconsReady = ref(false);
 const candidateCount = computed(() =>
   countFoodOptimizerCandidates(
-    props.items.filter((item) => selectedSet.value.has(item.hrid)),
+    props.items.filter((item) => selectedSet.value.has(item.hrid) || lockedSet.value.has(item.hrid)),
     props.foodSlots,
+    [...lockedSet.value].map((hrid) => ({ hrid, thresholds: [1] })),
   ),
+);
+const hasUnlockedSelection = computed(() =>
+  props.items.some((item) => selectedSet.value.has(item.hrid) && !lockedSet.value.has(item.hrid)),
+);
+const canConfirm = computed(() => hasUnlockedSelection.value && candidateCount.value > 1);
+const selectionErrorText = computed(() =>
+  selection.value.length === 0 && lockedSet.value.size === 0
+    ? t('common:foodOptimizer.scopeRequired', 'Select at least one food to search.')
+    : t('common:foodOptimizer.unlockedFoodRequired', 'Select at least one unlocked food to search.'),
 );
 // 恢复生命值与恢复法力值分列展示，恢复量高的排前面，两列合计即完整目录。
 const groups = computed(() =>
@@ -185,6 +201,11 @@ const number = (value, digits = 2) =>
 function restoreLabel(item) {
   return `+${number(item.restore, 0)}`;
 }
+// 所有范围编辑都经过这里补回锁定项，避免清空、分组操作或旧范围存档移除固定轴。
+function withLockedFoods(hrids) {
+  const picked = new Set([...hrids, ...lockedSet.value]);
+  return props.items.map((item) => item.hrid).filter((hrid) => picked.has(hrid));
+}
 // 打开时恢复传入的已解析范围（selected 来自快照：已保存范围，或新用户的当前
 // 佩戴食物——与页面「食物范围」标签、预览候选数同口径）。null（未佩戴任何
 // 目录内食物=全部食物）或与当前目录交集为空时回退全选，避免默认空选无法开始搜索。
@@ -193,7 +214,7 @@ function currentSelection() {
   const picked = Array.isArray(props.selected)
     ? props.selected.map((hrid) => String(hrid || '')).filter((hrid) => available.has(hrid))
     : [];
-  return picked.length ? picked : props.items.map((item) => item.hrid);
+  return withLockedFoods(picked.length ? picked : props.items.map((item) => item.hrid));
 }
 // 只在打开时同步一次草稿：模拟进行中预览输入仍可能刷新，编辑期间不得被覆盖。
 watch(
@@ -216,28 +237,29 @@ watch(
   { immediate: true },
 );
 function toggleFood(hrid, checked) {
+  if (lockedSet.value.has(hrid)) return;
   const next = new Set(selection.value);
   if (checked) next.add(hrid);
   else next.delete(hrid);
-  selection.value = props.items.map((item) => item.hrid).filter((item) => next.has(item));
+  selection.value = withLockedFoods([...next]);
 }
 function selectAllFoods() {
-  selection.value = props.items.map((item) => item.hrid);
+  selection.value = withLockedFoods(props.items.map((item) => item.hrid));
 }
 function clearAllFoods() {
-  selection.value = [];
+  selection.value = withLockedFoods([]);
 }
 function setGroupSelected(kind, checked) {
   const next = new Set(selection.value);
   for (const item of props.items) {
-    if (item.kind !== kind) continue;
+    if (item.kind !== kind || lockedSet.value.has(item.hrid)) continue;
     if (checked) next.add(item.hrid);
     else next.delete(item.hrid);
   }
-  selection.value = props.items.map((item) => item.hrid).filter((hrid) => next.has(hrid));
+  selection.value = withLockedFoods([...next]);
 }
 function confirm() {
-  if (!selection.value.length) return;
-  emit('confirm', [...selection.value]);
+  if (!canConfirm.value) return;
+  emit('confirm', withLockedFoods(selection.value));
 }
 </script>

@@ -17,6 +17,8 @@ export const FOOD_OPTIMIZER_MAX_STEP_PERCENT = 100;
 export const FOOD_OPTIMIZER_MIN_ROUNDS = 1;
 export const FOOD_OPTIMIZER_MAX_ROUNDS = 10;
 export const FOOD_OPTIMIZER_MAX_SLOTS = 3;
+// 最多锁定两格，始终留一格参与搜索；实际槽位更少时由准备阶段再按 resources.foodSlots 校验。
+export const FOOD_OPTIMIZER_MAX_LOCKED_SLOTS = FOOD_OPTIMIZER_MAX_SLOTS - 1;
 export const FOOD_OPTIMIZER_SEARCH_MODE_TOP10 = 'top10';
 export const FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE = 'complete';
 // 引擎请求层对缺失 searchMode 的容错口径：一律按“完整搜索”执行——缺失或非法的输入
@@ -150,6 +152,12 @@ export function normalizeFoodOptimizerFoodHrids(value) {
   return catalog.filter((hrid) => picked.has(hrid));
 }
 
+// 锁定集合只认真实食物目录，按目录顺序去重并截到两格。最终是否仍留有可搜索槽位，
+// 必须结合当前角色的实际 foodSlots 判断，不能只看这个全局上限。
+export function normalizeFoodOptimizerLockedFoodHrids(value) {
+  return (normalizeFoodOptimizerFoodHrids(value) || []).slice(0, FOOD_OPTIMIZER_MAX_LOCKED_SLOTS);
+}
+
 export function getFoodOptimizerItems({ maxHp, maxMp, thresholdStepPercent, prices, consumableMode, hrids } = {}) {
   // 引擎口径：null/非数组/空数组都表示全部食物（“未保存范围”的装备默认由快照层解析）。
   const scope = Array.isArray(hrids) && hrids.length > 0 ? new Set(hrids.map((hrid) => String(hrid ?? ''))) : null;
@@ -214,7 +222,12 @@ export function buildFoodCandidate(items = []) {
   return {
     slots,
     food: slots.map((entry) => entry.hrid),
-    triggerMap: Object.fromEntries(slots.map((entry) => [entry.hrid, buildFoodTrigger(entry)])),
+    triggerMap: Object.fromEntries(
+      slots.map((entry) => [
+        entry.hrid,
+        Array.isArray(entry.triggers) ? entry.triggers.map((trigger) => ({ ...trigger })) : buildFoodTrigger(entry),
+      ]),
+    ),
     signature: slots.map((entry) => `${entry.hrid}@${entry.kind}:${entry.threshold}`).join('|'),
   };
 }
@@ -252,10 +265,43 @@ export function buildFoodDefaultCandidate(items = []) {
       const thresholds = Array.isArray(item.thresholds) ? item.thresholds : [];
       // The own-restore value is always in the catalog, except when it is above
       // the initialized resource cap, in which case the catalog contains the cap.
-      const threshold = thresholds.length ? Math.min(Math.max(...thresholds), requested) : requested;
+      const threshold =
+        thresholds.length === 1
+          ? thresholds[0]
+          : thresholds.length
+            ? Math.min(Math.max(...thresholds), requested)
+            : requested;
       return { ...item, threshold };
     }),
   );
+}
+
+// 把当前佩戴食物转成每个组合都必须包含的固定轴。标准单阈值触发器压缩成一个阈值，
+// 仍可走原有等效区剪枝；自定义/多条件/禁用触发器保留完整 DTO，并由搜索层关闭复用，
+// 防止通用阈值证书改变它们的语义。
+export function buildFoodOptimizerLockedItems(items, lockedFoodHrids, equippedFood = []) {
+  const requested = normalizeFoodOptimizerLockedFoodHrids(lockedFoodHrids);
+  if (!requested.length) return [];
+  const itemByHrid = new Map((items || []).map((item) => [item?.hrid, item]));
+  const equippedByHrid = new Map(
+    (Array.isArray(equippedFood) ? equippedFood : []).filter(Boolean).map((food) => [food.hrid, food]),
+  );
+  return requested.map((hrid) => {
+    const item = itemByHrid.get(hrid);
+    const equipped = equippedByHrid.get(hrid);
+    if (!item || !equipped) throw new Error('common:foodOptimizer.lockedFoodUnavailable');
+    const triggers = (Array.isArray(equipped.triggers) ? equipped.triggers : []).map((trigger) => ({ ...trigger }));
+    const trigger = triggers.length === 1 ? triggers[0] : null;
+    const canonical =
+      trigger?.dependencyHrid === SELF &&
+      trigger.conditionHrid === `/combat_trigger_conditions/missing_${item.kind}` &&
+      trigger.comparatorHrid === GREATER_THAN_EQUAL &&
+      Number.isSafeInteger(trigger.value) &&
+      trigger.value >= 1;
+    // 非标准触发器不参与阈值轴语义，这里只取稳定默认值用于槽位排序和签名。
+    const threshold = canonical ? trigger.value : buildFoodDefaultCandidate([item]).slots[0].threshold;
+    return { ...item, thresholds: [threshold], ...(canonical ? {} : { triggers }) };
+  });
 }
 
 // 「同类食物」＝同一条烹饪线：游戏里每个槽位可以各自放一件任意食物，但优化器把
@@ -327,35 +373,60 @@ export function getFoodOptimizerFamilyKey(hrid) {
   return category ? `food-family:${category}` : `food-family:unknown:${key.replace(/^\/items\//, '')}`;
 }
 
-export function countFoodOptimizerCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
-  const slots = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
+// 固定食物先从可变目录中移除，同族变体也不能再进入候选，随后只枚举剩余槽位。
+// 无锁定时返回的目录与槽位上限保持原样；脏固定轴则返回 null，避免生成重复/越界候选。
+function resolveFoodOptimizerVariableDomain(items, slotLimit, lockedItems = []) {
+  const totalSlots = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
+  const requestedFixed = Array.isArray(lockedItems) ? lockedItems : [];
+  const fixed = requestedFixed.filter((item) => item?.thresholds?.length);
+  const fixedHrids = new Set(fixed.map((item) => item.hrid));
+  const fixedFamilies = new Set(fixed.map((item) => getFoodOptimizerFamilyKey(item.hrid)));
+  if (
+    fixed.length !== requestedFixed.length ||
+    fixedHrids.size !== fixed.length ||
+    fixedFamilies.size !== fixed.length ||
+    fixed.length > totalSlots
+  )
+    return null;
+  const normalizedItems = (Array.isArray(items) ? items : []).filter(
+    (item) =>
+      item?.thresholds?.length &&
+      !fixedHrids.has(item.hrid) &&
+      !fixedFamilies.has(getFoodOptimizerFamilyKey(item.hrid)),
+  );
+  return { fixed, items: normalizedItems, slots: totalSlots - fixed.length };
+}
+
+export function countFoodOptimizerCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS, lockedItems = []) {
+  const domain = resolveFoodOptimizerVariableDomain(items, slotLimit, lockedItems);
+  if (!domain) return 0;
   // 每类最多选 1 件 ⇒ 每类对组合数的贡献是因子 (1 + size·x)。按类聚合后做同一
   // 个「选 0 或 1」背包 DP，与 generateFoodOptimizerCompositionItems 逐类互斥的
   // 枚举严格一致（既有测试逐槽位对照枚举数校验这条一致性）。
   const familySizes = new Map();
-  for (const item of items || []) {
-    if (!item?.thresholds?.length) continue;
+  for (const item of domain.items) {
     const family = getFoodOptimizerFamilyKey(item.hrid);
     familySizes.set(family, (familySizes.get(family) || 0) + 1);
   }
-  const dp = Array(slots + 1).fill(0);
+  const dp = Array(domain.slots + 1).fill(0);
   dp[0] = 1;
-  for (const size of familySizes.values()) for (let used = slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * size;
+  for (const size of familySizes.values())
+    for (let used = domain.slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * size;
   return dp.reduce((total, value) => total + value, 0);
 }
 
-export function* generateFoodOptimizerCompositionItems(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
-  const normalizedItems = Array.isArray(items) ? items.filter((item) => item?.thresholds?.length) : [];
-  const limit = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
+export function* generateFoodOptimizerCompositionItems(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS, lockedItems = []) {
+  const domain = resolveFoodOptimizerVariableDomain(items, slotLimit, lockedItems);
+  if (!domain) return;
   const picked = [];
   const pickedFamilies = new Set();
   function* visit(index) {
-    yield picked.slice();
-    if (picked.length >= limit) return;
-    for (let next = index; next < normalizedItems.length; next += 1) {
-      const family = getFoodOptimizerFamilyKey(normalizedItems[next].hrid);
+    yield [...domain.fixed, ...picked];
+    if (picked.length >= domain.slots) return;
+    for (let next = index; next < domain.items.length; next += 1) {
+      const family = getFoodOptimizerFamilyKey(domain.items[next].hrid);
       if (pickedFamilies.has(family)) continue;
-      picked.push(normalizedItems[next]);
+      picked.push(domain.items[next]);
       pickedFamilies.add(family);
       yield* visit(next + 1);
       picked.pop();
@@ -380,27 +451,27 @@ export function* generateFoodOptimizerCompositionCandidates(items = []) {
   yield* visit(0);
 }
 
-export function countFoodOptimizerCandidates(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
-  const slots = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
+export function countFoodOptimizerCandidates(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS, lockedItems = []) {
+  const domain = resolveFoodOptimizerVariableDomain(items, slotLimit, lockedItems);
+  if (!domain) return 0;
   // 与组合枚举同一条「每类最多 1 件」约束：每类的因子是 (1 + T_f·x)，其中
   // T_f = 该类全体成员的档位数之和（选中该类时任取一个成员再任取一个档位）。
-  // 按类聚合后逐类做「选 0 或 1」背包 DP，与 countFoodOptimizerCompositions
-  // （size·x 因子）共用同一骨架，只差每类的权重来源。
+  // 固定轴不进入 DP，只把各自的档位数作为全局乘因子（生产路径中恒为 1）。
   const familyChoices = new Map();
-  for (const item of items || []) {
-    if (!item?.thresholds?.length) continue;
+  for (const item of domain.items) {
     const family = getFoodOptimizerFamilyKey(item.hrid);
     familyChoices.set(family, (familyChoices.get(family) || 0) + item.thresholds.length);
   }
-  const dp = Array(slots + 1).fill(0);
+  const dp = Array(domain.slots + 1).fill(0);
   dp[0] = 1;
   for (const choices of familyChoices.values())
-    for (let used = slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * choices;
-  return dp.reduce((total, value) => total + value, 0);
+    for (let used = domain.slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * choices;
+  const fixedChoices = domain.fixed.reduce((total, item) => total * item.thresholds.length, 1);
+  return dp.reduce((total, value) => total + value, 0) * fixedChoices;
 }
 
-export function* generateFoodOptimizerCandidates(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
-  for (const composition of generateFoodOptimizerCompositionItems(items, slotLimit))
+export function* generateFoodOptimizerCandidates(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS, lockedItems = []) {
+  for (const composition of generateFoodOptimizerCompositionItems(items, slotLimit, lockedItems))
     yield* generateFoodOptimizerCompositionCandidates(composition);
 }
 

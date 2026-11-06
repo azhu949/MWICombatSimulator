@@ -60,6 +60,33 @@
         </p>
       </div>
       <FoodOptimizerDetails :slots="currentSlots" />
+      <div v-if="currentSlots.length" class="mt-3 space-y-2" data-food-optimizer-locks>
+        <p class="control-label">{{ t('common:foodOptimizer.lockTitle') }}</p>
+        <div class="flex flex-wrap gap-2">
+          <label
+            v-for="food in currentSlots"
+            :key="`${food.slotIndex}:${food.hrid}`"
+            class="flex cursor-pointer items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs has-disabled:cursor-not-allowed has-disabled:opacity-50"
+            :class="isFoodLocked(food.hrid) ? 'bg-muted text-muted-foreground' : ''"
+            :data-food-optimizer-lock="food.hrid"
+            :title="
+              !isFoodLocked(food.hrid) && lockedFoodCount >= maxLockedFoodCount
+                ? t('common:foodOptimizer.lockAtLeastOne')
+                : ''
+            "
+          >
+            <input
+              type="checkbox"
+              :checked="isFoodLocked(food.hrid)"
+              :disabled="running || (!isFoodLocked(food.hrid) && lockedFoodCount >= maxLockedFoodCount)"
+              @change="toggleFoodLock(food.hrid, $event.target.checked)"
+            />
+            <span>{{ getItemName(food.hrid) }}</span>
+            <span v-if="isFoodLocked(food.hrid)" class="text-[10px]">{{ t('common:foodOptimizer.locked') }}</span>
+          </label>
+        </div>
+        <p class="text-xs text-muted-foreground">{{ t('common:foodOptimizer.lockHint') }}</p>
+      </div>
     </div>
 
     <div class="flex flex-wrap items-end gap-4">
@@ -354,6 +381,7 @@
       :items="scopeItems"
       :selected="input.foodHrids"
       :equipped-hrids="equippedHrids"
+      :locked-hrids="input.lockedFoodHrids"
       :food-slots="resources?.foodSlots ?? 0"
       @close="scopeOpen = false"
       @confirm="confirmScope"
@@ -370,6 +398,7 @@ import { foodOptimizerBusy } from '../../stores/simulatorFoodOptimizerActions.js
 import { snapshotFoodOptimizerInput } from '../../services/foodOptimizerSnapshot.js';
 import {
   FOOD_OPTIMIZER_MAX_ROUNDS,
+  FOOD_OPTIMIZER_MAX_LOCKED_SLOTS,
   FOOD_OPTIMIZER_MAX_STEP_PERCENT,
   FOOD_OPTIMIZER_MIN_ROUNDS,
   FOOD_OPTIMIZER_MIN_STEP_PERCENT,
@@ -393,7 +422,7 @@ import { useGameDataText } from '../composables/useGameDataText.js';
 
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
-const { getActionName, getMonsterName } = useGameDataText();
+const { getActionName, getItemName, getMonsterName } = useGameDataText();
 const input = computed(() => snapshotFoodOptimizerInput(simulator));
 const running = computed(() => simulator.foodOptimizer.runtime.isRunning);
 const busy = computed(() => foodOptimizerBusy(simulator));
@@ -475,6 +504,20 @@ const hasRunningReport = computed(
     simulator.foodOptimizer.runtime.phase !== 'preparing',
 );
 const resources = computed(() => (hasRunningReport.value ? report.value.request.resources : preview.value?.resources));
+const lockedFoodSet = computed(() => new Set(input.value.lockedFoodHrids || []));
+const lockedFoodCount = computed(() => lockedFoodSet.value.size);
+const maxLockedFoodCount = computed(() =>
+  Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_LOCKED_SLOTS, (resources.value?.foodSlots ?? 0) - 1)),
+);
+function isFoodLocked(hrid) {
+  return lockedFoodSet.value.has(hrid);
+}
+function toggleFoodLock(hrid, locked) {
+  const next = (input.value.lockedFoodHrids || []).filter((entry) => entry !== hrid);
+  if (locked) next.push(hrid);
+  if (next.length > maxLockedFoodCount.value) return;
+  simulator.setFoodOptimizerLockedFoods(next);
+}
 const candidateCount = computed(() =>
   validDraft.value
     ? hasRunningReport.value
@@ -482,7 +525,8 @@ const candidateCount = computed(() =>
       : preview.value?.totalCandidates
     : null,
 );
-const canStart = computed(() => !running.value && !blockReason.value && validDraft.value && preview.value);
+// 顶部入口只负责打开范围弹窗；有有效资源即可补选，最终搜索仍由 store 重新校验。
+const canStart = computed(() => !running.value && !blockReason.value && validDraft.value && Boolean(resources.value));
 const errorText = computed(() => {
   const error = simulator.foodOptimizer.runtime.error || simulator.foodOptimizer.previewError;
   return error === FOOD_OPTIMIZER_LABYRINTH_ERROR && (labyrinthTarget.value || labyrinthReport.value) ? '' : error;

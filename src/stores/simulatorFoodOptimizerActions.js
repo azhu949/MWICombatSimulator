@@ -3,11 +3,13 @@ import {
   persistFoodOptimizerSettingsToStorage,
 } from '../services/simulatorStorage.js';
 import {
+  buildFoodOptimizerLockedItems,
   createFoodOptimizerInputSignature,
   getFoodOptimizerItems,
   countFoodOptimizerCandidates,
   isValidFoodOptimizerSettings,
   normalizeFoodOptimizerFoodHrids,
+  normalizeFoodOptimizerLockedFoodHrids,
 } from '../services/foodOptimizerDomain.js';
 import { snapshotFoodOptimizerInput } from '../services/foodOptimizerSnapshot.js';
 import {
@@ -80,6 +82,8 @@ function trackReportChanges(store) {
 export function createFoodOptimizerState() {
   return {
     settings: loadFoodOptimizerSettingsFromStorage(),
+    // 锁定属于当前配置工作流，不进旧设置存档；实际生效集合由快照与当前装备求交集。
+    lockedFoodHrids: [],
     preview: null,
     previewError: '',
     previewPending: false,
@@ -117,9 +121,75 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
       prices: input.prices.priceTable,
       consumableMode: input.prices.consumableMode,
     });
-    return { payload, resources, items, totalCandidates: countFoodOptimizerCandidates(items, resources.foodSlots) };
+    const equippedFood = payload.players.find((player) => player.hrid === `player${input.activePlayerId}`)?.food;
+    // 固定轴单独从完整目录构造，不继承「可变食物范围」；快照已把锁定食物并入范围，
+    // 这里的独立构造同时保护直接调用方不因其范围过滤而丢失锁定项。
+    const lockedCatalog = input.lockedFoodHrids?.length
+      ? getFoodOptimizerItems({
+          ...resources,
+          thresholdStepPercent: input.thresholdStepPercent,
+          hrids: input.lockedFoodHrids,
+          prices: input.prices.priceTable,
+          consumableMode: input.prices.consumableMode,
+        })
+      : [];
+    const lockedItems = buildFoodOptimizerLockedItems(lockedCatalog, input.lockedFoodHrids, equippedFood);
+    if (lockedItems.length && lockedItems.length >= resources.foodSlots)
+      throw new Error('common:foodOptimizer.lockAtLeastOne');
+    // 当前阈值可以不在本次步长网格上（例如从 10% 切到 25% 后保留旧配置）；仍须加入
+    // 共享网格，固定轴才能继续使用轮次缓存。候选枚举仍只读 lockedItems 的单阈值轴。
+    const lockedByHrid = new Map(lockedItems.map((item) => [item.hrid, item]));
+    const searchItems = lockedItems.length
+      ? items.map((item) => {
+          const locked = lockedByHrid.get(item.hrid);
+          return locked
+            ? { ...item, thresholds: [...new Set([...item.thresholds, ...locked.thresholds])].sort((a, b) => b - a) }
+            : item;
+        })
+      : items;
+    const totalCandidates = countFoodOptimizerCandidates(searchItems, resources.foodSlots, lockedItems);
+    if (lockedItems.length && totalCandidates <= 1) {
+      const error = new Error('common:foodOptimizer.unlockedFoodRequired');
+      // 范围可修复的校验失败仍发布有效资源与候选数，供页面打开范围弹窗补选。
+      error.foodOptimizerPreview = { resources, totalCandidates };
+      throw error;
+    }
+    return { payload, resources, items: searchItems, lockedItems, totalCandidates };
   }
   return {
+    setFoodOptimizerLockedFoods(hrids) {
+      trackReportChanges(this);
+      if (this.foodOptimizer.runtime.isRunning) return false;
+      const equipped = new Set((this.activePlayer?.food || []).filter(Boolean).map((hrid) => String(hrid)));
+      const current = new Set(
+        normalizeFoodOptimizerLockedFoodHrids(this.foodOptimizer.lockedFoodHrids).filter((hrid) => equipped.has(hrid)),
+      );
+      const next = normalizeFoodOptimizerLockedFoodHrids(hrids).filter((hrid) => equipped.has(hrid));
+      if (foodScopeKey(next) === foodScopeKey(this.foodOptimizer.lockedFoodHrids)) return true;
+      const previousPreview =
+        this.foodOptimizer.preview?.inputSignature === this.foodOptimizerInputSignature
+          ? this.foodOptimizer.preview
+          : null;
+      const foodSlots = previousPreview?.resources?.foodSlots;
+      // 解锁始终可用；新增锁定必须依据当前实际槽位，资源未知时不能回退到全局三槽。
+      const hasAddedLock = next.some((hrid) => !current.has(hrid));
+      if (hasAddedLock && (!Number.isSafeInteger(foodSlots) || foodSlots < 1 || next.length >= foodSlots)) return false;
+      this.foodOptimizer.lockedFoodHrids = next;
+      // 仅锁定变化不会改变角色资源；保留同签名链上的实际槽位，但候选数必须重新准备。
+      this.foodOptimizer.preview = previousPreview
+        ? {
+            inputSignature: this.foodOptimizerInputSignature,
+            resources: previousPreview.resources,
+            totalCandidates: null,
+            resourcesOnly: true,
+          }
+        : null;
+      this.foodOptimizer.previewPending = false;
+      this.foodOptimizer.previewError = '';
+      this.foodOptimizer.runtime.error = '';
+      if (this.foodOptimizer.report) this.foodOptimizer.report.stale = true;
+      return true;
+    },
     setFoodOptimizerSettings(settings) {
       trackReportChanges(this);
       if (this.foodOptimizer.runtime.isRunning) return false;
@@ -153,7 +223,11 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
           this.foodOptimizer.preview = {
             ...previousPreview,
             inputSignature: createFoodOptimizerInputSignature(input),
-            totalCandidates: countFoodOptimizerCandidates(items, previousPreview.resources.foodSlots),
+            totalCandidates: countFoodOptimizerCandidates(
+              items,
+              previousPreview.resources.foodSlots,
+              (input.lockedFoodHrids || []).map((hrid) => ({ hrid, thresholds: [1] })),
+            ),
           };
         }
       }
@@ -169,10 +243,19 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
       }
       if (this.foodOptimizer.runtime.error === FOOD_OPTIMIZER_LABYRINTH_ERROR) this.foodOptimizer.runtime.error = '';
       const signature = createFoodOptimizerInputSignature(input);
-      if (this.foodOptimizer.preview?.inputSignature === signature) return;
+      if (
+        this.foodOptimizer.preview?.inputSignature === signature &&
+        !this.foodOptimizer.preview.resourcesOnly &&
+        !this.foodOptimizer.previewError
+      )
+        return;
+      const retainedPreview =
+        this.foodOptimizer.preview?.resourcesOnly && this.foodOptimizer.preview.inputSignature === signature
+          ? this.foodOptimizer.preview
+          : null;
       this.foodOptimizer.previewPending = true;
       this.foodOptimizer.previewError = '';
-      this.foodOptimizer.preview = null;
+      this.foodOptimizer.preview = retainedPreview;
       try {
         if (!input.imported || input.runScope !== 'single' || !isValidFoodOptimizerSettings(input)) return;
         const prepared = await prepare(input);
@@ -184,8 +267,15 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
           };
         }
       } catch (error) {
-        if (this.foodOptimizerInputSignature === signature)
+        if (this.foodOptimizerInputSignature === signature) {
+          if (error?.foodOptimizerPreview) {
+            this.foodOptimizer.preview = {
+              ...error.foodOptimizerPreview,
+              inputSignature: signature,
+            };
+          }
           this.foodOptimizer.previewError = error?.message || String(error);
+        }
       } finally {
         if (isFoodOptimizerLabyrinth(snapshotFoodOptimizerInput(this))) clearLabyrinthPreview(this);
         else if (this.foodOptimizerInputSignature === signature) this.foodOptimizer.previewPending = false;
@@ -220,6 +310,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
       }
       const inputSignature = createFoodOptimizerInputSignature(input);
       const runId = runtime.runId + 1;
+      this.foodOptimizer.previewError = '';
       Object.assign(runtime, {
         isRunning: true,
         runId,
@@ -266,6 +357,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
         const search = createFoodOptimizerSearch({
           request,
           items: prepared.items,
+          lockedItems: prepared.lockedItems,
           foodSlots: prepared.resources.foodSlots,
           workerLimit: normalizeParallelWorkerLimit(
             this.queueRuntime.parallelWorkerLimit,

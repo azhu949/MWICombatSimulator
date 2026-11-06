@@ -4,6 +4,8 @@ import { normalizePriceMode, PRICE_MODE_ASK } from './marketPriceService.js';
 import { deepClone } from './utils.js';
 import {
   getFoodOptimizerCatalogHrids,
+  normalizeFoodOptimizerFoodHrids,
+  normalizeFoodOptimizerLockedFoodHrids,
   normalizeFoodOptimizerSearchMode,
   normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
@@ -47,6 +49,19 @@ function resolveFoodScopeHrids(store, activePlayerId) {
   return picked.length ? picked : null;
 }
 
+// 只留下当前角色实际佩戴的锁定食物。锁定集合进入快照与输入签名，改变锁定时
+// 既有过期标记和报告缓存键都会自动变化；换角色后不会把同名残留锁到空配置上。
+function resolveFoodOptimizerLockedFoodHrids(store, activePlayerId) {
+  const equipped = new Set(
+    (store.players.find((player) => String(player.id) === activePlayerId)?.food || [])
+      .filter(Boolean)
+      .map((hrid) => String(hrid)),
+  );
+  return normalizeFoodOptimizerLockedFoodHrids(store.foodOptimizer.lockedFoodHrids).filter((hrid) =>
+    equipped.has(hrid),
+  );
+}
+
 export function snapshotFoodOptimizerInput(store) {
   const activePlayerId = String(store.activePlayerId);
   const players = store.players
@@ -61,6 +76,8 @@ export function snapshotFoodOptimizerInput(store) {
     workerId: 'food-optimizer',
   });
   const hrids = foodOptions.map((item) => item.hrid);
+  const lockedFoodHrids = resolveFoodOptimizerLockedFoodHrids(store, activePlayerId);
+  const scopeHrids = resolveFoodScopeHrids(store, activePlayerId);
   return {
     activePlayerId,
     imported: store.queue.importedProfileByPlayer?.[activePlayerId] === true,
@@ -88,6 +105,10 @@ export function snapshotFoodOptimizerInput(store) {
     // 设置层缺省只由 normalizeFoodOptimizerSearchMode 定义（精确前十）；快照永远向引擎
     // 递交合法枚举，引擎侧另有自己的容错兜底（见 resolveFoodOptimizerRequestSearchMode）。
     searchMode: normalizeFoodOptimizerSearchMode(store.foodOptimizer.settings.searchMode),
-    foodHrids: resolveFoodScopeHrids(store, activePlayerId),
+    // 锁定食物始终保留在范围内，即使旧范围存档曾排除它们。
+    foodHrids: Array.isArray(scopeHrids)
+      ? normalizeFoodOptimizerFoodHrids([...scopeHrids, ...lockedFoodHrids])
+      : scopeHrids,
+    lockedFoodHrids,
   };
 }

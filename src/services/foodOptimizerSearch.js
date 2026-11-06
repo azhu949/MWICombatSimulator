@@ -63,11 +63,12 @@ function selectFoodOptimizerAxes(items, result) {
 // Start with fewer slots to establish useful ranking bounds early. Each pass
 // is lazy and bounded to its own slot count; complete searches keep their
 // original depth-first composition order.
-function* generateTopTenCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
+function* generateTopTenCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS, lockedItems = []) {
   const parsed = Number(slotLimit);
   const limit = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Number.isFinite(parsed) ? Math.floor(parsed) : 0));
-  for (let slots = 0; slots <= limit; slots += 1)
-    for (const composition of generateFoodOptimizerCompositionItems(items, slots))
+  const fixedCount = Array.isArray(lockedItems) ? lockedItems.length : 0;
+  for (let slots = fixedCount; slots <= limit; slots += 1)
+    for (const composition of generateFoodOptimizerCompositionItems(items, slots, lockedItems))
       if (composition.length === slots) yield composition;
 }
 
@@ -190,9 +191,9 @@ export class FoodOptimizerWorkerClient {
   }
 }
 
-export function createFoodOptimizerReport(request, items, foodSlots) {
-  const totalCandidates = countFoodOptimizerCandidates(items, foodSlots);
-  const totalCompositions = countFoodOptimizerCompositions(items, foodSlots);
+export function createFoodOptimizerReport(request, items, foodSlots, lockedItems = []) {
+  const totalCandidates = countFoodOptimizerCandidates(items, foodSlots, lockedItems);
+  const totalCompositions = countFoodOptimizerCompositions(items, foodSlots, lockedItems);
   return {
     request,
     inputSignature: request.inputSignature,
@@ -229,6 +230,7 @@ export function createFoodOptimizerReport(request, items, foodSlots) {
 export function createFoodOptimizerSearch({
   request,
   items,
+  lockedItems = [],
   foodSlots,
   workerLimit,
   onUpdate = () => {},
@@ -238,13 +240,16 @@ export function createFoodOptimizerSearch({
   now = () => globalThis.performance?.now() ?? Date.now(),
   workerFactory = () => new FoodOptimizerWorkerClient(),
 }) {
+  lockedItems = Array.isArray(lockedItems) ? lockedItems : [];
+  // 自定义触发器不满足现有证书的规范形状；只对标准锁定轴保留剪枝与跨轮复用。
+  reuse &&= lockedItems.every((item) => !Array.isArray(item.triggers));
   // searchMode 只在这里解析一次：缺失/非法按“完整搜索”执行，并把解析结果写回 request，
   // 让报告及其下游（UI 统计口径、缓存、复制本请求的调用方）看到实际执行的模式，
   // 而不是留下 undefined 这第三种状态。
   request.searchMode = resolveFoodOptimizerRequestSearchMode(request.searchMode);
   // 同上：把「排除有死亡的方案」的解析结果写回 request，报告与 UI 看到的是实际执行的口径。
   request.requireZeroDeaths = isFoodOptimizerZeroDeathsRequest(request);
-  const report = createFoodOptimizerReport(request, items, foodSlots);
+  const report = createFoodOptimizerReport(request, items, foodSlots, lockedItems);
   // 候选的死亡预算：普通模式等于基线累计死亡（不高于基线即可），但「少带食物」必须严格更少死
   // ——槽位少于基线携带槽位数时预算减一（槽位数持平或更多仍允许并列）。启用「排除有死亡的方案」
   // 时一切压到 0，有死亡的候选一律按 rejected='deaths' 淘汰，前十自然只剩 0 死方案。
@@ -377,7 +382,7 @@ export function createFoodOptimizerSearch({
         report.baseline.simulatedRounds ?? report.baseline.roundsCompleted,
         report.baseline.reusedRounds,
       );
-      const emptyBaseline = reuse && hasEmptyFoodOptimizerBaseline(request);
+      const emptyBaseline = reuse && !lockedItems.length && hasEmptyFoodOptimizerBaseline(request);
       // 空槽基线（用户当前没带食物）会把自身结论直接复用为“空候选”的证据；启用「排除有死亡的
       // 方案」且基线自身会死亡时，这条捷径会把带死亡的基线当成合格候选送进榜单，因此不再复用，
       // 让空候选走普通候选的死亡预算（0）淘汰。
@@ -615,7 +620,8 @@ export function createFoodOptimizerSearch({
         report.stats.screenedCompositions += 1;
         if (result.feasible) report.stats.passedCompositions += 1;
       };
-      let priority = topTen && !allUnused ? createFoodOptimizerPriority(request, items, foodSlots) : null;
+      let priority =
+        topTen && !allUnused && !lockedItems.length ? createFoodOptimizerPriority(request, items, foodSlots) : null;
       let priorityResult;
       const screenedEmpty = Boolean(priority);
       if (priority) {
@@ -653,8 +659,8 @@ export function createFoodOptimizerSearch({
       }
       const isPriority = (entry) => priority?.candidate.signature === entry.candidate.signature;
       const compositions = topTen
-        ? generateTopTenCompositions(items, foodSlots)
-        : generateFoodOptimizerCompositionItems(items, foodSlots);
+        ? generateTopTenCompositions(items, foodSlots, lockedItems)
+        : generateFoodOptimizerCompositionItems(items, foodSlots, lockedItems);
       while (!cancelled && !failed) {
         // Keep a bounded set of defaults near the variants that need their
         // certificates, instead of screening the entire catalog before using them.
