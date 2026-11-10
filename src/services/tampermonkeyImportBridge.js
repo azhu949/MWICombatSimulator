@@ -54,24 +54,18 @@ export async function applyTampermonkeyImportMessage(simulator, message) {
   const shouldSelectAfterImport = safeMessage.selectAfterImport === true;
   const shouldActivateAfterImport = resolveActivateAfterImport(safeMessage);
 
+  // Parse and validate the complete snapshot before clearing slots or selection.
+  // The store mutation queue still serializes the import and these post-actions.
+  const result = await simulator.importSoloConfig(JSON.stringify(safeMessage.payload || {}), resolvedPlayerId);
+
   if (safeMessage.clearOtherPlayers === true) {
     simulator.clearOtherPlayersForSoloImport(resolvedPlayerId);
   }
-
   if (safeMessage.resetTeamSelection === true) {
     simulator.players.forEach((player) => {
       player.selected = false;
     });
   }
-
-  // 顺序不变量（2026-10-03）：本函数 async 化后，await 之前的预动作（clearOtherPlayersForSoloImport /
-  // resetTeamSelection）与 await 之后的动作（clearPlayerSlots / setActivePlayer / selected 写入）之间
-  // 存在让出执行权的窗口——importSoloConfig 内部要 await 按需加载的序列化模块与资产分刷新，期间用户
-  // 手动导入、快照恢复等其它来源的写入可以落地。这些后置动作因此依赖 store 侧「玩家配置写入串行器」
-  // （services/playerConfigMutationQueue.js）提供的排序：后发起者的配置写入一定在本函数的后置动作之后
-  // 执行，不会被 clearPlayerSlots 误清。改动此处 await 顺序、或把 importSoloConfig 移出串行队列时，
-  // 必须一并复核该不变量（回归用例见 __tests__/importLinkSerialization.test.js）。
-  const result = await simulator.importSoloConfig(JSON.stringify(safeMessage.payload || {}), resolvedPlayerId);
 
   if (clearPlayerIdsAfterImport.length > 0) {
     simulator.clearPlayerSlots(clearPlayerIdsAfterImport);

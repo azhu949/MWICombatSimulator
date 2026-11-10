@@ -61,6 +61,11 @@ describe('combat scroll configuration contract', () => {
       character: { name: 'Imported' },
       characterSkills: [],
       characterItems: [],
+      combatUnit: { combatAbilities: [] },
+      actionTypeFoodSlotsMap: {},
+      actionTypeDrinkSlotsMap: {},
+      abilityCombatTriggersMap: {},
+      consumableCombatTriggersMap: {},
       personalActionTypeBuffsMap: {
         '/action_types/combat': {
           '/personal_buff_types/damage': true,

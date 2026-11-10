@@ -1,0 +1,382 @@
+{
+  "sharableCharacter": {
+    "name": "BlackSheep3",
+    "gameMode": "ironcow",
+    "actionType": "/action_types/combat"
+  },
+  "characterSkills": [
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/melee",
+      "level": 87
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/ranged",
+      "level": 117
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/stamina",
+      "level": 100
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/defense",
+      "level": 108
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/magic",
+      "level": 88
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/attack",
+      "level": 100
+    },
+    {
+      "characterID": 369965,
+      "skillHrid": "/skills/intelligence",
+      "level": 100
+    }
+  ],
+  "wearableItemMap": {
+    "/item_locations/back": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/chimerical_quiver",
+      "enhancementLevel": 0
+    },
+    "/item_locations/body": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/griffin_tunic",
+      "enhancementLevel": 5
+    },
+    "/item_locations/charm": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/basic_defense_charm",
+      "enhancementLevel": 0
+    },
+    "/item_locations/earrings": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/earrings_of_regeneration",
+      "enhancementLevel": 3
+    },
+    "/item_locations/feet": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/centaur_boots",
+      "enhancementLevel": 5
+    },
+    "/item_locations/hands": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/sighted_bracers",
+      "enhancementLevel": 5
+    },
+    "/item_locations/head": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/fluffy_red_hat",
+      "enhancementLevel": 5
+    },
+    "/item_locations/legs": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/griffin_chaps",
+      "enhancementLevel": 5
+    },
+    "/item_locations/main_hand": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/soul_hunter_crossbow",
+      "enhancementLevel": 5
+    },
+    "/item_locations/neck": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/necklace_of_speed",
+      "enhancementLevel": 3
+    },
+    "/item_locations/off_hand": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/manticore_shield",
+      "enhancementLevel": 5
+    },
+    "/item_locations/pouch": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/giant_pouch",
+      "enhancementLevel": 5
+    },
+    "/item_locations/ring": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/ring_of_regeneration",
+      "enhancementLevel": 3
+    },
+    "/item_locations/trinket": {
+      "characterID": 369965,
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    }
+  },
+  "equippedAbilities": [
+    {
+      "characterID": 369965,
+      "abilityHrid": "/abilities/fierce_aura",
+      "level": 5,
+      "slotNumber": 1
+    },
+    {
+      "characterID": 369965,
+      "abilityHrid": "/abilities/berserk",
+      "level": 44,
+      "slotNumber": 2
+    },
+    {
+      "characterID": 369965,
+      "abilityHrid": "/abilities/frenzy",
+      "level": 42,
+      "slotNumber": 3
+    },
+    {
+      "characterID": 369965,
+      "abilityHrid": "/abilities/pestilent_shot",
+      "level": 26,
+      "slotNumber": 4
+    },
+    {
+      "characterID": 369965,
+      "abilityHrid": "/abilities/penetrating_shot",
+      "level": 28,
+      "slotNumber": 5
+    }
+  ],
+  "combatConsumables": [
+    {
+      "itemHrid": "/items/spaceberry_cake"
+    },
+    {
+      "itemHrid": "/items/plum_gummy"
+    },
+    {
+      "itemHrid": "/items/star_fruit_yogurt"
+    },
+    {
+      "itemHrid": "/items/super_ranged_coffee"
+    },
+    {
+      "itemHrid": "/items/swiftness_coffee"
+    },
+    {
+      "itemHrid": "/items/wisdom_coffee"
+    }
+  ],
+  "abilityCombatTriggersMap": {
+    "/abilities/fierce_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/fierce_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/berserk": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/berserk",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/frenzy": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/frenzy",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/penetrating_shot": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1000
+      }
+    ],
+    "/abilities/pestilent_shot": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ]
+  },
+  "consumableCombatTriggersMap": {
+    "/items/plum_gummy": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/missing_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 160
+      }
+    ],
+    "/items/spaceberry_cake": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/missing_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 350
+      }
+    ],
+    "/items/star_fruit_yogurt": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/missing_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 350
+      }
+    ],
+    "/items/super_ranged_coffee": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/ranged_coffee",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/items/swiftness_coffee": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/swiftness_coffee",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/items/wisdom_coffee": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/wisdom_coffee",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "characterHouseRoomMap": {
+    "/house_rooms/archery_range": {
+      "houseRoomHrid": "/house_rooms/archery_range",
+      "level": 3
+    },
+    "/house_rooms/armory": {
+      "houseRoomHrid": "/house_rooms/armory",
+      "level": 3
+    },
+    "/house_rooms/brewery": {
+      "houseRoomHrid": "/house_rooms/brewery",
+      "level": 3
+    },
+    "/house_rooms/dairy_barn": {
+      "houseRoomHrid": "/house_rooms/dairy_barn",
+      "level": 3
+    },
+    "/house_rooms/dining_room": {
+      "houseRoomHrid": "/house_rooms/dining_room",
+      "level": 6
+    },
+    "/house_rooms/dojo": {
+      "houseRoomHrid": "/house_rooms/dojo",
+      "level": 3
+    },
+    "/house_rooms/forge": {
+      "houseRoomHrid": "/house_rooms/forge",
+      "level": 3
+    },
+    "/house_rooms/garden": {
+      "houseRoomHrid": "/house_rooms/garden",
+      "level": 3
+    },
+    "/house_rooms/gym": {
+      "houseRoomHrid": "/house_rooms/gym",
+      "level": 3
+    },
+    "/house_rooms/kitchen": {
+      "houseRoomHrid": "/house_rooms/kitchen",
+      "level": 3
+    },
+    "/house_rooms/laboratory": {
+      "houseRoomHrid": "/house_rooms/laboratory",
+      "level": 5
+    },
+    "/house_rooms/library": {
+      "houseRoomHrid": "/house_rooms/library",
+      "level": 6
+    },
+    "/house_rooms/log_shed": {
+      "houseRoomHrid": "/house_rooms/log_shed",
+      "level": 3
+    },
+    "/house_rooms/mystical_study": {
+      "houseRoomHrid": "/house_rooms/mystical_study",
+      "level": 3
+    },
+    "/house_rooms/observatory": {
+      "houseRoomHrid": "/house_rooms/observatory",
+      "level": 3
+    },
+    "/house_rooms/sewing_parlor": {
+      "houseRoomHrid": "/house_rooms/sewing_parlor",
+      "level": 3
+    },
+    "/house_rooms/workshop": {
+      "houseRoomHrid": "/house_rooms/workshop",
+      "level": 3
+    }
+  },
+  "guildBuffLevelMap": {
+    "/guild_buffs/force_combat": 3,
+    "/guild_buffs/force_skilling": 2,
+    "/guild_buffs/rarity_combat": 1,
+    "/guild_buffs/rarity_skilling": 1,
+    "/guild_buffs/scholar_combat": 3,
+    "/guild_buffs/scholar_skilling": 2,
+    "/guild_buffs/spirit_combat": 4,
+    "/guild_buffs/spirit_skilling": 2,
+    "/guild_buffs/tempo_combat": 3,
+    "/guild_buffs/tempo_skilling": 3
+  },
+  "characterAchievements": [
+    {
+      "characterID": 369965,
+      "achievementHrid": "/achievements/total_level_1500",
+      "progress": 1500,
+      "isCompleted": true
+    },
+    {
+      "characterID": 369965,
+      "achievementHrid": "/achievements/total_level_1800",
+      "progress": 1760,
+      "isCompleted": false
+    },
+    {
+      "characterID": 369965,
+      "achievementHrid": "/achievements/build_room_level_6",
+      "progress": 1,
+      "isCompleted": true
+    },
+    {
+      "characterID": 369965,
+      "achievementHrid": "/achievements/learn_special_ability",
+      "progress": 1,
+      "isCompleted": true
+    }
+  ]
+}

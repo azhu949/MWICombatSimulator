@@ -387,52 +387,62 @@
       </label>
     </div>
 
-    <div class="flex flex-wrap gap-2" data-tm-import-anchor="simulator-home-actions">
-      <button
-        type="button"
-        class="button-primary"
-        :disabled="simulator.runtime.isRunning"
-        @click="simulator.startSimulation()"
+    <div class="flex min-w-0 flex-col gap-2" data-home-actions>
+      <div class="flex flex-wrap items-center gap-2" data-home-action-row="simulation">
+        <button
+          type="button"
+          class="button-primary"
+          :disabled="simulator.runtime.isRunning"
+          @click="simulator.startSimulation()"
+        >
+          {{ t('common:controls.startSimulation', 'Start Simulation') }}
+        </button>
+        <button
+          type="button"
+          class="button-danger"
+          :disabled="!simulator.runtime.isRunning"
+          @click="simulator.stopSimulation()"
+        >
+          {{ t('common:controls.stopSimulation', 'Stop') }}
+        </button>
+      </div>
+      <div
+        class="home-import-actions flex min-w-0 flex-wrap items-center gap-2"
+        data-home-action-row="import"
+        data-tm-import-anchor="simulator-home-actions"
       >
-        {{ t('common:controls.startSimulation', 'Start Simulation') }}
-      </button>
-      <button
-        type="button"
-        class="button-danger"
-        :disabled="!simulator.runtime.isRunning"
-        @click="simulator.stopSimulation()"
-      >
-        {{ t('common:controls.stopSimulation', 'Stop') }}
-      </button>
-      <button
-        type="button"
-        class="button-secondary"
-        data-tm-import-reference="import-export"
-        @click="$emit('open-import-export')"
-      >
-        {{ t('common:controls.importExport', 'Import/Export') }}
-      </button>
-      <button type="button" class="button-secondary" @click="$emit('open-house-rooms')">
-        {{ t('common:vue.home.houseRooms.button', 'House Rooms') }}
-      </button>
-      <button type="button" class="button-secondary" @click="$emit('open-achievements')">
-        {{ getOfficialGameText('achievementsPanel', 'achievements', 'Achievements') }}
-      </button>
-      <button type="button" class="button-secondary" @click="$emit('open-guild-buffs')">
-        {{ t('common:vue.home.guildBuffs.button', 'Guild Shrines') }}
-      </button>
-      <button type="button" class="button-secondary" @click="$emit('open-experimental')">
-        {{ t('common:Experiment.ExperimentalFeatures', 'Experimental Features') }}
-      </button>
-      <button type="button" class="button-secondary" @click="snapshotController.save">
-        {{ t('common:settingsPage.savePlayerConfigs', 'Save Player Configs') }}
-      </button>
-      <button type="button" class="button-secondary" @click="snapshotController.load">
-        {{ t('common:settingsPage.loadPlayerConfigs', 'Load Player Configs') }}
-      </button>
-      <button type="button" class="button-secondary" @click="$emit('open-snapshot-info')">
-        {{ t('common:settingsPage.viewPlayerSnapshotInfo', 'View Snapshot Info') }}
-      </button>
+        <button
+          type="button"
+          class="button-secondary"
+          data-tm-import-reference="import-export"
+          @click="$emit('open-import-export')"
+        >
+          {{ t('common:controls.importExport', 'Import/Export') }}
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2" data-home-action-row="configuration">
+        <button type="button" class="button-secondary" @click="$emit('open-house-rooms')">
+          {{ t('common:vue.home.houseRooms.button', 'House Rooms') }}
+        </button>
+        <button type="button" class="button-secondary" @click="$emit('open-achievements')">
+          {{ getOfficialGameText('achievementsPanel', 'achievements', 'Achievements') }}
+        </button>
+        <button type="button" class="button-secondary" @click="$emit('open-guild-buffs')">
+          {{ t('common:vue.home.guildBuffs.button', 'Guild Shrines') }}
+        </button>
+        <button type="button" class="button-secondary" @click="$emit('open-experimental')">
+          {{ t('common:Experiment.ExperimentalFeatures', 'Experimental Features') }}
+        </button>
+        <button type="button" class="button-secondary" @click="snapshotController.save">
+          {{ t('common:settingsPage.savePlayerConfigs', 'Save Player Configs') }}
+        </button>
+        <button type="button" class="button-secondary" @click="snapshotController.load">
+          {{ t('common:settingsPage.loadPlayerConfigs', 'Load Player Configs') }}
+        </button>
+        <button type="button" class="button-secondary" @click="$emit('open-snapshot-info')">
+          {{ t('common:settingsPage.viewPlayerSnapshotInfo', 'View Snapshot Info') }}
+        </button>
+      </div>
     </div>
     <p v-if="snapshotStatusText" class="mt-2 text-xs" :class="snapshotStatusClass">{{ snapshotStatusText }}</p>
   </div>
@@ -691,3 +701,21 @@ onBeforeUnmount(() => {
   }
 });
 </script>
+
+<style scoped>
+/* The userscript owns the import control. Keep its button and feedback in row 2,
+   allowing long status messages to wrap without squeezing either button. */
+.home-import-actions :deep(#mwi-tm-import-control) {
+  display: contents;
+}
+
+.home-import-actions :deep(#mwi-tm-import-status) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.home-import-actions :deep(button) {
+  flex-shrink: 0;
+}
+</style>
