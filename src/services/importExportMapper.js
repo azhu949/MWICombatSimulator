@@ -1569,18 +1569,30 @@ function describeLabyrinthUpgradesImport(importedUpgrades, existingSimulationSet
 }
 
 function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings) {
-  requireCompleteCombatSnapshot(parsed, 'current-character', true);
+  const selected = selectShareableCombatSnapshot(parsed);
+  // Reuse atomic loadout parsing, while keeping the raw self-character metadata
+  // path (including labyrinth upgrades and the learned ability table) intact.
+  const combatPlayer =
+    selected.source !== parsed
+      ? importShareableProfile(
+          { profile: { ...parsed, sharableCharacter: parsed.character } },
+          existingPlayer,
+          existingSimulationSettings,
+        ).player
+      : null;
+  if (!combatPlayer) requireCompleteCombatSnapshot(parsed, 'current-character', true);
   const fallbackPlayer = deepClone(existingPlayer || createEmptyPlayerConfig(1));
   const rawPlayer = {
     id: String(fallbackPlayer.id || '1'),
     name: String(parsed?.character?.name || fallbackPlayer.name || `Player ${fallbackPlayer.id}`),
     levels: Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1])),
     skillExperience: createEmptySkillExperienceMap(),
-    equipment: extractCurrentCharacterEquipment(parsed, createEmptyPlayerConfig(fallbackPlayer.id)),
-    food: extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
-    drinks: extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
+    equipment:
+      combatPlayer?.equipment ?? extractCurrentCharacterEquipment(parsed, createEmptyPlayerConfig(fallbackPlayer.id)),
+    food: combatPlayer?.food ?? extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
+    drinks: combatPlayer?.drinks ?? extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
     craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
-    abilities: extractCurrentCharacterAbilities(parsed),
+    abilities: combatPlayer?.abilities ?? extractCurrentCharacterAbilities(parsed),
     // 全量已学技能等级：主站载荷除当前装备槽外可能携带全量映射（含「已学但未装备」
     // 的技能等级），宽容提取并入权威表，切换配装按 hrid 查表不再回落 1 级。
     abilityLevels: extractShareableAbilityLevels(parsed),
@@ -1596,7 +1608,7 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     rawPlayer.skillExperience[levelKey] = normalizeSkillExperience(skill?.experience);
   }
 
-  rawPlayer.triggerMap = extractShareableTriggerMap([parsed], {});
+  rawPlayer.triggerMap = combatPlayer?.triggerMap ?? extractShareableTriggerMap([parsed], {});
 
   // 配装快照：单人快照路径经白名单携带 characterLoadoutMap（官方 init_character_data
   // 内嵌该字段）。旧版脚本载荷缺失该字段时保留现有配置。
@@ -1636,10 +1648,13 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
-      explicitAbilityLevels: extractExplicitAbilityLevels(parsed?.combatUnit?.combatAbilities),
+      explicitAbilityLevels: extractExplicitAbilityLevels(
+        combatPlayer?.abilities ?? parsed?.combatUnit?.combatAbilities,
+      ),
     }),
     simulationSettings,
     detectedFormat: 'main-site-current-character',
+    combatConfigSource: combatPlayer ? selected.label : 'current-character',
     labyrinthUpgradesImport,
   };
 }

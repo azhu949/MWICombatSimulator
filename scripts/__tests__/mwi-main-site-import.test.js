@@ -2152,3 +2152,214 @@ describe('real loadout_shared import', () => {
     expect(api.buildViewLoadoutResponse('369965', 'BlackSheep3').ok).toBe(false);
   });
 });
+
+describe('own party loadout auto selection', () => {
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  function saved(id = 42) {
+    return {
+      id,
+      characterID: 369965,
+      actionTypeHrid: '/action_types/combat',
+      wearableMap: {
+        '/item_locations/off_hand': `369965::/item_locations/off_hand::/items/wooden_shield::${id === 42 ? 8 : 9}`,
+      },
+      abilityMap: { 2: '/abilities/berserk' },
+      foodItemHrids: [],
+      drinkItemHrids: ['/items/wisdom_coffee'],
+      abilityCombatTriggersMap: { '/abilities/berserk': [] },
+      consumableCombatTriggersMap: { '/items/wisdom_coffee': [] },
+    };
+  }
+  function party(id = 42) {
+    return {
+      party: { id: 5 },
+      partySlotMap: {
+        1: { characterID: 369965, characterLoadoutID: id, isReady: true },
+        2: { characterID: 99, characterLoadoutID: 77 },
+      },
+      sharableCharacterMap: { 369965: { name: 'BlackSheep3' }, 99: { name: 'Teammate' } },
+    };
+  }
+  function setup({ withParty = true, loadout = saved(), noCurrentSlots = false } = {}) {
+    const ctx = loadScriptTestApi();
+    const handlers = {};
+    ctx.api.instrumentMainSiteSocket({
+      addEventListener(t, fn) {
+        handlers[t] = fn;
+      },
+    });
+    const send = (m) => handlers.message({ data: JSON.stringify(m) });
+    const p = clone(viewLoadoutFixture);
+    const init = {
+      type: 'init_character_data',
+      character: { id: 369965, name: 'BlackSheep3' },
+      characterSkills: p.characterSkills,
+      characterAbilities: p.equippedAbilities,
+      characterItems: [
+        {
+          characterID: 369965,
+          itemLocationHrid: '/item_locations/head',
+          itemHrid: '/items/lumberjack_hat',
+          enhancementLevel: 0,
+        },
+      ],
+      combatUnit: { combatAbilities: [] },
+      characterHouseRoomMap: p.characterHouseRoomMap,
+      characterAchievements: p.characterAchievements,
+      characterGuildBuffMap: { '/guild_buffs/force_combat': { level: 3 } },
+      guildBuildingLevelMap: { '/guild_buildings/force_shrine': 3 },
+      guildBuffLevelMap: p.guildBuffLevelMap,
+      characterInfo: { labyrinthCombatDamageLevel: 4 },
+      actionTypeFoodSlotsMap: {},
+      actionTypeDrinkSlotsMap: {},
+      abilityCombatTriggersMap: {},
+      consumableCombatTriggersMap: {},
+      characterLoadoutMap: { 42: loadout, 43: saved(43) },
+      ...(withParty ? { partyInfo: party() } : {}),
+    };
+    if (noCurrentSlots)
+      for (const key of [
+        'actionTypeFoodSlotsMap',
+        'actionTypeDrinkSlotsMap',
+        'abilityCombatTriggersMap',
+        'consumableCombatTriggersMap',
+      ])
+        delete init[key];
+    send(init);
+    const response = () =>
+      ctx.api.buildTeamMemberResponse({ characterId: 369965, characterName: 'BlackSheep3', isCurrent: true });
+    const imported = () => {
+      const r = response();
+      expect(r.ok).toBe(true);
+      return importSoloConfig(JSON.stringify(r.payload), createEmptyPlayerConfig(1), {});
+    };
+    return { ...ctx, send, response, imported, init };
+  }
+  it('imports own selected party build without either profile or view-loadout message', () => {
+    const { response, imported, api } = setup();
+    expect(response().payload.currentCombatLoadout?.id).toBe(42);
+    const result = imported();
+    expect(result.player.equipment.off_hand).toEqual({ itemHrid: '/items/wooden_shield', enhancementLevel: 8 });
+    expect(result.player.equipment.head.itemHrid).toBe('');
+    expect(result.player.abilities.filter((x) => x.abilityHrid)).toEqual([
+      { abilityHrid: '/abilities/berserk', level: 44 },
+    ]);
+    expect(result.player.food).toEqual(['', '', '']);
+    expect(result.player.drinks).toEqual(['/items/wisdom_coffee', '', '']);
+    expect(result.player.triggerMap).toEqual({
+      ...saved().abilityCombatTriggersMap,
+      ...saved().consumableCombatTriggersMap,
+    });
+    expect(result.player.houseRooms['/house_rooms/dining_room']).toBe(6);
+    expect(result.player.achievements['/achievements/total_level_1500']).toBe(true);
+    expect(result.simulationSettings.labyrinthUpgrades.damage).toBe(4);
+    expect(api.buildCurrentCombatResponse('request').payload.currentCombatLoadout.id).toBe(42);
+    // Enhancement/skilling continue using inventory, never the party combat build.
+    expect(api.buildCurrentMainSiteResponse('request').payload.currentCombatLoadout).toBeUndefined();
+  });
+  it('uses the latest party slot ID and loadouts_updated map, not an old viewed build', () => {
+    const { send, imported } = setup();
+    send({
+      type: 'loadout_shared',
+      loadout: { ...clone(viewLoadoutFixture), hasLoadout: true, actionTypeHrid: '/action_types/combat' },
+    });
+    expect(imported().player.equipment.off_hand.enhancementLevel).toBe(8);
+    send({ type: 'party_updated', partyInfo: party(43) });
+    expect(imported().player.equipment.off_hand.enhancementLevel).toBe(9);
+    const next = saved(43);
+    next.wearableMap['/item_locations/off_hand'] = '369965::/item_locations/off_hand::/items/wooden_shield::10';
+    send({ type: 'loadouts_updated', characterLoadoutMap: { 43: next } });
+    expect(imported().player.equipment.off_hand.enhancementLevel).toBe(10);
+  });
+  it('explicit zero or leaving party uses current gear rather than a stale view cache', () => {
+    const { send, response } = setup();
+    send({
+      type: 'loadout_shared',
+      loadout: { ...clone(viewLoadoutFixture), hasLoadout: true, actionTypeHrid: '/action_types/combat' },
+    });
+    send({ type: 'party_updated', partyInfo: party(0) });
+    expect(response().payload.currentCombatLoadout).toBeUndefined();
+    expect(response().payload.characterItems[0].itemHrid).toBe('/items/lumberjack_hat');
+    send({ type: 'party_updated', partyInfo: null });
+    expect(response().format).toBe('main-site-current-character');
+  });
+  it('does not select another player or a party-list preview', () => {
+    const { send, response } = setup();
+    send({ type: 'party_list_updated', partyInfo: party(43) });
+    expect(response().payload.currentCombatLoadout.id).toBe(42);
+  });
+  it('reports missing/deleted or foreign selected builds without using current or viewed gear', () => {
+    const { send, response } = setup();
+    send({ type: 'party_updated', partyInfo: party(77) });
+    expect(response().ok).toBe(false);
+    send({ type: 'party_updated', partyInfo: party(42) });
+    send({ type: 'loadouts_updated', characterLoadoutMap: { 42: { ...saved(), characterID: 99 } } });
+    expect(response().ok).toBe(false);
+  });
+  it('does not depend on current equipped consumable and trigger snapshots', () => {
+    const { imported } = setup({ noCurrentSlots: true });
+    expect(imported().player.equipment.off_hand.enhancementLevel).toBe(8);
+  });
+  it('fails closed for incomplete selected loadout instead of mixing combat sources', () => {
+    const bad = saved();
+    delete bad.consumableCombatTriggersMap;
+    const { response } = setup({ loadout: bad });
+    expect(response().ok).toBe(false);
+  });
+  it('accepts explicitly empty slots and trigger maps as an empty complete build', () => {
+    const { imported } = setup({
+      loadout: {
+        ...saved(),
+        wearableMap: {},
+        abilityMap: {},
+        foodItemHrids: [],
+        drinkItemHrids: [],
+        abilityCombatTriggersMap: {},
+        consumableCombatTriggersMap: {},
+      },
+    });
+    const p = imported().player;
+    expect(Object.values(p.equipment).every((x) => !x.itemHrid)).toBe(true);
+    expect(p.abilities.every((x) => !x.abilityHrid)).toBe(true);
+    expect(p.triggerMap).toEqual({});
+  });
+  it('updates learned ability levels independently of currently equipped skills', () => {
+    const { send, imported } = setup();
+    send({
+      type: 'abilities_updated',
+      endCharacterAbilities: [{ characterID: 369965, abilityHrid: '/abilities/berserk', level: 45 }],
+    });
+    expect(imported().player.abilities.find((x) => x.abilityHrid === '/abilities/berserk').level).toBe(45);
+  });
+  it('supports a one-member party and rejects a mismatched loadout ID', () => {
+    const { send, response } = setup();
+    const single = party();
+    delete single.partySlotMap[2];
+    send({ type: 'party_updated', partyInfo: single });
+    expect(response().payload.currentCombatLoadout.id).toBe(42);
+    send({ type: 'loadouts_updated', characterLoadoutMap: { 42: { ...saved(), id: 43 } } });
+    expect(response().ok).toBe(false);
+  });
+  it('rejects missing learned ability levels before mutating simulator configuration', () => {
+    const { send, response, init } = setup();
+    send({ ...init, characterAbilities: [] });
+    const existing = createEmptyPlayerConfig(1);
+    const before = JSON.stringify(existing);
+    expect(() => importSoloConfig(JSON.stringify(response().payload), existing, {})).toThrow('缺少技能');
+    expect(JSON.stringify(existing)).toBe(before);
+  });
+  it('keeps effective guild shrine metadata on the current-character import path', () => {
+    const { api, imported } = setup();
+    const raw = api.buildCurrentMainSiteResponse('baseline');
+    const base = importSoloConfig(JSON.stringify(raw.payload), createEmptyPlayerConfig(1), {});
+    expect(imported().player.guildBuffs).toEqual(base.player.guildBuffs);
+  });
+  it('resets party selection on character switch and reconnect initialization', () => {
+    const { send, api, init, response } = setup();
+    send({ type: 'character_updated', character: { id: 99, name: 'Teammate' } });
+    expect(api.buildCurrentCombatResponse('switched').payload?.currentCombatLoadout).toBeUndefined();
+    const next = { ...init, partyInfo: null };
+    send(next);
+    expect(response().payload.currentCombatLoadout).toBeUndefined();
+  });
+});

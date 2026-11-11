@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.56
+// @version      0.1.57
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -166,6 +166,7 @@
     sockets: new Set(),
     currentCharacterName: '',
     characterActions: [],
+    currentPartyInfo: undefined,
     recentPartyMessages: [],
     latestSharedProfile: null,
     profileCopyButton: null,
@@ -1259,6 +1260,11 @@
       return;
     }
 
+    if (type === 'abilities_updated') {
+      mergeCurrentCharacterSnapshotEntries('characterAbilities', message.endCharacterAbilities, ['abilityHrid']);
+      return;
+    }
+
     if (type === 'items_updated') {
       mergeCurrentCharacterSnapshotEntries(
         'characterItems',
@@ -1406,6 +1412,7 @@
 
   function resetCurrentCharacterTracking(previousCharacterName = '') {
     clearStaleTeamRosterState(previousCharacterName || mainSiteState.currentCharacterName);
+    mainSiteState.currentPartyInfo = undefined;
     mainSiteState.currentCharacterSnapshot = null;
     mainSiteState.currentCharacterFoodSlotsReady = false;
     mainSiteState.currentCharacterDrinkSlotsReady = false;
@@ -1446,8 +1453,8 @@
     return hasCurrentCharacterConsumableTriggerSnapshot() || hasCurrentCharacterAbilityTriggerSnapshot();
   }
 
-  function buildCurrentCharacterPayload() {
-    if (!hasCurrentCharacterSnapshot() || !hasCurrentCharacterConsumableSlots()) {
+  function buildCurrentCharacterPayload(requireCurrentSlots = true) {
+    if (!hasCurrentCharacterSnapshot() || (requireCurrentSlots && !hasCurrentCharacterConsumableSlots())) {
       return null;
     }
 
@@ -1757,9 +1764,80 @@
     return { ...result, ok: true, payload: buildCachedProfilePayload(profile) };
   }
 
+  function captureCurrentPartyInfo(message) {
+    // Only the current-party channel is authoritative; party-list previews may
+    // contain unrelated players/loadouts and must never change this selection.
+    if (message?.type === 'init_character_data') {
+      mainSiteState.currentPartyInfo = hasOwnKey(message, 'partyInfo')
+        ? clonePlainObject(message.partyInfo)
+        : undefined;
+    } else if (message?.type === 'party_updated' && hasOwnKey(message, 'partyInfo')) {
+      mainSiteState.currentPartyInfo = message.partyInfo === null ? null : clonePlainObject(message.partyInfo);
+    }
+  }
+
+  function buildOwnPartyLoadoutResponse(requestId, language = '') {
+    const partyInfo = mainSiteState.currentPartyInfo;
+    if (partyInfo === undefined) return null; // No authoritative selection received yet.
+    const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
+    if (!identity.characterId) return null;
+    if (partyInfo === null) return buildCurrentMainSiteResponse(requestId, language);
+    if (!partyInfo?.partySlotMap || typeof partyInfo.partySlotMap !== 'object') return null;
+    const slot = readCollectionEntries(partyInfo.partySlotMap).find(
+      (entry) => String(entry?.characterID ?? entry?.characterId ?? '') === identity.characterId,
+    );
+    if (!slot) return buildCurrentMainSiteResponse(requestId, language);
+    if (!hasOwnKey(slot, 'characterLoadoutID')) return null;
+    const selectedId = Number(slot.characterLoadoutID);
+    const fail = (message) => ({
+      requestId,
+      ...identity,
+      format: 'main-site-current-character',
+      ok: false,
+      payload: null,
+      message,
+    });
+    if (
+      !Number.isSafeInteger(selectedId) ||
+      selectedId < 0 ||
+      slot.characterLoadoutID === null ||
+      slot.characterLoadoutID === ''
+    )
+      return fail('本人的队伍装配标识无效，请等待主站队伍数据更新后重试。');
+    // Explicitly no loadout: use live equipment, not a previously viewed build.
+    if (selectedId === 0) return buildCurrentMainSiteResponse(requestId, language);
+    const snapshot = mainSiteState.currentCharacterSnapshot;
+    const loadout = snapshot?.characterLoadoutMap?.[String(selectedId)];
+    if (!loadout || typeof loadout !== 'object' || Array.isArray(loadout))
+      return fail(`本人的队伍装配 ${selectedId} 尚未同步或已被删除，请等待主站装配数据更新或重新选择装配后重试。`);
+    if (
+      (loadout.id != null && String(loadout.id) !== String(selectedId)) ||
+      (loadout.characterID != null && String(loadout.characterID) !== identity.characterId)
+    )
+      return fail('本人的队伍装配身份不匹配，已取消导入。请刷新主站后重试。');
+    const map = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+    if (
+      !['', '/action_types/combat'].includes(loadout.actionTypeHrid) ||
+      !map(loadout.wearableMap) ||
+      !map(loadout.abilityMap) ||
+      !Array.isArray(loadout.foodItemHrids) ||
+      !Array.isArray(loadout.drinkItemHrids) ||
+      !map(loadout.abilityCombatTriggersMap) ||
+      !map(loadout.consumableCombatTriggersMap)
+    )
+      return fail('本人的队伍战斗装配数据不完整，请等待主站数据更新后重试；未使用当前穿戴或旧缓存补齐。');
+    // Selected combat config is complete; live food/trigger readiness is unrelated.
+    const payload = buildCurrentCharacterPayload(false);
+    if (!payload) return fail(getUiText('currentCharacterNotInitialized', language));
+    payload.currentCombatLoadout = clonePlainObject(loadout);
+    payload.mainSiteLoadoutSource = 'own-party-slot';
+    return { requestId, ...identity, format: 'main-site-current-character', ok: true, payload };
+  }
+
   function buildCurrentCombatResponse(requestId, language = '') {
     const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
     return (
+      buildOwnPartyLoadoutResponse(requestId, language) ||
       buildViewLoadoutResponse(identity.characterId, identity.characterName, requestId) ||
       buildCurrentMainSiteResponse(requestId, language)
     );
@@ -3792,6 +3870,7 @@
     }
 
     if (type === 'init_character_data') {
+      mainSiteState.currentPartyInfo = undefined;
       updateCurrentCharacterSnapshot(message, true);
       replaceTrackedCharacterActions(message.characterActions);
       syncCurrentCharacterConsumableSlotMaps(message, true);
@@ -3968,6 +4047,7 @@
       }
 
       captureCurrentCharacterState(parsed);
+      captureCurrentPartyInfo(parsed);
       captureCurrentCharacterDataUpdate(parsed);
       captureCharacterActionsUpdate(parsed);
       captureMarketItemValues(parsed);
@@ -4552,31 +4632,17 @@
     const characterId = Number.isFinite(rawCharacterId) && rawCharacterId > 0 ? String(rawCharacterId) : '';
     const characterName = normalizeCharacterName(member?.characterName || member?.name || '');
     const comparableCharacterName = normalizeComparableText(characterName);
+    const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
     const isCurrent =
-      member?.isCurrent === true ||
-      (comparableCharacterName &&
-        comparableCharacterName === normalizeComparableText(mainSiteState.currentCharacterName));
+      characterId && identity.characterId
+        ? characterId === identity.characterId
+        : member?.isCurrent === true ||
+          (comparableCharacterName &&
+            comparableCharacterName === normalizeComparableText(mainSiteState.currentCharacterName));
+    if (isCurrent) return buildCurrentCombatResponse('', preferredLanguage);
 
     const viewLoadout = buildViewLoadoutResponse(characterId, characterName);
     if (viewLoadout) return viewLoadout;
-
-    if (isCurrent) {
-      const currentResponse = buildCurrentMainSiteResponse('', preferredLanguage);
-      return {
-        format: String(currentResponse?.format || 'main-site-current-character'),
-        characterName: normalizeCharacterName(currentResponse?.characterName || characterName) || characterName,
-        characterId: String(currentResponse?.characterId || characterId).trim(),
-        ok: currentResponse?.ok === true && currentResponse?.payload && typeof currentResponse.payload === 'object',
-        message:
-          currentResponse?.ok === true
-            ? ''
-            : normalizeErrorMessage(
-                currentResponse?.message,
-                getUiText('currentCharacterNotInitialized', preferredLanguage),
-              ),
-        payload: currentResponse?.ok === true ? currentResponse.payload : null,
-      };
-    }
 
     return {
       characterId,
@@ -5282,6 +5348,7 @@
         return cloneDebugValue({
           currentCharacterName: mainSiteState.currentCharacterName,
           currentCharacterSnapshot: mainSiteState.currentCharacterSnapshot,
+          currentPartyInfo: mainSiteState.currentPartyInfo,
           actionTypeFoodSlotsMap: mainSiteState.actionTypeFoodSlotsMap,
           actionTypeDrinkSlotsMap: mainSiteState.actionTypeDrinkSlotsMap,
           consumableCombatTriggersMap: mainSiteState.consumableCombatTriggersMap,
