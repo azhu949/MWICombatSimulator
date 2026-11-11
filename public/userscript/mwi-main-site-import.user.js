@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.57
+// @version      0.1.58
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -12,6 +12,7 @@
 // @match        https://milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
 // @match        https://milkywayidlecn.com/*
+// @match        https://reroger.github.io/MWICombatSimulator/*
 // @match        https://azhu949.github.io/MWICombatSimulator/*
 // @match        https://mwi-combatsi-mulator.pages.dev/*
 // @match        http://localhost:5173/*
@@ -1911,6 +1912,7 @@
   function isSimulatorPage() {
     const origin = window.location.origin;
     return (
+      origin === 'https://reroger.github.io' ||
       origin === 'https://azhu949.github.io' ||
       origin === 'https://mwi-combatsi-mulator.pages.dev' ||
       origin === 'http://localhost:5173' ||
