@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import viewLoadoutFixture from '../../src/services/__tests__/fixtures/blackSheep3ViewLoadout.json';
 import { runInNewContext } from 'node:vm';
+import { JSDOM } from 'jsdom';
 import { describe, expect, it, vi } from 'vitest';
 import { importSoloConfig } from '../../src/services/importExportMapper.js';
 import { createEmptyPlayerConfig } from '../../src/services/playerMapper.js';
@@ -105,6 +106,7 @@ function loadScriptTestApi({ console: consoleStub = console, mainSiteMode = fals
         describeLabyrinthUpgradesStatus,
         mergeLabyrinthUpgradesImportSummary,
         formatTeamImportSummary,
+        renderImportStatusText,
     };
 
 ${marker}`,
@@ -1651,6 +1653,59 @@ describe('官方估值透传（captureMarketItemValues）', () => {
     // 全 null：保持 null（反馈面据此沉默）
     expect(api.mergeLabyrinthUpgradesImportSummary(null, null)).toBeNull();
     expect(api.mergeLabyrinthUpgradesImportSummary(null, undefined)).toBeNull();
+  });
+
+  it('合并装配缺失提示并完整列出四名队友，保留其他导入结果', () => {
+    const { api } = loadScriptTestApi();
+    const failures = ['aaaa', 'bbb', 'ccc', 'ddd'].map((name) => ({
+      name,
+      reason: 'view-loadout-required',
+      message: '尚未捕获该队友的组队装配，或装配缓存已过期。请打开该队友的查看装配后重试；本次未使用个人装备替代。',
+    }));
+    const summary = api.formatTeamImportSummary(1, failures, 'zh');
+    expect(summary).toBe('成功 1 人，失败 4 人（请打开以下队友的查看装配后重试：[aaaa]、[bbb]、[ccc]、[ddd]）。');
+    expect(api.formatTeamImportSummary(1, failures, 'en')).toBe(
+      '1 succeeded, 4 failed (Open View Loadout for these teammates and retry: [aaaa], [bbb], [ccc], [ddd]).',
+    );
+    const feedback = api.buildTeamImportFeedbackText({
+      uiLanguage: 'zh',
+      summary,
+      firstSuccessPayload: { marketItemValues: { a: 1 } },
+    });
+    expect(feedback).toContain(summary);
+    expect(feedback).toContain('官方估值已透传');
+    const mixed = api.formatTeamImportSummary(1, [...failures, { name: 'Other', message: '连接超时' }], 'zh');
+    expect(mixed).toContain('[ddd]');
+    expect(mixed).toContain('Other: 连接超时');
+    expect(mixed).toContain('失败 5 人');
+    // 兼容还未刷新的旧版主站页面（没有 reason 字段）。
+    expect(api.formatTeamImportSummary(1, [{ name: 'Old', message: failures[0].message }], 'zh')).toContain(
+      '请打开以下队友的查看装配后重试：[Old]',
+    );
+  });
+
+  it('队友名字以黄色粗体文本呈现，重绘清除高亮且不解析名字中的 HTML', () => {
+    const { api } = loadScriptTestApi();
+    const dom = new JSDOM('<span id="status"></span>');
+    const status = dom.window.document.getElementById('status');
+    const names = ['aaaa', 'bbb', 'ccc', '<img src=x onerror=alert(1)>'];
+    const summary = api.formatTeamImportSummary(
+      1,
+      names.map((name) => ({ name, reason: 'view-loadout-required' })),
+      'zh',
+    );
+    api.renderImportStatusText(status, summary, names);
+    expect(status.textContent).toBe(summary);
+    const highlighted = [...status.querySelectorAll('strong')];
+    expect(highlighted.map((node) => node.textContent)).toEqual(names.map((name) => `[${name}]`));
+    expect(highlighted.every((node) => node.style.color.includes('--warning') && node.style.fontWeight === '700')).toBe(
+      true,
+    );
+    expect(status.querySelector('img')).toBeNull();
+    api.renderImportStatusText(status, '等待主站响应');
+    expect(status.textContent).toBe('等待主站响应');
+    expect(status.querySelector('strong')).toBeNull();
+    dom.window.close();
   });
 
   it('formatTeamImportSummary：部分成功摘要拼装（0/1/2/3+ 失败、中英文、空名回落）', () => {

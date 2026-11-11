@@ -1710,6 +1710,7 @@
     if (!isCompleteViewLoadout(loadout))
       return {
         ...result,
+        reason: 'view-loadout-required',
         message:
           '已收到装配，但战斗配置不完整或不是战斗装配。请重新打开组队中的查看装配后重试；本次未使用个人装备替代。',
       };
@@ -3050,7 +3051,7 @@
 
   // 团队导入部分成功摘要拼装（#22 P3① 从深层闭包 importTeamMainSiteResponse 提取为
   // 顶层可注入纯函数，配合 buildTeamImportFeedbackText 一并行为测试）：失败 >0 时返回
-  // 「成功 N 人，失败 N 人（预览…）」；无失败返回空串。uiLanguage 由调用方传入
+  // 装配缺失合并为一次操作提示并完整列出姓名；其他错误保留原因。无失败返回空串。uiLanguage 由调用方传入
   //（原实现读深层闭包 state.uiLanguage）。
   function formatTeamImportSummary(successCount, failureEntries = [], uiLanguage = 'zh') {
     const failures = Array.isArray(failureEntries) ? failureEntries : [];
@@ -3059,7 +3060,19 @@
       return '';
     }
 
-    const preview = failures
+    const needsViewLoadout = (entry) =>
+      entry?.reason === 'view-loadout-required' || /查看装配后重试/.test(String(entry?.message || ''));
+    const loadoutFailures = failures.filter(needsViewLoadout);
+    const otherFailures = failures.filter((entry) => !needsViewLoadout(entry));
+    const names = loadoutFailures
+      .map((entry) => `[${normalizeCharacterName(entry?.name || '') || '-'}]`)
+      .join(uiLanguage === 'zh' ? '、' : ', ');
+    const loadoutHint = names
+      ? uiLanguage === 'zh'
+        ? `请打开以下队友的查看装配后重试：${names}`
+        : `Open View Loadout for these teammates and retry: ${names}`
+      : '';
+    const preview = otherFailures
       .slice(0, 2)
       .map((entry) => {
         const name = normalizeCharacterName(entry?.name || '') || '-';
@@ -3069,13 +3082,45 @@
       .join(uiLanguage === 'zh' ? '；' : '; ');
 
     const suffix =
-      failedCount > 2 ? (uiLanguage === 'zh' ? `……另有 ${failedCount - 2} 个失败` : `… +${failedCount - 2} more`) : '';
+      otherFailures.length > 2
+        ? uiLanguage === 'zh'
+          ? `……另有 ${otherFailures.length - 2} 个失败`
+          : `… +${otherFailures.length - 2} more`
+        : '';
+    const details = [loadoutHint, `${preview}${suffix}`].filter(Boolean).join(uiLanguage === 'zh' ? '；' : '; ');
 
     if (uiLanguage === 'zh') {
-      return `成功 ${successCount} 人，失败 ${failedCount} 人（${preview}${suffix}）。`;
+      return `成功 ${successCount} 人，失败 ${failedCount} 人（${details}）。`;
     }
 
-    return `${successCount} succeeded, ${failedCount} failed (${preview}${suffix}).`;
+    return `${successCount} succeeded, ${failedCount} failed (${details}).`;
+  }
+
+  // 只将已知姓名标记转换为 DOM 节点，不把游戏角色名当作 HTML 解析。
+  function renderImportStatusText(status, text, names = []) {
+    const doc = status.ownerDocument;
+    status.replaceChildren();
+    const tokens = [...new Set(names.map((name) => `[${normalizeCharacterName(name) || '-'}]`))];
+    let remaining = String(text || '');
+    while (remaining) {
+      let nextIndex = remaining.length;
+      let nextToken = '';
+      for (const token of tokens) {
+        const index = remaining.indexOf(token);
+        if (index >= 0 && (index < nextIndex || (index === nextIndex && token.length > nextToken.length))) {
+          nextIndex = index;
+          nextToken = token;
+        }
+      }
+      status.appendChild(doc.createTextNode(remaining.slice(0, nextIndex)));
+      if (!nextToken) break;
+      const strong = doc.createElement('strong');
+      strong.textContent = nextToken;
+      strong.style.color = 'var(--warning, #eab308)';
+      strong.style.fontWeight = '700';
+      status.appendChild(strong);
+      remaining = remaining.slice(nextIndex + nextToken.length);
+    }
   }
 
   function copyTextViaExecCommand(text) {
@@ -4652,6 +4697,7 @@
       ok: false,
       payload: null,
       message: '尚未捕获该队友的组队装配，或装配缓存已过期。请打开该队友的查看装配后重试；本次未使用个人装备替代。',
+      reason: 'view-loadout-required',
     };
   }
 
@@ -4903,6 +4949,7 @@
       statusTone: 'idle',
       statusText: '',
       statusTextKey: '',
+      statusNames: [],
     };
 
     function getControlElements() {
@@ -4921,9 +4968,11 @@
       const buttonTextKey =
         importMode === 'enhancement' ? 'enhancementButton' : importMode === 'skilling' ? 'skillingButton' : 'button';
       button.textContent = getUiText(buttonTextKey, state.uiLanguage);
-      status.textContent = state.statusTextKey
-        ? getUiText(state.statusTextKey, state.uiLanguage)
-        : String(state.statusText || '');
+      renderImportStatusText(
+        status,
+        state.statusTextKey ? getUiText(state.statusTextKey, state.uiLanguage) : state.statusText,
+        state.statusNames,
+      );
       status.className =
         state.statusTone === 'error'
           ? 'text-xs text-destructive'
@@ -4933,10 +4982,11 @@
       button.disabled = state.isRequestPending;
     }
 
-    function setStatus(text, tone = 'idle') {
+    function setStatus(text, tone = 'idle', names = []) {
       state.statusTone = tone;
       state.statusText = String(text || '');
       state.statusTextKey = '';
+      state.statusNames = names;
       renderControlState();
     }
 
@@ -4944,6 +4994,7 @@
       state.statusTone = tone;
       state.statusText = '';
       state.statusTextKey = String(statusTextKey || '');
+      state.statusNames = [];
       renderControlState();
     }
 
@@ -5086,6 +5137,7 @@
         failureEntries.push({
           name: String(member.characterName || '').trim() || '-',
           message: String(member.message || '').trim() || getUiText('importFailed', state.uiLanguage),
+          reason: member.reason,
         });
       }
 
@@ -5175,7 +5227,11 @@
         firstSuccessPayload: successfulMembers[0]?.payload,
         labyrinthUpgradesImport: lastLabyrinthUpgradesImport,
       });
-      setStatus(feedbackText, 'success');
+      setStatus(
+        feedbackText,
+        'success',
+        failureEntries.map((entry) => entry.name),
+      );
     }
 
     async function handleImportButtonClick(importMode = 'player') {
