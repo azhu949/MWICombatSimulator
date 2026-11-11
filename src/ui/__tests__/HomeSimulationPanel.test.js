@@ -197,3 +197,57 @@ describe('HomeSimulationPanel multi-round control', () => {
     wrapper.unmount();
   });
 });
+
+describe('HomeSimulationPanel three action rows', () => {
+  it('groups simulation, import, and configuration controls into independent rows', () => {
+    const wrapper = mountPanel();
+    const rows = wrapper.findAll('[data-home-action-row]');
+    expect(rows).toHaveLength(3);
+    expect(rows.map((row) => row.attributes('data-home-action-row'))).toEqual([
+      'simulation',
+      'import',
+      'configuration',
+    ]);
+    expect(rows.map((row) => row.findAll('button').length)).toEqual([2, 1, 7]);
+    expect(rows[1].attributes('data-tm-import-anchor')).toBe('simulator-home-actions');
+    expect(rows[1].find('[data-tm-import-reference="import-export"]').exists()).toBe(true);
+    for (const row of rows) expect(row.classes()).toContain('flex-wrap');
+    wrapper.unmount();
+  });
+  it('keeps configuration event order and save/restore handlers intact', async () => {
+    const wrapper = mountPanel();
+    const buttons = wrapper.find('[data-home-action-row="configuration"]').findAll('button');
+    for (const button of buttons) await button.trigger('click');
+    for (const event of [
+      'open-house-rooms',
+      'open-achievements',
+      'open-guild-buffs',
+      'open-experimental',
+      'open-snapshot-info',
+    ])
+      expect(wrapper.emitted(event)).toHaveLength(1);
+    expect(wrapper.props('snapshotController').save).toHaveBeenCalledOnce();
+    expect(wrapper.props('snapshotController').load).toHaveBeenCalledOnce();
+    await wrapper.find('[data-tm-import-reference="import-export"]').trigger('click');
+    expect(wrapper.emitted('open-import-export')).toHaveLength(1);
+    wrapper.unmount();
+  });
+  it('retains start and stop handlers and running-state disabled behavior', async () => {
+    const simulator = useSimulatorStore();
+    const start = vi.spyOn(simulator, 'startSimulation').mockImplementation(() => {});
+    const stop = vi.spyOn(simulator, 'stopSimulation').mockImplementation(() => {});
+    const wrapper = mountPanel();
+    const buttons = wrapper.find('[data-home-action-row="simulation"]').findAll('button');
+    expect(buttons[0].element.disabled).toBe(false);
+    expect(buttons[1].element.disabled).toBe(true);
+    await buttons[0].trigger('click');
+    expect(start).toHaveBeenCalledOnce();
+    simulator.runtime.isRunning = true;
+    await nextTick();
+    expect(buttons[0].element.disabled).toBe(true);
+    expect(buttons[1].element.disabled).toBe(false);
+    await buttons[1].trigger('click');
+    expect(stop).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+});

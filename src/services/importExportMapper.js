@@ -457,62 +457,83 @@ function mapShareableSkillHridToLevelKey(skillHrid) {
   return LEVEL_KEYS.includes(key) ? key : '';
 }
 
-function scoreShareableLoadoutCandidate(candidate) {
-  const actionTypeHrid = String(candidate?.actionTypeHrid || '');
-  let score = 0;
-
-  if (actionTypeHrid === SHAREABLE_PROFILE_COMBAT_ACTION_TYPE_HRID) {
-    score += 8;
+// Choose ONE configuration object before extracting any combat fields. Saved
+// loadout maps are a library, not evidence that any particular loadout is active.
+function selectShareableCombatSnapshot(profile) {
+  for (const key of ['currentCombatLoadout', 'combatLoadout', 'currentLoadout', 'loadout']) {
+    if (!Object.prototype.hasOwnProperty.call(profile || {}, key)) continue;
+    const candidate = profile[key];
+    // An explicitly empty current loadout means personal profile, not a lower-priority saved build.
+    if (candidate == null || (isCombatMap(candidate) && Object.keys(candidate).length === 0)) {
+      return { source: profile, label: 'profile' };
+    }
+    return { source: candidate, label: key };
   }
-  if (candidate?.isDefault === true) {
-    score += 4;
-  }
-  if (Array.isArray(candidate?.foodItemHrids)) {
-    score += 2;
-  }
-  if (Array.isArray(candidate?.drinkItemHrids)) {
-    score += 2;
-  }
-  if (candidate?.consumableCombatTriggersMap && typeof candidate.consumableCombatTriggersMap === 'object') {
-    score += 1;
-  }
-  if (candidate?.abilityCombatTriggersMap && typeof candidate.abilityCombatTriggersMap === 'object') {
-    score += 1;
-  }
-
-  return score;
+  return { source: profile, label: 'profile' };
 }
 
-function buildShareableProfileLoadoutCandidates(profile) {
-  const candidates = [];
+function isCombatMap(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
 
-  function pushCandidate(candidate) {
-    if (!candidate || typeof candidate !== 'object' || candidates.includes(candidate)) {
-      return;
-    }
-
-    candidates.push(candidate);
+function requireCompleteCombatSnapshot(source, label, current = false) {
+  const missing = [];
+  const map = isCombatMap;
+  if (!map(source)) throw new Error(`导入配置不完整（${label}）：缺少有效配置对象，请重新打开该角色的完整装配后导入。`);
+  if (current) {
+    if (!(Array.isArray(source.characterItems) || map(source.characterItems))) missing.push('装备');
+    if (!Array.isArray(source.combatUnit?.combatAbilities)) missing.push('技能');
+    if (!map(source.actionTypeFoodSlotsMap)) missing.push('食物');
+    if (!map(source.actionTypeDrinkSlotsMap)) missing.push('饮品/咖啡');
+  } else {
+    if (!(map(source.wearableItemMap) || map(source.wearableMap))) missing.push('装备');
+    if (!(Array.isArray(source.equippedAbilities) || map(source.abilityMap))) missing.push('技能');
+    if (!(
+      Array.isArray(source.foodItemHrids) ||
+      Array.isArray(source.foodHrids) ||
+      Array.isArray(source.combatConsumables?.foodItemHrids) ||
+      Array.isArray(source.combatConsumables)
+    ))
+      missing.push('食物');
+    if (!(
+      Array.isArray(source.drinkItemHrids) ||
+      Array.isArray(source.drinkHrids) ||
+      Array.isArray(source.combatConsumables?.drinkItemHrids) ||
+      Array.isArray(source.combatConsumables)
+    ))
+      missing.push('饮品/咖啡');
   }
+  if (!(
+    map(source.triggerMap) ||
+    map(source.abilityCombatTriggersMap) ||
+    map(source.combatAbilities?.abilityCombatTriggersMap)
+  ))
+    missing.push('技能 trigger');
+  if (!(
+    map(source.triggerMap) ||
+    map(source.consumableCombatTriggersMap) ||
+    map(source.combatConsumables?.consumableCombatTriggersMap)
+  ))
+    missing.push('消耗品 trigger');
+  if (missing.length)
+    throw new Error(
+      `导入配置不完整（${label}）：缺少 ${missing.join('、')}。请重新获取完整装配；已取消导入，未从其他配装或旧配置补齐。`,
+    );
+}
 
-  pushCandidate(profile?.currentCombatLoadout);
-  pushCandidate(profile?.combatLoadout);
-  pushCandidate(profile?.currentLoadout);
-  pushCandidate(profile?.loadout);
-
-  const mappedLoadouts =
-    profile?.characterLoadoutMap && typeof profile.characterLoadoutMap === 'object'
-      ? Object.values(profile.characterLoadoutMap)
-          .filter((candidate) => candidate && typeof candidate === 'object')
-          .sort((left, right) => scoreShareableLoadoutCandidate(right) - scoreShareableLoadoutCandidate(left))
-      : [];
-
-  for (const candidate of mappedLoadouts) {
-    pushCandidate(candidate);
-  }
-
-  pushCandidate(profile);
-
-  return candidates;
+function readSnapshotAbilities(snapshot, profile) {
+  if (Array.isArray(snapshot.equippedAbilities)) return snapshot.equippedAbilities;
+  // Learned levels are character metadata, not equipment/slot selection. Never
+  // borrow slot order or levels from the simulator's previously imported player.
+  const levels = {
+    ...extractExplicitAbilityLevels(profile?.equippedAbilities),
+    ...extractShareableAbilityLevels(profile),
+  };
+  return Object.entries(snapshot.abilityMap).map(([slot, abilityHrid]) => {
+    const hrid = String(abilityHrid || '');
+    if (hrid && !levels[hrid]) throw new Error(`导入配置不完整：缺少技能 ${hrid} 的等级，请重新获取角色资料。`);
+    return { slot: Number(slot), abilityHrid: hrid, level: levels[hrid] || 1 };
+  });
 }
 
 function pickShareableCandidateValue(candidates, resolvers, fallbackValue = null) {
@@ -998,36 +1019,6 @@ function extractShareableAbilityLevels(source) {
   return result;
 }
 
-function extractCurrentCharacterTriggerMap(parsed) {
-  const triggerMap = {};
-  const rawMaps = [parsed?.consumableCombatTriggersMap, parsed?.abilityCombatTriggersMap];
-
-  for (const rawMap of rawMaps) {
-    if (!rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) {
-      continue;
-    }
-
-    for (const [targetHrid, triggerList] of Object.entries(rawMap)) {
-      const hrid = String(targetHrid || '').trim();
-      if (!hrid) {
-        continue;
-      }
-      triggerMap[hrid] = sanitizeTriggerList(triggerList);
-    }
-  }
-
-  return triggerMap;
-}
-
-function hasCurrentCharacterTriggerPayload(parsed) {
-  return Boolean(
-    parsed &&
-    typeof parsed === 'object' &&
-    (Object.prototype.hasOwnProperty.call(parsed, 'consumableCombatTriggersMap') ||
-      Object.prototype.hasOwnProperty.call(parsed, 'abilityCombatTriggersMap')),
-  );
-}
-
 function normalizeShareableCombatConsumableArray(rawConsumables, categoryHrid) {
   if (!Array.isArray(rawConsumables)) {
     return null;
@@ -1096,49 +1087,6 @@ function extractShareableDrinkItemHrids(candidates, parsed) {
   );
 
   return [0, 1, 2].map((index) => String(resolved?.[index] || ''));
-}
-
-function hasShareableTriggerPayload(candidates, parsed) {
-  if (
-    parsed?.mainSiteConsumables &&
-    typeof parsed.mainSiteConsumables === 'object' &&
-    (Object.prototype.hasOwnProperty.call(parsed.mainSiteConsumables, 'consumableCombatTriggersMap') ||
-      Object.prototype.hasOwnProperty.call(parsed.mainSiteConsumables, 'abilityCombatTriggersMap'))
-  ) {
-    return true;
-  }
-
-  for (const candidate of Array.isArray(candidates) ? candidates : []) {
-    if (!candidate || typeof candidate !== 'object') {
-      continue;
-    }
-
-    if (
-      Object.prototype.hasOwnProperty.call(candidate, 'consumableCombatTriggersMap') ||
-      Object.prototype.hasOwnProperty.call(candidate, 'abilityCombatTriggersMap') ||
-      Object.prototype.hasOwnProperty.call(candidate, 'triggerMap')
-    ) {
-      return true;
-    }
-
-    if (
-      candidate?.combatConsumables &&
-      typeof candidate.combatConsumables === 'object' &&
-      Object.prototype.hasOwnProperty.call(candidate.combatConsumables, 'consumableCombatTriggersMap')
-    ) {
-      return true;
-    }
-
-    if (
-      candidate?.combatAbilities &&
-      typeof candidate.combatAbilities === 'object' &&
-      Object.prototype.hasOwnProperty.call(candidate.combatAbilities, 'abilityCombatTriggersMap')
-    ) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function extractShareableTriggerMap(candidates, parsed) {
@@ -1410,7 +1358,10 @@ function extractShareableSimulationSettings(parsed, existingSimulationSettings) 
 function importShareableProfile(parsed, existingPlayer, existingSimulationSettings) {
   const profile = resolveShareableProfileSource(parsed);
   const fallbackPlayer = deepClone(existingPlayer || createEmptyPlayerConfig(1));
-  const candidateLoadouts = buildShareableProfileLoadoutCandidates(profile);
+  const { source: snapshot, label: snapshotLabel } = selectShareableCombatSnapshot(profile);
+  requireCompleteCombatSnapshot(snapshot, snapshotLabel);
+  const candidateLoadouts = [snapshot];
+  const snapshotAbilities = readSnapshotAbilities(snapshot, profile);
   const rawPlayer = {
     id: String(fallbackPlayer.id || '1'),
     name: String(
@@ -1419,8 +1370,8 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     levels: Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1])),
     skillExperience: createEmptySkillExperienceMap(),
     equipment: {},
-    food: extractShareableFoodItemHrids(candidateLoadouts, parsed),
-    drinks: extractShareableDrinkItemHrids(candidateLoadouts, parsed),
+    food: extractShareableFoodItemHrids(candidateLoadouts, {}),
+    drinks: extractShareableDrinkItemHrids(candidateLoadouts, {}),
     craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
     abilities: Array.from({ length: 5 }, () => ({ abilityHrid: '', level: 1 })),
   };
@@ -1436,8 +1387,8 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
   }
 
   const wearableEntries =
-    profile?.wearableItemMap && typeof profile.wearableItemMap === 'object'
-      ? Object.values(profile.wearableItemMap)
+    snapshot?.wearableItemMap && typeof snapshot.wearableItemMap === 'object'
+      ? Object.values(snapshot.wearableItemMap)
       : [];
   for (const rawEntry of wearableEntries) {
     const entry = rawEntry?.currentItem && typeof rawEntry.currentItem === 'object' ? rawEntry.currentItem : rawEntry;
@@ -1455,16 +1406,21 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     }
   }
 
-  rawPlayer.abilities = normalizeCombatAbilities(profile?.equippedAbilities);
+  if (!isCombatMap(snapshot.wearableItemMap)) {
+    // Hash-based loadouts must supply all equipment from the selected object.
+    for (const [location, hash] of Object.entries(snapshot.wearableMap)) {
+      const slot = resolveEquipmentSlotFromItemLocationHrid(location);
+      const wearable = parseShareableLoadoutWearableHash(hash);
+      if (slot && wearable) rawPlayer.equipment[slot] = wearable;
+    }
+  }
+  rawPlayer.abilities = normalizeCombatAbilities(snapshotAbilities);
   // 全量已学技能等级：共享档案 equippedAbilities 可能含超出当前 5 槽的「已学但未装备」
   // 技能等级，全量提取并入权威表（表级权威替换 + 槽位等级取高合并），
   // 切换配装按 hrid 查表不再回落 1 级。
   rawPlayer.abilityLevels = extractShareableAbilityLevels(profile);
 
-  const triggerMap = extractShareableTriggerMap(candidateLoadouts, parsed);
-  if (hasShareableTriggerPayload(candidateLoadouts, parsed)) {
-    rawPlayer.triggerMap = triggerMap;
-  }
+  rawPlayer.triggerMap = extractShareableTriggerMap(candidateLoadouts, {});
 
   // 配装快照：共享档案 profile.characterLoadoutMap（主站脚本整包透传）。
   // 字段缺失（旧载荷）时保留 undefined 语义，交由 sanitizePlayerConfig 回退现有配置。
@@ -1494,10 +1450,11 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
-      explicitAbilityLevels: extractExplicitAbilityLevels(profile?.equippedAbilities),
+      explicitAbilityLevels: extractExplicitAbilityLevels(snapshotAbilities),
     }),
     simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
     detectedFormat: 'main-site-share-profile',
+    combatConfigSource: snapshotLabel,
   };
 }
 
@@ -1612,17 +1569,30 @@ function describeLabyrinthUpgradesImport(importedUpgrades, existingSimulationSet
 }
 
 function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings) {
+  const selected = selectShareableCombatSnapshot(parsed);
+  // Reuse atomic loadout parsing, while keeping the raw self-character metadata
+  // path (including labyrinth upgrades and the learned ability table) intact.
+  const combatPlayer =
+    selected.source !== parsed
+      ? importShareableProfile(
+          { profile: { ...parsed, sharableCharacter: parsed.character } },
+          existingPlayer,
+          existingSimulationSettings,
+        ).player
+      : null;
+  if (!combatPlayer) requireCompleteCombatSnapshot(parsed, 'current-character', true);
   const fallbackPlayer = deepClone(existingPlayer || createEmptyPlayerConfig(1));
   const rawPlayer = {
     id: String(fallbackPlayer.id || '1'),
     name: String(parsed?.character?.name || fallbackPlayer.name || `Player ${fallbackPlayer.id}`),
     levels: Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1])),
     skillExperience: createEmptySkillExperienceMap(),
-    equipment: extractCurrentCharacterEquipment(parsed, fallbackPlayer),
-    food: extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
-    drinks: extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
+    equipment:
+      combatPlayer?.equipment ?? extractCurrentCharacterEquipment(parsed, createEmptyPlayerConfig(fallbackPlayer.id)),
+    food: combatPlayer?.food ?? extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
+    drinks: combatPlayer?.drinks ?? extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
     craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
-    abilities: extractCurrentCharacterAbilities(parsed),
+    abilities: combatPlayer?.abilities ?? extractCurrentCharacterAbilities(parsed),
     // 全量已学技能等级：主站载荷除当前装备槽外可能携带全量映射（含「已学但未装备」
     // 的技能等级），宽容提取并入权威表，切换配装按 hrid 查表不再回落 1 级。
     abilityLevels: extractShareableAbilityLevels(parsed),
@@ -1638,10 +1608,7 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     rawPlayer.skillExperience[levelKey] = normalizeSkillExperience(skill?.experience);
   }
 
-  const triggerMap = extractCurrentCharacterTriggerMap(parsed);
-  if (hasCurrentCharacterTriggerPayload(parsed)) {
-    rawPlayer.triggerMap = triggerMap;
-  }
+  rawPlayer.triggerMap = combatPlayer?.triggerMap ?? extractShareableTriggerMap([parsed], {});
 
   // 配装快照：单人快照路径经白名单携带 characterLoadoutMap（官方 init_character_data
   // 内嵌该字段）。旧版脚本载荷缺失该字段时保留现有配置。
@@ -1681,10 +1648,13 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
-      explicitAbilityLevels: extractExplicitAbilityLevels(parsed?.combatUnit?.combatAbilities),
+      explicitAbilityLevels: extractExplicitAbilityLevels(
+        combatPlayer?.abilities ?? parsed?.combatUnit?.combatAbilities,
+      ),
     }),
     simulationSettings,
     detectedFormat: 'main-site-current-character',
+    combatConfigSource: combatPlayer ? selected.label : 'current-character',
     labyrinthUpgradesImport,
   };
 }
@@ -1917,6 +1887,8 @@ export function importGroupConfig(text, existingPlayers, existingSimulationSetti
 
 export function importSoloConfig(text, existingPlayer, existingSimulationSettings) {
   const parsed = parseJsonText(text);
+  const importError = parsed?._mwiImportError || parsed?.profile?._mwiImportError;
+  if (importError) throw new Error(String(importError));
 
   if (isShareableProfilePayload(parsed)) {
     return {

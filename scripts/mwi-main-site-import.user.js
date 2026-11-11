@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.51
+// @version      0.1.58
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -12,10 +12,13 @@
 // @match        https://milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
 // @match        https://milkywayidlecn.com/*
+// @match        https://reroger.github.io/MWICombatSimulator/*
 // @match        https://azhu949.github.io/MWICombatSimulator/*
 // @match        https://mwi-combatsi-mulator.pages.dev/*
 // @match        http://localhost:5173/*
 // @match        http://127.0.0.1:5173/*
+// @grant        GM_listValues
+// @grant        GM_deleteValue
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_addValueChangeListener
@@ -34,12 +37,22 @@
 
   const REQUEST_KEY = 'mwi.tm.import.request.v1';
   const RESPONSE_KEY = 'mwi.tm.import.response.v1';
+  const ACCOUNT_KEY_PREFIX = 'mwi.tm.import.account.v1.';
+  const ACCOUNT_HEARTBEAT_MS = 5000;
+  const ACCOUNT_TTL_MS = 90000;
+  // Per-page identity: never reuse sessionStorage IDs copied by duplicated tabs.
+  const MAIN_SITE_TAB_ID = createRequestId();
+  let lastAccountHeartbeat = 0;
+  let accountPageHidden = false;
+  const targetedRequests = new Set();
   const APP_BRIDGE_CHANNEL = 'mwi-tm-bridge';
   const BUTTON_ID = 'mwi-tm-import-button';
   const CONTROL_ID = 'mwi-tm-import-control';
   const STATUS_ID = 'mwi-tm-import-status';
   const TEAM_ROSTER_CACHE_KEY = 'mwi.tm.import.teamRosterCache.v1';
   const PROFILE_CACHE_KEY = 'mwi.tm.import.profileCache.v1';
+  const VIEW_LOADOUT_CACHE_KEY = 'mwi.tm.import.viewLoadoutCache.v2';
+  const VIEW_LOADOUT_MAX_AGE_MS = 10 * 60 * 1000;
   const DEBUG_STORAGE_KEY = 'mwi.tm.import.debug';
   const DEBUG_QUERY_PARAM = 'mwiImportDebug';
   const MAIN_SITE_SHORTCUT_ID = 'mwi-tm-main-site-simulator-link';
@@ -87,7 +100,7 @@
       mainSiteTabTimeout: 'Timed out waiting for the main-site tab response.',
       currentCharacterNotInitialized: 'Current character not initialized. Refresh the main-site tab once.',
       unableToReadCurrentProfile: 'Unable to read the current profile.',
-      openProfileInGameFirst: 'Open profile in game first.',
+      openProfileInGameFirst: 'Open View Loadout for this character in the game first.',
       mainSiteShortcut: 'Combat Simulator',
       mainSiteShortcutTitle: 'Open MWI Combat Simulator',
       mirrorModalTitle: 'Open Combat Simulator',
@@ -125,7 +138,7 @@
       mainSiteTabTimeout: '等待主站标签页响应超时。',
       currentCharacterNotInitialized: '当前角色尚未初始化，请刷新一次主站标签页。',
       unableToReadCurrentProfile: '无法读取当前角色资料。',
-      openProfileInGameFirst: '需要先在游戏中手动打开资料。',
+      openProfileInGameFirst: '请先在游戏中打开该角色的「查看装配」。',
       mainSiteShortcut: '战斗模拟器',
       mainSiteShortcutTitle: '打开 MWI Combat Simulator',
       mirrorModalTitle: '打开战斗模拟器',
@@ -154,6 +167,7 @@
     sockets: new Set(),
     currentCharacterName: '',
     characterActions: [],
+    currentPartyInfo: undefined,
     recentPartyMessages: [],
     latestSharedProfile: null,
     profileCopyButton: null,
@@ -1247,6 +1261,11 @@
       return;
     }
 
+    if (type === 'abilities_updated') {
+      mergeCurrentCharacterSnapshotEntries('characterAbilities', message.endCharacterAbilities, ['abilityHrid']);
+      return;
+    }
+
     if (type === 'items_updated') {
       mergeCurrentCharacterSnapshotEntries(
         'characterItems',
@@ -1394,6 +1413,7 @@
 
   function resetCurrentCharacterTracking(previousCharacterName = '') {
     clearStaleTeamRosterState(previousCharacterName || mainSiteState.currentCharacterName);
+    mainSiteState.currentPartyInfo = undefined;
     mainSiteState.currentCharacterSnapshot = null;
     mainSiteState.currentCharacterFoodSlotsReady = false;
     mainSiteState.currentCharacterDrinkSlotsReady = false;
@@ -1434,8 +1454,8 @@
     return hasCurrentCharacterConsumableTriggerSnapshot() || hasCurrentCharacterAbilityTriggerSnapshot();
   }
 
-  function buildCurrentCharacterPayload() {
-    if (!hasCurrentCharacterSnapshot() || !hasCurrentCharacterConsumableSlots()) {
+  function buildCurrentCharacterPayload(requireCurrentSlots = true) {
+    if (!hasCurrentCharacterSnapshot() || (requireCurrentSlots && !hasCurrentCharacterConsumableSlots())) {
       return null;
     }
 
@@ -1607,6 +1627,223 @@
     return entry;
   }
 
+  // Only loadout_shared may populate this cache. A profile with identical fields
+  // is still a personal profile, not evidence of the party's selected loadout.
+  function isCompleteViewLoadout(loadout) {
+    const map = (value) => value && typeof value === 'object' && !Array.isArray(value);
+    return Boolean(
+      loadout?.hasLoadout === true &&
+      loadout.actionTypeHrid === '/action_types/combat' &&
+      map(loadout.wearableItemMap) &&
+      Array.isArray(loadout.equippedAbilities) &&
+      Array.isArray(loadout.combatConsumables) &&
+      map(loadout.abilityCombatTriggersMap) &&
+      map(loadout.consumableCombatTriggersMap) &&
+      loadout.hideWearableItems !== true,
+    );
+  }
+
+  function readViewLoadoutEntries() {
+    const entries = GM_getValue(VIEW_LOADOUT_CACHE_KEY + ':' + window.location.origin, []);
+    return (Array.isArray(entries) ? entries : []).filter(
+      (entry) =>
+        entry?.source === 'loadout_shared' &&
+        entry?.loadout &&
+        Number.isFinite(entry.updatedAt) &&
+        Date.now() >= entry.updatedAt &&
+        Date.now() - entry.updatedAt <= VIEW_LOADOUT_MAX_AGE_MS,
+    );
+  }
+
+  function matchesSharedIdentity(candidate, characterId, characterName) {
+    if (characterId && candidate.characterId) return String(characterId) === String(candidate.characterId);
+    return Boolean(characterName && normalizeComparableText(characterName) === candidate.comparableCharacterName);
+  }
+
+  function persistViewLoadoutEntry(loadout) {
+    const entry = {
+      source: 'loadout_shared',
+      characterId: extractSharedProfileCharacterId(loadout),
+      characterName: extractSharedProfileName(loadout),
+      comparableCharacterName: normalizeComparableText(extractSharedProfileName(loadout)),
+      loadout: clonePlainObject(loadout),
+      updatedAt: Date.now(),
+    };
+    if (!entry.characterId && !entry.characterName) return null;
+    // Keep explicit empty/incomplete replies too: they invalidate any older valid build.
+    const rest = readViewLoadoutEntries().filter(
+      (old) => !matchesSharedIdentity(old, entry.characterId, entry.characterName),
+    );
+    GM_setValue(VIEW_LOADOUT_CACHE_KEY + ':' + window.location.origin, [entry, ...rest].slice(0, PROFILE_CACHE_LIMIT));
+    return entry;
+  }
+
+  function buildViewLoadoutResponse(characterId, characterName, requestId = '') {
+    const entry = readViewLoadoutEntries().find((candidate) =>
+      matchesSharedIdentity(candidate, characterId, characterName),
+    );
+    if (!entry) return null;
+    const result = {
+      requestId,
+      ok: false,
+      format: 'shareable-profile',
+      characterId: entry.characterId || String(characterId || ''),
+      characterName: entry.characterName,
+      payload: null,
+    };
+    const loadout = entry.loadout;
+    const cached = loadProfileCacheEntries().find((candidate) =>
+      matchesSharedIdentity(candidate, result.characterId, entry.characterName),
+    );
+    const live = mainSiteState.currentCharacterSnapshot;
+    const liveIdentity = readCurrentCharacterIdentity(live);
+    const isCurrent = matchesSharedIdentity(
+      { ...liveIdentity, comparableCharacterName: normalizeComparableText(liveIdentity.characterName) },
+      result.characterId,
+      entry.characterName,
+    );
+    if (loadout.hasLoadout === false) {
+      if (isCurrent) return buildCurrentMainSiteResponse(requestId);
+      if (!cached) return { ...result, message: '该角色未选择装配，且尚未捕获角色资料。请打开该角色资料后重试。' };
+      return { ...result, ok: true, payload: buildCachedProfilePayload(cached.payload.profile) };
+    }
+    if (!isCompleteViewLoadout(loadout))
+      return {
+        ...result,
+        message:
+          '已收到装配，但战斗配置不完整或不是战斗装配。请重新打开组队中的查看装配后重试；本次未使用个人装备替代。',
+      };
+
+    // Only non-combat metadata may be supplemented. Never fill gear/skills/triggers/
+    // consumables from the personal page. Explicit empty metadata remains authoritative.
+    const profile = {
+      sharableCharacter: clonePlainObject(loadout.sharableCharacter),
+      characterId: result.characterId,
+      currentCombatLoadout: clonePlainObject(loadout),
+    };
+    const metadataKeys = [
+      'characterSkills',
+      'characterHouseRoomMap',
+      'characterAchievements',
+      'guildBuffLevelMap',
+      'characterGuildBuffMap',
+      'guildBuildingLevelMap',
+      'characterInfo',
+      'collectionPoints',
+      'bestiaryPoints',
+      'totalTaskPoints',
+      'labyrinthPoints',
+      'labyrinthHighestFloor',
+      'labyrinthHighestFloorRooms',
+    ];
+    for (const source of [cached?.payload?.profile, isCurrent ? live : null, loadout]) {
+      if (!source) continue;
+      // Effective buffs and purchased-buff/shrine inputs are alternative metadata sources.
+      if (
+        Object.hasOwn(source, 'characterGuildBuffMap') &&
+        Object.hasOwn(source, 'guildBuildingLevelMap') &&
+        !Object.hasOwn(source, 'guildBuffLevelMap')
+      )
+        delete profile.guildBuffLevelMap;
+      for (const key of metadataKeys) if (Object.hasOwn(source, key)) profile[key] = clonePlainObject(source[key]);
+    }
+    if (
+      !Array.isArray(profile.characterSkills) ||
+      !Object.hasOwn(profile, 'characterHouseRoomMap') ||
+      !Object.hasOwn(profile, 'characterAchievements') ||
+      !(
+        Object.hasOwn(profile, 'guildBuffLevelMap') ||
+        (Object.hasOwn(profile, 'characterGuildBuffMap') && Object.hasOwn(profile, 'guildBuildingLevelMap'))
+      )
+    ) {
+      return {
+        ...result,
+        message:
+          '已捕获战斗装配，但缺少该角色的等级、建筑、成就或神龛资料。请打开该角色资料补齐后重试；已捕获的战斗装配会保留。',
+      };
+    }
+    return { ...result, ok: true, payload: buildCachedProfilePayload(profile) };
+  }
+
+  function captureCurrentPartyInfo(message) {
+    // Only the current-party channel is authoritative; party-list previews may
+    // contain unrelated players/loadouts and must never change this selection.
+    if (message?.type === 'init_character_data') {
+      mainSiteState.currentPartyInfo = hasOwnKey(message, 'partyInfo')
+        ? clonePlainObject(message.partyInfo)
+        : undefined;
+    } else if (message?.type === 'party_updated' && hasOwnKey(message, 'partyInfo')) {
+      mainSiteState.currentPartyInfo = message.partyInfo === null ? null : clonePlainObject(message.partyInfo);
+    }
+  }
+
+  function buildOwnPartyLoadoutResponse(requestId, language = '') {
+    const partyInfo = mainSiteState.currentPartyInfo;
+    if (partyInfo === undefined) return null; // No authoritative selection received yet.
+    const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
+    if (!identity.characterId) return null;
+    if (partyInfo === null) return buildCurrentMainSiteResponse(requestId, language);
+    if (!partyInfo?.partySlotMap || typeof partyInfo.partySlotMap !== 'object') return null;
+    const slot = readCollectionEntries(partyInfo.partySlotMap).find(
+      (entry) => String(entry?.characterID ?? entry?.characterId ?? '') === identity.characterId,
+    );
+    if (!slot) return buildCurrentMainSiteResponse(requestId, language);
+    if (!hasOwnKey(slot, 'characterLoadoutID')) return null;
+    const selectedId = Number(slot.characterLoadoutID);
+    const fail = (message) => ({
+      requestId,
+      ...identity,
+      format: 'main-site-current-character',
+      ok: false,
+      payload: null,
+      message,
+    });
+    if (
+      !Number.isSafeInteger(selectedId) ||
+      selectedId < 0 ||
+      slot.characterLoadoutID === null ||
+      slot.characterLoadoutID === ''
+    )
+      return fail('本人的队伍装配标识无效，请等待主站队伍数据更新后重试。');
+    // Explicitly no loadout: use live equipment, not a previously viewed build.
+    if (selectedId === 0) return buildCurrentMainSiteResponse(requestId, language);
+    const snapshot = mainSiteState.currentCharacterSnapshot;
+    const loadout = snapshot?.characterLoadoutMap?.[String(selectedId)];
+    if (!loadout || typeof loadout !== 'object' || Array.isArray(loadout))
+      return fail(`本人的队伍装配 ${selectedId} 尚未同步或已被删除，请等待主站装配数据更新或重新选择装配后重试。`);
+    if (
+      (loadout.id != null && String(loadout.id) !== String(selectedId)) ||
+      (loadout.characterID != null && String(loadout.characterID) !== identity.characterId)
+    )
+      return fail('本人的队伍装配身份不匹配，已取消导入。请刷新主站后重试。');
+    const map = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+    if (
+      !['', '/action_types/combat'].includes(loadout.actionTypeHrid) ||
+      !map(loadout.wearableMap) ||
+      !map(loadout.abilityMap) ||
+      !Array.isArray(loadout.foodItemHrids) ||
+      !Array.isArray(loadout.drinkItemHrids) ||
+      !map(loadout.abilityCombatTriggersMap) ||
+      !map(loadout.consumableCombatTriggersMap)
+    )
+      return fail('本人的队伍战斗装配数据不完整，请等待主站数据更新后重试；未使用当前穿戴或旧缓存补齐。');
+    // Selected combat config is complete; live food/trigger readiness is unrelated.
+    const payload = buildCurrentCharacterPayload(false);
+    if (!payload) return fail(getUiText('currentCharacterNotInitialized', language));
+    payload.currentCombatLoadout = clonePlainObject(loadout);
+    payload.mainSiteLoadoutSource = 'own-party-slot';
+    return { requestId, ...identity, format: 'main-site-current-character', ok: true, payload };
+  }
+
+  function buildCurrentCombatResponse(requestId, language = '') {
+    const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
+    return (
+      buildOwnPartyLoadoutResponse(requestId, language) ||
+      buildViewLoadoutResponse(identity.characterId, identity.characterName, requestId) ||
+      buildCurrentMainSiteResponse(requestId, language)
+    );
+  }
+
   function findCachedProfileEntry(characterId, characterName) {
     const normalizedCharacterId = String(characterId || '').trim();
     const comparableCharacterName = normalizeComparableText(characterName);
@@ -1675,6 +1912,7 @@
   function isSimulatorPage() {
     const origin = window.location.origin;
     return (
+      origin === 'https://reroger.github.io' ||
       origin === 'https://azhu949.github.io' ||
       origin === 'https://mwi-combatsi-mulator.pages.dev' ||
       origin === 'http://localhost:5173' ||
@@ -2690,6 +2928,19 @@
   // 模拟站粘贴导入对无市场字段的 payload 保持兼容（marketItemValues: null，UI 显示
   // 「官方估值：0 个物品」，属预期现象而非异常）。
   function buildProfileExportPayload(profile) {
+    if (profile?._mwiLoadoutShared) {
+      const response = buildViewLoadoutResponse(
+        extractSharedProfileCharacterId(profile),
+        extractSharedProfileName(profile),
+      );
+      if (response?.ok) return response.payload;
+      // Preserve the actual received packet for diagnostics, never copy a stale personal snapshot.
+      return {
+        sharableCharacter: profile.sharableCharacter,
+        currentCombatLoadout: profile.loadout,
+        _mwiImportError: response?.message || '装配缓存已过期，请重新打开查看装配后重试。',
+      };
+    }
     return { ...profile };
   }
 
@@ -2984,7 +3235,19 @@
 
   function extractSharedProfileCharacterId(profile) {
     const sharable = profile?.sharableCharacter;
-    return String(sharable?.id || sharable?.characterID || sharable?.characterId || profile?.characterId || '').trim();
+    const explicit = String(
+      sharable?.id || sharable?.characterID || sharable?.characterId || profile?.characterId || '',
+    ).trim();
+    if (explicit) return explicit;
+    const entries = [
+      ...(Array.isArray(profile?.characterSkills) ? profile.characterSkills : []),
+      ...Object.values(profile?.wearableItemMap || {}),
+      ...(Array.isArray(profile?.equippedAbilities) ? profile.equippedAbilities : []),
+    ];
+    const ids = new Set(
+      entries.map((entry) => String(entry?.characterID || entry?.characterId || '').trim()).filter(Boolean),
+    );
+    return ids.size === 1 ? [...ids][0] : '';
   }
 
   function extractSharedProfileName(profile) {
@@ -3178,6 +3441,297 @@
     return `mwi-tm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
+  function currentAccountIdentity() {
+    return {
+      ...readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot),
+      tabId: MAIN_SITE_TAB_ID,
+      origin: window.location.origin,
+    };
+  }
+
+  function sameAccount(left, right) {
+    return (
+      Boolean(left?.characterId && left?.tabId && left?.origin) &&
+      left.characterId === right?.characterId &&
+      left.tabId === right?.tabId &&
+      left.origin === right?.origin
+    );
+  }
+
+  function publishAccountHeartbeat(force = false) {
+    const now = Date.now();
+    if (accountPageHidden || (!force && now - lastAccountHeartbeat < ACCOUNT_HEARTBEAT_MS)) return;
+    lastAccountHeartbeat = now;
+    const identity = currentAccountIdentity();
+    const key = ACCOUNT_KEY_PREFIX + MAIN_SITE_TAB_ID;
+    if (
+      !identity.characterId ||
+      !identity.characterName ||
+      !hasCurrentCharacterSnapshot() ||
+      !hasCurrentCharacterConsumableSlots()
+    ) {
+      GM_deleteValue(key);
+      return;
+    }
+    GM_setValue(key, { ...identity, updatedAt: now, version: 1 });
+  }
+
+  function discoverOnlineAccounts(now = Date.now()) {
+    const characters = new Map();
+    for (const key of GM_listValues()) {
+      if (!key.startsWith(ACCOUNT_KEY_PREFIX)) continue;
+      const entry = GM_getValue(key, null);
+      if (
+        !entry ||
+        entry.version !== 1 ||
+        key !== ACCOUNT_KEY_PREFIX + entry.tabId ||
+        typeof entry.characterId !== 'string' ||
+        !entry.characterId ||
+        typeof entry.characterName !== 'string' ||
+        !entry.characterName ||
+        !Number.isFinite(entry.updatedAt) ||
+        entry.updatedAt > now ||
+        now - entry.updatedAt > ACCOUNT_TTL_MS
+      )
+        continue;
+      try {
+        if (!isMainSiteHostname(new URL(entry.origin).hostname)) continue;
+      } catch {
+        continue;
+      }
+      // Multiple tabs for one character produce one choice; use its freshest tab.
+      const id = `${entry.origin}|${entry.characterId}`;
+      if (!characters.has(id) || characters.get(id).updatedAt < entry.updatedAt) characters.set(id, entry);
+    }
+    return [...characters.values()].sort((a, b) => a.characterName.localeCompare(b.characterName));
+  }
+
+  function chooseImportAccount(language = 'zh') {
+    const accounts = discoverOnlineAccounts();
+    const en = language === 'en';
+    if (!accounts.length)
+      throw new Error(
+        en
+          ? 'No online character found. Update the import script and refresh the logged-in main-site tab.'
+          : '未发现在线角色，请更新导入脚本并刷新已登录的主站标签页。',
+      );
+    if (accounts.length === 1) return Promise.resolve(accounts[0]);
+    return new Promise((resolve) => {
+      const previousFocus = document.activeElement;
+      const dialog = document.createElement('dialog');
+      dialog.id = 'mwi-tm-account-picker';
+      dialog.setAttribute('aria-labelledby', 'mwi-tm-account-picker-title');
+      // Share the site's semantic tokens, including the Start Simulation button's primary colors.
+      // Keep CSS here so updating the userscript also styles an already-deployed simulator.
+      const style = document.createElement('style');
+      style.textContent = `
+        #mwi-tm-account-picker {
+          position: fixed; inset: 0; margin: auto; box-sizing: border-box;
+          width: min(28rem, calc(100vw - 2rem)); max-width: none;
+          max-height: min(80dvh, 40rem); padding: 0; overflow: hidden;
+          border: 1px solid var(--border); border-radius: var(--radius, .5rem);
+          background: var(--card); color: var(--card-foreground);
+          font-family: var(--font-body, inherit); font-size: .875rem; line-height: 1.5;
+          box-shadow: 0 20px 60px rgb(0 0 0 / .3);
+        }
+        #mwi-tm-account-picker[open] { display: flex; flex-direction: column; }
+        #mwi-tm-account-picker::backdrop { background: var(--modal-backdrop); }
+        #mwi-tm-account-picker .mwi-account-header { padding: 1.25rem 1.25rem 1rem; flex-shrink: 0; }
+        #mwi-tm-account-picker h2 {
+          margin: 0; font-family: var(--font-heading, inherit); font-size: 1.125rem;
+          line-height: 1.5; font-weight: 600; color: var(--primary);
+        }
+        #mwi-tm-account-picker .mwi-account-hint { margin: .375rem 0 0; color: var(--muted-foreground); }
+        #mwi-tm-account-picker .mwi-account-list {
+          display: grid; gap: .625rem; min-height: 0; overflow-y: auto; overflow-x: hidden;
+          padding: .25rem 1.25rem .75rem; overscroll-behavior: contain;
+          scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--muted-foreground) var(--card);
+        }
+        #mwi-tm-account-picker .mwi-account-list::-webkit-scrollbar { width: 8px; }
+        #mwi-tm-account-picker .mwi-account-list::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: 4px; }
+        #mwi-tm-account-picker button { font: inherit; cursor: pointer; transition: background-color 150ms; }
+        #mwi-tm-account-picker button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+        #mwi-tm-account-picker .mwi-account-choice {
+          display: flex; flex-direction: column; align-items: flex-start; gap: .25rem;
+          width: 100%; min-width: 0; padding: .75rem 1rem; text-align: left;
+          border: 1px solid var(--primary); border-radius: var(--radius, .5rem);
+          background: var(--primary); color: var(--primary-foreground);
+          box-shadow: 0 1px 2px rgb(0 0 0 / .1); overflow-wrap: anywhere;
+        }
+        #mwi-tm-account-picker .mwi-account-choice:hover { background: var(--primary-hover); }
+        #mwi-tm-account-picker .mwi-account-name { font-weight: 600; }
+        #mwi-tm-account-picker .mwi-account-id { font-size: .75rem; opacity: .85; }
+        #mwi-tm-account-picker .mwi-account-footer {
+          display: flex; justify-content: flex-end; padding: 1rem 1.25rem;
+          border-top: 1px solid var(--border); flex-shrink: 0;
+        }
+        #mwi-tm-account-picker .mwi-account-cancel {
+          padding: .375rem .875rem; min-height: 2.25rem; border: 1px solid var(--input);
+          border-radius: var(--radius, .5rem); background: var(--background); color: var(--foreground); font-weight: 600;
+        }
+        #mwi-tm-account-picker .mwi-account-cancel:hover { background: var(--accent); }
+      `;
+      const header = document.createElement('div');
+      header.className = 'mwi-account-header';
+      const title = document.createElement('h2');
+      title.id = 'mwi-tm-account-picker-title';
+      title.textContent = en ? 'Choose a character to import' : '选择要导入的角色';
+      const hint = document.createElement('p');
+      hint.className = 'mwi-account-hint';
+      hint.textContent = en ? 'Select a character to import its current setup.' : '点击角色，导入该角色的当前配置。';
+      header.append(title, hint);
+      const list = document.createElement('div');
+      list.className = 'mwi-account-list';
+      const footer = document.createElement('div');
+      footer.className = 'mwi-account-footer';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'mwi-account-cancel';
+      cancel.textContent = en ? 'Cancel' : '取消';
+      let timer;
+      let settled = false;
+      function finish(account) {
+        if (settled) return;
+        settled = true;
+        window.clearInterval(timer);
+        dialog.close();
+        dialog.remove();
+        previousFocus?.focus();
+        resolve(account);
+      }
+      let signature = '';
+      function render() {
+        const online = discoverOnlineAccounts();
+        const nextSignature = JSON.stringify(
+          online.map(({ characterId, characterName, tabId, origin }) => ({
+            characterId,
+            characterName,
+            tabId,
+            origin,
+          })),
+        );
+        if (signature === nextSignature) return;
+        signature = nextSignature;
+        list.replaceChildren();
+        if (!online.length)
+          list.textContent = en
+            ? 'No online characters. Refresh the main-site tab.'
+            : '在线角色已离线，请刷新主站标签页。';
+        for (const account of online) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mwi-account-choice';
+          const name = document.createElement('span');
+          name.className = 'mwi-account-name';
+          name.textContent = account.characterName;
+          const id = document.createElement('span');
+          id.className = 'mwi-account-id';
+          id.textContent = `ID ${account.characterId}`;
+          button.append(name, id);
+          button.addEventListener('click', () => {
+            // Recheck membership at click time, not just when the dialog was opened.
+            if (discoverOnlineAccounts().some((entry) => sameAccount(account, entry))) finish(account);
+            else render();
+          });
+          list.append(button);
+        }
+      }
+      cancel.addEventListener('click', () => finish(null));
+      dialog.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        finish(null);
+      });
+      dialog.addEventListener('close', () => finish(null));
+      // Native dialog backdrop clicks target the dialog. Distinguish the backdrop
+      // from padding/scrollbar clicks, and do not dismiss on a drag starting inside.
+      function isOutside(event) {
+        const rect = dialog.getBoundingClientRect();
+        return (
+          event.target === dialog &&
+          (event.clientX < rect.left ||
+            event.clientX > rect.right ||
+            event.clientY < rect.top ||
+            event.clientY > rect.bottom)
+        );
+      }
+      let pointerStartedOutside = false;
+      dialog.addEventListener('pointerdown', (event) => {
+        pointerStartedOutside = isOutside(event);
+      });
+      dialog.addEventListener('click', (event) => {
+        if (pointerStartedOutside && isOutside(event)) finish(null);
+        pointerStartedOutside = false;
+      });
+      footer.append(cancel);
+      dialog.append(style, header, list, footer);
+      document.body.append(dialog);
+      render();
+      dialog.showModal();
+      timer = window.setInterval(render, 1000);
+    });
+  }
+
+  async function processTargetedImportRequest(request) {
+    const identity = currentAccountIdentity();
+    if (
+      !request?.requestId ||
+      !sameAccount(request.account, identity) ||
+      !Number.isFinite(request.createdAt) ||
+      Date.now() - request.createdAt > REQUEST_TIMEOUT_MS ||
+      request.createdAt > Date.now() ||
+      targetedRequests.has(request.requestId)
+    )
+      return;
+    targetedRequests.add(request.requestId);
+    if (targetedRequests.size > 100) targetedRequests.delete(targetedRequests.values().next().value);
+    let response;
+    try {
+      mergeStoredMarketItemValues();
+      if (!Object.keys(mainSiteState.marketItemValues ?? {}).length) fetchSyntheticMarketItemValues();
+      const team = request.target === 'auto' ? await requestTeamProfiles(request.requestId, request.language) : null;
+      response = team?.payload?.members?.length
+        ? { ...team, format: 'shareable-profile-team' }
+        : request.target === 'auto'
+          ? buildCurrentCombatResponse(request.requestId, request.language)
+          : buildCurrentMainSiteResponse(request.requestId, request.language);
+    } catch (error) {
+      response = { ok: false, message: normalizeErrorMessage(error, 'Import failed.') };
+    }
+    // A role switch while assembling an asynchronous team response invalidates it.
+    if (!sameAccount(identity, currentAccountIdentity())) {
+      response = {
+        ok: false,
+        message: request.language === 'en' ? 'Character changed. Select again.' : '主站角色已切换，请重新选择后导入。',
+      };
+    }
+    GM_setValue(RESPONSE_KEY + '.' + request.requestId, {
+      ...response,
+      requestId: request.requestId,
+      account: identity,
+      exportedAt: Date.now(),
+    });
+  }
+
+  async function requestAccountImport(account, target, language) {
+    const requestId = createRequestId();
+    const requestKey = REQUEST_KEY + '.' + account.tabId;
+    const responseKey = RESPONSE_KEY + '.' + requestId;
+    try {
+      GM_setValue(requestKey, { version: 3, requestId, createdAt: Date.now(), account, target, language });
+      const response = await waitForSharedValue(responseKey, requestId, REQUEST_TIMEOUT_MS);
+      if (!sameAccount(account, response.account))
+        throw new Error(
+          language === 'en'
+            ? 'Import response identity mismatch. Select the character again.'
+            : '导入响应身份不匹配，请重新选择角色。',
+        );
+      return response;
+    } finally {
+      if (GM_getValue(requestKey, null)?.requestId === requestId) GM_deleteValue(requestKey);
+      GM_deleteValue(responseKey);
+    }
+  }
+
   function normalizeErrorMessage(error, fallbackMessage) {
     if (typeof error === 'string' && error.trim()) {
       return error;
@@ -3318,10 +3872,12 @@
     }
 
     if (type === 'init_character_data') {
+      mainSiteState.currentPartyInfo = undefined;
       updateCurrentCharacterSnapshot(message, true);
       replaceTrackedCharacterActions(message.characterActions);
       syncCurrentCharacterConsumableSlotMaps(message, true);
       syncCurrentCharacterCombatTriggerMaps(message, true);
+      publishAccountHeartbeat(true);
       return;
     }
 
@@ -3329,6 +3885,7 @@
       updateCurrentCharacterSnapshot(message, shouldResetSnapshot);
       syncCurrentCharacterConsumableSlotMaps(message, shouldResetSnapshot);
       syncCurrentCharacterCombatTriggerMaps(message, shouldResetSnapshot);
+      publishAccountHeartbeat(true);
     }
   }
 
@@ -3432,6 +3989,23 @@
 
     const nextProfile = clonePlainObject(message.profile);
 
+    persistProfileCacheEntry(nextProfile);
+    updateSharedProfileSnapshot(nextProfile);
+  }
+
+  function handleLoadoutSharedMessage(message) {
+    if (message?.type !== 'loadout_shared' || !message.loadout || typeof message.loadout !== 'object') return;
+    const loadout = clonePlainObject(message.loadout);
+    persistViewLoadoutEntry(loadout);
+    updateSharedProfileSnapshot({
+      sharableCharacter: loadout.sharableCharacter,
+      characterId: extractSharedProfileCharacterId(loadout),
+      _mwiLoadoutShared: true,
+      loadout,
+    });
+  }
+
+  function updateSharedProfileSnapshot(nextProfile) {
     // 新分享到达：作废绑定到其它角色的旧按钮，避免陈旧快照残留；同一角色则刷新快照。
     // 注意：ID 缺失（如旧版主站载荷无 characterId）时无法确认身份，保守移除旧按钮，
     // 交由 mountProfileCopyButton 依据最新分享重新挂载，避免按钮误挂旧弹窗。
@@ -3453,8 +4027,6 @@
       }
     }
 
-    // 统一使用克隆后的 nextProfile 持久化，避免与原始 message.profile 混用。
-    persistProfileCacheEntry(nextProfile);
     mainSiteState.latestSharedProfile = nextProfile;
   }
 
@@ -3477,10 +4049,12 @@
       }
 
       captureCurrentCharacterState(parsed);
+      captureCurrentPartyInfo(parsed);
       captureCurrentCharacterDataUpdate(parsed);
       captureCharacterActionsUpdate(parsed);
       captureMarketItemValues(parsed);
       handleProfileSharedMessage(parsed);
+      handleLoadoutSharedMessage(parsed);
     });
 
     socket.addEventListener('close', () => {
@@ -4060,47 +4634,24 @@
     const characterId = Number.isFinite(rawCharacterId) && rawCharacterId > 0 ? String(rawCharacterId) : '';
     const characterName = normalizeCharacterName(member?.characterName || member?.name || '');
     const comparableCharacterName = normalizeComparableText(characterName);
+    const identity = readCurrentCharacterIdentity(mainSiteState.currentCharacterSnapshot);
     const isCurrent =
-      member?.isCurrent === true ||
-      (comparableCharacterName &&
-        comparableCharacterName === normalizeComparableText(mainSiteState.currentCharacterName));
+      characterId && identity.characterId
+        ? characterId === identity.characterId
+        : member?.isCurrent === true ||
+          (comparableCharacterName &&
+            comparableCharacterName === normalizeComparableText(mainSiteState.currentCharacterName));
+    if (isCurrent) return buildCurrentCombatResponse('', preferredLanguage);
 
-    if (isCurrent) {
-      const currentResponse = buildCurrentMainSiteResponse('', preferredLanguage);
-      return {
-        format: String(currentResponse?.format || 'main-site-current-character'),
-        characterName: normalizeCharacterName(currentResponse?.characterName || characterName) || characterName,
-        characterId: String(currentResponse?.characterId || characterId).trim(),
-        ok: currentResponse?.ok === true && currentResponse?.payload && typeof currentResponse.payload === 'object',
-        message:
-          currentResponse?.ok === true
-            ? ''
-            : normalizeErrorMessage(
-                currentResponse?.message,
-                getUiText('currentCharacterNotInitialized', preferredLanguage),
-              ),
-        payload: currentResponse?.ok === true ? currentResponse.payload : null,
-      };
-    }
-
-    const cachedEntry = findCachedProfileEntry(characterId, characterName);
-    if (!cachedEntry || !cachedEntry.payload) {
-      return {
-        characterName,
-        characterId,
-        ok: false,
-        message: getUiText('openProfileInGameFirst', preferredLanguage),
-        payload: null,
-      };
-    }
+    const viewLoadout = buildViewLoadoutResponse(characterId, characterName);
+    if (viewLoadout) return viewLoadout;
 
     return {
-      format: 'shareable-profile',
-      characterName: normalizeCharacterName(cachedEntry.characterName || characterName) || characterName,
-      characterId: String(cachedEntry.characterId || characterId).trim(),
-      ok: true,
-      message: '',
-      payload: buildCachedProfilePayload(cachedEntry.payload?.profile),
+      characterId,
+      characterName,
+      ok: false,
+      payload: null,
+      message: '尚未捕获该队友的组队装配，或装配缓存已过期。请打开该队友的查看装配后重试；本次未使用个人装备替代。',
     };
   }
 
@@ -4256,6 +4807,20 @@
       fetchSyntheticMarketItemValues();
     }
 
+    publishAccountHeartbeat(true);
+    const directedKey = REQUEST_KEY + '.' + MAIN_SITE_TAB_ID;
+    GM_addValueChangeListener(directedKey, (_name, _oldValue, value) => {
+      void processTargetedImportRequest(value);
+    });
+    window.addEventListener?.('pagehide', () => {
+      accountPageHidden = true;
+      GM_deleteValue(ACCOUNT_KEY_PREFIX + MAIN_SITE_TAB_ID);
+    });
+    window.addEventListener?.('pageshow', () => {
+      accountPageHidden = false;
+      publishAccountHeartbeat(true);
+    });
+
     const handledRequestIds = new Set();
 
     // 每次导入请求时惰性刷新官方估算（N2，2026-08-31）：
@@ -4302,7 +4867,7 @@
           writeMainSiteImportResponse(
             requestId,
             'main-site-current-character',
-            buildCurrentMainSiteResponse(requestId, preferredLanguage),
+            buildCurrentCombatResponse(requestId, preferredLanguage),
             preferredLanguage,
           );
         });
@@ -4325,6 +4890,8 @@
 
     processImportRequest(GM_getValue(REQUEST_KEY, null));
     window.setInterval(() => {
+      publishAccountHeartbeat();
+      void processTargetedImportRequest(GM_getValue(directedKey, null));
       processImportRequest(GM_getValue(REQUEST_KEY, null));
     }, STORAGE_POLL_INTERVAL_MS);
   }
@@ -4388,18 +4955,6 @@
 
       state.uiLanguage = nextLanguage;
       renderControlState();
-    }
-
-    async function requestMainSiteImport(requestId, target = 'auto') {
-      GM_setValue(REQUEST_KEY, {
-        version: 2,
-        requestId,
-        createdAt: Date.now(),
-        target,
-        language: state.uiLanguage,
-      });
-
-      return waitForSharedValue(RESPONSE_KEY, requestId, REQUEST_TIMEOUT_MS);
     }
 
     async function importPayloadIntoSimulator(requestId, payload, options = {}) {
@@ -4634,9 +5189,15 @@
 
       try {
         const normalizedImportMode = importMode === 'enhancement' || importMode === 'skilling' ? importMode : 'player';
-        const mainSiteResponse = await requestMainSiteImport(
-          requestId,
+        const account = await chooseImportAccount(state.uiLanguage);
+        if (!account) {
+          setStatus('', 'idle');
+          return;
+        }
+        const mainSiteResponse = await requestAccountImport(
+          account,
           normalizedImportMode === 'player' ? 'auto' : 'active-player',
+          state.uiLanguage,
         );
         if (normalizedImportMode === 'enhancement') {
           await importEnhancementMainSiteResponse(mainSiteResponse, requestId);
@@ -4782,10 +5343,14 @@
       getTeamRosterCache() {
         return cloneDebugValue(GM_getValue(TEAM_ROSTER_CACHE_KEY, null));
       },
+      getViewLoadoutCache() {
+        return cloneDebugValue(readViewLoadoutEntries());
+      },
       getCurrentCharacterState() {
         return cloneDebugValue({
           currentCharacterName: mainSiteState.currentCharacterName,
           currentCharacterSnapshot: mainSiteState.currentCharacterSnapshot,
+          currentPartyInfo: mainSiteState.currentPartyInfo,
           actionTypeFoodSlotsMap: mainSiteState.actionTypeFoodSlotsMap,
           actionTypeDrinkSlotsMap: mainSiteState.actionTypeDrinkSlotsMap,
           consumableCombatTriggersMap: mainSiteState.consumableCombatTriggersMap,
